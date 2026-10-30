@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="admin-shell">
 <header class="admin-top">
 <a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a>
-<nav><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a></nav>
+<nav><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>" data-fa="سرورهای IBSng" data-en="IBSng Servers">سرورهای IBSng</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>" data-fa="نگاشت پلن/گروه" data-en="Plan / Group Mapping">نگاشت پلن/گروه</a> <button class="button lang-toggle" id="langToggle" type="button" aria-label="Switch language">English</button></nav>
 </header>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
@@ -196,5 +196,130 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 <footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
 </main>
+
+<script>
+(function () {
+  const pairs = {
+    "ATD IBSng Store · مدیریت":"ATD IBSng Store · Admin",
+    "سرورهای IBSng":"IBSng Servers",
+    "نگاشت پلن/گروه":"Plan / Group Mapping",
+    "مدیریت حساب‌های IBSng":"IBSng User Management",
+    "مدیریت حساب‌های IBSng":"IBSng User Management",
+    "IBSng · User Management":"IBSng · User Management",
+    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید و تغییر گروه در این صفحه فعال نشده‌اند.":"Operations run against the selected IBSng Web Panel. The group name comes from the Store's manual mapping and must exactly match the IBSng group. Renewal and group changes are not enabled on this page.",
+    "درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.":"Invalid request. Please refresh the page.",
+    "ابتدا یک سرور فعال IBSng انتخاب کنید.":"Select an active IBSng server first.",
+    "نام کاربری برای جست‌وجو الزامی است.":"Username is required for lookup.",
+    "از نگاشت دستی همین سرور یک گروه فعال انتخاب کنید.":"Select an active group from this server's manual mapping.",
+    "نام کاربری برای دریافت اطلاعات حساب الزامی است.":"Username is required to retrieve account details.",
+    "گروه، نام کاربری و رمز عبور الزامی هستند.":"Group, username and password are required.",
+    "Credit باید یک مقدار عددی معتبر باشد.":"Credit must be a valid number.",
+    "درخواست ایجاد حساب در IBSng با پاسخ موفق تأیید شد.":"IBSng confirmed the account creation request.",
+    "برای حذف حساب، تأیید حذف الزامی است.":"Deletion confirmation is required.",
+    "این نام کاربری در IBSng وجود ندارد.":"This username does not exist in IBSng.",
+    "عملیات نامعتبر است.":"Invalid operation.",
+    "عملیات IBSng انجام نشد؛ وضعیت اتصال و پاسخ Web Panel را بررسی کنید.":"IBSng operation failed. Check connectivity and the Web Panel response.",
+    "سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.":"No active IBSng server is configured. Add and activate a server first.",
+    "سرور IBSng":"IBSng Server",
+    "جست‌وجو و دریافت اطلاعات حساب":"Lookup and Account Details",
+    "Username":"Username",
+    "جست‌وجوی حساب":"Search Account",
+    "Username برای نمایش اطلاعات ورود":"Username to retrieve login credentials",
+    "دریافت username/password از IBSng":"Get username/password from IBSng",
+    "اطلاعات حساب":"Account Details",
+    "IBSng User ID:":"IBSng User ID:",
+    "Group:":"Group:",
+    "Password:":"Password:",
+    "اطلاعات گروه IBSng":"IBSng Group Information",
+    "گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود.":"The group is selected from this server's manual mapping; IBSng groups are not fetched automatically.",
+    "برای این سرور گروه فعالی ثبت نشده است.":"No active group is mapped for this server.",
+    "گروه IBSng":"IBSng Group",
+    "خواندن اطلاعات گروه":"Read Group Information",
+    "ایجاد حساب":"Create Account",
+    "برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید.":"No active mapping exists for this server. Add the exact IBSng group name manually in Plan / Group Mapping first.",
+    "گروه IBSng (از نگاشت دستی)":"IBSng Group (manual mapping)",
+    "Password":"Password",
+    "Credit":"Credit",
+    "ایجاد حساب در IBSng":"Create Account in IBSng",
+    "حذف حساب":"Delete Account",
+    "حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند.":"Deleting an account from IBSng cannot be undone. Following the reference behavior, this also requests deletion of connection and audit logs.",
+    "حساب واقعاً از IBSng حذف شود؟ این عملیات برگشت‌پذیر نیست.":"Really delete this account from IBSng? This cannot be undone.",
+    "حذف حساب از IBSng":"Delete Account from IBSng",
+    "بازگشت به فروشگاه":"Back to Store",
+    "تست نشده":"Not tested",
+    "نامشخص":"Unknown",
+    "حساب در Web Panel ایجاد شد.":"Account created in the Web Panel.",
+    "هنوز سروری اضافه نشده است.":"No servers have been added yet.",
+    "ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.":"Add an IBSng server first.",
+    "افزودن نگاشت":"Add Mapping",
+    "ثبت نگاشت":"Save Mapping",
+    "نگاشت‌های ثبت‌شده":"Saved Mappings",
+    "ویرایش نگاشت":"Edit Mapping",
+    "ذخیره تغییرات":"Save Changes",
+    "حذف":"Delete",
+    "فعال":"Active",
+    "غیرفعال":"Inactive",
+    "افزودن سرور IBSng":"Add IBSng Server",
+    "نام سرور":"Server Name",
+    "Host":"Host",
+    "پورت":"Port",
+    "ISP name":"ISP Name",
+    "نام کاربری":"Username",
+    "رمز عبور":"Password",
+    "تست اتصال و ذخیره تغییرات":"Test Connection & Save Changes",
+    "Test Connection":"Test Connection",
+    "انتخاب به‌عنوان پیش‌فرض":"Set as Default",
+    "غیرفعال‌سازی":"Disable",
+    "فعال‌سازی":"Enable",
+    "حذف سرور":"Delete Server",
+    "ویرایش تنظیمات":"Edit Settings",
+    "نام کاربری جدید (خالی = حفظ قبلی)":"New Username (blank = keep current)",
+    "رمز جدید (خالی = حفظ قبلی)":"New Password (blank = keep current)",
+    "نگاشت پلن فروشگاه به گروه IBSng":"Store Plan to IBSng Group Mapping",
+    "نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش نگاشت به‌صورت دستی تعریف می‌شود؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.":"Enter the exact name of an existing IBSng group. Mappings are managed manually; automatic group-list fetching is not implemented.",
+    "نام پلن فروشگاه":"Store Plan Name",
+    "نام دقیق گروه":"Exact Group Name",
+    "مثلاً: یک ماهه":"For example: One month",
+    "نام گروه در IBSng":"IBSng group name",
+    "برای این سرور هنوز نگاشتی ثبت نشده است.":"No mappings have been added for this server yet."
+  };
+  const reverse = Object.fromEntries(Object.entries(pairs).map(([fa,en]) => [en,fa]));
+  const root = document.documentElement;
+  const toggle = document.getElementById('langToggle');
+  function translateNode(node, map) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const raw = node.nodeValue || '';
+      const trimmed = raw.trim();
+      if (map[trimmed]) node.nodeValue = raw.replace(trimmed, map[trimmed]);
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    ['placeholder','title','aria-label'].forEach(attr => {
+      const value = node.getAttribute(attr);
+      if (value && map[value]) node.setAttribute(attr, map[value]);
+    });
+    if (node.matches('input[type="submit"],input[type="button"]') && node.value && map[node.value]) {
+      node.value = map[node.value];
+    }
+    node.childNodes.forEach(child => translateNode(child, map));
+  }
+  function setLanguage(lang) {
+    const map = lang === 'en' ? pairs : reverse;
+    translateNode(document.body, map);
+    root.lang = lang;
+    root.dir = lang === 'fa' ? 'rtl' : 'ltr';
+    document.body.style.fontFamily = lang === 'fa'
+      ? 'Vazirmatn, Tahoma, sans-serif'
+      : '"Segoe UI", Arial, sans-serif';
+    if (toggle) toggle.textContent = lang === 'en' ? 'فارسی' : 'English';
+    try { localStorage.setItem('atd-ibsng-language', lang); } catch (e) {}
+  }
+  let initial = 'en';
+  try { initial = localStorage.getItem('atd-ibsng-language') || 'en'; } catch (e) {}
+  if (toggle) toggle.addEventListener('click', () => setLanguage(root.lang === 'fa' ? 'en' : 'fa'));
+  setLanguage(initial);
+})();
+</script>
+
 </body>
 </html>
