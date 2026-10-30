@@ -53,7 +53,68 @@ final class IBSngClient
 
     public function testConnection(): void
     {
-        $this->login();
+        if (!function_exists('curl_init')) {
+            throw new RuntimeException('افزونه PHP cURL روی هاست فعال نیست.');
+        }
+
+        $url = $this->baseUrl . '/admin/';
+        $curl = curl_init($url);
+        if ($curl === false) {
+            throw new RuntimeException('راه‌اندازی ارتباط HTTP با IBSng ناموفق بود.');
+        }
+
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_MAXREDIRS => 0,
+            CURLOPT_CONNECTTIMEOUT => min(8, $this->timeout),
+            CURLOPT_TIMEOUT => $this->timeout,
+            CURLOPT_COOKIEJAR => $this->cookieFile,
+            CURLOPT_COOKIEFILE => $this->cookieFile,
+            CURLOPT_USERAGENT => 'ATD-IBSng-Store/1.0',
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'username' => $this->username,
+                'password' => $this->password,
+            ], '', '&'),
+            CURLOPT_HTTPHEADER => [
+                'Accept: text/html,application/xhtml+xml',
+                'Cache-Control: no-cache',
+                'Accept-Encoding: identity',
+                'Connection: close',
+                'Content-Type: application/x-www-form-urlencoded',
+            ],
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0,
+        ]);
+
+        $response = curl_exec($curl);
+        $errno = curl_errno($curl);
+        $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        $headerSize = (int)curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        curl_close($curl);
+
+        if ($response === false) {
+            throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
+                ? 'اتصال به IBSng timeout شد.'
+                : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
+        }
+
+        $headers = substr($response, 0, max(0, $headerSize));
+        $body = substr($response, max(0, $headerSize));
+
+        // Preserve the known-working Routebox authentication check.
+        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
+            return;
+        }
+
+        $hasLoginForm = stripos($body, 'name="username"') !== false
+            && stripos($body, 'name="password"') !== false;
+        if ($hasLoginForm || $status === 200) {
+            throw new RuntimeException('IBSng نام کاربری یا رمز عبور مدیر را نپذیرفت؛ اطلاعات ورود را بررسی کنید.');
+        }
+
+        throw new RuntimeException('پاسخ غیرمنتظره از Web Panel دریافت شد (HTTP ' . $status . ').');
     }
 
     private function login(): void
@@ -175,7 +236,7 @@ final class IBSngClient
             'username' => trim($username),
             'user_id' => $uid,
             'group' => $group,
-            'summary' => mb_substr($text, 0, 1800, 'UTF-8'),
+            'summary' => function_exists('mb_substr') ? mb_substr($text, 0, 1800, 'UTF-8') : substr($text, 0, 1800),
         ];
     }
 
