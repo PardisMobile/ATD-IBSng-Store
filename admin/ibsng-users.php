@@ -12,6 +12,7 @@ $message = '';
 $error = '';
 $userResult = null;
 $credentialResult = null;
+$groupInfoResult = null;
 $servers = $pdo->query('SELECT id,name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id')->fetchAll();
 $serverIds = array_map(static fn(array $row): int => (int)$row['id'], $servers);
 $selectedServerId = (int)($_GET['server_id'] ?? $_POST['server_id'] ?? ($servers[0]['id'] ?? 0));
@@ -54,6 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('نام کاربری برای جست‌وجو الزامی است.');
                 }
                 $userResult = $client->lookupUser($username);
+            } elseif ($action === 'group_info') {
+                $groupId = (int)($_POST['group_id'] ?? 0);
+                $groupStmt = $pdo->prepare('SELECT group_name FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
+                $groupStmt->execute([$groupId, $selectedServerId]);
+                $groupName = (string)$groupStmt->fetchColumn();
+                if ($groupName === '') {
+                    throw new InvalidArgumentException('از نگاشت دستی همین سرور یک گروه فعال انتخاب کنید.');
+                }
+                $groupInfoResult = ['name' => $groupName, 'details' => $client->getGroupInfo($groupName)];
             } elseif ($action === 'credentials') {
                 if ($username === '') {
                     throw new InvalidArgumentException('نام کاربری برای دریافت اطلاعات حساب الزامی است.');
@@ -146,6 +156,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php if (!empty($userResult['summary'])): ?><p class="muted"><?= e((string)$userResult['summary']) ?></p><?php endif; ?>
 </div>
 <?php endif; ?>
+</section>
+<section class="panel panel-card">
+<h2>اطلاعات گروه IBSng</h2>
+<p class="muted">گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود.</p>
+<?php if (!$groups): ?><p class="muted">برای این سرور گروه فعالی ثبت نشده است.</p><?php else: ?>
+<form method="post">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="group_info">
+<div class="field"><label for="group_info_id">گروه IBSng</label><select id="group_info_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
+<button class="button" type="submit">خواندن اطلاعات گروه</button>
+</form>
+<?php endif; ?>
+<?php if (is_array($groupInfoResult)): ?><div class="result panel"><strong><?= e((string)$groupInfoResult['name']) ?></strong><p class="muted"><?= e((string)$groupInfoResult['details']) ?></p></div><?php endif; ?>
 </section>
 <section class="panel panel-card">
 <h2>ایجاد حساب</h2>
