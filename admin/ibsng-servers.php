@@ -104,9 +104,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->commit();
                 $message = 'سرور پیش‌فرض فروشگاه تغییر کرد.';
             } elseif ($action === 'toggle') {
-                $pdo->prepare('UPDATE ibsng_servers SET is_active = IF(is_active=1,0,1) WHERE id=?')->execute([$id]);
+                $state = $pdo->prepare('SELECT is_active,is_default FROM ibsng_servers WHERE id=?');
+                $state->execute([$id]);
+                $current = $state->fetch();
+                if (!$current) {
+                    throw new RuntimeException('سرور موردنظر پیدا نشد.');
+                }
+                if ((int)$current['is_active'] === 1 && (int)$current['is_default'] === 1) {
+                    $pdo->prepare('UPDATE ibsng_servers SET is_active=0,is_default=0 WHERE id=?')->execute([$id]);
+                } else {
+                    $pdo->prepare('UPDATE ibsng_servers SET is_active = IF(is_active=1,0,1) WHERE id=?')->execute([$id]);
+                }
                 $message = 'وضعیت فعال‌بودن سرور تغییر کرد.';
             } elseif ($action === 'delete') {
+                $defaultCheck = $pdo->prepare('SELECT is_default FROM ibsng_servers WHERE id=?');
+                $defaultCheck->execute([$id]);
+                if ((int)$defaultCheck->fetchColumn() === 1) {
+                    $otherActive = $pdo->prepare('SELECT COUNT(*) FROM ibsng_servers WHERE id<>? AND is_active=1');
+                    $otherActive->execute([$id]);
+                    if ((int)$otherActive->fetchColumn() > 0) {
+                        throw new RuntimeException('این سرور پیش‌فرض است؛ ابتدا سرور دیگری را به‌عنوان پیش‌فرض انتخاب کنید.');
+                    }
+                }
                 $checks = [
                     'subscriptions' => 'SELECT COUNT(*) FROM subscriptions WHERE server_id=?',
                     'product mappings' => 'SELECT COUNT(*) FROM product_server_groups WHERE server_id=?',
