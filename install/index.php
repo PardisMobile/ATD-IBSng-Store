@@ -115,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !is_file($configPath)) {
                     'db_name' => trim($values['db_name']),
                     'db_user' => trim($values['db_user']),
                     'db_pass' => $dbPass,
+                    'encryption_key' => base64_encode(random_bytes(32)),
                     'base_url' => $baseUrl === '/' ? '' : $baseUrl,
                     'installed' => true,
                 ];
