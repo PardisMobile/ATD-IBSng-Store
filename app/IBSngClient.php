@@ -304,6 +304,30 @@ final class IBSngClient
         }
     }
 
+    /** Change an existing account's group through the Mirza-style Edit User form. */
+    public function changeUserGroup(string $username, string $groupName): void
+    {
+        $username = trim($username);
+        $groupName = trim($groupName);
+        if ($username === '' || $groupName === '') {
+            throw new InvalidArgumentException('نام کاربری و گروه مقصد الزامی هستند.');
+        }
+        $user = $this->lookupUser($username);
+        $uid = (string)$user['user_id'];
+        $editPath = '/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($uid)
+            . '&submit_form=1&add=1&count=1&credit=1&owner_name=' . rawurlencode($this->username)
+            . '&group_name=' . rawurlencode($groupName) . '&x=35&y=1&edit__normal_username=normal_username';
+        $saved = $this->request($editPath, [
+            'target' => 'user', 'target_id' => $uid, 'update' => 1,
+            'edit_tpl_cs' => 'normal_username', 'attr_update_method_0' => 'normalAttrs',
+            'has_normal_username' => 't', 'current_normal_username' => $username,
+            'normal_username' => $username, 'normal_save_user_add' => 't',
+        ]);
+        if (stripos($saved, 'user_info.php?user_id_multi') === false) {
+            throw new RuntimeException('پاسخ ذخیره تغییر گروه از IBSng قابل تأیید نبود.');
+        }
+    }
+
     public function deleteUser(string $username, bool $deleteConnectionLogs = true, bool $deleteAuditLogs = true): void
     {
         $uid = $this->findUserId($username);
