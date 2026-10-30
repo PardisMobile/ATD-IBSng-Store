@@ -93,6 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->prepare('UPDATE ibsng_servers SET last_test_at=NOW(), last_error=NULL WHERE id=?')->execute([$id]);
                 $message = 'اتصال موفق است؛ ورود مدیر IBSng تأیید شد.';
             } elseif ($action === 'default') {
+                $active = $pdo->prepare('SELECT is_active FROM ibsng_servers WHERE id=?');
+                $active->execute([$id]);
+                if ((int)$active->fetchColumn() !== 1) {
+                    throw new RuntimeException('برای انتخاب سرور پیش‌فرض، ابتدا آن را فعال کنید.');
+                }
                 $pdo->beginTransaction();
                 $pdo->exec('UPDATE ibsng_servers SET is_default=0');
                 $pdo->prepare('UPDATE ibsng_servers SET is_default=1 WHERE id=?')->execute([$id]);
@@ -106,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'subscriptions' => 'SELECT COUNT(*) FROM subscriptions WHERE server_id=?',
                     'product mappings' => 'SELECT COUNT(*) FROM product_server_groups WHERE server_id=?',
                     'groups' => 'SELECT COUNT(*) FROM ibsng_groups WHERE server_id=?',
+                    'provisioning history' => 'SELECT COUNT(*) FROM provisioning_attempts WHERE server_id=?',
                 ];
                 foreach ($checks as $label => $sql) {
                     $check = $pdo->prepare($sql);
@@ -126,6 +132,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e instanceof InvalidArgumentException || $e instanceof RuntimeException
                 ? $e->getMessage()
                 : 'عملیات انجام نشد. وضعیت دیتابیس و تنظیمات را بررسی کنید.';
+            if (($_POST['action'] ?? '') === 'test' && $id > 0) {
+                try {
+                    $pdo->prepare('UPDATE ibsng_servers SET last_error=? WHERE id=?')->execute([$error, $id]);
+                } catch (Throwable $ignored) {
+                    // Keep the original, user-safe test error as the page result.
+                }
+            }
         }
     }
 }
