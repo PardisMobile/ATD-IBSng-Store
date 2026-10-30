@@ -117,3 +117,71 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+
+/* ATD Files Portal motion language — applied to IBSng administration.
+   Decorative movement stays subtle and is disabled for reduced-motion users. */
+@keyframes atd-grid-drift {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 34px 34px, -34px -34px; }
+}
+@keyframes atd-orb-float {
+  0%,100% { transform: translate3d(0,0,0) scale(1); }
+  50% { transform: translate3d(0,-13px,0) scale(1.035); }
+}
+@keyframes atd-logo-shine {
+  0% { background-position: -180% 0; }
+  100% { background-position: 180% 0; }
+}
+@keyframes atd-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes atd-file-float {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+@keyframes atd-orbit-spin { to { transform: rotate(360deg); } }
+@keyframes atd-hero-pulse {
+  0%,100% { opacity: .34; transform: scale(.96); }
+  50% { opacity: .7; transform: scale(1.04); }
+}
+body { position: relative; isolation: isolate; }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(rgba(120,157,230,.035) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(120,157,230,.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+  animation: atd-grid-drift 24s linear infinite;
+}
+body::after {
+  content: ""; position: fixed; width: 32vw; height: 32vw; min-width: 220px; min-height: 220px;
+  top: 2vh; right: -10vw; border-radius: 50%; pointer-events: none; z-index: -1;
+  background: radial-gradient(circle, rgba(155,123,255,.13), transparent 68%);
+  filter: blur(12px); animation: atd-orb-float 11s ease-in-out infinite;
+}
+.admin-top, .panel-card, .server, .group-row, .result, .admin-welcome, .stat {
+  animation: atd-fade-up .52s both ease-out;
+}
+.admin-top { animation-delay: .02s; }
+.panel-card:nth-of-type(2) { animation-delay: .08s; }
+.panel-card:nth-of-type(3) { animation-delay: .14s; }
+.panel-card:nth-of-type(4) { animation-delay: .20s; }
+.brand { position: relative; isolation: isolate; }
+.brand::after {
+  content: ""; position: absolute; inset: -5px -8px; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(160,195,255,.12) 50%, transparent 65%);
+  background-size: 220% 100%; animation: atd-logo-shine 8s ease-in-out infinite;
+}
+.panel-card { position: relative; overflow: hidden; }
+.panel-card::after {
+  content: ""; position: absolute; width: 170px; height: 170px; top: -95px; left: -65px;
+  border-radius: 50%; border: 1px solid rgba(87,149,255,.13);
+  box-shadow: 0 0 0 22px rgba(87,149,255,.025), 0 0 0 48px rgba(155,123,255,.025);
+  pointer-events: none; animation: atd-hero-pulse 8s ease-in-out infinite;
+}
+.panel-card > * { position: relative; z-index: 1; }
+.panel-card h1, .panel-card h2 { text-wrap: balance; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
