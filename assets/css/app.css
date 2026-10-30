@@ -185,3 +185,17 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* Attach the remaining reference motion primitives to visible decorative details. */
+.panel-card::before {
+  content: ""; position: absolute; width: 190px; height: 190px; top: -82px; left: -72px;
+  border: 1px dashed rgba(155,123,255,.16); border-radius: 50%; pointer-events: none;
+  animation: atd-orbit-spin 42s linear infinite;
+}
+.lang-toggle::before {
+  content: ""; display: inline-block; width: 8px; height: 11px; margin-inline-end: 8px;
+  border: 1px solid currentColor; border-radius: 2px; opacity: .75;
+  animation: atd-file-float 5.8s ease-in-out infinite;
+}
+html[dir="ltr"] .admin-shell { direction: ltr; }
+html[dir="ltr"] .admin-top { text-align: left; }
