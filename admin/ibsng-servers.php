@@ -159,7 +159,7 @@ $servers = $pdo->query('SELECT id,name,host,port,scheme,isp_name,username,is_act
 <main class="admin-shell">
 <header class="admin-top">
 <a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a>
-<nav><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></nav>
+<nav><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a></nav>
 </header>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng</div><h1 style="font-size:2rem">سرورهای IBSng</h1>
