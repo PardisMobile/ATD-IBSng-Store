@@ -20,6 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $tries = (int)($_SESSION['admin_login_tries'] ?? 0);
         $lastTry = (int)($_SESSION['admin_login_last_try'] ?? 0);
+        if ($lastTry > 0 && time() - $lastTry >= 900) {
+            $tries = 0;
+            unset($_SESSION['admin_login_tries'], $_SESSION['admin_login_last_try']);
+        }
         if ($tries >= 8 && time() - $lastTry < 900) {
             $error = 'تلاش‌های ورود بیش از حد بوده است. ۱۵ دقیقه دیگر دوباره تلاش کنید.';
         } else {
