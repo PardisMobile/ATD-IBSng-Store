@@ -255,5 +255,6 @@
 - این تغییرات از طریق GitHub روی main ثبت شده‌اند؛ هنوز تست end-to-end روی هاست cPanel یا سرور IBSng واقعی انجام نشده است.
 - تست‌های خودکار/PHP lint باید پیش از اعلام این بخش production-ready اجرا شوند.
 - Installer اجرای DDL در MySQL را به‌صورت تراکنش کامل rollback نمی‌کند؛ در صورت شکست میانه نصب، ممکن است بخشی از جداول باقی بماند. اجرای مجدد schema از IF NOT EXISTS پشتیبانی می‌کند، اما مسیر بازیابی/قفل نهایی installer نیازمند آزمون است.
+- ستون is_active برای IBSng group mapping به schema اولیه افزوده شد. برای دیتابیسی که پیش‌تر نصب شده باشد، CREATE TABLE IF NOT EXISTS این ستون را اضافه نمی‌کند؛ migration نسخه‌بندی‌شده برای ارتقای دیتابیس نصب‌شده هنوز آماده نیست و نباید این commitها بدون migration روی نصب موجود اعمال شوند.
 - Test Connection با credential واقعی IBSng هنوز در این محیط اجرا نشده؛ فقط کد adapter پیاده شده است.
 - اولویت بعدی: تست/اصلاح installer و auth، سپس تطبیق دقیق Routebox IBSng settings + Test Connection، group/plan mapping، و بعد قابلیت‌های IBSng مشخص‌شده از MirzaBot. عملیات کاربر IBSng نباید تا پیش از بررسی runtime و تست واقعی، آماده اعلام شوند.
