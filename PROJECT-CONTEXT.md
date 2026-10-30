@@ -315,8 +315,8 @@
 
 - فایل مرجع بصری ارائه‌شده توسط کاربر: بسته `ATD-Files-Portal-STABLE(5).zip` شامل `index.php`، `style.css` و `README.txt` است. این بسته واقعاً بررسی شد؛ صرفاً نام فایل مبنا قرار نگرفت.
 - زبان بصری شامل پنل‌های glass، گرادیان‌های آبی/بنفش، تم تاریک، تایپوگرافی Vazirmatn در فارسی، واکنش‌گرایی و keyframeهای `fadeUp`، `orbFloat`، `gridDrift`، `logoShine`، `fileFloat`، `orbitSpin` و `heroPulse` است.
-- لایه CSS حرکتی در `assets/css/app.css` برای پنل مدیریت افزوده شد: شبکه متحرک پس‌زمینه، orb glow، shine برند، ورود تدریجی کارت‌ها و pulse تزئینی. همه با `prefers-reduced-motion` خاموش/کاهش می‌شوند.
-- صفحه `admin/ibsng-users.php` دارای کنترل تغییر زبان فارسی/English و ذخیره انتخاب زبان در `localStorage` است. ترجمه سمت رابط است و منطق درخواست‌های IBSng را تغییر نمی‌دهد.
+- لایه CSS حرکتی در `assets/css/app.css` برای پنل مدیریت افزوده شد: شبکه متحرک پس‌زمینه (`gridDrift`)، orb glow (`orbFloat`)، shine برند (`logoShine`)، ورود تدریجی (`fadeUp`)، شناوری فایل (`fileFloat`)، مدار چرخان (`orbitSpin`) و pulse تزئینی (`heroPulse`). همه با `prefers-reduced-motion` خاموش/کاهش می‌شوند.
+- صفحات `admin/ibsng-users.php`، `admin/ibsng-servers.php` و `admin/ibsng-groups.php` دارای کنترل تغییر زبان فارسی/English و ذخیره انتخاب زبان در `localStorage` هستند. ترجمه سمت رابط است و منطق درخواست‌های IBSng را تغییر نمی‌دهد.
 - نگاشت گروه‌ها دستی باقی می‌ماند. هیچ endpoint یا واکشی خودکار group list اضافه نشده است.
 - وضعیت عملیات: connection/test، lookup، credentials، create، group_info و delete در کد موجودند؛ ایجاد/حذف یا خواندن واقعی روی سرور IBSng از این محیط آزموده نشده است. تمدید و change-group تا زمان اثبات درخواست/فرم واقعی Web Panel و آزمون معتبر، آماده اعلام نمی‌شوند؛ متدهای adapter مرجع Routebox برای این دو عملیات نیز در وضعیت فعلی disabled/throw هستند.
 - این commitهای UI معادل تکمیل production یا تست end-to-end نیستند. تست PHP syntax، نمایش در مرورگر، رفتار RTL/LTR، responsive و عملیات مجاز روی نمونه IBSng باید قبل از اعلام نهایی انجام شود.
