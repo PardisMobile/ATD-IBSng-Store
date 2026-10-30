@@ -86,6 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $client->createUser($groupName, $username, $password, $credit);
                 $message = 'درخواست ایجاد حساب در IBSng با پاسخ موفق تأیید شد.';
                 $userResult = ['username' => $username, 'group' => $groupName, 'summary' => 'حساب در Web Panel ایجاد شد.'];
+            } elseif ($action === 'change_group') {
+                $groupId = (int)($_POST['group_id'] ?? 0);
+                $groupStmt = $pdo->prepare('SELECT group_name FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
+                $groupStmt->execute([$groupId, $selectedServerId]);
+                $groupName = (string)$groupStmt->fetchColumn();
+                if ($groupName === '' || $username === '') {
+                    throw new InvalidArgumentException('کاربر و گروه مقصد از نگاشت فعال همین سرور را انتخاب کنید.');
+                }
+                $client->changeUserGroup($username, $groupName);
+                $message = 'درخواست تغییر گروه کاربر موجود از مسیر Edit User ارسال شد.';
+                $userResult = ['username' => $username, 'group' => $groupName, 'summary' => 'تغییر گروه از Web Panel تأیید شد.'];
             } elseif ($action === 'delete') {
                 if ($username === '' || (string)($_POST['confirm_delete'] ?? '') !== 'yes') {
                     throw new InvalidArgumentException('برای حذف حساب، تأیید حذف الزامی است.');
@@ -122,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
 <h1 style="font-size:2rem">مدیریت حساب‌های IBSng</h1>
-<p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید و تغییر گروه در این صفحه فعال نشده‌اند.</p>
+<p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید در این صفحه فعال نشده است؛ تغییر گروه از مسیر Edit User انجام می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="notice err">سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.</div><?php else: ?>
@@ -181,6 +192,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="field"><label for="credit">Credit</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
 </div>
 <button class="button primary" type="submit">ایجاد حساب در IBSng</button>
+</form>
+<?php endif; ?>
+</section>
+<section class="panel panel-card">
+<h2>تغییر گروه کاربر موجود</h2>
+<p class="muted">کاربر در IBSng باید از قبل وجود داشته باشد. گروه مقصد فقط از نگاشت دستی و فعال همین سرور انتخاب می‌شود؛ تغییر از فرم Edit User انجام می‌شود.</p>
+<?php if (!$groups): ?><p class="muted">برای این سرور گروه فعالی در نگاشت دستی وجود ندارد.</p><?php else: ?>
+<form method="post">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="change_group">
+<div class="grid">
+<div class="field"><label for="change_group_username">Username کاربر موجود</label><input id="change_group_username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="change_group_id">گروه مقصد</label><select id="change_group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
+</div>
+<button class="button primary" type="submit">تغییر گروه در IBSng</button>
 </form>
 <?php endif; ?>
 </section>
