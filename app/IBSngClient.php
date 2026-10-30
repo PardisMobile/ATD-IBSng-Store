@@ -74,12 +74,6 @@ final class IBSngClient
             CURLOPT_COOKIEJAR => $this->cookieFile,
             CURLOPT_COOKIEFILE => $this->cookieFile,
             CURLOPT_USERAGENT => 'ATD-IBSng-Store/1.0',
-            CURLOPT_HTTPHEADER => [
-                'Accept: text/html,application/xhtml+xml',
-                'Cache-Control: no-cache',
-                'Accept-Encoding: identity',
-                'Connection: close',
-            ],
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => http_build_query([
                 'username' => $this->username,
@@ -99,7 +93,6 @@ final class IBSngClient
         $errno = curl_errno($curl);
         $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
         $headerSize = (int)curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-        $error = curl_error($curl);
         curl_close($curl);
 
         if ($response === false) {
