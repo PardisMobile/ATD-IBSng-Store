@@ -225,8 +225,8 @@ final class IBSngClient
         }
 
         $userId = null;
-        if (preg_match('/name=["\\']user_id["\\'][^>]*value=["\\']([^"\\']+)["\\']/i', $html, $match)
-            || preg_match('/value=["\\']([^"\\']+)["\\'][^>]*name=["\\']user_id["\\']/i', $html, $match)) {
+        if (preg_match('/name="user_id"[^>]*value="([^"]+)"/i', $html, $match)
+            || preg_match('/value="([^"]+)"[^>]*name="user_id"/i', $html, $match)) {
             $candidate = trim(html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             if ($candidate !== '' && ctype_digit($candidate)) {
                 $userId = $candidate;
