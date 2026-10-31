@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
     username VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     display_name VARCHAR(150) NOT NULL DEFAULT '',
+    email VARCHAR(190) NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     last_login_at DATETIME NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -164,4 +165,18 @@ CREATE TABLE IF NOT EXISTS provisioning_attempts (
     KEY idx_provision_status (status),
     CONSTRAINT fk_provision_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_provision_server FOREIGN KEY (server_id) REFERENCES ibsng_servers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS admin_password_resets (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    admin_user_id BIGINT UNSIGNED NOT NULL,
+    token_hash CHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_admin_reset_token_hash (token_hash),
+    KEY idx_admin_reset_user_requested (admin_user_id, requested_at),
+    KEY idx_admin_reset_expiry (expires_at),
+    CONSTRAINT fk_admin_reset_user FOREIGN KEY (admin_user_id) REFERENCES admin_users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
