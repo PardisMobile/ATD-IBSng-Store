@@ -108,7 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
-                $error = $e instanceof RuntimeException ? $e->getMessage() : 'ثبت سفارش انجام نشد. لطفاً دوباره تلاش کنید.';
+                $error = $e instanceof RuntimeException && str_contains($e->getMessage(), 'این نام کاربری در IBSng از قبل وجود دارد')
+                    ? app_message('username_taken')
+                    : app_message('username_available_check_failed');
             }
         }
     }
