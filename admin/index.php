@@ -34,7 +34,7 @@ try {
 <body>
 <main class="admin-shell">
 <header class="admin-top">
-<a class="brand" href="<?= e(app_url('admin/')) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?> · مدیریت</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a> <a class="button" href="<?= e(app_url('admin/ibsng-users.php')) ?>">مدیریت حساب‌های IBSng</a> <a class="button" href="<?= e(app_url('admin/products.php')) ?>">مدیریت محصولات</a>
+<a class="brand" href="<?= e(app_url('admin/')) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?> · مدیریت</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a> <a class="button" href="<?= e(app_url('admin/ibsng-users.php')) ?>">مدیریت حساب‌های IBSng</a> <a class="button" href="<?= e(app_url('admin/products.php')) ?>">مدیریت محصولات</a> <a class="button" href="<?= e(app_url('admin/orders.php')) ?>">گزارش فروش</a>
 <form method="post" action="<?= e(app_url('admin/logout.php')) ?>"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><button class="button" type="submit">خروج</button></form>
 </header>
 <section class="admin-welcome panel">
