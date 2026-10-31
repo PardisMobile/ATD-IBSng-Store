@@ -376,3 +376,15 @@
 - پیام خام IBSng، HTML پنل، cURL diagnostics و exceptionهای فنی نباید مستقیم به مشتری نمایش داده شوند.
 - تست قرارداد lookup و وجود کاتالوگ دوزبانه در `tests/ibsng-lookup-contract-test.php` افزوده شد. اجرای PHP lint و تست در runner محلی این نشست امکان‌پذیر نبود؛ نتیجه CI پس از push باید جداگانه بررسی شود.
 - استفاده از کاتالوگ در تمام صفحات هنوز به‌صورت سراسری تکمیل نشده است؛ این فایل به‌تنهایی به معنی تکمیل مدیریت خطا در UI نیست.
+
+
+## 26. وضعیت CI و دامنه تمدید پس از بررسی مرجع (۱ نوامبر ۲۰۲۶)
+
+- GitHub Actions workflow با نام `PHP syntax` برای commitهای lookup، مستندات و کاتالوگ پیام اجرا شد؛ runهای شماره 50 تا 57 که در این مرحله بررسی شدند، همگی با conclusion برابر `success` بسته شدند.
+- تست رگرسیون `tests/ibsng-lookup-contract-test.php` در CI موجود صرفاً در صورتی اجرا می‌شود که workflow آن را فراخوانی کند؛ workflow فعلی فقط PHP lint است. بنابراین سبز بودن lint را نباید معادل اجرای تست قراردادی یا تست IBSng واقعی دانست.
+- مرجع خواندنی RouteBox در شاخه `atd-panel-ibsng-renewal`، مسیرهای واقعی `src/Integrations/IBSng/IBSngClient.php`، `IBSngRenewal.php` و `IBSngService.php` را دارد. فایل مرجع Renewal عملیات pure policy، ledger/idempotency و هماهنگی Client را جدا کرده است.
+- سیاست محاسبه مرجع: `(expired ? 0 : remaining_days) + validity_days + gift_days`. برای حساب منقضی First Login reset می‌شود؛ برای حساب فعال First Login حفظ می‌شود. برای حسابی که هنوز First Login ندارد و Nearest Expiration Date نیز خالی است، Relative Expiration به‌عنوان duration اولیه تفسیر می‌شود، نه deadline منقضی‌شونده.
+- payload واقعی سطح پایین تمدید در مرجع از `/admin/plugins/edit.php` با فیلدهای `target=user`, `target_id`, `group_id`, `group_name`, `owner_name`, `comment`, `has_rel_exp`, `rel_exp`, `reset_first_login`, `edit_tpl_cs` و `attr_update_method_*` ساخته می‌شود؛ موفقیت با redirect به user_info همان user_id تأیید می‌شود.
+- تمدید Store هنوز پیاده‌سازی/اتصال نشده است. قبل از انتقال payload باید Client Store توانایی استخراج First Login، Relative Expiration، Nearest Expiration Date و group duration را بدون فرض وابستگی DOM/cPanel داشته باشد و قرارداد group duration فروشگاه مشخص باشد. همچنین schema فعلی Store جدول ledger تمدید ندارد. هیچ عملیات تمدیدی صرفاً بر پایه duration محصول یا تاریخ تخمینی نباید اجرا شود.
+- provisioning پس از پرداخت و recovery نیز هنوز ناقص‌اند: درگاه و verify callback واقعی انتخاب/پیاده‌سازی نشده‌اند؛ ایمیل فعلاً در checkout اختیاری است و سازوکار تأیید ایمیل/بازیابی سفارش وجود ندارد. این دو مورد تا تعریف gateway و روش verification ایمیل نباید کامل اعلام شوند.
+- ریپوی RouteBox فقط خوانده شده و هیچ write به آن ارسال نشده است.
