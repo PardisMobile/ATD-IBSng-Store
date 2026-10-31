@@ -5,6 +5,7 @@ require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
+require_once __DIR__ . '/app/messages.php';
 
 $config = app_config();
 $pdo = Database::connection();
