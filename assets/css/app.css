@@ -271,3 +271,12 @@ table { min-width:560px; }
   :where(.server,.group-row,.stat,.report,.button,a.button) { transition:none !important; }
   :where(button,a.button,input[type=submit]):active { transform:none !important; }
 }
+
+
+/* SVG icon spacing is consistent and never replaced by text emoji at breakpoints. */
+.button:has(> .ui-icon), .admin-top nav a:has(> .ui-icon) { gap:.55rem; }
+.ui-icon { width:1.2em; height:1.2em; }
+@media(max-width:600px) {
+  .button:has(> .ui-icon) { gap:.5rem; }
+  .ui-icon { width:1.2em; height:1.2em; }
+}
