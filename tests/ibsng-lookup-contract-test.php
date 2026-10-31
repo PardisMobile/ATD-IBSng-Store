@@ -14,7 +14,7 @@ function expect(bool $condition, string $message): void
 $source = file_get_contents(__DIR__ . '/../app/IBSngClient.php');
 expect(is_string($source), 'client source is readable');
 expect(str_contains($source, "user_info.php?normal_username="), 'canonical normal_username endpoint is present');
-expect(!str_contains($source, "user_info.php?normal_username_multi="), 'legacy normal_username_multi lookup is absent');
+expect(!preg_match('/user_info\\.php\\?normal_username_multi=/', $source), 'legacy lookup endpoint is absent');
 
 $catalog = require __DIR__ . '/../app/messages.php';
 expect(isset($catalog['fa']['username_taken']), 'Persian username message exists');
