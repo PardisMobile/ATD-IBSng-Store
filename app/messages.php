@@ -8,7 +8,7 @@ declare(strict_types=1);
  * transport details must be translated to one of these keys by the caller;
  * never display raw remote HTML or exception text to customers.
  */
-return [
+$catalog = [
     'fa' => [
         'username_required' => 'لطفاً نام کاربری را وارد کنید.',
         'username_taken' => 'این نام کاربری قبلاً در سامانه وجود دارد. نام دیگری انتخاب کنید.',
@@ -45,17 +45,24 @@ return [
     ],
 ];
 
+$GLOBALS['app_message_catalog'] = $catalog;
+
 /**
  * Resolve a message for a supported locale, with a safe English/Persian
  * fallback. Unknown keys never expose arbitrary exception text.
  */
-function app_message(string $key, string $locale = 'fa'): string
-{
-    static $catalog;
-    if ($catalog === null) {
-        $catalog = require __DIR__ . '/messages.php';
-    }
+if (!function_exists('app_message')) {
+    function app_message(string $key, string $locale = 'fa'): string
+    {
+        static $catalog = null;
+        if ($catalog === null) {
+            $loaded = $GLOBALS['app_message_catalog'] ?? [];
+            $catalog = is_array($loaded) ? $loaded : [];
+        }
 
-    $locale = isset($catalog[$locale]) ? $locale : 'fa';
-    return (string)($catalog[$locale][$key] ?? $catalog['fa']['generic_error']);
+        $locale = isset($catalog[$locale]) ? $locale : 'fa';
+        return (string)($catalog[$locale][$key] ?? $catalog['fa']['generic_error'] ?? 'انجام عملیات ممکن نشد.');
+    }
 }
+
+return $catalog;
