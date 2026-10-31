@@ -107,10 +107,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $_SESSION['checkout_csrf'] = bin2hex(random_bytes(32));
                 }
             } catch (Throwable $e) {
-                if ($pdo->inTransaction()) $pdo->rollBack();
-                $error = $e instanceof RuntimeException && str_contains($e->getMessage(), 'این نام کاربری در IBSng از قبل وجود دارد')
-                    ? app_message('username_taken')
-                    : app_message('username_available_check_failed');
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+
+                // Translate known IBSng outcomes into the stable message catalog.
+                // Never expose remote HTML, transport diagnostics, or raw exception
+                // text in the customer-facing checkout UI.
+                $exceptionMessage = $e->getMessage();
+                if (str_contains($exceptionMessage, 'نام کاربری در IBSng از قبل وجود دارد')
+                    || str_contains($exceptionMessage, 'نام کاربری از قبل در IBSng وجود دارد')
+                    || str_contains($exceptionMessage, 'نام کاربری تکراری')) {
+                    $error = app_message('username_taken');
+                } elseif (str_contains($exceptionMessage, 'نام کاربری یا رمز عبور مدیر IBSng را نپذیرفت')) {
+                    $error = app_message('ibsng_authentication_failed');
+                } elseif (str_contains($exceptionMessage, 'پاسخ') && str_contains($exceptionMessage, 'قابل تشخیص نبود')) {
+                    $error = app_message('ibsng_invalid_response');
+                } elseif (str_contains($exceptionMessage, 'ارتباط با IBSng برقرار نشد')
+                    || str_contains($exceptionMessage, 'اتصال به IBSng timeout شد')
+                    || str_contains($exceptionMessage, 'راه‌اندازی ارتباط HTTP با IBSng ناموفق بود')
+                    || str_contains($exceptionMessage, 'سرور IBSng فعال و متصل')) {
+                    $error = app_message('ibsng_connection_failed');
+                } else {
+                    $error = app_message('username_available_check_failed');
+                }
             }
         }
     }
