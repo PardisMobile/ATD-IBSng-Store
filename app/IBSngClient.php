@@ -204,6 +204,55 @@ final class IBSngClient
         return $body;
     }
 
+    /**
+     * Check the customer-selected username using the proven A1.24 user-info
+     * form. Returns true only when that page definitively reports no user;
+     * malformed responses, login problems, and transport failures throw.
+     */
+    public function isUsernameAvailable(string $username): bool
+    {
+        $username = trim($username);
+        if ($username === '') {
+            throw new InvalidArgumentException('نام کاربری الزامی است.');
+        }
+
+        $html = $this->request('/admin/user/user_info.php?normal_username=' . rawurlencode($username));
+        $plain = trim(preg_replace('/\\s+/u', ' ', strip_tags($html)) ?? '');
+        $hasLoginForm = stripos($html, 'name="username"') !== false
+            && stripos($html, 'name="password"') !== false;
+        if ($hasLoginForm) {
+            throw new RuntimeException('نشست مدیر IBSng معتبر نیست؛ ورود مجدد یا بررسی تنظیمات اتصال لازم است.');
+        }
+
+        $userId = null;
+        if (preg_match('/name=["\\']user_id["\\'][^>]*value=["\\']([^"\\']+)["\\']/i', $html, $match)
+            || preg_match('/value=["\\']([^"\\']+)["\\'][^>]*name=["\\']user_id["\\']/i', $html, $match)) {
+            $candidate = trim(html_entity_decode($match[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            if ($candidate !== '' && ctype_digit($candidate)) {
+                $userId = $candidate;
+            }
+        }
+
+        if ($userId !== null) {
+            return false;
+        }
+
+        $knownMissingUser = preg_match(
+            '/(?:user\\s+not\\s+found|no\\s+such\\s+user|user\\s+does\\s+not\\s+exist|does\\s+not\\s+exists|USER_NOT_FOUND)/i',
+            $plain
+        ) === 1;
+        $hasUserInfoPage = stripos($plain, 'User Information') !== false
+            || stripos($plain, 'User Informations') !== false;
+
+        // The reference implementation treats an authenticated A1.24
+        // User Information response without its hidden user_id as a lookup miss.
+        if ($knownMissingUser || $hasUserInfoPage) {
+            return true;
+        }
+
+        throw new RuntimeException('پاسخ اطلاعات کاربر از IBSng قابل تشخیص نبود؛ سفارش ثبت نشد.');
+    }
+
     public function findUserId(string $username): ?string
     {
         $username = trim($username);
