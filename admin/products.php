@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $serverId = product_post_int('server_id');
                 $groupId = product_post_int('ibsng_group_id');
 
-                if ($name === '' || mb_strlen($name) > 180) {
+                if ($name === '' || (function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name)) > 180) {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
                 }
                 if ($duration < 1 || $price < 0 || $sortOrder < 0) {
