@@ -355,3 +355,14 @@
 - پیام تکراری بودن username در checkout به مشتری نمایش داده می‌شود؛ پیام‌های خطای IBSng/اتصال نیز با متن قابل‌فهم بازمی‌گردند.
 - این تغییر فقط preflight در checkout است. پرداخت، ایجاد حساب، تنظیم username/password، provisioning و renewal هنوز در این مسیر اجرا نمی‌شوند. پیش از ایجاد واقعی پس از پرداخت، بررسی مجدد username برای جلوگیری از race condition لازم است.
 - این تغییر با PHP lint و آزمون Web Panel واقعی در این محیط اجرا نشده؛ رفتار تشخیص پاسخ باید در محیط IBSng A1.24 مجاز end-to-end تأیید شود.
+
+
+## 24. یکپارچه‌سازی lookup کاربر با قرارداد User Information (۱ نوامبر ۲۰۲۶)
+
+- تمام lookupهای username در `IBSngClient` از مسیر تأییدشده A1.24 یعنی `/admin/user/user_info.php?normal_username=...` استفاده می‌کنند؛ مسیر `normal_username_multi` برای lookup حذف شد.
+- یک parser مشترک خصوصی `userInfoPage()` پاسخ معتبر User Information را به سه وضعیت تفکیک می‌کند: کاربر موجود با user_id، پاسخ معتبر عدم وجود، و پاسخ غیرقابل تشخیص/خطای نشست.
+- `isUsernameAvailable()` و `findUserId()` اکنون از همان parser استفاده می‌کنند. `lookupUser()` و `getCredentials()` نیز دیگر endpoint متفاوتی برای تشخیص کاربر ندارند.
+- خطای ارتباط، HTTP، احراز هویت یا parsing هرگز به آزاد بودن username تبدیل نمی‌شود.
+- ساخت کاربر همچنان دو مرحله مستقل `add_new_users.php` و سپس `plugins/edit.php` دارد؛ payloadهای موجود دست‌کاری نشده‌اند.
+- checkout همچنان preflight username را قبل از سفارش جدید انجام می‌دهد. lookup مجدد پیش از provisioning واقعی باید در application service پس از verify پرداخت پیاده شود؛ هنوز درگاه و callback واقعی در پروژه تعریف نشده‌اند، بنابراین ساخت خودکار کاربر به checkout متصل نشده است.
+- فایل مستقل پیام‌های UI در مرحله بعدی اضافه می‌شود؛ رشته‌های فنی IBSng به‌عنوان قرارداد پیام نهایی مشتری مناسب نیستند.
