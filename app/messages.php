@@ -53,7 +53,7 @@ function app_message(string $key, string $locale = 'fa'): string
 {
     static $catalog;
     if ($catalog === null) {
-        $catalog = require __FILE__;
+        $catalog = require __DIR__ . '/messages.php';
     }
 
     $locale = isset($catalog[$locale]) ? $locale : 'fa';
