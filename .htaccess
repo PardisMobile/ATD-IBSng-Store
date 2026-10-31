@@ -1,7 +1,7 @@
 Options -Indexes
 DirectoryIndex index.php
 
-<FilesMatch "^(config\\.php|\\.env|PROJECT-CONTEXT\\.md)$">
+<FilesMatch "^(config\.php|\.env|PROJECT-CONTEXT\.md)$">
   Require all denied
 </FilesMatch>
 
@@ -10,5 +10,5 @@ RewriteEngine On
 # Keep static assets directly served; route all application URLs through the
 # explicit allowlist dispatcher. The router itself must not be rewritten.
 RewriteRule ^assets/ - [L]
-RewriteRule ^router\\.php$ - [L]
+RewriteRule ^router\.php$ - [L]
 RewriteRule ^ router.php [QSA,L]
