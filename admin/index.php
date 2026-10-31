@@ -34,7 +34,7 @@ try {
 <body>
 <main class="admin-shell">
 <header class="admin-top">
-<a class="brand" href="<?= e(app_url('admin/')) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?> · مدیریت</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a> <a class="button" href="<?= e(app_url('admin/ibsng-users.php')) ?>">مدیریت حساب‌های IBSng</a>
+<a class="brand" href="<?= e(app_url('admin/')) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?> · مدیریت</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a> <a class="button" href="<?= e(app_url('admin/ibsng-users.php')) ?>">مدیریت حساب‌های IBSng</a> <a class="button" href="<?= e(app_url('admin/products.php')) ?>">مدیریت محصولات</a>
 <form method="post" action="<?= e(app_url('admin/logout.php')) ?>"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><button class="button" type="submit">خروج</button></form>
 </header>
 <section class="admin-welcome panel">
@@ -50,8 +50,8 @@ try {
 <div class="stat panel"><span>مدیران</span><strong><?= $stats['admins'] ?></strong></div>
 </section>
 <section class="panel" style="padding:24px">
-<h2>مرحله بعدی: مدیریت سرور IBSng</h2>
-<p class="muted">این داشبورد و احراز هویت اکنون به دیتابیس وصل هستند. صفحه مدیریت سرور و Test Connection بعد از بررسی دقیق adapter مرجع Routebox پیاده می‌شود؛ فعلاً هیچ تست ساختگی نمایش داده نمی‌شود.</p>
+<h2>مدیریت کاتالوگ فروشگاه</h2>
+<p class="muted">از بخش محصولات، پلن‌های فروش را تعریف و به نگاشت فعال سرور/گروه IBSng وصل کنید. محصولات فعال در صفحه عمومی فروشگاه نمایش داده می‌شوند. ثبت سفارش، پرداخت و provisioning در حال تکمیل هستند.</p>
 </section>
 <footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
 </main>
