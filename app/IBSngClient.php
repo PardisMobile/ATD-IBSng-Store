@@ -209,7 +209,12 @@ final class IBSngClient
      * form. Returns true only when that page definitively reports no user;
      * malformed responses, login problems, and transport failures throw.
      */
-    public function isUsernameAvailable(string $username): bool
+    /**
+     * Request the canonical A1.24 User Information page. All lookups use
+     * normal_username (not normal_username_multi) so existence checks and
+     * account reads share the exact same Web Panel response contract.
+     */
+    private function userInfoPage(string $username): array
     {
         $username = trim($username);
         if ($username === '') {
@@ -217,11 +222,10 @@ final class IBSngClient
         }
 
         $html = $this->request('/admin/user/user_info.php?normal_username=' . rawurlencode($username));
-        $plain = trim(preg_replace('/\\s+/u', ' ', strip_tags($html)) ?? '');
-        $hasLoginForm = stripos($html, 'name="username"') !== false
+        $loginForm = stripos($html, 'name="username"') !== false
             && stripos($html, 'name="password"') !== false;
-        if ($hasLoginForm) {
-            throw new RuntimeException('نشست مدیر IBSng معتبر نیست؛ ورود مجدد یا بررسی تنظیمات اتصال لازم است.');
+        if ($loginForm) {
+            throw new RuntimeException('نشست مدیر IBSng معتبر نیست.');
         }
 
         $userId = null;
@@ -233,57 +237,56 @@ final class IBSngClient
             }
         }
 
-        if ($userId !== null) {
-            return false;
-        }
-
+        $plain = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
         $knownMissingUser = preg_match(
-            '/(?:user\\s+not\\s+found|no\\s+such\\s+user|user\\s+does\\s+not\\s+exist|does\\s+not\\s+exists|USER_NOT_FOUND)/i',
+            '/(?:user\s+not\s+found|no\s+such\s+user|user\s+does\s+not\s+exist|does\s+not\s+exists|USER_NOT_FOUND)/i',
             $plain
         ) === 1;
         $hasUserInfoPage = stripos($plain, 'User Information') !== false
             || stripos($plain, 'User Informations') !== false;
 
-        // The reference implementation treats an authenticated A1.24
-        // User Information response without its hidden user_id as a lookup miss.
+        if ($userId !== null) {
+            return ['exists' => true, 'user_id' => $userId, 'html' => $html, 'summary' => $plain];
+        }
         if ($knownMissingUser || $hasUserInfoPage) {
-            return true;
+            return ['exists' => false, 'user_id' => null, 'html' => $html, 'summary' => $plain];
         }
 
-        throw new RuntimeException('پاسخ اطلاعات کاربر از IBSng قابل تشخیص نبود؛ سفارش ثبت نشد.');
+        throw new RuntimeException('پاسخ اطلاعات کاربر از IBSng قابل تشخیص نبود.');
+    }
+
+    /**
+     * True only for a definitive user-not-found response. Transport,
+     * authentication and parsing failures always throw.
+     */
+    public function isUsernameAvailable(string $username): bool
+    {
+        return !$this->userInfoPage($username)['exists'];
     }
 
     public function findUserId(string $username): ?string
     {
-        $username = trim($username);
-        if ($username === '') {
-            throw new InvalidArgumentException('نام کاربری الزامی است.');
-        }
-        $html = $this->request('/admin/user/user_info.php?normal_username_multi=' . rawurlencode($username));
-        if (stripos($html, 'does not exists') !== false || stripos($html, 'does not exist') !== false) {
-            return null;
-        }
-        if (preg_match('/change_credit\.php\?user_id=(\d+)/', $html, $match)) {
-            return $match[1];
-        }
-        throw new RuntimeException('پاسخ اطلاعات کاربر از IBSng قابل تشخیص نبود.');
+        $result = $this->userInfoPage($username);
+        return $result['exists'] ? (string)$result['user_id'] : null;
     }
 
     public function lookupUser(string $username): array
     {
-        $uid = $this->findUserId($username);
-        if ($uid === null) {
+        $result = $this->userInfoPage($username);
+        if (!$result['exists']) {
             throw new RuntimeException('این نام کاربری در IBSng وجود ندارد.');
         }
-        $html = $this->request('/admin/user/user_info.php?normal_username_multi=' . rawurlencode(trim($username)));
+
+        $html = (string)$result['html'];
         $group = null;
         if (preg_match('/group_info\.php\?group_name=([^"&]+)/', $html, $match)) {
             $group = html_entity_decode(urldecode($match[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
-        $text = trim(preg_replace('/\s+/u', ' ', strip_tags($html)) ?? '');
+
+        $text = (string)$result['summary'];
         return [
             'username' => trim($username),
-            'user_id' => $uid,
+            'user_id' => (string)$result['user_id'],
             'group' => $group,
             'summary' => function_exists('mb_substr') ? mb_substr($text, 0, 1800, 'UTF-8') : substr($text, 0, 1800),
         ];
