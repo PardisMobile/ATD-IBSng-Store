@@ -199,3 +199,27 @@ body::after {
 }
 html[dir="ltr"] .admin-shell { direction: ltr; }
 html[dir="ltr"] .admin-top { text-align: left; }
+
+
+/* Storefront motion + SVG icon system. Vector icons remain identical on every viewport. */
+.ui-icon { display:inline-block; width:1.25rem; height:1.25rem; flex:0 0 auto; vertical-align:middle; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.empty-icon { width:60px; height:60px; display:grid; place-items:center; color:var(--amber); background:rgba(255,197,106,.1); border:1px solid rgba(255,197,106,.16); border-radius:18px; margin:0 auto 14px; }
+.empty-icon .ui-icon { width:30px; height:30px; }
+.hero { animation:atd-fade-up .65s both ease-out; }
+.hero:after { animation:atd-hero-pulse 9s ease-in-out infinite; }
+.plan-card { animation:atd-fade-up .55s both ease-out; transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease; }
+.plan-card:nth-child(2) { animation-delay:.07s; }
+.plan-card:nth-child(3) { animation-delay:.14s; }
+.plan-card:nth-child(4) { animation-delay:.21s; }
+.plan-card:hover { transform:translateY(-4px); border-color:rgba(87,149,255,.34); box-shadow:0 24px 60px rgba(0,0,0,.25),0 0 0 1px rgba(87,149,255,.08); }
+.button:focus-visible, a:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+@media(max-width:760px) {
+  .catalog-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); }
+  .plan-card:hover { transform:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .hero,.plan-card { animation:none !important; }
+  .hero:after { animation:none !important; }
+  .plan-card,.button { transition:none !important; }
+  .plan-card:hover,.button:hover { transform:none !important; }
+}
