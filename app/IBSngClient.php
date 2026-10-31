@@ -211,7 +211,7 @@ final class IBSngClient
      */
     /**
      * Request the canonical A1.24 User Information page. All lookups use
-     * normal_username (not normal_username_multi) so existence checks and
+     * normal_username so existence checks and
      * account reads share the exact same Web Panel response contract.
      */
     private function userInfoPage(string $username): array
