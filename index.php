@@ -67,7 +67,7 @@ function store_bytes_label(?string $bytes): string
       <?php if ($catalogError): ?>
         <div class="catalog-notice">نمایش محصولات فعلاً ممکن نیست. اتصال دیتابیس و نصب schema را بررسی کنید.</div>
       <?php elseif (!$products): ?>
-        <div class="empty-state panel"><div class="empty-icon">✦</div><h3>هنوز پلنی برای فروش فعال نشده است</h3><p>مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
+        <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3>هنوز پلنی برای فروش فعال نشده است</h3><p>مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
       <?php else: ?>
         <div class="catalog-grid">
         <?php foreach ($products as $product): ?>
