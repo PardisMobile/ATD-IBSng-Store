@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
+require_once __DIR__ . '/app/IBSngClient.php';
 
 $config = app_config();
 $pdo = Database::connection();
@@ -51,6 +52,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             $error = 'رمز حساب باید حداقل ۸ کاراکتر باشد.';
         } else {
             try {
+                // Check the customer-chosen username against the mapped IBSng server
+                // before accepting a new order. A lookup failure is never treated
+                // as proof that the username is available.
+                $priorCheck = $pdo->prepare('SELECT public_id FROM orders WHERE idempotency_key=? LIMIT 1');
+                $priorCheck->execute([(string)$_SESSION['checkout_idempotency']]);
+                $existingOrder = $priorCheck->fetch();
+
+                if (!$existingOrder) {
+                    $serverQuery = $pdo->prepare('SELECT s.host,s.port,s.username,s.password_ciphertext FROM ibsng_servers s JOIN product_server_groups m ON m.server_id=s.id WHERE m.product_id=? AND s.is_active=1 LIMIT 1');
+                    $serverQuery->execute([$productId]);
+                    $ibsngServer = $serverQuery->fetch();
+                    if (!$ibsngServer) {
+                        throw new RuntimeException('سرور IBSng فعال و متصل به این پلن پیدا نشد.');
+                    }
+
+                    $ibsng = new IBSngClient(
+                        (string)$ibsngServer['host'],
+                        (int)$ibsngServer['port'],
+                        (string)$ibsngServer['username'],
+                        app_decrypt_secret((string)$ibsngServer['password_ciphertext'])
+                    );
+                    if (!$ibsng->isUsernameAvailable($username)) {
+                        throw new RuntimeException('این نام کاربری در IBSng از قبل وجود دارد. لطفاً نام دیگری انتخاب کنید.');
+                    }
+                }
+
                 $pdo->beginTransaction();
                 $existing = $pdo->prepare('SELECT id,public_id FROM orders WHERE idempotency_key=? LIMIT 1');
                 $existing->execute([(string)$_SESSION['checkout_idempotency']]);
