@@ -388,3 +388,11 @@
 - تمدید Store هنوز پیاده‌سازی/اتصال نشده است. قبل از انتقال payload باید Client Store توانایی استخراج First Login، Relative Expiration، Nearest Expiration Date و group duration را بدون فرض وابستگی DOM/cPanel داشته باشد و قرارداد group duration فروشگاه مشخص باشد. همچنین schema فعلی Store جدول ledger تمدید ندارد. هیچ عملیات تمدیدی صرفاً بر پایه duration محصول یا تاریخ تخمینی نباید اجرا شود.
 - provisioning پس از پرداخت و recovery نیز هنوز ناقص‌اند: درگاه و verify callback واقعی انتخاب/پیاده‌سازی نشده‌اند؛ ایمیل فعلاً در checkout اختیاری است و سازوکار تأیید ایمیل/بازیابی سفارش وجود ندارد. این دو مورد تا تعریف gateway و روش verification ایمیل نباید کامل اعلام شوند.
 - ریپوی RouteBox فقط خوانده شده و هیچ write به آن ارسال نشده است.
+
+
+## 27. اتصال کاتالوگ پیام به checkout و اجرای تست در CI (۱ نوامبر ۲۰۲۶)
+
+- `checkout.php` فایل `app/messages.php` را load می‌کند.
+- پیام username تکراری به کلید `username_taken` نگاشت می‌شود؛ سایر خطاهای lookup/IBSng به پیام عمومی عدم امکان بررسی نگاشت می‌شوند و متن خام Exception به مشتری بازگردانده نمی‌شود.
+- workflow `.github/workflows/php-lint.yml` علاوه بر lint، تست مستقل `tests/ibsng-lookup-contract-test.php` را اجرا می‌کند.
+- این اتصال محدود به checkout است؛ همه صفحات مدیریت/خرید/بازیابی هنوز به کاتالوگ مشترک مهاجرت نکرده‌اند.
