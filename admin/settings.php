@@ -36,7 +36,7 @@ function support_valid_custom_url(string $value): bool
         && strtolower((string)($parts['scheme'] ?? '')) === 'https'
         && isset($parts['host'])
         && filter_var((string)$parts['host'], FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false
-        && !isset($parts['user'], $parts['pass']);
+        && !isset($parts['user']) && !isset($parts['pass']);
 }
 
 $values = [
