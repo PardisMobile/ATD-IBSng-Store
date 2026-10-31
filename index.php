@@ -78,7 +78,7 @@ function store_bytes_label(?string $bytes): string
             <div class="plan-price"><?= number_format((int)$product['price_minor']) ?> <small><?= e((string)$product['currency']) ?></small></div>
             <div class="plan-meta"><span>مدت اعتبار</span><strong><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
             <div class="plan-meta"><span>حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
-            <div class="catalog-notice">ثبت سفارش آنلاین در مرحله تکمیل فرایند سفارش و پرداخت فعال می‌شود.</div>
+            <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>">ثبت سفارش</a>
           </article>
         <?php endforeach; ?>
         </div>
