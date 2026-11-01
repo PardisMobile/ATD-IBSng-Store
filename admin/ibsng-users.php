@@ -231,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     "مدیریت حساب‌های IBSng":"IBSng User Management",
     "مدیریت حساب‌های IBSng":"IBSng User Management",
     "IBSng · User Management":"IBSng · User Management",
-    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید و تغییر گروه در این صفحه فعال نشده‌اند.":"Operations run against the selected IBSng Web Panel. The group name comes from the Store's manual mapping and must exactly match the IBSng group. Renewal and group changes are not enabled on this page.",
+    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید در این صفحه فعال نشده است؛ تغییر گروه از مسیر Edit User انجام می‌شود.":"Operations run against the selected IBSng Web Panel. The group name comes from the Store's manual mapping and must exactly match the IBSng group. Renewal is not available on this page; group changes use the Edit User form.",
     "درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.":"Invalid request. Please refresh the page.",
     "ابتدا یک سرور فعال IBSng انتخاب کنید.":"Select an active IBSng server first.",
     "نام کاربری برای جست‌وجو الزامی است.":"Username is required for lookup.",
