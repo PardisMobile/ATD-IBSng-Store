@@ -281,3 +281,17 @@ Targeted source review of `checkout.php`, `database/schema.sql`, `app/messages.p
 - The independent admin settings for whether email/phone are enabled or required at checkout are not present in the currently inspected support-settings page. Keep these distinct from the current optional checkout email behavior.
 
 Status: source-audited; these customer-facing workflows remain pending implementation and testing. No runtime behavior is claimed.
+
+
+## 2026-11-02 — Customer feature implementation dependency audit
+
+A follow-up inspection of the current schema and source was performed before beginning customer-facing implementation:
+
+- Existing schema provides order ownership-contact fields (buyer_email, buyer_phone), order state/payment state, payment transaction records, subscriptions, and provisioning-attempt records. These structures are useful groundwork but do not currently provide a verified customer identity or email-OTP challenge record.
+- Current checkout still treats phone as required and email as optional in its own validation; no independent persisted checkout visibility/required settings were found in the inspected route.
+- Repository code search did not find an email delivery abstraction/configuration or SMTP send implementation, nor customer OTP login/recovery routes. Therefore a customer email-recovery feature cannot safely be completed by only adding a page; it needs a shared mail service/configuration, challenge persistence and expiry/attempt controls, plus ownership-scoped order retrieval.
+- The existing IBSng client is an admin-panel HTTP/HTML client. Customer panel operations must be designed separately from admin authentication and must not reuse administrator credentials/session.
+- Existing schema and current order report are not evidence of a complete customer purchase history: admin/orders.php is a summary report grouped by product/currency, not customer-facing order detail.
+- Implementation sequencing recommendation: (1) define and migrate the customer access/recovery persistence model and shared mail contract, (2) build and test email ownership verification + order recovery, (3) build the owner-bound order history/details UI, (4) connect account panel actions only after confirming IBSng user lookup, credential handling, and renewal contracts. Preserve the no-registration checkout and avoid claiming live email/IBSng success without runtime validation.
+
+Status: dependency audit only. No customer workflow or mail delivery was implemented by this audit; no PHP lint/runtime execution was available in this environment.
