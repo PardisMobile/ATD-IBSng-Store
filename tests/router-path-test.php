@@ -15,6 +15,9 @@ $cases = [
     ['/store/admin/','https://example.test/store','/admin/'],
     ['/store/install/','https://example.test/store','/install/'],
     ['/storefront/','https://example.test/store','/storefront/'],
+    ['/store/admin/','https://example.test/store','/admin/'],
+    ['/storefront/admin/','https://example.test/store','/storefront/admin/'],
+    ['/store/%2e%2e/config.php','https://example.test/store','/%2e%2e/config.php'],
     ['/admin/../config.php','', '/admin/../config.php'],
 ];
 
@@ -55,11 +58,13 @@ $scriptNameCases = [
     ['/install/', '/router.php', ''],
     ['/shop/admin/login.php', '/router.php', '/shop'],
     ['/shop/install/', '/shop/index.php', '/shop'],
+    ['/shop/install/', '/shop/router.php?route=install', '/shop'],
+    ['/shopper/install/', '/shop/router.php', '/shop'],
 ];
 foreach ($scriptNameCases as [$uri, $scriptName, $expectedBase]) {
     $actualBase = store_detect_base_url($uri, $scriptName, array_keys($routes));
     if ($actualBase !== $expectedBase) {
-        fwrite(STDERR, "FAIL: detected base for {$uri} with {$scriptName} => {$actualBase}; expected {$expectedBase}\\n");
+        fwrite(STDERR, "FAIL: detected base for {$uri} with {$scriptName} => {$actualBase}; expected {$expectedBase}\n");
         exit(1);
     }
 }
