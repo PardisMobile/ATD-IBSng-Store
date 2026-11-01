@@ -41,10 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $action = (string)($_POST['action'] ?? '');
         $id = (int)($_POST['id'] ?? 0);
+        $ibsngRemoteFailure = false;
         try {
             if ($action === 'add') {
                 $fields = ibsng_validate_server_fields();
-                (new IBSngClient($fields['host'], $fields['port'], $fields['username'], $fields['password']))->testConnection();
+                try {
+                    (new IBSngClient($fields['host'], $fields['port'], $fields['username'], $fields['password']))->testConnection();
+                } catch (Throwable $remoteError) {
+                    $ibsngRemoteFailure = true;
+                    throw $remoteError;
+                }
 
                 $stmt = $pdo->prepare('INSERT INTO ibsng_servers (name, host, port, scheme, isp_name, username, password_ciphertext, is_active, is_default, last_test_at, last_error) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, NOW(), NULL)');
                 $stmt->execute([
@@ -71,7 +77,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($name === '' || $host === '' || !in_array($port, [80, 443], true)) {
                     throw new InvalidArgumentException('نام، Host و پورت معتبر الزامی هستند.');
                 }
-                (new IBSngClient($host, $port, $username, $password))->testConnection();
+                try {
+                    (new IBSngClient($host, $port, $username, $password))->testConnection();
+                } catch (Throwable $remoteError) {
+                    $ibsngRemoteFailure = true;
+                    throw $remoteError;
+                }
 
                 $stmt = $pdo->prepare('UPDATE ibsng_servers SET name=?, host=?, port=?, scheme=?, isp_name=?, username=?, password_ciphertext=?, last_test_at=NOW(), last_error=NULL WHERE id=?');
                 $stmt->execute([
@@ -86,10 +97,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$server) {
                     throw new RuntimeException('سرور موردنظر پیدا نشد.');
                 }
-                (new IBSngClient(
-                    (string)$server['host'], (int)$server['port'], (string)$server['username'],
-                    app_decrypt_secret((string)$server['password_ciphertext'])
-                ))->testConnection();
+                try {
+                    (new IBSngClient(
+                        (string)$server['host'], (int)$server['port'], (string)$server['username'],
+                        app_decrypt_secret((string)$server['password_ciphertext'])
+                    ))->testConnection();
+                } catch (Throwable $remoteError) {
+                    $ibsngRemoteFailure = true;
+                    throw $remoteError;
+                }
                 $pdo->prepare('UPDATE ibsng_servers SET last_test_at=NOW(), last_error=NULL WHERE id=?')->execute([$id]);
                 $message = 'اتصال موفق است؛ ورود مدیر IBSng تأیید شد.';
             } elseif ($action === 'default') {
@@ -151,21 +167,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action = (string)($_POST['action'] ?? '');
             if ($e instanceof InvalidArgumentException) {
                 $error = $e->getMessage();
-            } elseif (in_array($action, ['add', 'update', 'test'], true)) {
-                // IBSng transport/HTML exceptions may contain remote details. Keep
-                // those out of the admin UI and the persistent last_error field.
+            } elseif ($ibsngRemoteFailure) {
+                // Only a failure from the actual IBSng connection/authentication
+                // check belongs in last_error. Local database failures do not.
                 $error = 'ارتباط با IBSng برقرار نشد یا پاسخ معتبر دریافت نشد؛ تنظیمات اتصال را بررسی کنید.';
-            } else {
-                $error = $e instanceof RuntimeException
-                    ? $e->getMessage()
-                    : 'عملیات انجام نشد. وضعیت دیتابیس و تنظیمات را بررسی کنید.';
-            }
-            if ($action === 'test' && $id > 0) {
-                try {
-                    $pdo->prepare('UPDATE ibsng_servers SET last_error=? WHERE id=?')->execute([$error, $id]);
-                } catch (Throwable $ignored) {
-                    // Preserve the safe page error if persistence of last_error fails.
+                if (in_array($action, ['update', 'test'], true) && $id > 0) {
+                    try {
+                        $pdo->prepare('UPDATE ibsng_servers SET last_error=? WHERE id=?')->execute([$error, $id]);
+                    } catch (Throwable $ignored) {
+                        // Do not replace the IBSng failure with a persistence failure.
+                    }
                 }
+            } else {
+                $error = $e instanceof RuntimeException && !in_array($action, ['add', 'update', 'test'], true)
+                    ? $e->getMessage()
+                    : 'عملیات انجام نشد. خطای محلی یا دیتابیس رخ داد؛ وضعیت ذخیره‌سازی را بررسی کنید.';
             }
         }
     }
