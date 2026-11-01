@@ -267,3 +267,17 @@ This is a source-level inventory of the current `main` branch, not a claim of ru
 - Preserve the existing admin navigation/sidebar structure unless the user explicitly requests a change.
 - Keep RouteBox as the behavioral reference for IBSng admin operations; keep Telegram bot/Worker and unrelated bot/payment features out of the IBSng scope.
 - For each item, report source implementation, automated test evidence, and live runtime evidence separately.
+
+
+## 2026-11-02 — Customer portal and checkout source trace
+
+Targeted source review of `checkout.php`, `database/schema.sql`, `app/messages.php`, and GitHub code search on `main`:
+
+- Checkout currently accepts an optional email and warns that email-based recovery is unavailable if no email is entered. The user requirement calls for email ownership verification to recover orders; this is not yet implemented.
+- Checkout stores order email, buyer contact, chosen IBSng username, and an encrypted account password; it snapshots product name, duration, price, and currency. It currently creates a pending-payment order only. It does not initiate a gateway, verify a callback, provision the account, or send the promised purchase email.
+- Schema includes orders, payment transaction, subscriptions, provisioning attempts, and renewal ledger tables. Having these tables does not itself establish completed customer account authorization, email verification, actual gateway integration, or live IBSng operations.
+- Message catalog has recovery-related copy keys, but repository code search did not find a customer login using IBSng username/password plus a generated four-digit code, a customer password-change portal, an email OTP recovery flow, or a customer order-history interface.
+- Recovery must verify email ownership before returning *all* relevant orders and account details, not use a public order ID as authorization. OTP/token expiry, throttling, attempt limits, generic responses, session/CSRF protections, and owner-bound authorization are required.
+- The independent admin settings for whether email/phone are enabled or required at checkout are not present in the currently inspected support-settings page. Keep these distinct from the current optional checkout email behavior.
+
+Status: source-audited; these customer-facing workflows remain pending implementation and testing. No runtime behavior is claimed.
