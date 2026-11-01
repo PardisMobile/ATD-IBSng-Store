@@ -29,8 +29,8 @@ final class IBSngRenewalState
         $first = trim((string)$firstLogin);
         $relative = trim((string)$relativeExpiration);
         $nearest = trim((string)$nearestExpiration);
-        $firstValue = in_array($first, $empty, true) ? null : $first;
-        $nearestValue = in_array($nearest, $empty, true) ? null : $nearest;
+        $firstValue = self::isEmptyValue($first, $empty) ? null : $first;
+        $nearestValue = self::isEmptyValue($nearest, $empty) ? null : $nearest;
         $now ??= time();
 
         if ($firstValue === null && $nearestValue === null) {
@@ -54,6 +54,11 @@ final class IBSngRenewalState
             'first_login' => $firstValue,
             'nearest_exp_date' => $nearestValue,
         ];
+    }
+
+    private static function isEmptyValue(string $value, array $knownEmpty): bool
+    {
+        return in_array($value, $knownEmpty, true) || ($value !== '' && preg_match('/^-+$/', $value) === 1);
     }
 
     private static function displayedLabelValue(string $html, string $wanted): ?string
