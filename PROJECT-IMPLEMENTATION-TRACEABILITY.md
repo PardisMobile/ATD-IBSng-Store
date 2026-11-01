@@ -192,3 +192,11 @@
 - Ledger error-message truncation now has a fallback when PHP mbstring is unavailable.
 - The authenticated one-click schema-upgrade page is allowlisted and reachable from the admin dashboard. Existing product administration is routed through it if the new column is absent.
 - Still not verified: applying the schema change on a real database, browser behavior, and remote mutation against a live IBSng A1.24 Web Panel. The current CI is not evidence of a live renewal.
+
+
+### Follow-up audit — upgrade completeness
+
+- Corrected a gap found during continued audit: the earlier one-click upgrade verified only the product validity column and gift defaults, but did not guarantee the durable `ibsng_renewals` table existed on legacy databases.
+- The upgrade page now creates the ledger table idempotently with the same columns/statuses/indexes as migration 001, and readiness now requires both the product validity column and the ledger table.
+- The IBSng renewal admin page checks both schema components before enabling the renewal action. A missing ledger no longer appears as a ready renewal configuration.
+- Added a static contract assertion for this upgrade/readiness behavior. CI for these latest commits is pending; no real database or live IBSng test has been performed.
