@@ -6,9 +6,10 @@ declare(strict_types=1);
 $client = file_get_contents(dirname(__DIR__) . '/app/IBSngClient.php');
 $schema = file_get_contents(dirname(__DIR__) . '/database/schema.sql');
 $migration = file_get_contents(dirname(__DIR__) . '/database/migrations/001_ibsng_renewal_ledger.sql');
+$policyMigration = file_get_contents(dirname(__DIR__) . '/database/migrations/002_ibsng_renewal_policy.sql');
 $coordinator = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalCoordinator.php');
 $service = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalService.php');
-foreach ([$client, $schema, $migration, $coordinator, $service] as $source) {
+foreach ([$client, $schema, $migration, $policyMigration, $coordinator, $service] as $source) {
     if (!is_string($source) || $source === '') {
         throw new RuntimeException('Required renewal source could not be read.');
     }
@@ -34,5 +35,14 @@ if (strpos($service, 'reserve(') === false || strpos($service, 'submitRenewalAtt
 }
 if (!str_contains($service, 'markNeedsReview')) {
     throw new RuntimeException('Uncertain remote outcomes must be marked for reconciliation.');
+}
+if (!str_contains($schema, 'ibsng_validity_days') || !str_contains($policyMigration, 'ibsng_validity_days')) {
+    throw new RuntimeException('IBSng renewal validity must be stored explicitly, not inferred from generic product duration.');
+}
+if (!str_contains($policyMigration, 'ibsng_gift_days_first') || !str_contains($policyMigration, 'ibsng_gift_days_repeat')) {
+    throw new RuntimeException('The upgrade migration must preserve configurable first/repeat gift policy.');
+}
+if (!str_contains($service, 'completedRenewalCount') || !str_contains($service, '$giftDaysFirst') || !str_contains($service, '$giftDaysRepeat')) {
+    throw new RuntimeException('Gift selection must be based on completed renewals inside the central service.');
 }
 echo "IBSng renewal ledger contract checks passed.\n";
