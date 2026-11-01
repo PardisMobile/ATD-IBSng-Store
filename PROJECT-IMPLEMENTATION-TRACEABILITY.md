@@ -200,3 +200,33 @@
 - The upgrade page now creates the ledger table idempotently with the same columns/statuses/indexes as migration 001, and readiness now requires both the product validity column and the ledger table.
 - The IBSng renewal admin page checks both schema components before enabling the renewal action. A missing ledger no longer appears as a ready renewal configuration.
 - Added a static contract assertion for this upgrade/readiness behavior. CI for these latest commits is pending; no real database or live IBSng test has been performed.
+
+
+### 2026-11-02 — Customer account access and recovery requirements audit
+
+**Status: REQUIREMENTS CLARIFIED / IMPLEMENTATION NOT YET VERIFIED**
+
+The following requirements were clarified during the current review and must be treated as scope, not as completed features:
+
+- Customer access is a limited self-service area, not an administrative panel or broad membership system.
+- A customer must be able to view only their own IBSng account information, including username, plan/group display, expiry date, and account status/details available from the supported IBSng Web Panel.
+- The customer may change the password of that same IBSng account and renew that same account, subject to the Store's mapped plan and renewal policy. No account enumeration or access to another customer's account is permitted.
+- Customer access uses the IBSng username and password plus a generated four-digit verification/security code. The code is an additional verification factor; it does not replace the IBSng credential check.
+- Purchase/order recovery is performed through the email address attached to the purchase. A verification code must be sent to that address and ownership verified before revealing or granting access to the associated purchase/account information.
+- New purchase checkout remains available without requiring customer registration/login.
+- Verification codes require expiration, attempt limits, resend throttling, and non-disclosing responses to avoid account/order enumeration. Recovery must not expose stored IBSng passwords in plaintext or bypass IBSng authentication.
+
+Audit observations:
+- The current order schema stores buyer email and an encrypted IBSng password, but that alone does not establish a safe customer portal or email recovery flow.
+- The current admin settings page is presently focused on support contact fields and renewal-gift days; it does not by itself demonstrate a complete general site-settings interface.
+- The installer administrator-password minimum was corrected from 12 to 8 characters in commit d25e34f on main.
+
+Implementation sequence:
+1. Trace order/subscription ownership and the IBSng lookup/change-password/renew methods, then document the exact authorization boundary.
+2. Design the four-digit verification and email-recovery persistence, expiry, attempt/rate limits, and email delivery against existing app conventions.
+3. Implement the limited customer account view and owner-only password-change/renewal actions, with CSRF and server-side ownership checks.
+4. Add email recovery without revealing whether an email has an order; require successful verification before displaying linked purchases.
+5. Add bilingual customer-facing messages and deterministic tests for authorization, expiry, invalid/used codes, throttling, and recovery enumeration resistance.
+6. Expand admin site settings only against the previously recorded product requirements; avoid duplicating existing server, gateway, product, or renewal configuration screens.
+
+No customer portal, four-digit code, email recovery, or broad site-settings completion is claimed by this audit entry. PHP lint, automated tests, live IBSng A1.24 checks, and cPanel mail-delivery validation remain required before marking these requirements verified.
