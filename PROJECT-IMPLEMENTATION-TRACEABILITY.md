@@ -130,7 +130,7 @@
 
 ### IBSNG-RENEW-001 — Store renewal parity with RouteBox reference branch
 
-**Status: OPEN — source comparison completed; Store renewal implementation not yet present.**
+**Status: IN PROGRESS — reference comparison and pure policy calculator implemented; IBSng client, persistence, and admin workflow remain open.**
 
 - **Exact behavioral reference:** `PardisMobile/routebox-telegram-bot`, branch `atd-panel-ibsng-renewal`. The reference is this branch, not the IBSng A1.24 source archive and not the RouteBox default branch.
 - **Store baseline:** `admin/ibsng-users.php` currently supports lookup, credentials, group information, create, change-group, and delete. Its UI explicitly states that renewal is not available. Store schema currently has no dedicated IBSng renewal policy/ledger/settings tables.
@@ -138,5 +138,6 @@
 - **Store-specific adaptation required:** do not copy RouteBox tables/classes blindly. Store uses its own `IBSngClient`, PDO/MySQL schema, server/group mapping, and admin page. Reuse the behavior contract, adapt persistence and UI to Store conventions, and keep all edits on `main`.
 - **Required sequence:** (1) add/test pure renewal policy; (2) trace and implement the required A1.24 client state-read and edit-user attribute submission contract against the RouteBox branch; (3) add a backward-compatible Store schema/migration path for validity, gift settings and renewal ledger; (4) wire admin username + mapped plan renewal with CSRF and authorization; (5) add bilingual messages and explicit unresolved-timeout handling; (6) add deterministic tests and run GitHub Actions PHP lint/test workflow.
 - **Safety requirements:** do not retry an uncertain remote mutation automatically; never alter Absolute Expiration; ensure repeat/failed/pending operations cannot issue duplicate grants; do not report success until the Web Panel response is verified; preserve existing Store operations and avoid introducing Telegram/Worker behavior.
-- **Validation status:** no implementation or automated/live renewal validation is claimed by this audit entry. Reference code comparison is not proof of A1.24 runtime behavior.
+- **Initial code delivered on main:** `app/IBSngRenewalPolicy.php` implements the isolated duration policy; `tests/ibsng-renewal-policy-test.php` covers expired, active, zero-gift and invalid-value cases.
+- **Validation evidence:** PHP syntax checks and the policy test script passed in the available PHP 8.4 CLI. This is limited to the new pure policy helper; it does not validate HTTP requests, database persistence, the admin workflow, GitHub Actions, or a live IBSng A1.24 server.
 
