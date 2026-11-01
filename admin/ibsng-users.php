@@ -127,10 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'ATD IBSng Store admin renewal ' . $renewalRequestKey
                 );
                 $message = 'تمدید از پاسخ Web Panel IBSng تأیید شد.';
+                $renewalPayload = is_array($renewalResult['result'] ?? null) ? $renewalResult['result'] : [];
+                $relativeAfter = isset($renewalPayload['relative_expiration_after'])
+                    ? (int)$renewalPayload['relative_expiration_after']
+                    : null;
                 $userResult = [
                     'username' => $username,
                     'group' => (string)$renewalPlan['group_name'],
-                    'summary' => 'اعتبار جدید: ' . (int)$renewalResult['result']['relative_expiration_after'] . ' روز نسبی.',
+                    'summary' => $relativeAfter !== null
+                        ? 'اعتبار جدید: ' . $relativeAfter . ' روز نسبی.'
+                        : 'تمدید قبلی از Ledger تأیید شد.',
                 ];
             } elseif ($action === 'lookup') {
                 if ($username === '') {
