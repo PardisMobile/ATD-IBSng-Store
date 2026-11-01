@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'برای لینک دلخواه، هم عنوان و هم نشانی را وارد کنید.';
         } elseif ($error === '' && $values['support_custom_url'] !== '' && (!support_valid_custom_url($values['support_custom_url']) || strlen($values['support_custom_label']) > 60)) {
             $error = 'لینک دلخواه باید HTTPS معتبر باشد و عنوان آن حداکثر ۶۰ کاراکتر باشد.';
-        } else {
+        } elseif ($error === '') {
             $stmt = $pdo->prepare('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
             foreach ($values as $key => $value) {
                 $stmt->execute([$key, $value]);
