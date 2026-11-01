@@ -112,9 +112,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
-                $error = $e instanceof UsernameAlreadyExistsException
-                    ? app_message('username_taken')
-                    : app_message('username_available_check_failed');
+                $diagnostic = $e->getMessage();
+                $error = match (true) {
+                    $e instanceof UsernameAlreadyExistsException => app_message('username_taken'),
+                    str_contains($diagnostic, 'نام کاربری یا رمز عبور مدیر را نپذیرفت') => app_message('ibsng_authentication_failed'),
+                    str_contains($diagnostic, 'پاسخ غیرمنتظره از Web Panel') => app_message('ibsng_invalid_response'),
+                    str_contains($diagnostic, 'پاسخ اطلاعات کاربر از IBSng قابل تشخیص نبود') => app_message('ibsng_invalid_response'),
+                    $e instanceof InvalidArgumentException => app_message('username_available_check_failed'),
+                    default => app_message('ibsng_connection_failed'),
+                };
             }
         }
     }
