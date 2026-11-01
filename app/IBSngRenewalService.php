@@ -28,7 +28,8 @@ final class IBSngRenewalService
         string $username,
         string $groupName,
         int $validityDays,
-        int $giftDays,
+        int $giftDaysFirst,
+        int $giftDaysRepeat,
         string $idempotencyKey,
         ?int $productId = null,
         string $comment = ''
@@ -36,7 +37,7 @@ final class IBSngRenewalService
         $username = trim($username);
         $groupName = trim($groupName);
         if ($serverId < 1 || $username === '' || $groupName === ''
-            || $validityDays < 1 || $giftDays < 0
+            || $validityDays < 1 || $giftDaysFirst < 0 || $giftDaysRepeat < 0
             || $idempotencyKey === '' || strlen($idempotencyKey) > 190) {
             throw new InvalidArgumentException('Renewal request data is invalid.');
         }
@@ -65,6 +66,8 @@ final class IBSngRenewalService
             }
 
             $this->ledger->assertNoUnresolvedForAccount($serverId, (string)$state['user_id']);
+            $completedRenewals = $this->ledger->completedRenewalCount($serverId, (string)$state['user_id']);
+            $giftDays = $completedRenewals === 0 ? $giftDaysFirst : $giftDaysRepeat;
 
             $policy = IBSngRenewalPolicy::calculate(
                 $state['expired'],
