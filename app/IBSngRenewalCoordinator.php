@@ -75,10 +75,11 @@ final class IBSngRenewalCoordinator
                 'A renewal operation already exists and requires ledger reconciliation.'
             );
         }
+        $decoded = json_decode((string)($row['result_json'] ?? 'null'), true);
         return [
             'status' => 'completed',
             'renewal_id' => (int)$row['id'],
-            'result' => json_decode((string)($row['result_json'] ?? 'null'), true),
+            'result' => is_array($decoded) ? $decoded : [],
         ];
     }
 
@@ -152,8 +153,11 @@ final class IBSngRenewalCoordinator
                  completed_at = UTC_TIMESTAMP()
              WHERE id = :id AND status = \'pending\''
         );
+        $reason = function_exists('mb_substr')
+            ? mb_substr($safeReason, 0, 4000, 'UTF-8')
+            : substr($safeReason, 0, 4000);
         $stmt->execute([
-            'reason' => mb_substr($safeReason, 0, 4000),
+            'reason' => $reason,
             'id' => $renewalId,
         ]);
     }
