@@ -157,9 +157,11 @@ final class IBSngClient
         if ($curl === false) {
             throw new RuntimeException('راه‌اندازی ارتباط HTTP با IBSng ناموفق بود.');
         }
+        $headers = '';
+        $body = '';
         $options = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
+            CURLOPT_RETURNTRANSFER => false,
+            CURLOPT_HEADER => false,
             CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_MAXREDIRS => 0,
             CURLOPT_CONNECTTIMEOUT => min(8, $this->timeout),
@@ -174,6 +176,18 @@ final class IBSngClient
                 'Connection: close',
             ],
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0,
+            CURLOPT_HEADERFUNCTION => static function ($handle, string $line) use (&$headers): int {
+                if (preg_match('/^HTTP\\/\\d(?:\\.\\d)?\\s+\\d{3}/i', $line)) {
+                    $headers = $line;
+                } else {
+                    $headers .= $line;
+                }
+                return strlen($line);
+            },
+            CURLOPT_WRITEFUNCTION => static function ($handle, string $chunk) use (&$body): int {
+                $body .= $chunk;
+                return strlen($chunk);
+            },
         ];
         if ($data !== []) {
             $options[CURLOPT_POST] = true;
@@ -181,19 +195,26 @@ final class IBSngClient
             $options[CURLOPT_HTTPHEADER][] = 'Content-Type: application/x-www-form-urlencoded';
         }
         curl_setopt_array($curl, $options);
-        $response = curl_exec($curl);
+        $completed = curl_exec($curl);
         $errno = curl_errno($curl);
         $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        $headerSize = (int)curl_getinfo($curl, CURLINFO_HEADER_SIZE);
         curl_close($curl);
 
-        if ($response === false) {
-            throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
-                ? 'اتصال به IBSng timeout شد.'
-                : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
+        if ($completed === false) {
+            $contentLength = null;
+            if (preg_match('/^Content-Length:\\s*(\\d+)\\s*$/im', $headers, $match)) {
+                $contentLength = (int)$match[1];
+            }
+            $completeTimeoutResponse = $errno === CURLE_OPERATION_TIMEDOUT
+                && $status >= 200 && $status < 400
+                && $contentLength !== null
+                && strlen($body) === $contentLength;
+            if (!$completeTimeoutResponse) {
+                throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
+                    ? 'اتصال به IBSng timeout شد.'
+                    : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
+            }
         }
-        $headers = substr($response, 0, max(0, $headerSize));
-        $body = substr($response, max(0, $headerSize));
         return [$body, $status, $headers];
     }
 
