@@ -20,6 +20,27 @@ final class IBSngRenewalCoordinator
     }
 
     /**
+     * Stop new grants while any earlier operation for this server/account
+     * remains pending, failed, or awaiting manual reconciliation.
+     */
+    public function assertNoUnresolvedForAccount(int $serverId, string $userId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id,status FROM ibsng_renewals
+             WHERE server_id = :server AND ibsng_user_id = :user_id
+               AND status IN ('pending', 'failed', 'needs_review')
+             ORDER BY id DESC LIMIT 1"
+        );
+        $stmt->execute(['server' => $serverId, 'user_id' => $userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (is_array($row)) {
+            throw new RuntimeException(
+                'This IBSng account has an unresolved renewal operation; reconcile it before starting another renewal.'
+            );
+        }
+    }
+
+    /**
      * Return completed prior operations only. Any other recorded state is
      * intentionally a stop condition requiring reconciliation.
      */
