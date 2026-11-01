@@ -147,3 +147,13 @@
 
 - **Validation evidence:** PHP syntax checks and the policy test script passed in the available PHP 8.4 CLI. This is limited to the new pure policy helper; it does not validate HTTP requests, database persistence, the admin workflow, GitHub Actions, or a live IBSng A1.24 server.
 
+
+
+### 2026-11-02 — Renewal orchestration groundwork and CI audit
+
+- Added `app/IBSngRenewalService.php` as the central single-attempt coordinator: serialize renewal attempts per server/account with a MySQL advisory lock; read verified account state; calculate policy; reserve the durable ledger before remote mutation; and never automatically replay a mutation whose outcome is uncertain.
+- Added an account-level unresolved-ledger guard. A different idempotency key cannot initiate another grant while an earlier operation is pending, failed, or marked `needs_review`.
+- Corrected a PHP syntax error in the native group-ID parser in `app/IBSngClient.php`, which had prevented CI from reaching tests.
+- Investigated the next CI failure: the router base-path test exposed a root `SCRIPT_NAME=/router.php` case that incorrectly treated a subdirectory deployment as root. Updated `store_detect_base_url()` to fall back to route-suffix inference in that case.
+- Expanded the PHP workflow to execute the existing IBSng renewal policy, state parser, and ledger contract tests.
+- Current validation boundary: GitHub Actions has been triggered for these changes; results are pending. No live IBSng A1.24 request or end-to-end admin renewal flow has been run. The admin UI remains intentionally disabled until Store-specific validity/gift configuration is added and connected.
