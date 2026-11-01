@@ -58,11 +58,14 @@ final class IBSngRenewalService
 
             // Read and normalize remote state before reserving the mutation.
             $state = $this->client->getRenewalState($username);
-            if (!isset($state['user_id'], $state['expired'], $state['remaining_days'])
+            if (!isset($state['user_id'], $state['expired'], $state['remaining_days'], $state['group'])
                 || !is_bool($state['expired'])
                 || !is_int($state['remaining_days'])
                 || $state['remaining_days'] < 0) {
                 throw new RuntimeException('IBSng account expiry state is incomplete; renewal stopped safely.');
+            }
+            if ((string)$state['group'] !== $groupName) {
+                throw new RuntimeException('The selected renewal plan does not match the account\'s current IBSng group; renewal stopped safely.');
             }
 
             $this->ledger->assertNoUnresolvedForAccount($serverId, (string)$state['user_id']);
