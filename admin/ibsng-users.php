@@ -10,6 +10,12 @@ require_admin();
 
 $config = app_config();
 $pdo = Database::connection();
+$renewalSchemaCheck = $pdo->prepare(
+    'SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+);
+$renewalSchemaCheck->execute(['products', 'ibsng_validity_days']);
+$renewalSchemaReady = (int)$renewalSchemaCheck->fetchColumn() === 1;
 $message = '';
 $error = '';
 $userResult = null;
@@ -28,16 +34,20 @@ if ($selectedServerId > 0) {
     $stmt = $pdo->prepare('SELECT id,plan_name,group_name FROM ibsng_groups WHERE server_id=? AND is_active=1 ORDER BY plan_name');
     $stmt->execute([$selectedServerId]);
     $groups = $stmt->fetchAll();
-    $renewalProductsStmt = $pdo->prepare(
-        'SELECT p.id,p.name,p.ibsng_validity_days,g.group_name
-         FROM products p
-         JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
-         JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
-         WHERE p.is_active=1 AND g.is_active=1 AND p.ibsng_validity_days IS NOT NULL
-         ORDER BY p.sort_order,p.name'
-    );
-    $renewalProductsStmt->execute([$selectedServerId]);
-    $renewalProducts = $renewalProductsStmt->fetchAll();
+    if ($renewalSchemaReady) {
+        $renewalProductsStmt = $pdo->prepare(
+            'SELECT p.id,p.name,p.ibsng_validity_days,g.group_name
+             FROM products p
+             JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
+             JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
+             WHERE p.is_active=1 AND g.is_active=1 AND p.ibsng_validity_days IS NOT NULL
+             ORDER BY p.sort_order,p.name'
+        );
+        $renewalProductsStmt->execute([$selectedServerId]);
+        $renewalProducts = $renewalProductsStmt->fetchAll();
+    } else {
+        $renewalProducts = [];
+    }
 } else {
     $renewalProducts = [];
 }
@@ -67,6 +77,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($action === 'renew') {
+                if (!$renewalSchemaReady) {
+                    throw new RuntimeException('ابتدا ارتقای ساختار تمدید IBSng را از بخش مربوطه انجام دهید.');
+                }
                 $renewalRequestKey = (string)($_POST['renewal_key'] ?? '');
                 $productId = (int)($_POST['renewal_product_id'] ?? 0);
                 if ($username === '' || $productId < 1
@@ -217,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <h2>تمدید حساب موجود در IBSng</h2>
 <p class="muted">نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
-<?php if (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.</div><?php else: ?>
+<?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.</div><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="renew">
 <input type="hidden" name="renewal_key" value="<?= e($renewalRequestKey) ?>">
@@ -330,6 +343,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     "عملیات IBSng انجام نشد؛ وضعیت اتصال و پاسخ Web Panel را بررسی کنید.":"IBSng operation failed. Check connectivity and the Web Panel response.",
     "سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.":"No active IBSng server is configured. Add and activate a server first.",
     "سرور IBSng":"IBSng Server",
+    "ساختار دیتابیس برای تمدید IBSng آماده نیست.":"The database schema is not ready for IBSng renewal.",
+    "ارتقای دیتابیس را انجام دهید":"Apply the database upgrade",
+    "ابتدا ارتقای ساختار تمدید IBSng را از بخش مربوطه انجام دهید.":"Apply the IBSng renewal schema upgrade first.",
     "تمدید حساب موجود در IBSng":"Renew Existing IBSng Account",
     "نام کاربری، پلن تمدید و کلید درخواست معتبر الزامی است.":"Username, renewal plan, and request key are required.",
     "پلن تمدید فعال و دارای مدت اعتبار مخصوص IBSng انتخاب نشده است.":"An active renewal plan with explicit IBSng validity has not been selected.",
