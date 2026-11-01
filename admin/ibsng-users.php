@@ -10,12 +10,19 @@ require_admin();
 
 $config = app_config();
 $pdo = Database::connection();
-$renewalSchemaCheck = $pdo->prepare(
+$renewalColumnCheck = $pdo->prepare(
     'SELECT COUNT(*) FROM information_schema.columns
      WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
 );
-$renewalSchemaCheck->execute(['products', 'ibsng_validity_days']);
-$renewalSchemaReady = (int)$renewalSchemaCheck->fetchColumn() === 1;
+$renewalColumnCheck->execute(['products', 'ibsng_validity_days']);
+$renewalColumnReady = (int)$renewalColumnCheck->fetchColumn() === 1;
+$renewalLedgerCheck = $pdo->prepare(
+    'SELECT COUNT(*) FROM information_schema.tables
+     WHERE table_schema = DATABASE() AND table_name = ?'
+);
+$renewalLedgerCheck->execute(['ibsng_renewals']);
+$renewalLedgerReady = (int)$renewalLedgerCheck->fetchColumn() === 1;
+$renewalSchemaReady = $renewalColumnReady && $renewalLedgerReady;
 $message = '';
 $error = '';
 $userResult = null;
