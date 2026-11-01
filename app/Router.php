@@ -47,3 +47,34 @@ function store_route_map(string $root): array
         '/install/index.php' => $root . '/install/index.php',
     ];
 }
+
+/**
+ * Infer a pre-install mount path by matching the URI against known routes.
+ * Returns an empty string for root installs or unknown paths.
+ */
+function store_infer_base_url(string $requestUri, array $routePaths): string
+{
+    $path = parse_url($requestUri, PHP_URL_PATH);
+    if (!is_string($path) || $path === '' || $path === '/') {
+        return '';
+    }
+
+    usort($routePaths, static fn(string $a, string $b): int => strlen($b) <=> strlen($a));
+    foreach ($routePaths as $route) {
+        if ($route === '/') {
+            continue;
+        }
+        if ($path === $route) {
+            return '';
+        }
+        if (str_ends_with($path, $route)) {
+            $prefix = substr($path, 0, -strlen($route));
+            if ($prefix === '' || $prefix === '/') {
+                return '';
+            }
+            return rtrim($prefix, '/');
+        }
+    }
+
+    return '';
+}
