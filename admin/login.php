@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
+require_once dirname(__DIR__) . '/app/messages.php';
 
 if (admin_is_authenticated()) {
     header('Location: ' . app_url('admin/'));
@@ -16,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = (string)($_POST['csrf'] ?? '');
 
     if (!admin_csrf_valid($token)) {
-        $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+        $error = app_message('admin_login_csrf_invalid');
     } else {
         $tries = (int)($_SESSION['admin_login_tries'] ?? 0);
         $lastTry = (int)($_SESSION['admin_login_last_try'] ?? 0);
@@ -25,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['admin_login_tries'], $_SESSION['admin_login_last_try']);
         }
         if ($tries >= 8 && time() - $lastTry < 900) {
-            $error = 'تلاش‌های ورود بیش از حد بوده است. ۱۵ دقیقه دیگر دوباره تلاش کنید.';
+            $error = app_message('admin_login_throttled');
         } else {
             try {
                 if (admin_login($username, $password)) {
@@ -35,9 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $_SESSION['admin_login_tries'] = $tries + 1;
                 $_SESSION['admin_login_last_try'] = time();
-                $error = 'نام کاربری یا رمز عبور صحیح نیست.';
+                $error = app_message('admin_login_invalid_credentials');
             } catch (Throwable $e) {
-                $error = 'ورود در حال حاضر ممکن نیست. وضعیت نصب و دیتابیس را بررسی کنید.';
+                $error = app_message('admin_login_unavailable');
             }
         }
     }
