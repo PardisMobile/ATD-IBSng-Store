@@ -41,6 +41,7 @@ function store_route_map(string $root): array
         '/admin/ibsng-servers.php' => $root . '/admin/ibsng-servers.php',
         '/admin/ibsng-groups.php' => $root . '/admin/ibsng-groups.php',
         '/admin/ibsng-users.php' => $root . '/admin/ibsng-users.php',
+        '/admin/ibsng-renewal-migrate.php' => $root . '/admin/ibsng-renewal-migrate.php',
         '/admin/products.php' => $root . '/admin/products.php',
         '/admin/orders.php' => $root . '/admin/orders.php',
         '/install/' => $root . '/install/index.php',
