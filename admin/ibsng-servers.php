@@ -148,14 +148,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            $error = $e instanceof InvalidArgumentException || $e instanceof RuntimeException
-                ? $e->getMessage()
-                : 'عملیات انجام نشد. وضعیت دیتابیس و تنظیمات را بررسی کنید.';
-            if (($_POST['action'] ?? '') === 'test' && $id > 0) {
+            $action = (string)($_POST['action'] ?? '');
+            if ($e instanceof InvalidArgumentException) {
+                $error = $e->getMessage();
+            } elseif (in_array($action, ['add', 'update', 'test'], true)) {
+                // IBSng transport/HTML exceptions may contain remote details. Keep
+                // those out of the admin UI and the persistent last_error field.
+                $error = 'ارتباط با IBSng برقرار نشد یا پاسخ معتبر دریافت نشد؛ تنظیمات اتصال را بررسی کنید.';
+            } else {
+                $error = $e instanceof RuntimeException
+                    ? $e->getMessage()
+                    : 'عملیات انجام نشد. وضعیت دیتابیس و تنظیمات را بررسی کنید.';
+            }
+            if ($action === 'test' && $id > 0) {
                 try {
                     $pdo->prepare('UPDATE ibsng_servers SET last_error=? WHERE id=?')->execute([$error, $id]);
                 } catch (Throwable $ignored) {
-                    // Keep the original, user-safe test error as the page result.
+                    // Preserve the safe page error if persistence of last_error fails.
                 }
             }
         }
