@@ -312,6 +312,7 @@ final class IBSngClient
             'username' => trim($username),
             'user_id' => (string)$result['user_id'],
             'group' => $group,
+            'html' => $html,
             'summary' => function_exists('mb_substr') ? mb_substr($text, 0, 1800, 'UTF-8') : substr($text, 0, 1800),
         ];
     }
