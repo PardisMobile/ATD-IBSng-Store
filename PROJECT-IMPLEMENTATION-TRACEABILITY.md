@@ -175,3 +175,11 @@
 - GitHub Actions run 168 on commit `cf35e4f` passed PHP lint and all configured router, IBSng lookup, renewal policy, renewal state, and renewal ledger contract tests.
 - The admin renewal form now verifies the selected plan maps to the same server and requires the account's parsed IBSng group to exactly match the chosen renewal group. A mismatch stops before any remote mutation.
 - The renewal result is confirmed by the native Web Panel redirect check in `IBSngClient::submitRenewalAttributes()`; the code does not claim a live A1.24 test. Manual database migration and live-instance/browser validation remain outstanding.
+
+
+### Upgrade path for existing Store installations
+
+- Added authenticated admin route `admin/ibsng-renewal-migrate.php`, linked from the admin dashboard. It checks for the renewal validity column, applies the missing column only when absent, and inserts gift defaults without overwriting administrator settings.
+- Existing installations are routed to this upgrade page before product administration can run renewal-specific SQL. The IBSng user page keeps its existing lookup/create/group/delete actions available but does not expose renewal until the schema is ready.
+- GitHub Actions run 173 on commit `29fefd6` passed PHP lint and all configured automated tests after the migration route and legacy-schema handling were added.
+- The one-click upgrade path has not yet been exercised against a real cPanel/MySQL database; verify it on a backed-up staging database before production. Live IBSng A1.24 renewal remains unverified.
