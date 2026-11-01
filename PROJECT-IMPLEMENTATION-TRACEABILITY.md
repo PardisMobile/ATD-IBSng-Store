@@ -49,3 +49,39 @@
 - Transferred the bounded RouteBox-aligned IBSng login-test classification change.
 - The separate admin IBSng server error lifecycle/display change was intentionally excluded from this transfer, as requested.
 - No live IBSng or cPanel runtime validation is claimed.
+
+## Additional open audit items carried forward from main (selected scope)
+
+### IBSNG-ERR-002 — Checkout username lookup error classification
+
+**Status: OPEN — prior narrow change exists; end-to-end contract still unverified.**
+
+- **Current behavior:** checkout.php treats UsernameAlreadyExistsException as username_taken; other exceptions become username_available_check_failed.
+- **Prior change:** Commit 9928c82da604f1618785cc1d5b58acb69bfc2d1e introduced the typed conflict mapping.
+- **Remaining trace:** Confirm that the IBSng client raises the typed exception only for a confirmed existing username, and that transport/authentication/unexpected HTML failures never become an “already exists” result. Trace idempotency and order creation sequencing. Add meaningful tests before marking verified.
+
+### IBSNG-ERR-003 — Preserve response body on legacy IBSng timeout
+
+**Status: OPEN — reference behavior identified; Store behavior needs implementation-level comparison and tests.**
+
+- **Reference behavior:** RouteBox's IBSng request helper preserves a complete 2xx/3xx response body if libcurl reports CURLE_OPERATION_TIMEDOUT after receiving the response, due to the legacy IBSng Apache connection remaining open.
+- **Risk to check:** Store's requestRaw() may discard a response on cURL failure. For mutating actions, losing a success response can make a retry repeat an operation (e.g., duplicate account creation).
+- **Required next work:** Inspect the full Store requestRaw() implementation and operation callers. Establish what response bytes/status/headers are retained on timeout, distinguish connect timeout from post-response timeout, and ensure retry policy does not blindly replay a mutating request. Implement only after contract and tests are clear.
+
+### DOC-TRACE-001 — Keep requirement context separate from implementation trace
+
+**Status: APPLIED (documentation structure) / NOT VERIFIED (full documentation audit).**
+
+- `PROJECT-CONTEXT.md` remains the source for product requirements, decisions, architecture, and reference rules.
+- `PROJECT-IMPLEMENTATION-TRACEABILITY.md` records implementation state, audits, deviations, and validation evidence.
+- Feature-specific router/subfolder and installer-recovery requirements remain preserved in the Context document. The selected message-catalog, typed username-conflict, login-classification, and exact RouteBox reference records were integrated without importing option D's IBSng server-admin error lifecycle.
+
+## Change log
+
+### 2026-11-01 — Reconcile selected main documentation into feature branch
+
+- Synced the exact IBSng reference branch and selected message catalog, admin login, typed checkout conflict, and RouteBox login classification documentation from main.
+- Clarified Test Mode as payment Sandbox only while retaining feature-branch safeguards around real IBSng operations and safe test execution.
+- Preserved feature-specific router-safe dispatch and installer recovery records.
+- Explicitly deferred the IBSng server-admin error lifecycle (option D) for separate review against the user's documented rules.
+- No runtime, PHP lint, or CI validation is claimed by this documentation merge.
