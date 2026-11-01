@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS app_settings (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES
+    ('ibsng_gift_days_first', '1'),
+    ('ibsng_gift_days_repeat', '5');
+
 CREATE TABLE IF NOT EXISTS admin_users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL,
@@ -59,6 +63,8 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(180) NOT NULL,
     description TEXT NULL,
     duration_seconds BIGINT UNSIGNED NOT NULL,
+    -- Explicit IBSng renewal validity; never inferred from generic duration_seconds.
+    ibsng_validity_days INT UNSIGNED NULL,
     price_minor BIGINT UNSIGNED NOT NULL,
     currency CHAR(3) NOT NULL DEFAULT 'IRR',
     quota_bytes BIGINT UNSIGNED NULL,
