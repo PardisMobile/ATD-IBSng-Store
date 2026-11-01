@@ -104,3 +104,15 @@
 - Incorporated the final main-branch decision for the IBSng server-admin error boundary into the Context document; feature-branch requirements and intentional removals remain preserved.
 - Carried forward the main-branch `IBSNG-ERR-001` audit finding into this traceability record. This is an open audit item, not a claim that the implementation is complete or verified.
 - This documentation reconciliation does not claim PHP lint, automated tests, or live IBSng/cPanel validation.
+
+
+### IBSNG-ERR-003 — Preserve complete response on legacy IBSng timeout
+
+**Status: FIXED (request capture/decision logic) / NOT VERIFIED (automated and live runtime).**
+
+- Reference: RouteBox's IBSng request helper retains a complete HTTP response when legacy IBSng keeps the HTTP/1.0 connection open and cURL times out after the response has arrived.
+- Store's prior `requestRaw()` used `curl_exec()` return data as a single string and threw whenever it returned `false`, discarding any response bytes received before the timeout.
+- Change on `main`: `requestRaw()` now captures headers and body independently using cURL callbacks. A timeout is accepted only when the HTTP status is 2xx/3xx, an explicit `Content-Length` is present, and the captured body length exactly matches it. Connect/transport failures, incomplete bodies, missing length, and unsuccessful HTTP status remain failures.
+- This does not retry a mutating request. It only preserves an already complete response, reducing the risk that the caller treats a successful remote mutation as failed and repeats it.
+- Validation required: PHP lint, regression tests for full vs partial timeout response classification, existing lookup/router tests, and a live A1.24 test. Do not mark VERIFIED until evidence is recorded.
+- Scope note: the independent `testConnection()` authentication probe remains unchanged; this fix addresses operation requests through `requestRaw()`.
