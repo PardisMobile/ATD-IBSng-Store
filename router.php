@@ -23,10 +23,10 @@ function store_dispatch(): never
     } else {
         // Before installation, config.php cannot tell us the mount directory.
         // Infer it only from a known route suffix (e.g. /shop/install/).
-        $baseUrl = store_infer_base_url($requestUri, array_keys($routes));
+        $baseUrl = store_detect_base_url(\n            $requestUri,\n            (string)($_SERVER['SCRIPT_NAME'] ?? ''),\n            array_keys($routes)\n        );
     }
 
-    $path = store_normalize_route_path($requestUri, $baseUrl);
+    $path = store_normalize_route_path($requestUri, $baseUrl);\n\n    // At the mount root, send pre-install visitors to the correct installer URL.\n    if (!is_file($configFile) && ($path === '/' || $path === '/index.php')) {\n        header('Location: ' . rtrim($baseUrl, '/') . '/install/', true, 302);\n        exit;\n    }
     $target = $routes[$path] ?? null;
 
     if ($target === null || !is_file($target)) {
