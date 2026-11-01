@@ -230,3 +230,40 @@ Implementation sequence:
 6. Expand admin site settings only against the previously recorded product requirements; avoid duplicating existing server, gateway, product, or renewal configuration screens.
 
 No customer portal, four-digit code, email recovery, or broad site-settings completion is claimed by this audit entry. PHP lint, automated tests, live IBSng A1.24 checks, and cPanel mail-delivery validation remain required before marking these requirements verified.
+
+
+## 2026-11-02 — Admin capability audit against project requirements
+
+This is a source-level inventory of the current `main` branch, not a claim of runtime verification. “Present” means an implementation is visible in the inspected source; it does not imply cPanel/browser/IBSng production validation.
+
+### Present in source (runtime validation still separate)
+
+- Admin authentication/login/logout and CSRF-protected state-changing forms.
+- Dashboard with actual database summary figures and navigation to the current admin areas.
+- IBSng server management: add (connection test before saving), edit credentials/settings, retest, activate/deactivate, choose default server, and guarded deletion where known dependent records exist.
+- Manual IBSng group/plan mapping per server: add/edit/activate/deactivate/delete, with product mapping dependency checks. Automatic group-list fetching is intentionally not a requirement.
+- IBSng user management actions visible in the current implementation: lookup, create, credentials, group information, change group, delete, and renewal flow groundwork/configuration. Renewal is backed by the policy/service/ledger path and CI records, but live A1.24 validation and operational staging verification remain necessary.
+- Product management: add/edit, activate/deactivate, guarded delete, price/currency, duration, quota, sort order, and server/group mapping; IBSng validity days are explicitly configured rather than inferred.
+- Orders reporting: paid/pending counts and aggregate sales by product snapshot, including active/partial counts.
+- Support contact settings: optional Telegram contact, WhatsApp target, and custom HTTPS link.
+- Renewal gift settings: first/repeat renewal day gifts.
+
+### Requirements not evidenced as complete / gaps to track
+
+- General site settings: editable site title and broader storefront settings are not provided by the inspected `admin/settings.php`; it currently handles support contacts and renewal gifts.
+- Payment management: modular Iranian payment gateway configuration, credentials, enable/disable, sandbox/test mode, callback verification, and operational payment reconciliation are not established as complete by the inspected admin pages.
+- Orders as an operational console: current `admin/orders.php` is an aggregate report, not a full order detail/management screen with payment/provisioning state, retry controls, refund status, manual refund record, and per-target outcomes.
+- Multi-server provisioning policy: ability to select one vs both servers for create/renew, per-destination result and safe retry, and clear partial-completion handling require an end-to-end audit beyond the currently inspected pages.
+- Discount/coupon administration and discount calculation/usage limits are not implemented/evidenced as complete.
+- Product Gift Days / Relative Days fields and their snapshot + provisioning semantics are not evidenced as complete; do not conflate with the separate global renewal gift-day settings.
+- Customer email recovery and self-service portal controls are not complete; they remain a distinct customer-facing scope, not an admin panel feature.
+- Editable UI text/message editor, comprehensive mail provider/templates, guide/instructions editor with live preview, and a complete admin activity/audit trail are requirements or ideas recorded in context, but not verified as implemented.
+- Site-wide settings for independently enabling/requiring email and phone fields at checkout are not evidenced in the current admin settings page.
+- Admin password reset via email and invalidation of prior sessions are not verified complete.
+- Test Mode must remain explicitly payment simulation only and keep test orders separated from real sales; current admin source review did not establish this end-to-end behavior.
+
+### Audit guardrails
+
+- Preserve the existing admin navigation/sidebar structure unless the user explicitly requests a change.
+- Keep RouteBox as the behavioral reference for IBSng admin operations; keep Telegram bot/Worker and unrelated bot/payment features out of the IBSng scope.
+- For each item, report source implementation, automated test evidence, and live runtime evidence separately.
