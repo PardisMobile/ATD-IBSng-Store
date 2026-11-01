@@ -54,4 +54,13 @@ if (!str_contains($renewalAdmin, '$renewalColumnReady && $renewalLedgerReady')) 
 if (!str_contains($service, 'completedRenewalCount') || !str_contains($service, '$giftDaysFirst') || !str_contains($service, '$giftDaysRepeat')) {
     throw new RuntimeException('Gift selection must be based on completed renewals inside the central service.');
 }
+
+// Replaying a completed idempotency key must be explicitly identified as a
+// ledger recovery, so the admin UI does not claim a fresh IBSng confirmation.
+if (!str_contains($coordinator, "'reused_existing' => true")) {
+    throw new RuntimeException('Completed ledger replay must be marked as reused_existing.');
+}
+if (!str_contains($renewalAdmin, "['reused_existing']")) {
+    throw new RuntimeException('The admin renewal message must distinguish ledger replay from a fresh IBSng confirmation.');
+}
 echo "IBSng renewal ledger contract checks passed.\n";
