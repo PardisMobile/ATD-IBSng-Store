@@ -19,6 +19,17 @@ final class IBSngRenewalCoordinator
         return is_array($row) ? $row : null;
     }
 
+    public function completedRenewalCount(int $serverId, string $userId): int
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(*) FROM ibsng_renewals
+             WHERE server_id = :server AND ibsng_user_id = :user_id
+               AND status = 'completed'"
+        );
+        $stmt->execute(['server' => $serverId, 'user_id' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
+
     /**
      * Stop new grants while any earlier operation for this server/account
      * remains pending, failed, or awaiting manual reconciliation.
