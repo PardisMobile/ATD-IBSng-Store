@@ -17,7 +17,12 @@ final class IBSngRenewalState
         $firstLogin = self::attributeValue($html, 'first_login');
         $relativeExpiration = self::attributeValue($html, 'rel_exp');
         $nearestExpiration = self::displayedLabelValue($html, 'Nearest Expiration Date');
-        return self::normalize((string)$user['user_id'], $firstLogin, $relativeExpiration, $nearestExpiration);
+        $state = self::normalize((string)$user['user_id'], $firstLogin, $relativeExpiration, $nearestExpiration);
+        $state['group'] = trim((string)($user['group'] ?? ''));
+        if ($state['group'] === '') {
+            throw new RuntimeException('IBSng account group could not be verified; renewal stopped safely.');
+        }
+        return $state;
     }
 
     public static function normalize(string $userId, ?string $firstLogin, ?string $relativeExpiration, ?string $nearestExpiration, ?int $now = null): array
