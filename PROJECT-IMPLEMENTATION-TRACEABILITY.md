@@ -126,3 +126,17 @@
 - The English translation dictionary still contained an older sentence claiming both renewal and group changes were unavailable. Because the dictionary key did not match the current rendered copy, the language toggle could leave this sentence untranslated.
 - Updated the exact translation pair to match the current UI behavior; no IBSng operation logic was changed.
 - Validation required: inspect the page in both locales and run PHP lint/UI regression checks.
+
+
+### IBSNG-RENEW-001 — Store renewal parity with RouteBox reference branch
+
+**Status: OPEN — source comparison completed; Store renewal implementation not yet present.**
+
+- **Exact behavioral reference:** `PardisMobile/routebox-telegram-bot`, branch `atd-panel-ibsng-renewal`. The reference is this branch, not the IBSng A1.24 source archive and not the RouteBox default branch.
+- **Store baseline:** `admin/ibsng-users.php` currently supports lookup, credentials, group information, create, change-group, and delete. Its UI explicitly states that renewal is not available. Store schema currently has no dedicated IBSng renewal policy/ledger/settings tables.
+- **Reference behavior found:** `IBSngService::renewByUsername()` reads verified account state from the Web Panel and delegates to `IBSngRenewal`. The renewal policy uses plan-specific IBSng validity days, first/repeat gift settings, and a durable per-user operation ledger/idempotency key. Expired accounts reset First Login and receive validity + gift from zero; active accounts retain remaining validity and add validity + gift. Absolute Expiration is intentionally untouched.
+- **Store-specific adaptation required:** do not copy RouteBox tables/classes blindly. Store uses its own `IBSngClient`, PDO/MySQL schema, server/group mapping, and admin page. Reuse the behavior contract, adapt persistence and UI to Store conventions, and keep all edits on `main`.
+- **Required sequence:** (1) add/test pure renewal policy; (2) trace and implement the required A1.24 client state-read and edit-user attribute submission contract against the RouteBox branch; (3) add a backward-compatible Store schema/migration path for validity, gift settings and renewal ledger; (4) wire admin username + mapped plan renewal with CSRF and authorization; (5) add bilingual messages and explicit unresolved-timeout handling; (6) add deterministic tests and run GitHub Actions PHP lint/test workflow.
+- **Safety requirements:** do not retry an uncertain remote mutation automatically; never alter Absolute Expiration; ensure repeat/failed/pending operations cannot issue duplicate grants; do not report success until the Web Panel response is verified; preserve existing Store operations and avoid introducing Telegram/Worker behavior.
+- **Validation status:** no implementation or automated/live renewal validation is claimed by this audit entry. Reference code comparison is not proof of A1.24 runtime behavior.
+
