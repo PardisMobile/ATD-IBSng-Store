@@ -18,7 +18,22 @@ function atd_ibsng_validity_column_exists(PDO $pdo): bool
     return (int)$stmt->fetchColumn() === 1;
 }
 
-$ready = atd_ibsng_validity_column_exists($pdo);
+function atd_ibsng_renewal_ledger_exists(PDO $pdo): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.tables
+         WHERE table_schema = DATABASE() AND table_name = ?'
+    );
+    $stmt->execute(['ibsng_renewals']);
+    return (int)$stmt->fetchColumn() === 1;
+}
+
+function atd_ibsng_renewal_schema_ready(PDO $pdo): bool
+{
+    return atd_ibsng_validity_column_exists($pdo) && atd_ibsng_renewal_ledger_exists($pdo);
+}
+
+$ready = atd_ibsng_renewal_schema_ready($pdo);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
@@ -27,12 +42,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!atd_ibsng_validity_column_exists($pdo)) {
                 $pdo->exec('ALTER TABLE products ADD COLUMN ibsng_validity_days INT UNSIGNED NULL AFTER duration_seconds');
             }
+            $pdo->exec(
+                "CREATE TABLE IF NOT EXISTS ibsng_renewals (
+                    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    idempotency_key VARCHAR(190) NOT NULL UNIQUE,
+                    server_id BIGINT UNSIGNED NOT NULL,
+                    ibsng_user_id VARCHAR(150) NOT NULL,
+                    username VARCHAR(150) NOT NULL,
+                    product_id BIGINT UNSIGNED NULL,
+                    account_state ENUM('active','expired','unknown') NOT NULL DEFAULT 'unknown',
+                    validity_days INT UNSIGNED NOT NULL,
+                    gift_days INT UNSIGNED NOT NULL DEFAULT 0,
+                    relative_expiration_after INT UNSIGNED NULL,
+                    status ENUM('pending','completed','failed','needs_review') NOT NULL DEFAULT 'pending',
+                    result_json JSON NULL,
+                    error_message TEXT NULL,
+                    started_at DATETIME NOT NULL,
+                    completed_at DATETIME NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    KEY idx_ibsng_renewal_user_history (server_id, ibsng_user_id, status, created_at),
+                    KEY idx_ibsng_renewal_review (status, updated_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+            );
             $settings = $pdo->prepare(
                 'INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)'
             );
             $settings->execute(['ibsng_gift_days_first', '1']);
             $settings->execute(['ibsng_gift_days_repeat', '5']);
-            $ready = atd_ibsng_validity_column_exists($pdo);
+            $ready = atd_ibsng_renewal_schema_ready($pdo);
             if (!$ready) {
                 throw new RuntimeException('Renewal schema verification did not pass.');
             }
@@ -61,7 +99,7 @@ $config = app_config();
 <section class="panel panel-card">
 <div class="eyebrow">Database · Renewal Upgrade</div>
 <h1>ارتقای ساختار تمدید IBSng</h1>
-<p class="muted">این مرحله فقط ستون مستقل مدت اعتبار IBSng و تنظیمات پیش‌فرض هدیه را اضافه می‌کند. مدت عمومی محصولات به‌صورت خودکار کپی یا تغییر داده نمی‌شود؛ بنابراین برای هر محصول باید مدت تمدید IBSng را جداگانه مشخص کنید.</p>
+<p class="muted">این مرحله ستون مستقل مدت اعتبار IBSng، جدول Ledger تمدید و تنظیمات پیش‌فرض هدیه را به‌صورت امن و قابل‌تکرار آماده می‌کند. مدت عمومی محصولات به‌صورت خودکار کپی یا تغییر داده نمی‌شود؛ برای هر محصول باید مدت تمدید IBSng را جداگانه مشخص کنید.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
