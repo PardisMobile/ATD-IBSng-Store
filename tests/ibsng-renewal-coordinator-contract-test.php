@@ -9,7 +9,9 @@ $migration = file_get_contents(dirname(__DIR__) . '/database/migrations/001_ibsn
 $policyMigration = file_get_contents(dirname(__DIR__) . '/database/migrations/002_ibsng_renewal_policy.sql');
 $coordinator = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalCoordinator.php');
 $service = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalService.php');
-foreach ([$client, $schema, $migration, $policyMigration, $coordinator, $service] as $source) {
+$migrationAdmin = file_get_contents(dirname(__DIR__) . '/admin/ibsng-renewal-migrate.php');
+$renewalAdmin = file_get_contents(dirname(__DIR__) . '/admin/ibsng-users.php');
+foreach ([$client, $schema, $migration, $policyMigration, $coordinator, $service, $migrationAdmin, $renewalAdmin] as $source) {
     if (!is_string($source) || $source === '') {
         throw new RuntimeException('Required renewal source could not be read.');
     }
@@ -41,6 +43,13 @@ if (!str_contains($schema, 'ibsng_validity_days') || !str_contains($policyMigrat
 }
 if (!str_contains($policyMigration, 'ibsng_gift_days_first') || !str_contains($policyMigration, 'ibsng_gift_days_repeat')) {
     throw new RuntimeException('The upgrade migration must preserve configurable first/repeat gift policy.');
+}
+if (!str_contains($migrationAdmin, 'CREATE TABLE IF NOT EXISTS ibsng_renewals')
+    || !str_contains($migrationAdmin, 'atd_ibsng_renewal_schema_ready')) {
+    throw new RuntimeException('The one-click upgrade must create and verify the renewal ledger table.');
+}
+if (!str_contains($renewalAdmin, '$renewalColumnReady && $renewalLedgerReady')) {
+    throw new RuntimeException('The renewal admin flow must not enable mutation unless both schema pieces exist.');
 }
 if (!str_contains($service, 'completedRenewalCount') || !str_contains($service, '$giftDaysFirst') || !str_contains($service, '$giftDaysRepeat')) {
     throw new RuntimeException('Gift selection must be based on completed renewals inside the central service.');
