@@ -110,10 +110,13 @@ final class IBSngClient
 
         $hasLoginForm = stripos($body, 'name="username"') !== false
             && stripos($body, 'name="password"') !== false;
-        if ($hasLoginForm || $status === 200) {
+        if ($hasLoginForm) {
             throw new RuntimeException('IBSng نام کاربری یا رمز عبور مدیر را نپذیرفت؛ اطلاعات ورود را بررسی کنید.');
         }
 
+        // The reference RouteBox client treats a redirect after POST /admin/
+        // as the successful A1.24 login signal. An arbitrary HTTP 200 is not
+        // proof of bad credentials; it is an unexpected panel response.
         throw new RuntimeException('پاسخ غیرمنتظره از Web Panel دریافت شد (HTTP ' . $status . ').');
     }
 
