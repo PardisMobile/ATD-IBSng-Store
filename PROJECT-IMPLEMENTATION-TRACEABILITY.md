@@ -85,3 +85,22 @@
 - Preserved feature-specific router-safe dispatch and installer recovery records.
 - Explicitly deferred the IBSng server-admin error lifecycle (option D) for separate review against the user's documented rules.
 - No runtime, PHP lint, or CI validation is claimed by this documentation merge.
+
+## IBSng server-admin error audit carried forward from main
+
+### IBSNG-ERR-001 — Admin server last_error lifecycle
+
+**Status: OPEN — incomplete audit; no completion claim.**
+
+- **Observed Store behavior:** admin/ibsng-servers.php maps exceptions from add/update/test actions to a generic safe message. For the test action, it persists that generic message in ibsng_servers.last_error. A successful test clears last_error; add/update paths also clear it after success.
+- **Known gap:** The same catch covers failures that may not be IBSng connectivity failures, including local database write failures after a successful remote connection test. The UI then describes the issue as an IBSng connection failure, which misclassifies the cause. Add/update failures are not consistently persisted to last_error, while test failures are. The current audit has not established the intended complete lifecycle for stale errors, validation failures, local DB errors, or success after prior failure.
+- **Risk:** A generic label can mislead the administrator and a persisted last_error may not describe the latest state accurately.
+- **Required next work:** Trace each action's order of operations and DB effects; define distinct internal categories (input, IBSng transport, IBSng authentication, unexpected IBSng response, local DB/persistence); map them to safe UI text; decide when last_error is set/cleared and whether it stores a safe display message or diagnostic code; add tests for success/failure and DB error paths.
+- **Files in scope:** admin/ibsng-servers.php, app/IBSngClient.php, message catalog only if user-facing wording needs centralization, related tests and this trace file.
+- **No unrelated edits** until this issue is resolved or deliberately paused.
+
+### 2026-11-01 — Complete decision documentation reconciliation before main merge
+
+- Incorporated the final main-branch decision for the IBSng server-admin error boundary into the Context document; feature-branch requirements and intentional removals remain preserved.
+- Carried forward the main-branch `IBSNG-ERR-001` audit finding into this traceability record. This is an open audit item, not a claim that the implementation is complete or verified.
+- This documentation reconciliation does not claim PHP lint, automated tests, or live IBSng/cPanel validation.
