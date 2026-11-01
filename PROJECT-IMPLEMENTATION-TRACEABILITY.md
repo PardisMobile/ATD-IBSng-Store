@@ -157,3 +157,14 @@
 - Investigated the next CI failure: the router base-path test exposed a root `SCRIPT_NAME=/router.php` case that incorrectly treated a subdirectory deployment as root. Updated `store_detect_base_url()` to fall back to route-suffix inference in that case.
 - Expanded the PHP workflow to execute the existing IBSng renewal policy, state parser, and ledger contract tests.
 - Validation update: GitHub Actions run 149 passed PHP lint plus router, IBSng lookup, renewal policy, renewal state, and renewal ledger contract tests on commit `1bc80ca`. This is automated source-level validation only. No live IBSng A1.24 request or end-to-end admin renewal flow has been run. The admin UI remains intentionally disabled until Store-specific validity/gift configuration is added and connected.
+
+
+### 2026-11-02 — Store renewal policy configuration and admin wiring
+
+- Added explicit nullable `products.ibsng_validity_days`; the value is separate from generic `duration_seconds` and must be configured by the administrator. Fresh schema and upgrade migration `002_ibsng_renewal_policy.sql` now include it.
+- Added configurable first-renewal and repeat-renewal gift settings in `app_settings`, with reference defaults of 1 and 5 days. The product/admin settings UI exposes these values and validates non-negative integer inputs.
+- Updated product management to require and persist an explicit IBSng renewal duration; existing generic durations are not copied or guessed.
+- Connected the admin IBSng user page's renewal form to the central service. It only lists active mapped products with explicit IBSng validity; it passes the exact mapped group and request idempotency key. Existing CSRF/admin authorization remains in force.
+- The service chooses the gift based on completed ledger entries while holding the per-account advisory lock. An unresolved prior ledger operation blocks another renewal even with a different key.
+- Added English translations for the renewal controls and confirmation copy.
+- Validation still required after this UI/configuration slice: latest GitHub Actions run; a live A1.24 test; migration execution on an existing database; and browser-level verification. This work does not claim a successful real renewal.
