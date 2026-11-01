@@ -49,4 +49,19 @@ foreach ($inferenceCases as [$uri, $expectedBase]) {
     }
 }
 
-echo "Router normalization, pre-install mount inference, and allowlist tests passed (" . count($cases) . " normalization cases, " . count($inferenceCases) . " inference cases, " . count($routes) . " routes).\n";
+
+$scriptNameCases = [
+    ['/shop/install/', '/shop/router.php', '/shop'],
+    ['/install/', '/router.php', ''],
+    ['/shop/admin/login.php', '/router.php', '/shop'],
+    ['/shop/install/', '/shop/index.php', '/shop'],
+];
+foreach ($scriptNameCases as [$uri, $scriptName, $expectedBase]) {
+    $actualBase = store_detect_base_url($uri, $scriptName, array_keys($routes));
+    if ($actualBase !== $expectedBase) {
+        fwrite(STDERR, "FAIL: detected base for {$uri} with {$scriptName} => {$actualBase}; expected {$expectedBase}\\n");
+        exit(1);
+    }
+}
+
+echo "Router normalization, pre-install mount inference, and allowlist tests passed (" . count($cases) . " normalization cases, " . count($inferenceCases) . " inference cases, " . count($scriptNameCases) . " script-path cases, " . count($routes) . " routes).\n";
