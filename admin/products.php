@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($name === '' || (function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name)) > 180) {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
                 }
-                if ($duration < 1 || $ibsngValidity < 1 || $price < 0 || $sortOrder < 0) {
-                    throw new InvalidArgumentException('مدت عمومی، مدت اعتبار مخصوص IBSng، قیمت یا ترتیب نمایش معتبر نیست.');
+                if ($duration < 1 || $ibsngValidity < 1 || $ibsngValidity > 36500 || $price < 0 || $sortOrder < 0) {
+                    throw new InvalidArgumentException('مدت عمومی، مدت اعتبار مخصوص IBSng (۱ تا ۳۶۵۰۰ روز)، قیمت یا ترتیب نمایش معتبر نیست.');
                 }
                 if (!preg_match('/^[A-Z]{3}$/', $currency)) {
                     throw new InvalidArgumentException('واحد پول باید کد سه‌حرفی مانند IRR باشد.');
