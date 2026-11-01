@@ -10,17 +10,23 @@ require_once __DIR__ . '/app/Router.php';
 
 function store_dispatch(): never
 {
+    $routes = store_route_map(__DIR__);
+    $requestUri = (string)($_SERVER['REQUEST_URI'] ?? '/');
     $baseUrl = '';
     $configFile = __DIR__ . '/config.php';
+
     if (is_file($configFile)) {
         $config = require $configFile;
         if (is_array($config)) {
             $baseUrl = (string)($config['base_url'] ?? '');
         }
+    } else {
+        // Before installation, config.php cannot tell us the mount directory.
+        // Infer it only from a known route suffix (e.g. /shop/install/).
+        $baseUrl = store_infer_base_url($requestUri, array_keys($routes));
     }
 
-    $path = store_normalize_route_path((string)($_SERVER['REQUEST_URI'] ?? '/'), $baseUrl);
-    $routes = store_route_map(__DIR__);
+    $path = store_normalize_route_path($requestUri, $baseUrl);
     $target = $routes[$path] ?? null;
 
     if ($target === null || !is_file($target)) {
@@ -29,6 +35,11 @@ function store_dispatch(): never
         echo '404 Not Found';
         exit;
     }
+
+    // Keep script path semantics consistent with direct PHP page access.
+    $scriptPath = '/' . ltrim(substr($target, strlen(__DIR__)), '/');
+    $_SERVER['SCRIPT_NAME'] = rtrim($baseUrl, '/') . $scriptPath;
+    $_SERVER['PHP_SELF'] = $_SERVER['SCRIPT_NAME'];
 
     require $target;
     exit;
