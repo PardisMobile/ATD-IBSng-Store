@@ -78,6 +78,7 @@ final class IBSngRenewalCoordinator
         $decoded = json_decode((string)($row['result_json'] ?? 'null'), true);
         return [
             'status' => 'completed',
+            'reused_existing' => true,
             'renewal_id' => (int)$row['id'],
             'result' => is_array($decoded) ? $decoded : [],
         ];
