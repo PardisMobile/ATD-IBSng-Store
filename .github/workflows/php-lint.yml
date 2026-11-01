@@ -26,3 +26,12 @@ jobs:
 
       - name: Run IBSng lookup contract test
         run: php tests/ibsng-lookup-contract-test.php
+
+      - name: Run IBSng renewal policy test
+        run: php tests/ibsng-renewal-policy-test.php
+
+      - name: Run IBSng renewal state test
+        run: php tests/ibsng-renewal-state-test.php
+
+      - name: Run IBSng renewal ledger contract test
+        run: php tests/ibsng-renewal-coordinator-contract-test.php
