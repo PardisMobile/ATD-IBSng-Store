@@ -55,11 +55,20 @@ final class IBSngRenewalCoordinator
      * Return completed prior operations only. Any other recorded state is
      * intentionally a stop condition requiring reconciliation.
      */
-    public function resolveExisting(string $idempotencyKey): ?array
-    {
+    public function resolveExisting(
+        string $idempotencyKey,
+        ?int $serverId = null,
+        ?string $username = null,
+        ?int $productId = null
+    ): ?array {
         $row = $this->findExisting($idempotencyKey);
         if ($row === null) {
             return null;
+        }
+        if (($serverId !== null && (int)$row['server_id'] !== $serverId)
+            || ($username !== null && strtolower((string)$row['username']) !== strtolower(trim($username)))
+            || ($productId !== null && (int)($row['product_id'] ?? 0) !== $productId)) {
+            throw new RuntimeException('This renewal request key belongs to a different account or plan.');
         }
         if ($row['status'] !== 'completed') {
             throw new RuntimeException(
