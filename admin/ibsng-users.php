@@ -202,9 +202,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('عملیات نامعتبر است.');
             }
         } catch (Throwable $e) {
-            $error = $e instanceof InvalidArgumentException || $e instanceof RuntimeException
-                ? $e->getMessage()
-                : 'عملیات IBSng انجام نشد؛ وضعیت اتصال و پاسخ Web Panel را بررسی کنید.';
+            // Only deliberate, locally raised validation messages are safe to
+            // show verbatim. IBSng/transport/runtime exceptions are mapped to
+            // stable UI copy; never expose exception details or remote content.
+            if ($e instanceof InvalidArgumentException) {
+                $error = $e->getMessage();
+            } else {
+                $exceptionMessage = $e->getMessage();
+                if (str_contains($exceptionMessage, 'این نام کاربری در IBSng وجود ندارد.')) {
+                    $error = 'این نام کاربری در IBSng وجود ندارد.';
+                } elseif (str_contains($exceptionMessage, 'از قبل در IBSng وجود دارد')
+                    || str_contains($exceptionMessage, 'نام کاربری تکراری')) {
+                    $error = 'این نام کاربری از قبل در IBSng وجود دارد.';
+                } elseif (str_contains($exceptionMessage, 'نام کاربری یا رمز عبور مدیر را نپذیرفت')) {
+                    $error = 'IBSng اطلاعات ورود مدیر را نپذیرفت؛ تنظیمات سرور را بررسی کنید.';
+                } elseif (str_contains($exceptionMessage, 'تمدید را با پاسخ قابل‌تأیید تأیید نکرد')
+                    || str_contains($exceptionMessage, 'برای بررسی ثبت')
+                    || str_contains($exceptionMessage, 'نتیجه') && str_contains($exceptionMessage, 'نامشخص')) {
+                    $error = 'نتیجه عملیات در IBSng قطعی نیست؛ وضعیت حساب را بررسی کنید و عملیات را دوباره اجرا نکنید.';
+                } else {
+                    $error = 'عملیات IBSng انجام نشد؛ اتصال، تنظیمات سرور و وضعیت حساب را بررسی کنید.';
+                }
+            }
         }
     }
 }
