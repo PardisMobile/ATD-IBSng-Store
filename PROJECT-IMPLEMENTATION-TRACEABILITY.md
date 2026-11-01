@@ -116,3 +116,13 @@
 - This does not retry a mutating request. It only preserves an already complete response, reducing the risk that the caller treats a successful remote mutation as failed and repeats it.
 - Validation required: PHP lint, regression tests for full vs partial timeout response classification, existing lookup/router tests, and a live A1.24 test. Do not mark VERIFIED until evidence is recorded.
 - Scope note: the independent `testConnection()` authentication probe remains unchanged; this fix addresses operation requests through `requestRaw()`.
+
+
+### UI-I18N-IBSNG-001 — Admin IBSng user-management copy
+
+**Status: FIXED (translation key alignment) / NOT VERIFIED (browser/runtime).**
+
+- The Persian page copy accurately states that renewal is not available on this page while group changes are handled through the Edit User form.
+- The English translation dictionary still contained an older sentence claiming both renewal and group changes were unavailable. Because the dictionary key did not match the current rendered copy, the language toggle could leave this sentence untranslated.
+- Updated the exact translation pair to match the current UI behavior; no IBSng operation logic was changed.
+- Validation required: inspect the page in both locales and run PHP lint/UI regression checks.
