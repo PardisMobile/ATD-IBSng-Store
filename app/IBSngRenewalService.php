@@ -64,6 +64,8 @@ final class IBSngRenewalService
                 throw new RuntimeException('IBSng account expiry state is incomplete; renewal stopped safely.');
             }
 
+            $this->ledger->assertNoUnresolvedForAccount($serverId, (string)$state['user_id']);
+
             $policy = IBSngRenewalPolicy::calculate(
                 $state['expired'],
                 $state['remaining_days'],
