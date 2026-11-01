@@ -39,6 +39,11 @@ function support_valid_custom_url(string $value): bool
         && !isset($parts['user']) && !isset($parts['pass']);
 }
 
+$renewalValues = [
+    'ibsng_gift_days_first' => support_setting($pdo, 'ibsng_gift_days_first') ?: '1',
+    'ibsng_gift_days_repeat' => support_setting($pdo, 'ibsng_gift_days_repeat') ?: '5',
+];
+
 $values = [
     'support_telegram_id' => support_setting($pdo, 'support_telegram_id'),
     'support_whatsapp_target' => support_setting($pdo, 'support_whatsapp_target'),
@@ -50,26 +55,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
+        $renewalValues = [
+            'ibsng_gift_days_first' => trim((string)($_POST['ibsng_gift_days_first'] ?? '1')),
+            'ibsng_gift_days_repeat' => trim((string)($_POST['ibsng_gift_days_repeat'] ?? '5')),
+        ];
         $values = [
             'support_telegram_id' => trim((string)($_POST['telegram_id'] ?? '')),
             'support_whatsapp_target' => trim((string)($_POST['whatsapp_target'] ?? '')),
             'support_custom_label' => trim((string)($_POST['custom_label'] ?? '')),
             'support_custom_url' => trim((string)($_POST['custom_url'] ?? '')),
         ];
-        if ($values['support_telegram_id'] !== '' && !support_valid_telegram($values['support_telegram_id'])) {
+        foreach ($renewalValues as $giftKey => $giftValue) {
+            if (!ctype_digit($giftValue) || (int)$giftValue > 3650) {
+                $error = 'روزهای هدیه باید عدد صحیح بین صفر تا ۳۶۵۰ باشند.';
+                break;
+            }
+        }
+        if ($error === '' && $values['support_telegram_id'] !== '' && !support_valid_telegram($values['support_telegram_id'])) {
             $error = 'شناسه Telegram معتبر نیست؛ فقط حروف انگلیسی، عدد و زیرخط (۵ تا ۳۲ کاراکتر) وارد کنید.';
-        } elseif ($values['support_whatsapp_target'] !== '' && !support_valid_whatsapp_target($values['support_whatsapp_target'])) {
+        } elseif ($error === '' && $values['support_whatsapp_target'] !== '' && !support_valid_whatsapp_target($values['support_whatsapp_target'])) {
             $error = 'مقصد WhatsApp معتبر نیست؛ فقط حروف، عدد و نشانه‌های . _ + - مجاز است.';
-        } elseif (($values['support_custom_label'] === '') !== ($values['support_custom_url'] === '')) {
+        } elseif ($error === '' && ($values['support_custom_label'] === '') !== ($values['support_custom_url'] === '')) {
             $error = 'برای لینک دلخواه، هم عنوان و هم نشانی را وارد کنید.';
-        } elseif ($values['support_custom_url'] !== '' && (!support_valid_custom_url($values['support_custom_url']) || strlen($values['support_custom_label']) > 60)) {
+        } elseif ($error === '' && $values['support_custom_url'] !== '' && (!support_valid_custom_url($values['support_custom_url']) || strlen($values['support_custom_label']) > 60)) {
             $error = 'لینک دلخواه باید HTTPS معتبر باشد و عنوان آن حداکثر ۶۰ کاراکتر باشد.';
         } else {
             $stmt = $pdo->prepare('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
             foreach ($values as $key => $value) {
                 $stmt->execute([$key, $value]);
             }
-            $message = 'تنظیمات راه‌های پشتیبانی ذخیره شد.';
+            foreach ($renewalValues as $key => $value) {
+                $stmt->execute([$key, $value]);
+            }
+            $message = 'تنظیمات راه‌های پشتیبانی و هدیهٔ تمدید IBSng ذخیره شد.';
         }
     }
 }
@@ -79,6 +97,9 @@ if ($error !== '') {
 } else {
     foreach ($values as $key => $value) {
         $values[$key] = support_setting($pdo, $key);
+    }
+    foreach ($renewalValues as $key => $value) {
+        $renewalValues[$key] = support_setting($pdo, $key) ?: ($key === 'ibsng_gift_days_first' ? '1' : '5');
     }
 }
 $config = app_config();
@@ -107,6 +128,11 @@ $config = app_config();
 <div class="field"><label for="whatsapp_target">شناسه یا مقصد WhatsApp</label><input id="whatsapp_target" name="whatsapp_target" value="<?= e($values['support_whatsapp_target']) ?>" maxlength="80" placeholder="شناسه یا مقصد" autocomplete="off"><div class="hint">فقط مقصد را وارد کنید؛ دامنه و URL لازم نیست. این فیلد محدود به قالب شماره تلفن نیست.</div></div>
 <div class="field"><label for="custom_label">عنوان لینک دلخواه</label><input id="custom_label" name="custom_label" value="<?= e($values['support_custom_label']) ?>" maxlength="60" placeholder="مثلاً پشتیبانی آنلاین"></div>
 <div class="field"><label for="custom_url">نشانی کامل لینک دلخواه</label><input id="custom_url" name="custom_url" type="url" value="<?= e($values['support_custom_url']) ?>" placeholder="https://example.com/contact" autocomplete="url"><div class="hint">برای پیام‌رسان یا سرویس دیگر؛ فقط لینک HTTPS معتبر پذیرفته می‌شود.</div></div>
+<hr>
+<h2>سیاست هدیهٔ تمدید IBSng</h2>
+<p class="hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
+<div class="field"><label for="ibsng_gift_days_first">هدیهٔ اولین تمدید (روز)</label><input id="ibsng_gift_days_first" name="ibsng_gift_days_first" type="number" min="0" max="3650" required value="<?= e($renewalValues['ibsng_gift_days_first']) ?>"></div>
+<div class="field"><label for="ibsng_gift_days_repeat">هدیهٔ تمدیدهای بعدی (روز)</label><input id="ibsng_gift_days_repeat" name="ibsng_gift_days_repeat" type="number" min="0" max="3650" required value="<?= e($renewalValues['ibsng_gift_days_repeat']) ?>"></div>
 <div class="actions"><button class="button primary" type="submit">ذخیره تنظیمات</button><a class="button" href="<?= e(app_url()) ?>" target="_blank" rel="noopener noreferrer">مشاهده فروشگاه</a></div>
 </form>
 </section>
