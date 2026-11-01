@@ -7,6 +7,10 @@ require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/messages.php';
 
+final class UsernameAlreadyExistsException extends RuntimeException
+{
+}
+
 $config = app_config();
 $pdo = Database::connection();
 $error = '';
@@ -33,7 +37,7 @@ if (!$product) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
     $csrf = (string)($_POST['csrf'] ?? '');
     if (!isset($_SESSION['checkout_csrf']) || !hash_equals((string)$_SESSION['checkout_csrf'], $csrf)) {
-        $error = 'نشست فرم معتبر نیست. صفحه را دوباره باز کنید.';
+        $error = app_message('checkout_session_invalid');
     } else {
         $name = trim((string)($_POST['buyer_name'] ?? ''));
         $phone = trim((string)($_POST['buyer_phone'] ?? ''));
@@ -42,15 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $password = (string)($_POST['account_password'] ?? '');
 
         if ($name === '' || strlen($name) > 150) {
-            $error = 'نام خریدار الزامی است.';
+            $error = app_message('buyer_name_required');
         } elseif ($phone === '' || strlen($phone) > 40 || !preg_match('/^[+0-9() .-]{7,40}$/', $phone)) {
-            $error = 'شماره تماس معتبر وارد کنید.';
+            $error = app_message('buyer_phone_invalid');
         } elseif ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
-            $error = 'ایمیل واردشده معتبر نیست.';
+            $error = app_message('buyer_email_invalid');
         } elseif ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username)) {
-            $error = 'نام کاربری باید از حروف لاتین، عدد و . _ - تشکیل شود.';
+            $error = app_message('username_format_invalid');
         } elseif (strlen($password) < 8 || strlen($password) > 200) {
-            $error = 'رمز حساب باید حداقل ۸ کاراکتر باشد.';
+            $error = app_message('password_length_invalid');
         } else {
             try {
                 // Check the customer-chosen username against the mapped IBSng server
@@ -65,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $serverQuery->execute([$productId]);
                     $ibsngServer = $serverQuery->fetch();
                     if (!$ibsngServer) {
-                        throw new RuntimeException('سرور IBSng فعال و متصل به این پلن پیدا نشد.');
+                        throw new RuntimeException(app_message('ibsng_server_not_found'));
                     }
 
                     $ibsng = new IBSngClient(
@@ -75,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                         app_decrypt_secret((string)$ibsngServer['password_ciphertext'])
                     );
                     if (!$ibsng->isUsernameAvailable($username)) {
-                        throw new RuntimeException('این نام کاربری در IBSng از قبل وجود دارد. لطفاً نام دیگری انتخاب کنید.');
+                        throw new UsernameAlreadyExistsException('IBSng username already exists.');
                     }
                 }
 
@@ -91,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $fresh->execute([$productId]);
                     $current = $fresh->fetch();
                     if (!$current) {
-                        throw new RuntimeException('این پلن دیگر برای فروش فعال نیست.');
+                        throw new RuntimeException(app_message('product_unavailable'));
                     }
                     $publicId = bin2hex(random_bytes(16));
                     $encryptedPassword = app_encrypt_secret($password);
@@ -107,30 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $_SESSION['checkout_csrf'] = bin2hex(random_bytes(32));
                 }
             } catch (Throwable $e) {
-                if ($pdo->inTransaction()) {
-                    $pdo->rollBack();
-                }
-
-                // Translate known IBSng outcomes into the stable message catalog.
-                // Never expose remote HTML, transport diagnostics, or raw exception
-                // text in the customer-facing checkout UI.
-                $exceptionMessage = $e->getMessage();
-                if (str_contains($exceptionMessage, 'نام کاربری در IBSng از قبل وجود دارد')
-                    || str_contains($exceptionMessage, 'نام کاربری از قبل در IBSng وجود دارد')
-                    || str_contains($exceptionMessage, 'نام کاربری تکراری')) {
-                    $error = app_message('username_taken');
-                } elseif (str_contains($exceptionMessage, 'نام کاربری یا رمز عبور مدیر IBSng را نپذیرفت')) {
-                    $error = app_message('ibsng_authentication_failed');
-                } elseif (str_contains($exceptionMessage, 'پاسخ') && str_contains($exceptionMessage, 'قابل تشخیص نبود')) {
-                    $error = app_message('ibsng_invalid_response');
-                } elseif (str_contains($exceptionMessage, 'ارتباط با IBSng برقرار نشد')
-                    || str_contains($exceptionMessage, 'اتصال به IBSng timeout شد')
-                    || str_contains($exceptionMessage, 'راه‌اندازی ارتباط HTTP با IBSng ناموفق بود')
-                    || str_contains($exceptionMessage, 'سرور IBSng فعال و متصل')) {
-                    $error = app_message('ibsng_connection_failed');
-                } else {
-                    $error = app_message('username_available_check_failed');
-                }
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                $error = $e instanceof UsernameAlreadyExistsException
+                    ? app_message('username_taken')
+                    : app_message('username_available_check_failed');
             }
         }
     }
@@ -153,10 +137,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
 <div class="eyebrow">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
 <h1>درخواست سفارش ثبت شد</h1>
-<div class="notice success"><strong>شماره پیگیری:</strong><br><code><?= e($successOrder) ?></code><p>این سفارش هنوز پرداخت نشده و هیچ حسابی در IBSng ایجاد نشده است. مرحله پرداخت و فعال‌سازی پس از اتصال درگاه معتبر تکمیل می‌شود.</p></div>
+<div class="notice success"><strong>شماره پیگیری:</strong><br><code><?= e($successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <a class="button primary" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
-<h1>این پلن در دسترس نیست</h1><p class="muted">پلن انتخاب‌شده فعال نیست یا نگاشت سرور/گروه معتبر ندارد.</p><a class="button" href="<?= e(app_url()) ?>">بازگشت</a>
+<h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url()) ?>">بازگشت</a>
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
 <div class="price"><?= number_format((int)$product['price_minor']) ?> <?= e((string)$product['currency']) ?></div>
@@ -169,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
 <div class="field"><label for="buyer_email">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ شناسه سفارش را حتماً نگه دارید.</p>
 <div class="field"><label for="username">نام کاربری IBSng</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
 <div class="field"><label for="account_password">رمز حساب IBSng</label><input id="account_password" name="account_password" type="password" minlength="8" maxlength="200" required autocomplete="new-password"></div>
-<div class="notice">ثبت این فرم فقط سفارش پرداخت‌نشده می‌سازد. اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود. تا تأیید پرداخت، provisioning انجام نمی‌شود.</div>
+<div class="notice"><?= e(app_message('order_submitted_notice')) ?> اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</div>
 <button class="button primary" type="submit">ثبت سفارش</button>
 </form>
 <?php endif; ?>
