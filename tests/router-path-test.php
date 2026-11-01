@@ -33,4 +33,20 @@ foreach ($routes as $route => $target) {
         exit(1);
     }
 }
-echo "Router path normalization and allowlist target tests passed (" . count($cases) . " cases, " . count($routes) . " routes).\n";
+
+$inferenceCases = [
+    ['/install/', ''],
+    ['/shop/install/', '/shop'],
+    ['/shop/install/index.php', '/shop'],
+    ['/shop/admin/login.php', '/shop'],
+    ['/storefront/', ''],
+];
+foreach ($inferenceCases as [$uri, $expectedBase]) {
+    $actualBase = store_infer_base_url($uri, array_keys($routes));
+    if ($actualBase !== $expectedBase) {
+        fwrite(STDERR, "FAIL: inferred base for {$uri} => {$actualBase}; expected {$expectedBase}\n");
+        exit(1);
+    }
+}
+
+echo "Router normalization, pre-install mount inference, and allowlist tests passed (" . count($cases) . " normalization cases, " . count($inferenceCases) . " inference cases, " . count($routes) . " routes).\n";
