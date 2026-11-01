@@ -133,7 +133,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $productId,
                     'ATD IBSng Store admin renewal ' . $renewalRequestKey
                 );
-                $message = 'تمدید از پاسخ Web Panel IBSng تأیید شد.';
+                $message = !empty($renewalResult['reused_existing'])
+                    ? 'نتیجه تمدید قبلی از Ledger بازیابی شد؛ درخواست جدیدی به IBSng ارسال نشد.'
+                    : 'تمدید از پاسخ Web Panel IBSng تأیید شد.';
                 $renewalPayload = is_array($renewalResult['result'] ?? null) ? $renewalResult['result'] : [];
                 $relativeAfter = isset($renewalPayload['relative_expiration_after'])
                     ? (int)$renewalPayload['relative_expiration_after']
