@@ -183,3 +183,12 @@
 - Existing installations are routed to this upgrade page before product administration can run renewal-specific SQL. The IBSng user page keeps its existing lookup/create/group/delete actions available but does not expose renewal until the schema is ready.
 - GitHub Actions run 173 on commit `29fefd6` passed PHP lint and all configured automated tests after the migration route and legacy-schema handling were added.
 - The one-click upgrade path has not yet been exercised against a real cPanel/MySQL database; verify it on a backed-up staging database before production. Live IBSng A1.24 renewal remains unverified.
+
+
+### Final CI update for current renewal implementation
+
+- GitHub Actions run 177 on commit `29aad36` passed PHP lint and all configured automated checks.
+- Idempotent completed-ledger replay is now bound to the same server, username, and selected product; malformed/missing historical result JSON is handled safely.
+- Ledger error-message truncation now has a fallback when PHP mbstring is unavailable.
+- The authenticated one-click schema-upgrade page is allowlisted and reachable from the admin dashboard. Existing product administration is routed through it if the new column is absent.
+- Still not verified: applying the schema change on a real database, browser behavior, and remote mutation against a live IBSng A1.24 Web Panel. The current CI is not evidence of a live renewal.
