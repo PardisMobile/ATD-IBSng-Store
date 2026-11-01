@@ -51,7 +51,7 @@ final class IBSngRenewalService
         }
 
         try {
-            $prior = $this->ledger->resolveExisting($idempotencyKey);
+            $prior = $this->ledger->resolveExisting($idempotencyKey, $serverId, $username, $productId);
             if ($prior !== null) {
                 return $prior;
             }
