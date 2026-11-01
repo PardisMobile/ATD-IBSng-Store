@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_once dirname(__DIR__) . '/app/Crypto.php';
 require_once dirname(__DIR__) . '/app/IBSngClient.php';
+require_once dirname(__DIR__) . '/app/IBSngRenewalCoordinator.php';
+require_once dirname(__DIR__) . '/app/IBSngRenewalService.php';
 require_admin();
 
 $config = app_config();
@@ -13,6 +15,8 @@ $error = '';
 $userResult = null;
 $credentialResult = null;
 $groupInfoResult = null;
+$renewalResult = null;
+$renewalRequestKey = bin2hex(random_bytes(24));
 $servers = $pdo->query('SELECT id,name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id')->fetchAll();
 $serverIds = array_map(static fn(array $row): int => (int)$row['id'], $servers);
 $selectedServerId = (int)($_GET['server_id'] ?? $_POST['server_id'] ?? ($servers[0]['id'] ?? 0));
@@ -24,6 +28,18 @@ if ($selectedServerId > 0) {
     $stmt = $pdo->prepare('SELECT id,plan_name,group_name FROM ibsng_groups WHERE server_id=? AND is_active=1 ORDER BY plan_name');
     $stmt->execute([$selectedServerId]);
     $groups = $stmt->fetchAll();
+    $renewalProductsStmt = $pdo->prepare(
+        'SELECT p.id,p.name,p.ibsng_validity_days,g.group_name
+         FROM products p
+         JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
+         JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
+         WHERE p.is_active=1 AND g.is_active=1 AND p.ibsng_validity_days IS NOT NULL
+         ORDER BY p.sort_order,p.name'
+    );
+    $renewalProductsStmt->execute([$selectedServerId]);
+    $renewalProducts = $renewalProductsStmt->fetchAll();
+} else {
+    $renewalProducts = [];
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -50,7 +66,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 app_decrypt_secret((string)$server['password_ciphertext'])
             );
 
-            if ($action === 'lookup') {
+            if ($action === 'renew') {
+                $renewalRequestKey = (string)($_POST['renewal_key'] ?? '');
+                $productId = (int)($_POST['renewal_product_id'] ?? 0);
+                if ($username === '' || $productId < 1
+                    || strlen($renewalRequestKey) !== 48
+                    || !ctype_xdigit($renewalRequestKey)) {
+                    throw new InvalidArgumentException('نام کاربری، پلن تمدید و کلید درخواست معتبر الزامی است.');
+                }
+                $planStmt = $pdo->prepare(
+                    'SELECT p.id,p.ibsng_validity_days,g.group_name
+                     FROM products p
+                     JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
+                     JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
+                     WHERE p.id=? AND p.is_active=1 AND g.is_active=1
+                       AND p.ibsng_validity_days IS NOT NULL LIMIT 1'
+                );
+                $planStmt->execute([$selectedServerId, $productId]);
+                $renewalPlan = $planStmt->fetch(PDO::FETCH_ASSOC);
+                if (!is_array($renewalPlan) || (int)$renewalPlan['ibsng_validity_days'] < 1) {
+                    throw new InvalidArgumentException('پلن تمدید فعال و دارای مدت اعتبار مخصوص IBSng انتخاب نشده است.');
+                }
+
+                $giftStmt = $pdo->prepare(
+                    "SELECT setting_key,setting_value FROM app_settings
+                     WHERE setting_key IN ('ibsng_gift_days_first','ibsng_gift_days_repeat')"
+                );
+                $giftStmt->execute();
+                $giftSettings = [];
+                foreach ($giftStmt->fetchAll(PDO::FETCH_ASSOC) as $giftSetting) {
+                    $giftSettings[(string)$giftSetting['setting_key']] = (int)$giftSetting['setting_value'];
+                }
+                $giftFirst = max(0, $giftSettings['ibsng_gift_days_first'] ?? 1);
+                $giftRepeat = max(0, $giftSettings['ibsng_gift_days_repeat'] ?? 5);
+
+                $coordinator = new IBSngRenewalCoordinator($pdo);
+                $service = new IBSngRenewalService($pdo, $client, $coordinator);
+                $renewalResult = $service->renew(
+                    $selectedServerId,
+                    $username,
+                    (string)$renewalPlan['group_name'],
+                    (int)$renewalPlan['ibsng_validity_days'],
+                    $giftFirst,
+                    $giftRepeat,
+                    $renewalRequestKey,
+                    $productId,
+                    'ATD IBSng Store admin renewal ' . $renewalRequestKey
+                );
+                $message = 'تمدید از پاسخ Web Panel IBSng تأیید شد.';
+                $userResult = [
+                    'username' => $username,
+                    'group' => (string)$renewalPlan['group_name'],
+                    'summary' => 'اعتبار جدید: ' . (int)$renewalResult['result']['relative_expiration_after'] . ' روز نسبی.',
+                ];
+            } elseif ($action === 'lookup') {
                 if ($username === '') {
                     throw new InvalidArgumentException('نام کاربری برای جست‌وجو الزامی است.');
                 }
@@ -133,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
 <h1 style="font-size:2rem">مدیریت حساب‌های IBSng</h1>
-<p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید در این صفحه فعال نشده است؛ تغییر گروه از مسیر Edit User انجام می‌شود.</p>
+<p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="notice err">سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.</div><?php else: ?>
@@ -145,6 +214,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 </section>
 <?php if ($selectedServerId > 0 && $servers): ?>
+<section class="panel panel-card">
+<h2>تمدید حساب موجود در IBSng</h2>
+<p class="muted">نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
+<?php if (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.</div><?php else: ?>
+<form method="post">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="renew">
+<input type="hidden" name="renewal_key" value="<?= e($renewalRequestKey) ?>">
+<div class="grid">
+<div class="field"><label for="renew_username">Username حساب موجود</label><input id="renew_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
+<div class="field"><label for="renewal_product_id">پلن تمدید</label><select id="renewal_product_id" name="renewal_product_id" required><option value="">انتخاب پلن</option><?php foreach ($renewalProducts as $renewalProduct): ?><option value="<?= (int)$renewalProduct['id'] ?>"<?= (int)($_POST['renewal_product_id'] ?? 0)===(int)$renewalProduct['id']?' selected':'' ?>><?= e((string)$renewalProduct['name']) ?> · <?= (int)$renewalProduct['ibsng_validity_days'] ?> روز · <?= e((string)$renewalProduct['group_name']) ?></option><?php endforeach; ?></select></div>
+</div>
+<button class="button primary" type="submit" onclick="return confirm('تمدید این حساب در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود.');">تمدید حساب در IBSng</button>
+</form>
+<?php endif; ?>
+</section>
 <section class="panel panel-card">
 <h2>جست‌وجو و دریافت اطلاعات حساب</h2>
 <form method="post">
@@ -231,7 +315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     "مدیریت حساب‌های IBSng":"IBSng User Management",
     "مدیریت حساب‌های IBSng":"IBSng User Management",
     "IBSng · User Management":"IBSng · User Management",
-    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید در این صفحه فعال نشده است؛ تغییر گروه از مسیر Edit User انجام می‌شود.":"Operations run against the selected IBSng Web Panel. The group name comes from the Store's manual mapping and must exactly match the IBSng group. Renewal is not available on this page; group changes use the Edit User form.",
+    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.":"Operations run against the selected IBSng Web Panel. The manually mapped group must exactly match IBSng. Renewal uses the active plan's explicit IBSng validity; uncertain outcomes are ledgered for review and are not retried.",
     "درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.":"Invalid request. Please refresh the page.",
     "ابتدا یک سرور فعال IBSng انتخاب کنید.":"Select an active IBSng server first.",
     "نام کاربری برای جست‌وجو الزامی است.":"Username is required for lookup.",
