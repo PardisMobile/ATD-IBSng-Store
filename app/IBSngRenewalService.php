@@ -123,8 +123,14 @@ final class IBSngRenewalService
                 );
             }
         } finally {
-            $release = $this->pdo->prepare('SELECT RELEASE_LOCK(:lock_name)');
-            $release->execute(['lock_name' => $lockName]);
+            try {
+                $release = $this->pdo->prepare('SELECT RELEASE_LOCK(:lock_name)');
+                $release->execute(['lock_name' => $lockName]);
+            } catch (Throwable $releaseError) {
+                // The ledger remains authoritative; lock cleanup must not mask
+                // a completed or uncertain remote operation.
+                error_log('IBSng renewal advisory lock release failed: ' . $releaseError->getMessage());
+            }
         }
     }
 }
