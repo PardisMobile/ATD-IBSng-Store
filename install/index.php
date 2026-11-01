@@ -94,8 +94,26 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !is_file($configPath)) {
     $siteTitle=trim($values['site_title'])?:'ATD IBSng Store';
     $setting=$pdo->prepare('INSERT INTO app_settings (setting_key,setting_value) VALUES (?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
     $setting->execute(['site_title',$siteTitle]);
-    $admin=$pdo->prepare('INSERT INTO admin_users (username,password_hash,display_name,email,is_active) VALUES (?,?,?,?,1)');
-    $admin->execute([$username,password_hash($adminPassword,PASSWORD_DEFAULT),trim($values['admin_display_name'])?:'Admin',trim($values['admin_email'])]);
+    // Make the data writes retry-safe. DDL in install_schema() is idempotent,
+    // while settings/admin writes below are protected by a transaction.
+    $pdo->beginTransaction();
+    $setting=$pdo->prepare('INSERT INTO app_settings (setting_key,setting_value) VALUES (?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
+    $setting->execute(['site_title',$siteTitle]);
+
+    // Recover an interrupted earlier install without creating a duplicate admin.
+    // Reuse the account only when the supplied password verifies against it.
+    $existing=$pdo->prepare('SELECT password_hash FROM admin_users WHERE username=? LIMIT 1');
+    $existing->execute([$username]);
+    $existingHash=$existing->fetchColumn();
+    if (is_string($existingHash)) {
+     if (!password_verify($adminPassword,$existingHash)) {
+      throw new RuntimeException('Existing administrator credentials do not match');
+     }
+    } else {
+     $admin=$pdo->prepare('INSERT INTO admin_users (username,password_hash,display_name,email,is_active) VALUES (?,?,?,?,1)');
+     $admin->execute([$username,password_hash($adminPassword,PASSWORD_DEFAULT),trim($values['admin_display_name'])?:'Admin',trim($values['admin_email'])]);
+    }
+
     $baseUrl=rtrim(dirname(dirname((string)($_SERVER['SCRIPT_NAME']??'/install/index.php'))),'/');
     $config=[
      'site_title'=>$siteTitle,'db_host'=>trim($values['db_host']),'db_name'=>trim($values['db_name']),
@@ -103,11 +121,27 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !is_file($configPath)) {
      'base_url'=>$baseUrl==='/'?'':$baseUrl,'installed'=>true,
     ];
     $php="<?php\nreturn ".var_export($config,true).";\n";
-    if(file_put_contents($configPath,$php,LOCK_EX)===false) throw new RuntimeException('config write failed');
-    @chmod($configPath,0640);
+    // Write beside config.php and atomically rename, so a failed write cannot
+    // leave a truncated configuration file that appears to be an installation.
+    $temporary=$configPath.'.tmp.'.bin2hex(random_bytes(6));
+    if(file_put_contents($temporary,$php,LOCK_EX)===false) throw new RuntimeException('temporary config write failed');
+    @chmod($temporary,0640);
+    if(!rename($temporary,$configPath)) {
+     @unlink($temporary);
+     throw new RuntimeException('config replace failed');
+    }
+    try {
+     $pdo->commit();
+    } catch(Throwable $commitError) {
+     @unlink($configPath);
+     throw $commitError;
+    }
     session_regenerate_id(true);
     $success=it('done');
-   } catch(Throwable $e) { $errors[]=it('installbad'); }
+   } catch(Throwable $e) {
+    if(isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) $pdo->rollBack();
+    $errors[]=it('installbad');
+   }
   }
  }
 }
