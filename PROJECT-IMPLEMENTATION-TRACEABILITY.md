@@ -130,7 +130,7 @@
 
 ### IBSNG-RENEW-001 — Store renewal parity with RouteBox reference branch
 
-**Status: IN PROGRESS — reference comparison and pure policy calculator implemented; IBSng client, persistence, and admin workflow remain open.**
+**Status: IN PROGRESS — pure policy, renewal ledger schema, and read-only verified account-state parser implemented; remote attribute update, admin flow, and upgrade migration remain open.**
 
 - **Exact behavioral reference:** `PardisMobile/routebox-telegram-bot`, branch `atd-panel-ibsng-renewal`. The reference is this branch, not the IBSng A1.24 source archive and not the RouteBox default branch.
 - **Store baseline:** `admin/ibsng-users.php` currently supports lookup, credentials, group information, create, change-group, and delete. Its UI explicitly states that renewal is not available. Store schema currently has no dedicated IBSng renewal policy/ledger/settings tables.
