@@ -428,6 +428,83 @@ final class IBSngClient
         }
     }
 
+    /** Read the account's expiry state using the reference-aligned parser. */
+    public function getRenewalState(string $username): array
+    {
+        require_once __DIR__ . '/IBSngRenewalState.php';
+        return IBSngRenewalState::fromClient($this, $username);
+    }
+
+    /**
+     * Submit only the Relative Expiration and optional First Login reset
+     * through the native A1.24 Edit User form. Absolute Expiration is never
+     * included. This low-level operation must be called behind a durable ledger.
+     */
+    public function submitRenewalAttributes(
+        string $userId,
+        string $username,
+        int $relativeExpiration,
+        bool $resetFirstLogin,
+        string $comment,
+        string $groupName
+    ): array {
+        if (!ctype_digit($userId) || $username === '' || $relativeExpiration < 1 || trim($groupName) === '') {
+            throw new InvalidArgumentException('اطلاعات تمدید IBSng معتبر نیست.');
+        }
+        $groupHtml = $this->request('/admin/group/group_info.php?group_name=' . rawurlencode(trim($groupName)));
+        $groupId = null;
+        if (preg_match('/name=["\\']group_id["\\'][^>]*value=["\\']([^"\\']+)["\\']/i', $groupHtml, $m)
+            || preg_match('/value=["\\']([^"\\']+)["\\'][^>]*name=["\\']group_id["\\']/i', $groupHtml, $m)) {
+            $groupId = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        }
+        if ($groupId === null || $groupId === '' || !ctype_digit($groupId)) {
+            throw new RuntimeException('شناسه گروه IBSng از Web Panel قابل تأیید نبود؛ تمدید متوقف شد.');
+        }
+
+        $this->request('/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($userId));
+        $post = [
+            'update' => '1',
+            'target' => 'user',
+            'target_id' => $userId,
+            'user_id' => $userId,
+            'group_id' => $groupId,
+            'group_name' => trim($groupName),
+            'owner_name' => $this->username,
+            'comment' => $comment,
+            'edit_tpl_cs' => $resetFirstLogin ? 'rel_exp,first_login' : 'rel_exp',
+            'attr_update_method_0' => 'relExp',
+            'has_rel_exp' => 't',
+            'rel_exp' => (string)$relativeExpiration,
+        ];
+        if ($resetFirstLogin) {
+            $post['attr_update_method_1'] = 'firstLogin';
+            $post['reset_first_login'] = 't';
+        }
+
+        [$body, $status, $headers] = $this->requestRaw('/admin/plugins/edit.php', $post, true);
+        $location = null;
+        if (preg_match('/^Location:\\s*([^\\r\\n]+)/mi', $headers, $m)) {
+            $location = trim($m[1]);
+        }
+        $query = [];
+        if ($location !== null) {
+            parse_str((string)parse_url($location, PHP_URL_QUERY), $query);
+        }
+        if ($status < 300 || $status >= 400 || $location === null
+            || stripos($location, 'user_info.php') === false
+            || (string)($query['user_id'] ?? '') !== $userId) {
+            throw new RuntimeException('IBSng تمدید را با پاسخ قابل‌تأیید تأیید نکرد؛ وضعیت عملیات باید بررسی شود.');
+        }
+        return [
+            'updated' => true,
+            'user_id' => $userId,
+            'username' => $username,
+            'relative_expiration' => $relativeExpiration,
+            'first_login_reset' => $resetFirstLogin,
+            'http_status' => $status,
+        ];
+    }
+
     public function getGroupInfo(string $groupName): string
     {
         if (trim($groupName) === '') {
