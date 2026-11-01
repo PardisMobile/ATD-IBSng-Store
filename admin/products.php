@@ -6,6 +6,15 @@ require_admin();
 
 $config = app_config();
 $pdo = Database::connection();
+$renewalColumnCheck = $pdo->prepare(
+    'SELECT COUNT(*) FROM information_schema.columns
+     WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+);
+$renewalColumnCheck->execute(['products', 'ibsng_validity_days']);
+if ((int)$renewalColumnCheck->fetchColumn() !== 1) {
+    header('Location: ' . app_url('admin/ibsng-renewal-migrate.php'));
+    exit;
+}
 $message = '';
 $error = '';
 $editId = (int)($_GET['edit'] ?? 0);
