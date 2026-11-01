@@ -453,8 +453,8 @@ final class IBSngClient
         }
         $groupHtml = $this->request('/admin/group/group_info.php?group_name=' . rawurlencode(trim($groupName)));
         $groupId = null;
-        if (preg_match('/name=["\\']group_id["\\'][^>]*value=["\\']([^"\\']+)["\\']/i', $groupHtml, $m)
-            || preg_match('/value=["\\']([^"\\']+)["\\'][^>]*name=["\\']group_id["\\']/i', $groupHtml, $m)) {
+        if (preg_match("/name=[\\\"']group_id[\\\"'][^>]*value=[\\\"']([^\\\"']+)[\\\"']/i", $groupHtml, $m)
+            || preg_match("/value=[\\\"']([^\\\"']+)[\\\"'][^>]*name=[\\\"']group_id[\\\"']/i", $groupHtml, $m)) {
             $groupId = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
         if ($groupId === null || $groupId === '' || !ctype_digit($groupId)) {
