@@ -168,3 +168,10 @@
 - The service chooses the gift based on completed ledger entries while holding the per-account advisory lock. An unresolved prior ledger operation blocks another renewal even with a different key.
 - Added English translations for the renewal controls and confirmation copy.
 - Validation still required after this UI/configuration slice: latest GitHub Actions run; a live A1.24 test; migration execution on an existing database; and browser-level verification. This work does not claim a successful real renewal.
+
+
+### Validation update — admin renewal slice
+
+- GitHub Actions run 168 on commit `cf35e4f` passed PHP lint and all configured router, IBSng lookup, renewal policy, renewal state, and renewal ledger contract tests.
+- The admin renewal form now verifies the selected plan maps to the same server and requires the account's parsed IBSng group to exactly match the chosen renewal group. A mismatch stops before any remote mutation.
+- The renewal result is confirmed by the native Web Panel redirect check in `IBSngClient::submitRenewalAttributes()`; the code does not claim a live A1.24 test. Manual database migration and live-instance/browser validation remain outstanding.
