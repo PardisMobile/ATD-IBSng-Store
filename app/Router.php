@@ -78,3 +78,20 @@ function store_infer_base_url(string $requestUri, array $routePaths): string
 
     return '';
 }
+
+
+/**
+ * Determine the application mount path before installation.
+ * Prefer the executing front-controller path when the web server exposes it;
+ * retain route-suffix inference for environments that rewrite SCRIPT_NAME.
+ */
+function store_detect_base_url(string $requestUri, string $scriptName, array $routePaths): string
+{
+    $scriptPath = parse_url($scriptName, PHP_URL_PATH);
+    if (is_string($scriptPath) && $scriptPath !== '' && basename($scriptPath) === 'router.php') {
+        $directory = dirname($scriptPath);
+        return $directory === '/' || $directory === '.' ? '' : rtrim($directory, '/');
+    }
+
+    return store_infer_base_url($requestUri, $routePaths);
+}
