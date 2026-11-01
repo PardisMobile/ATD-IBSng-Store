@@ -1,37 +1,29 @@
-# Admin Order Management
+# Admin Order Management and Feature Boundaries
 
-## Scope
-This document defines the admin-side order workflow for ATD IBSng Store. It is intentionally separate from customer checkout and payment gateway implementation.
+> **Correction:** This document previously mixed unrelated store capabilities and described an unverified admin provisioning workflow. That description was misleading and is withdrawn. Do not use the former workflow/checklist as requirements or implementation guidance.
 
-## Existing constraints
-- IBSng integration must reuse the already validated HTTP/HTML implementation in the project/reference code. Do not introduce an IBSng API client or rewrite that behavior.
-- The store supports a manager-operated test/manual path that can exercise account provisioning without collecting payment.
-- The test/manual path must not mark an order as paid or mutate payment state.
-- Payment gateways remain modular and can be integrated later.
-- Work is performed on `feat/router-safe-dispatch`; do not modify `main`.
+## Three distinct features
 
-## Intended admin workflow
-1. Admin opens an order from the order-management view.
-2. The view shows customer/order snapshot, product and server policy, payment state, provisioning history, and any existing subscription.
-3. Admin explicitly starts the appropriate provisioning action.
-4. The application validates the order/product/server/group mapping and records a provisioning attempt before making the remote call.
-5. The existing IBSng client/service is invoked for the operation; its established request/parsing behavior is retained.
-6. The result is recorded against the attempt and subscription/order provisioning status. Payment status remains unchanged.
-7. Duplicate submissions must be guarded using a stable idempotency key and database uniqueness/locking, so a retry does not create a second IBSng account.
-8. Failures are surfaced through a user-friendly message and a traceable attempt record; raw credentials and sensitive remote response content must not be exposed.
+The project has three separate concepts. They must not be merged in documentation, navigation, or implementation:
 
-## Implementation notes
-- Keep this capability in admin-facing modules and reuse the existing admin authentication and CSRF protections.
-- Never treat a successful provisioning result as proof of payment.
-- Never let a customer-facing checkout request trigger this manual test path.
-- Keep the IBSng group name exact as manually configured in the store.
-- The existing `admin/orders.php` sales report is not itself the order-management workflow; the management UI should be a separate module or an explicitly linked detail action.
+1. **Store Test** — a store-level test capability. Its exact scope and expected behavior must be taken from the original project requirements; it is not the IBSng test tools and is not the sales report. This document does not define or invent its workflow.
+2. **IBSng Test** — tools that test the IBSng integration itself (for example, connectivity or IBSng-side operations). These belong to the IBSng integration/admin tools, not the store test feature.
+3. **Sales Report** — reporting on sales/orders. It is a reporting feature and does not define, replace, or own either test capability.
 
-## Verification checklist
-- Admin authorization and CSRF validation.
-- Valid order and product mapping required.
-- Duplicate click/retry is safe.
-- Provisioning success creates/updates subscription and attempt records.
-- Provisioning failure remains visible and retryable without falsely marking payment paid.
-- No Telegram bot logic.
-- No changes to `main`.
+## Order/reporting boundary
+
+`admin/orders.php` is identified as the sales report. Do not treat it as the Store Test feature or as an order-provisioning workflow based solely on its name or current presence.
+
+Any future order-management or manual provisioning workflow requires its own explicit requirement and traceability; it must not be inferred from the sales report or from either test feature.
+
+## Existing project constraints
+
+- Reuse the established IBSng HTTP/HTML integration; do not introduce an IBSng API client or rewrite validated IBSng behavior.
+- Keep Store Test, IBSng Test, and Sales Report separate.
+- Payment gateways are modular and are a separate concern from the test feature definitions.
+- No Telegram bot logic in the Store.
+- Work on `feat/router-safe-dispatch`; do not modify `main`.
+
+## Documentation status
+
+The exact Store Test behavior is intentionally left unspecified here until it is verified against the original requirement/source discussion. Do not implement assumptions such as creating real IBSng users, simulating checkout, changing payment state, or provisioning orders under the label “Store Test” without that verification.
