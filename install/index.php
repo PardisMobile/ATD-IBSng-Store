@@ -20,22 +20,22 @@ $copy = [
  'fa' => [
   'title'=>'راه‌اندازی ATD IBSng Store','tag'=>'راه‌اندازی ساده و امن','intro'=>'فروشگاهتان را در چند مرحله آماده کنید.',
   'lang'=>'English','site'=>'عنوان فروشگاه','db'=>'اتصال پایگاه داده','host'=>'میزبان','name'=>'نام دیتابیس','dbuser'=>'کاربر دیتابیس','dbpass'=>'رمز دیتابیس',
-  'admin'=>'حساب مدیر','username'=>'نام کاربری','display'=>'نام نمایشی','email'=>'ایمیل بازیابی مدیر','password'=>'رمز عبور (حداقل ۱۲ کاراکتر)','confirm'=>'تکرار رمز عبور',
+  'admin'=>'حساب مدیر','username'=>'نام کاربری','display'=>'نام نمایشی','email'=>'ایمیل بازیابی مدیر','password'=>'رمز عبور (حداقل ۸ کاراکتر)','confirm'=>'تکرار رمز عبور',
   'test'=>'آزمایش اتصال','install'=>'نصب فروشگاه','done'=>'نصب با موفقیت انجام شد.','locked'=>'این فروشگاه قبلاً نصب شده است؛ نصب‌کننده قفل است.',
   'testok'=>'اتصال دیتابیس موفق بود.','badcsrf'=>'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.','dbbad'=>'اتصال برقرار نشد. اطلاعات دیتابیس و مجوزها را بررسی کنید.',
   'missing'=>'اطلاعات اتصال دیتابیس کامل نیست.','schema'=>'فایل ساختار دیتابیس خوانده نشد.','usernamebad'=>'نام کاربری باید ۳ تا ۱۰۰ حرف انگلیسی، عدد یا . _ - باشد.',
-  'passwordbad'=>'رمز عبور باید حداقل ۱۲ کاراکتر باشد.','confirmbad'=>'تکرار رمز عبور یکسان نیست.','emailbad'=>'ایمیل مدیر معتبر نیست.',
+  'passwordbad'=>'رمز عبور باید حداقل ۸ کاراکتر باشد.','confirmbad'=>'تکرار رمز عبور یکسان نیست.','emailbad'=>'ایمیل مدیر معتبر نیست.',
   'installbad'=>'نصب کامل نشد. اطلاعات دیتابیس و مجوز نوشتن فایل تنظیمات را بررسی کنید.',
   'success'=>'آماده‌اید!','sign'=>'ورود به پنل مدیریت','store'=>'مشاهده فروشگاه','step'=>'نصب مرحله‌ای','note'=>'تنظیمات دیگر را پس از نصب از پنل مدیریت تغییر می‌دهید.',
  ],
  'en' => [
   'title'=>'ATD IBSng Store Setup','tag'=>'Simple & secure setup','intro'=>'Get your store ready in a few clear steps.',
   'lang'=>'فارسی','site'=>'Store title','db'=>'Database connection','host'=>'Database host','name'=>'Database name','dbuser'=>'Database user','dbpass'=>'Database password',
-  'admin'=>'Administrator account','username'=>'Username','display'=>'Display name','email'=>'Administrator recovery email','password'=>'Password (at least 12 characters)','confirm'=>'Confirm password',
+  'admin'=>'Administrator account','username'=>'Username','display'=>'Display name','email'=>'Administrator recovery email','password'=>'Password (at least 8 characters)','confirm'=>'Confirm password',
   'test'=>'Test connection','install'=>'Install store','done'=>'Installation completed successfully.','locked'=>'This store is already installed. The installer is locked.',
   'testok'=>'Database connection succeeded.','badcsrf'=>'Invalid request. Refresh the page and try again.','dbbad'=>'Could not connect. Check database details and permissions.',
   'missing'=>'Database connection details are incomplete.','schema'=>'Could not read the database schema file.','usernamebad'=>'Username must be 3–100 characters using letters, numbers, dot, underscore or hyphen.',
-  'passwordbad'=>'Password must contain at least 12 characters.','confirmbad'=>'The passwords do not match.','emailbad'=>'Enter a valid administrator email address.',
+  'passwordbad'=>'Password must contain at least 8 characters.','confirmbad'=>'The passwords do not match.','emailbad'=>'Enter a valid administrator email address.',
   'installbad'=>'Installation failed. Check database details and permission to write the configuration file.',
   'success'=>'You are all set!','sign'=>'Open admin panel','store'=>'Visit store','step'=>'Guided installation','note'=>'Other settings can be changed later in the admin panel.',
  ],
@@ -84,7 +84,7 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !is_file($configPath)) {
  } else {
   $username=trim($values['admin_username']);
   if(!preg_match('/^[a-zA-Z0-9_.-]{3,100}$/',$username)) $errors[]=it('usernamebad');
-  if(strlen($adminPassword)<12) $errors[]=it('passwordbad');
+  if(strlen($adminPassword)<8) $errors[]=it('passwordbad');
   if(!hash_equals($adminPassword,$confirm)) $errors[]=it('confirmbad');
   if(!filter_var(trim($values['admin_email']),FILTER_VALIDATE_EMAIL)) $errors[]=it('emailbad');
   if(!$errors) {
@@ -188,8 +188,8 @@ fieldset{border:1px solid var(--border);border-radius:18px;padding:20px;margin:1
    <div class="field"><label for="admin_username"><?= install_e(it('username')) ?></label><input id="admin_username" name="admin_username" required autocomplete="username" value="<?= install_e($values['admin_username']) ?>"></div>
    <div class="field"><label for="admin_display_name"><?= install_e(it('display')) ?></label><input id="admin_display_name" name="admin_display_name" value="<?= install_e($values['admin_display_name']) ?>"></div>
    <div class="field"><label for="admin_email"><?= install_e(it('email')) ?></label><input id="admin_email" name="admin_email" type="email" required autocomplete="email" value="<?= install_e($values['admin_email']) ?>"></div>
-   <div class="field"><label for="admin_password"><?= install_e(it('password')) ?></label><input id="admin_password" name="admin_password" type="password" required minlength="12" autocomplete="new-password"></div>
-   <div class="field"><label for="admin_password_confirm"><?= install_e(it('confirm')) ?></label><input id="admin_password_confirm" name="admin_password_confirm" type="password" required minlength="12" autocomplete="new-password"></div>
+   <div class="field"><label for="admin_password"><?= install_e(it('password')) ?></label><input id="admin_password" name="admin_password" type="password" required minlength="8" autocomplete="new-password"></div>
+   <div class="field"><label for="admin_password_confirm"><?= install_e(it('confirm')) ?></label><input id="admin_password_confirm" name="admin_password_confirm" type="password" required minlength="8" autocomplete="new-password"></div>
   </div></fieldset>
   <div class="actions"><button class="button secondary" type="submit" name="action" value="test"><?= install_e(it('test')) ?></button><button class="button primary" type="submit" name="action" value="install"><?= install_e(it('install')) ?></button></div>
  </form>
