@@ -90,7 +90,11 @@ function store_detect_base_url(string $requestUri, string $scriptName, array $ro
     $scriptPath = parse_url($scriptName, PHP_URL_PATH);
     if (is_string($scriptPath) && $scriptPath !== '' && basename($scriptPath) === 'router.php') {
         $directory = dirname($scriptPath);
-        return $directory === '/' || $directory === '.' ? '' : rtrim($directory, '/');
+        if ($directory !== '/' && $directory !== '.') {
+            return rtrim($directory, '/');
+        }
+        // A root-level SCRIPT_NAME does not prove that the app itself is
+        // mounted at root; infer a subdirectory from the known route suffix.
     }
 
     return store_infer_base_url($requestUri, $routePaths);
