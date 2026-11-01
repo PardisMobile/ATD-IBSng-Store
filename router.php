@@ -2,10 +2,11 @@
 declare(strict_types=1);
 
 /**
- * Small allowlist-based front controller.
+ * Explicit allowlist front controller.
  *
- * Existing .php URLs remain valid; the dispatcher never derives an include
- * path from user input. Query strings are preserved by Apache.
+ * It must work before installation too: config.php does not exist yet then,
+ * while /install/ must remain reachable. Existing .php URLs and query strings
+ * are supported. Request data is never used as an include path.
  */
 require_once __DIR__ . '/app/bootstrap.php';
 
@@ -14,8 +15,17 @@ function store_route_path(): string
     $requestPath = parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
     $requestPath = is_string($requestPath) ? $requestPath : '/';
 
-    $basePath = parse_url((string)(app_config()['base_url'] ?? ''), PHP_URL_PATH);
-    $basePath = is_string($basePath) ? rtrim($basePath, '/') : '';
+    // Read the configured base path without calling app_config(), whose
+    // uninstalled-state guard intentionally exits before the installer.
+    $basePath = '';
+    $configFile = __DIR__ . '/config.php';
+    if (is_file($configFile)) {
+        $config = require $configFile;
+        if (is_array($config)) {
+            $configuredPath = parse_url((string)($config['base_url'] ?? ''), PHP_URL_PATH);
+            $basePath = is_string($configuredPath) ? rtrim($configuredPath, '/') : '';
+        }
+    }
 
     if ($basePath !== '' && ($requestPath === $basePath || str_starts_with($requestPath, $basePath . '/'))) {
         $requestPath = substr($requestPath, strlen($basePath));
