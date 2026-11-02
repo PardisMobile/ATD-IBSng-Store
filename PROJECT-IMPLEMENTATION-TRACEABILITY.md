@@ -313,3 +313,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 **Required implementation boundary:** introduce the customer renewal order path and payment-provider contract using the existing Store order/payment/provisioning architecture. The payment callback must verify amount, currency, order identity, provider reference and provider result; persist the transaction and paid transition atomically/idempotently; and dispatch renewal through the existing central service using an order-bound idempotency key. Repeated callbacks must return the prior result without another IBSng mutation. If the remote mutation result is uncertain, persist a review-required state and prohibit automatic replay.
 
 **Not changed in this audit:** no UI/sidebar changes, no direct IBSng user-management scope, no customer payment status changes, and no claim of live gateway or IBSng verification.
+
+
+### Detailed renewal-service contract audit
+
+- `IBSngRenewalService::renew()` accepts a caller-supplied idempotency key, serializes concurrent attempts with a MySQL advisory lock scoped to server + normalized username, resolves a completed prior ledger entry, and blocks when an unresolved ledger entry exists.
+- Before the IBSng mutation it reads remote account state and reserves the `ibsng_renewals` row. A remote exception after reservation is handled as uncertain and attempts to mark that row `needs_review`; the service has no automatic remote retry.
+- `IBSngRenewalCoordinator::resolveExisting()` reuses only completed results and verifies the key's server, username, and product binding. A pending/failed/needs_review record is a stop condition.
+- This is suitable groundwork for customer order dispatch, but it does **not** implement payment callback idempotency or order-level claiming. Those must be added separately: lock/claim the paid renewal order and transaction, then call the service once with a deterministic key derived from the order's immutable identity.
+- Recovery nuance: payment callback replay should acknowledge the already-verified transaction and never start a second renewal dispatch. A separate reconciler/operator action must inspect the renewal ledger/IBSng state before resolving a `needs_review` operation; simply resetting it to pending or creating a fresh key is unsafe.
+- Existing `admin/orders.php` is only a paid sales aggregate report. It is not an order processing console and currently has no renewal-order handling.
+
+**Provider dependency:** repository source currently exposes no concrete gateway adapter/configuration or callback endpoint. A real callback cannot be safely implemented without the selected provider's documented initiation and server-side verification contract. Keep provider logic behind an adapter rather than fabricating a generic “verified” response or accepting browser-return parameters as proof of payment.
