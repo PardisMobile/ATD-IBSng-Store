@@ -396,3 +396,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Invalid/missing amounts, unsupported currencies/methods, and out-of-range USDT values fail closed.
 - This is a pure amount-selection helper only. It is not yet called by checkout, does not create a transaction, and does not enable a crypto provider. Payment initiation/callback state machine and idempotent payment processing remain open.
 - No PHP lint, automated tests, gateway sandbox, or live payment verification was performed.
+
+
+### 2026-11-02 — Clarify crypto display setting semantics
+
+**Status: UI LABEL CORRECTED ON `main` / NOT RUNTIME-VERIFIED.**
+
+- Updated the label in `admin/settings.php` so the USDT display toggle explicitly says it is a display option and does not enable crypto payment.
+- This aligns the admin control with the current implementation: the setting only gates storefront price visibility; no crypto payment adapter or verified crypto callback exists.
+- Commit: `ff8755c0e1b649ce12c8751f8a8404014e359ca3`.
+- No runtime/browser validation was performed.
