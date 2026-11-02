@@ -12,6 +12,9 @@ interface PaymentGateway
 {
     public function code(): string;
 
+    /** Extract the provider's transaction reference from untrusted callback data. */
+    public function callbackReference(array $callback): string;
+
     /**
      * Begin checkout for an already-persisted pending order.
      *
