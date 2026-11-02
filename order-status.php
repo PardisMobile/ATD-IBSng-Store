@@ -4,22 +4,28 @@ declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
+require_once __DIR__ . '/app/OrderTrackingCode.php';
 
 $config = app_config();
-$orderPublicId = strtolower(trim((string)($_GET['order'] ?? '')));
+$orderLookupValue = trim((string)($_GET['order'] ?? ''));
+$isTrackingCode = (bool)preg_match('/^ATD-?[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{7}$/iD', $orderLookupValue);
+$orderPublicId = strtolower($orderLookupValue);
+$trackingCode = OrderTrackingCode::normalize($orderLookupValue);
 $order = null;
 $attempts = [];
 $accountPassword = null;
-$notFound = !preg_match('/^[a-f0-9]{32}$/D', $orderPublicId);
+$notFound = !$isTrackingCode && !preg_match('/^[a-f0-9]{32}$/D', $orderPublicId);
 
 if (!$notFound) {
     try {
         $pdo = Database::connection();
+        $lookupColumn = $isTrackingCode ? 'tracking_code' : 'public_id';
+        $lookupValue = $isTrackingCode ? ('ATD-' . substr($trackingCode, 3)) : $orderPublicId;
         $stmt = $pdo->prepare(
-            'SELECT id, public_id, product_name_snapshot, username, password_ciphertext, payment_status, order_status, created_at
-             FROM orders WHERE public_id = ? LIMIT 1'
+            'SELECT id, public_id, tracking_code, product_name_snapshot, username, password_ciphertext, payment_status, order_status, created_at
+             FROM orders WHERE ' . $lookupColumn . ' = ? LIMIT 1'
         );
-        $stmt->execute([$orderPublicId]);
+        $stmt->execute([$lookupValue]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
         if (!$order) {
             $notFound = true;
@@ -33,7 +39,7 @@ if (!$notFound) {
             );
             $attemptStmt->execute([(int)$order['id']]);
             $attempts = $attemptStmt->fetchAll(PDO::FETCH_ASSOC);
-            if (array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
+            if (!$isTrackingCode && array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
                 try {
                     $accountPassword = app_decrypt_secret((string)$order['password_ciphertext']);
                 } catch (Throwable $decryptError) {
@@ -83,7 +89,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <p class="muted">شناسه پیگیری معتبر نیست یا سفارش در دسترس نیست. لینک پیگیری را از صفحه نتیجه پرداخت باز کنید.</p>
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
-<div class="notice"><strong>شناسه سفارش:</strong> <code><?= e((string)$order['public_id']) ?></code><br><strong>نام کاربری:</strong> <?= e((string)$order['username']) ?><br><strong>وضعیت سفارش:</strong> <?= e($attemptLabel((string)$order['order_status'])) ?></div>
+<div class="notice"><strong>کد پیگیری:</strong> <code><?= e((string)$order['tracking_code']) ?></code><br><strong>وضعیت سفارش:</strong> <?= e($attemptLabel((string)$order['order_status'])) ?></div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
 <p class="muted">پرداخت این سفارش هنوز تأیید نشده است؛ تا پیش از تأیید پرداخت، حسابی در IBSng ایجاد نمی‌شود.</p>
 <?php elseif (!$attempts): ?>
@@ -94,10 +100,10 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
 <div><?php if (trim((string)($attempt['service_name'] ?? '')) !== ''): ?><strong><?= e((string)$attempt['service_name']) ?></strong><?php endif; ?><small><?= e((string)$attempt['operation']) ?></small>
-<?php if ($attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
+<?php if (!$isTrackingCode && $attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
 <div class="account-details"><span>نام کاربری: <code><?= e((string)$order['username']) ?></code></span>
 <details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
-<?php elseif ($attempt['status'] === 'succeeded'): ?>
+<?php elseif (!$isTrackingCode && $attempt['status'] === 'succeeded'): ?>
 <small>حساب ایجاد شده است؛ نمایش رمز در حال حاضر در دسترس نیست.</small>
 <?php endif; ?>
 </div>
@@ -107,7 +113,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <p class="muted">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
 <?php endif; ?>
-<p class="muted">این لینک خصوصی سفارش است؛ آن را در اختیار افراد دیگر قرار ندهید. اطلاعات ورود فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است.</p>
+<?php if ($isTrackingCode): ?><p class="muted">کد پیگیری فقط برای مشاهده وضعیت سفارش است و به‌تنهایی اطلاعات ورود را نمایش نمی‌دهد. برای دریافت اطلاعات حساب از لینک خصوصی یا روش بازیابی ایمیلی استفاده کنید.</p><?php else: ?><p class="muted">این لینک خصوصی سفارش است؛ آن را در اختیار افراد دیگر قرار ندهید. اطلاعات ورود فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است.</p><?php endif; ?>
 <?php endif; ?>
 </section>
 </main>
