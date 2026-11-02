@@ -562,3 +562,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The instructions say to register the URL in the IRCrypto dashboard and explain signature authentication plus server-side invoice/payment validation.
 - Preserved the endpoint location outside `app/Payments/gateways/`, avoiding interference with adapter auto-discovery.
 - No PHP lint, automated test, admin browser check, cPanel subdirectory test, or real webhook delivery was executed for this source change.
+
+### 2026-11-03 — Editable email template editor slice
+
+**Status: COMMITTED TO `main`; syntax/runtime and delivery wiring not yet verified.**
+
+- `app/EmailTemplates.php`: template defaults and persisted template lookup, event catalog, and named-variable renderer.
+- `admin/email-templates.php`: admin-editable subject, HTML body, plain-text alternative, and sandboxed sample preview for purchase success, renewal success, order recovery, email verification, and expiration reminder.
+- `app/Router.php` and `admin/index.php`: explicit route registration and dashboard navigation.
+- The template editor does not itself send email or activate expiration reminders. Separate transport configuration (host mail(), sender name/address, test-send), actual event integration, delivery status/retry, and secured customer email ownership recovery remain open.
+- PHP lint could not be run in the available environment (the repository could not be cloned because GitHub DNS/network resolution was unavailable). No browser, mail transport, or live end-to-end verification is claimed.
