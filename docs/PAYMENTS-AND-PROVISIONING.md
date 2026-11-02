@@ -1,5 +1,7 @@
 # Provisioning queue and payment-provider extensions
 
+> Current payment flow, state transitions, price snapshots, callbacks, and currency configuration are defined in [PAYMENT-ARCHITECTURE.md](PAYMENT-ARCHITECTURE.md). This file focuses on adapter extension and IBSng provisioning lifecycle.
+
 ## Payment adapters
 
 PaymentManager is the single registry and dispatcher for payment modules. No provider is selected on a fresh install; an empty payment_provider setting means payment is disabled. Each adapter implements PaymentGateway; its optional configurationFields() metadata drives the admin settings UI and validation. Provider-specific values are stored as payment_<provider-code>_<field-key> and passed generically to the adapter.
