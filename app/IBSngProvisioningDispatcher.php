@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/Crypto.php';
 require_once __DIR__ . '/IBSngClient.php';
+require_once __DIR__ . '/CustomerAccountDelivery.php';
 
 /**
  * Executes one durable create-account queue item.
@@ -205,6 +206,10 @@ final class IBSngProvisioningDispatcher
             $update = $this->pdo->prepare("UPDATE orders SET order_status=? WHERE id=? AND payment_status='paid'");
             $update->execute([$orderStatus, $orderId]);
             if ($ownsTransaction) $this->pdo->commit();
+            if ($ownsTransaction) {
+                try { CustomerAccountDelivery::afterProvisioning($this->pdo, $orderId); }
+                catch (Throwable $emailError) { error_log('Account delivery hook failed for order ' . $orderId . ': ' . $emailError->getMessage()); }
+            }
         } catch (Throwable $e) {
             if ($ownsTransaction && $this->pdo->inTransaction()) $this->pdo->rollBack();
             throw $e;
