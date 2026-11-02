@@ -19,6 +19,11 @@ final class IRCryptoGateway implements PaymentGateway
         return 'ircrypto';
     }
 
+    public function supportedCurrencies(): array
+    {
+        return ['IRR', 'IRT', 'USDT'];
+    }
+
     public function callbackReference(array $callback): string
     {
         return trim((string)($callback['invoice_id'] ?? $callback['id'] ?? ''));
