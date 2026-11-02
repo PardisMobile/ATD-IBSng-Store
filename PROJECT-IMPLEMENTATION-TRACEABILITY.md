@@ -572,3 +572,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `app/Router.php` and `admin/index.php`: explicit route registration and dashboard navigation.
 - The template editor does not itself send email or activate expiration reminders. Separate transport configuration (host mail(), sender name/address, test-send), actual event integration, delivery status/retry, and secured customer email ownership recovery remain open.
 - PHP lint could not be run in the available environment (the repository could not be cloned because GitHub DNS/network resolution was unavailable). No browser, mail transport, or live end-to-end verification is claimed.
+
+
+### 2026-11-03 — Provisioning-bound account email delivery + usage guide
+
+**Status: SOURCE COMMITTED ON `main`; not runtime-verified.**
+
+- `app/CustomerAccountDelivery.php` coordinates the customer delivery email after provisioning reaches a terminal state. It includes the account credentials and only successful destination labels.
+- `app/IBSngProvisioningDispatcher.php` invokes the delivery hook after the provisioning result is committed. A mail error is logged without changing the paid order or successful account state.
+- Added unique durable delivery ledger `customer_email_deliveries` to `database/schema.sql` and migration `database/migrations/2026-11-03-customer-email-deliveries.sql`.
+- Updated default `purchase_success` template with credentials, successful destination labels, guide link, and order tracking link. Added public `guide.php` and its explicit router entry.
+- Customer-facing destination name only: uses configured `service_name`; no internal server name, address/port, or IBSng administrator credentials are included.
+- Verification outstanding: PHP lint, schema/migration execution, mail transport test, and full payment→provisioning→email end-to-end test. Failed-send retry/recovery is not implemented yet; the delivery record is durable and the error is logged.
