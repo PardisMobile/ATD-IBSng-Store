@@ -108,8 +108,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <title>وضعیت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}.status-card{padding:clamp(18px,4vw,30px);margin:22px 0 36px}.status-card h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.5;margin:8px 0 14px}.notice{padding:18px;border:1px solid var(--border);border-radius:18px;margin:14px 0;line-height:1.95;background:linear-gradient(145deg,rgba(28,39,61,.78),rgba(15,22,38,.86))}.muted{color:var(--muted);line-height:1.8}.target-list{display:grid;gap:12px;margin:18px 0}.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(145deg,rgba(28,39,61,.84),rgba(15,22,38,.9))}.target strong{display:block}.target small{display:block;color:var(--muted);margin-top:4px}.account-details{display:grid;gap:8px;margin-top:10px}.account-details code{overflow-wrap:anywhere}.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:8px}.state{white-space:nowrap;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(68,214,160,.1);color:var(--green)}@media(max-width:520px){.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}.status-shell{width:calc(100% - 24px)}}
-.purchase-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.purchase-fact{padding:15px 16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2);min-width:0}.purchase-fact span{display:block;color:var(--muted);font-size:.85rem}.purchase-fact strong{display:block;margin-top:7px;overflow-wrap:anywhere;line-height:1.7}.purchase-fact .paid-amount{color:var(--green)}.credential-panel{padding:14px;border:1px solid var(--border);border-radius:16px;background:rgba(24,36,58,.7)}.credential-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 0}.credential-row+ .credential-row{border-top:1px solid var(--border)}.credential-row>span{color:var(--muted)}.credential-row code{overflow-wrap:anywhere;text-align:left}.credential-row details{max-width:100%}.credential-row summary{cursor:pointer}.target{min-width:0}.target>div:first-child{min-width:0;overflow-wrap:anywhere}@media(max-width:520px){.purchase-summary{grid-template-columns:1fr}.credential-row{align-items:flex-start;flex-direction:column}}</style>
+.status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}.status-card{padding:clamp(18px,4vw,30px);margin:22px 0 36px}.status-card h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.5;margin:8px 0 14px}.notice{padding:18px;border:1px solid var(--border);border-radius:18px;margin:14px 0;line-height:1.95;background:linear-gradient(145deg,rgba(28,39,61,.78),rgba(15,22,38,.86))}.muted{color:var(--muted);line-height:1.8}.target-list{display:grid;gap:12px;margin:18px 0}.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(145deg,rgba(28,39,61,.84),rgba(15,22,38,.9))}.target strong{display:block}.target small{display:block;color:var(--muted);margin-top:4px}.account-details{display:grid;gap:8px;margin-top:10px}.account-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.account-spec{padding:13px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);min-width:0}.account-spec span{display:block;color:var(--muted);font-size:.85rem}.account-spec strong{display:block;margin-top:6px;overflow-wrap:anywhere;line-height:1.7}.account-specs .full{grid-column:1/-1}.account-details code{overflow-wrap:anywhere}.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:8px}.state{white-space:nowrap;font-weight:700;padding:6px 12px;border-radius:999px;background:rgba(68,214,160,.1);color:var(--green)}@media(max-width:520px){.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}.status-shell{width:calc(100% - 24px)}}
+.purchase-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}.purchase-fact{padding:15px 16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2);min-width:0}.purchase-fact span{display:block;color:var(--muted);font-size:.85rem}.purchase-fact strong{display:block;margin-top:7px;overflow-wrap:anywhere;line-height:1.7}.purchase-fact .paid-amount{color:var(--green)}.credential-panel{padding:14px;border:1px solid var(--border);border-radius:16px;background:rgba(24,36,58,.7)}.credential-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 0}.credential-row+ .credential-row{border-top:1px solid var(--border)}.credential-row>span{color:var(--muted)}.credential-row code{overflow-wrap:anywhere;text-align:left}.credential-row details{max-width:100%}.credential-row summary{cursor:pointer}.target{min-width:0}.target>div:first-child{min-width:0;overflow-wrap:anywhere}@media(max-width:520px){.purchase-summary{grid-template-columns:1fr}.credential-row{align-items:flex-start;flex-direction:column}.account-specs{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <main class="status-shell">
@@ -134,18 +134,33 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php elseif (!$attempts): ?>
 <p class="muted">پرداخت ثبت شده است، اما هنوز نتیجه‌ای برای مقصدهای فعال‌سازی در دسترس نیست. لطفاً کمی بعد دوباره بررسی کنید.</p>
 <?php else: ?>
-<h2>نتیجه هر مقصد فعال‌سازی</h2>
+<h2>مشخصات اکانت</h2>
 <div class="target-list">
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
 <div><?php if (trim((string)($attempt['service_name'] ?? '')) !== ''): ?><strong><?= e((string)$attempt['service_name']) ?></strong><?php endif; ?><small><?= e((string)$attempt['operation']) ?></small>
-<?php if ($attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
+<?php if ($attempt['status'] === 'succeeded'): ?>
+<?php $details = $accountDetails[(int)$attempt['server_id']] ?? null; ?>
 <div class="account-details credential-panel">
-<div class="credential-row"><span>نام کاربری</span><code><?= e((string)$order['username']) ?></code></div>
-<div class="credential-row"><span>رمز عبور</span><details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
+<div class="account-specs">
+<div class="account-spec"><span>نام کاربری</span><strong><?= e((string)$order['username']) ?></strong></div>
+<?php if (is_array($details)): ?>
+<div class="account-spec"><span>پلن</span><strong><?= e((string)$details['plan']) ?></strong></div>
+<div class="account-spec"><span>سرور</span><strong><?= e((string)$details['server']) ?></strong></div>
+<div class="account-spec"><span>مدت اعتبار</span><strong><?= e((string)$details['validity']) ?> روز</strong></div>
+<div class="account-spec"><span>محدودیت حجم</span><strong><?= $details['quota_bytes'] === null ? 'نامحدود' : e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) . ' گیگابایت' ?></strong></div>
+<div class="account-spec"><span>تاریخ انقضا</span><strong><?= e((string)$details['expiry'] ?: 'نامشخص') ?></strong></div>
+<div class="account-spec"><span>وضعیت اعتبار</span><strong><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
+<?php else: ?>
+<div class="account-spec"><span>مشخصات سرویس</span><strong>در حال حاضر قابل دریافت نیست</strong></div>
+<?php endif; ?>
 </div>
-<?php elseif ($attempt['status'] === 'succeeded'): ?>
-<small>حساب ایجاد شده است؛ نمایش رمز در حال حاضر در دسترس نیست.</small>
+<?php if (is_string($accountPassword)): ?>
+<div class="credential-row"><span>رمز عبور</span><details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
+<?php else: ?>
+<div class="credential-row"><span>رمز عبور</span><span>در حال حاضر قابل نمایش نیست</span></div>
+<?php endif; ?>
+</div>
 <?php endif; ?>
 </div>
 <div class="state"><?= e($attemptLabel((string)$attempt['status'])) ?></div>
