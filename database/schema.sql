@@ -162,7 +162,7 @@ CREATE TABLE IF NOT EXISTS provisioning_attempts (
     order_id BIGINT UNSIGNED NOT NULL,
     server_id BIGINT UNSIGNED NOT NULL,
     operation ENUM('create','renew','change_group','delete','sync') NOT NULL,
-    status ENUM('queued','running','succeeded','failed','skipped') NOT NULL DEFAULT 'queued',
+    status ENUM('queued','running','succeeded','failed','skipped','needs_review') NOT NULL DEFAULT 'queued',
     attempt_number INT UNSIGNED NOT NULL DEFAULT 1,
     idempotency_key VARCHAR(190) NOT NULL,
     remote_user_id VARCHAR(150) NULL,
