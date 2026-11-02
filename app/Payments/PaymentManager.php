@@ -77,12 +77,14 @@ final class PaymentManager
         }
 
         if (!isset($this->instances[$code])) {
-            $file = __DIR__ . '/' . $code . '.php';
-            if (!is_file($file)) {
-                throw new RuntimeException('Payment provider adapter file is missing.');
-            }
-            require_once $file;
             $class = self::$gatewayClasses[$code];
+            if (!class_exists($class)) {
+                $file = __DIR__ . '/' . $code . '.php';
+                if (!is_file($file)) {
+                    throw new RuntimeException('Payment provider adapter file is missing.');
+                }
+                require_once $file;
+            }
             if (!class_exists($class)) {
                 throw new RuntimeException('Payment provider adapter class is missing.');
             }
