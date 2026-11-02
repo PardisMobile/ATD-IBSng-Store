@@ -11,7 +11,7 @@ final class OrderTrackingCode
 {
     private const PREFIX = 'ATD';
     private const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    private const RANDOM_LENGTH = 6;
+    private const RANDOM_LENGTH = 7;
     private const MAX_ATTEMPTS = 8;
 
     public static function generate(PDO $pdo): string
