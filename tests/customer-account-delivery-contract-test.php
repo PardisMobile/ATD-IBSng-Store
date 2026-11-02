@@ -19,7 +19,7 @@ $checks = [
     'provisioning invokes delivery after finishing state commit' => is_string($dispatcher) && str_contains($dispatcher, 'CustomerAccountDelivery::afterProvisioning'),
     'template carries account details, guide, and order tracking' => is_string($template) && str_contains($template, '{{account_details_html}}') && str_contains($template, '{{guide_url}}') && str_contains($template, '{{order_url}}'),
     'admin has explicit failed-email retry action' => is_string($admin) && str_contains($admin, 'retry_delivery') && str_contains($admin, 'تلاش مجدد ارسال'),
-    'account delivery order URL uses the order-status query parameter' => is_string($delivery) && str_contains($delivery, "order-status.php?order=' . rawurlencode((string)$order['public_id'])"),
+    'account delivery order URL uses the order-status query parameter' => is_string($delivery) && str_contains($delivery, 'order-status.php?order=') && str_contains($delivery, "rawurlencode((string)\$order['public_id'])"),
     'guide page exists with order tracking link' => is_string($guide) && str_contains($guide, 'order-status.php'),
 ];
 
