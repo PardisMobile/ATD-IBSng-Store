@@ -59,6 +59,7 @@ Best-effort immediate queue dispatch (request-time; no worker)
 | `ircrypto-webhook.php` | IRCrypto signed POST delivery validation; then calls PaymentFlow for server-side invoice verification. |
 | `admin/settings.php` | Provider selection, module-provided configuration fields, and supported currency-mode selection. |
 | `admin/provisioning.php` | Recovery/reconciliation for provisioning states; does not undo verified payment. |
+| `admin/payment-reconciliation.php` | Manual review of gateway-initiation transactions with no persisted provider reference; records a required operator note before releasing the order for another attempt. |
 
 ## Order price and currency rules
 
@@ -81,6 +82,13 @@ The adapter's `supportedCurrencies()` declares capabilities. Admin only renders 
 Current adapters:
 - `zarinpal`: `IRR`, `IRT`; fiat only.
 - `ircrypto`: `IRR`, `IRT`, `USDT`; admin may configure one mode at a time.
+
+## Ambiguous gateway initiation
+
+- After the outbound gateway initiation call begins, an exception is not assumed to mean that no invoice was created. The internal transaction remains `initiated` with no provider reference, and the active-transaction guard prevents a new attempt for the same order.
+- An administrator can review these records from the dashboard's **بررسی پرداخت‌های مبهم** page. The page does not call the gateway and must only be used after checking the provider portal for an outstanding invoice.
+- Releasing an ambiguous transaction requires a non-empty reconciliation note. The service transitions only a matching `initiated` row with a NULL provider reference to `failed`; the note and resolution timestamp are retained in `raw_result_json`. This is an operator assertion, not a provider-side cancellation.
+- Do not mark a transaction failed if a payable invoice may still exist. Reconcile with the gateway first; otherwise a customer could pay twice.
 
 ## Verification and idempotency guarantees
 
