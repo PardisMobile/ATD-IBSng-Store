@@ -453,7 +453,7 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 
 **Status: destination snapshot and durable queue code added; remote provisioning execution NOT implemented or runtime-verified.**
 
-- Checkout persists the selected IBSng server ID, group ID, and exact group name into `orders.server_targets_snapshot`; later product/server-group mapping changes do not silently redirect the order.
+- Checkout persists every active server/group mapping configured for that product, including server ID, IBSng group ID, and exact group name, into `orders.server_targets_snapshot`. One destination uses `selected`; multiple product destinations use `configured_set`. Username availability is checked against each captured active destination before accepting the order. Later product/server-group mapping changes do not silently redirect the order. This source-flow change is in commit `dc381ded`.
 - Fresh-install schema includes the JSON snapshot column. Existing installations require the one-time migration `database/migrations/2026-11-02-order-target-snapshot.sql`.
 - After verified payment, `PaymentTransactionService::confirmVerified()` inserts idempotent `create` provisioning attempts using only captured order targets, in the same database transaction. It changes order status to `provisioning` when a queue row is inserted.
 - This stage only creates the durable queue. It does not call IBSng `createUser()`, implement an admin retry/reconciliation screen, or resolve uncertain remote outcomes. Account activation is not complete until those pieces are implemented.
