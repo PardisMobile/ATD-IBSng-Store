@@ -16,13 +16,14 @@ $error = '';
 $account = null;
 $serverLabel = '';
 $username = trim((string)($_POST['username'] ?? ''));
+$accountPassword = (string)($_POST['account_password'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $provided = trim((string)($_POST['captcha'] ?? ''));
     if (!hash_equals($captcha, $provided)) {
         $error = 'کد چهاررقمی صحیح نیست؛ دوباره تلاش کنید.';
-    } elseif ($username === '' || strlen($username) > 128) {
-        $error = 'نام کاربری معتبر وارد کنید.';
+    } elseif ($username === '' || strlen($username) > 128 || $accountPassword === '') {
+        $error = 'نام کاربری و رمز عبور IBSng را وارد کنید.';
     } else {
         try {
             $pdo = Database::connection();
@@ -36,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $data = $client->lookupUser($username);
                     $state = $client->getRenewalState($username);
                     $credentials = $client->getCredentials($username);
+                    if (!hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
+                        // Account username exists, but supplied IBSng account password is invalid.
+                        continue;
+                    }
                     $matched[] = [
                         'server' => (string)($server['service_name'] ?: $server['name']),
                         'username' => $username,
@@ -52,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $e;
                 }
             }
-            if (!$matched) throw new RuntimeException('این نام کاربری در سرورهای فعال IBSng پیدا نشد.');
+            if (!$matched) throw new RuntimeException('نام کاربری یا رمز عبور IBSng صحیح نیست، یا حساب روی سرورهای فعال پیدا نشد.');
             $account = $matched;
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
         } catch (Throwable $e) {
@@ -81,11 +86,12 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e($title) ?></a><nav><a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری خریدها</a></nav></header>
 <section class="panel account-card">
 <div class="eyebrow">IBSng Customer Portal</div><h1>مشاهده مشخصات حساب</h1>
-<p class="muted-note">نام کاربری IBSng را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ارسال خودکار فرم است و برای احراز مالکیت حساب استفاده نمی‌شود.</p>
+<p class="muted-note">با نام کاربری و رمز عبور خودِ حساب IBSng وارد شوید. کد چهاررقمی فقط ضدربات است.</p>
 <?php if ($error !== ''): ?><div class="account-error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="account-form">
 <div style="display:grid;gap:12px">
 <div class="field"><label for="username">نام کاربری IBSng</label><input id="username" name="username" value="<?= e($username) ?>" required autocomplete="username"></div>
+<div class="field"><label for="account_password">رمز عبور حساب IBSng</label><input id="account_password" name="account_password" type="password" required autocomplete="current-password"></div>
 <div class="field"><label for="captcha">کد چهاررقمی</label><div class="captcha-row"><span class="captcha-code" aria-label="کد ضدربات"><?= e($captcha) ?></span><input id="captcha" name="captcha" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="کد را وارد کنید" required></div></div>
 </div><button class="button primary" type="submit">نمایش مشخصات</button>
 </form>
