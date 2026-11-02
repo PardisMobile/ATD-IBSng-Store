@@ -338,3 +338,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Payment success and IBSng provisioning outcome must remain separate states. If remote IBSng mutation has an ambiguous outcome, do not blindly replay it; mark for reconciliation/review.
 - Zarinpal API currency unit/amount interpretation and code-101 verification semantics require current authoritative documentation review and sandbox/real-provider testing before enabling live payment. No live payment validation is claimed.
 - Validation still required: transaction/order consistency tests; forged, altered, mismatched, and repeated callbacks; callback concurrency; provider timeout and duplicate callback cases; provisioning exactly-once/reconciliation behavior; PHP lint; gateway sandbox test; live IBSng integration tests.
+
+
+### 2026-11-02 — Provider-independent payment resolution groundwork
+
+**Status: IMPLEMENTED IN SOURCE / END-TO-END PAYMENT FLOW STILL OPEN.**
+
+- Added `app/Payments/PaymentManager.php` on `main`. It resolves a gateway from a server-side allowlist and delegates initiation/verification through the existing `PaymentGateway` contract.
+- Checkout initiation resolves the configured selected provider. Callback verification resolves the provider persisted on the payment transaction, not the current global selection. This is intentional: changing the selected gateway must not invalidate or redirect an already-started transaction to another provider.
+- Provider settings are passed as trusted, provider-keyed server-side settings. The manager does not accept credentials from browser input.
+- The manager currently registers only the existing Zarinpal adapter as an available implementation. This does **not** make Zarinpal mandatory: the registry is the explicit adapter inventory, and a future provider can be added as a separate adapter implementing `PaymentGateway` plus one registry entry. Admin selection/settings persistence, transaction orchestration, callback route, atomic paid transition, provisioning dispatch, tests, and live gateway verification remain incomplete.
+- No PHP runtime/lint or end-to-end payment test was executed in this environment. Do not describe payment as enabled or production-ready based on this resolver alone.
