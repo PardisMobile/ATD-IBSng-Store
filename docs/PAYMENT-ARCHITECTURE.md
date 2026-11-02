@@ -56,7 +56,7 @@ Best-effort immediate queue dispatch (request-time; no worker)
 | `app/Payments/PaymentFlow.php` | Checkout initiation and callback orchestration; does not itself trust callback payload as proof. |
 | `app/Payments/PaymentTransactionService.php` | Durable transaction/order state transitions, amount consistency checks, and atomic queue creation after verified payment. |
 | `payment-callback.php` | Customer-facing provider return endpoint. |
-| `ircrypto-webhook.php` | IRCrypto signed POST delivery validation; then calls PaymentFlow for server-side invoice verification. |
+| `webhook/ircrypto.php` | IRCrypto signed POST delivery validation; then calls PaymentFlow for server-side invoice verification. Kept outside `app/Payments/gateways/` so automatic adapter discovery cannot load it as a gateway module. |
 | `admin/settings.php` | Provider selection, module-provided configuration fields, and supported currency-mode selection. |
 | `admin/provisioning.php` | Recovery/reconciliation for provisioning states; does not undo verified payment. |
 | `admin/payment-reconciliation.php` | Manual review of gateway-initiation transactions with no persisted provider reference; records a required operator note before releasing the order for another attempt. |
