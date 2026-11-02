@@ -18,8 +18,8 @@ final class EmailTemplates
     private const DEFAULTS = [
         'purchase_success' => [
             'subject' => 'خرید شما در {{site_name}} ثبت شد',
-            'html' => '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><body style="margin:0;background:#f3f5fa;font-family:Tahoma,Arial,sans-serif;color:#172033"><main style="max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>خرید شما با موفقیت ثبت شد.</p><p>شناسه سفارش: <strong>{{order_id}}</strong></p><p><a href="{{order_url}}">مشاهده سفارش</a></p></main></body></html>',
-            'text' => "{{site_name}}\nسلام {{customer_name}}،\nخرید شما با موفقیت ثبت شد.\nشناسه سفارش: {{order_id}}\nمشاهده سفارش: {{order_url}}",
+            'html' => '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><body style="margin:0;background:#f3f5fa;font-family:Tahoma,Arial,sans-serif;color:#172033"><main style="max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>خرید شما با موفقیت ثبت و اکانت آماده شده است.</p>{{account_details_html}}<p><a href="{{guide_url}}">راهنمای استفاده</a></p><p>شناسه سفارش: <strong>{{order_id}}</strong></p><p><a href="{{order_url}}">پیگیری سفارش</a></p></main></body></html>',
+            'text' => "{{site_name}}\nسلام {{customer_name}}،\nاکانت شما آماده است.\n{{account_details_text}}\nراهنمای استفاده: {{guide_url}}\nشناسه سفارش: {{order_id}}\nپیگیری سفارش: {{order_url}}",
         ],
         'renewal_success' => [
             'subject' => 'تمدید سرویس شما در {{site_name}} موفق بود',
