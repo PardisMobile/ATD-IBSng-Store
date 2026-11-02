@@ -980,3 +980,10 @@
 - The endpoint path is `/webhook/ircrypto.php`; display the complete absolute callback URL using the configured site base URL (HTTPS in production), rather than hardcoding a domain.
 - Explain that this is the provider's webhook/callback destination and that the handler validates the signed request and then verifies the invoice/payment server-side. Do not ask the administrator to place webhook code or endpoint files inside `app/Payments/gateways/`.
 - Keep this as visible guidance in the gateway settings UI; documentation-only reminder for now, not yet implemented or runtime-verified.
+
+
+## Customer order service-name rendering clarification (2026-11-02)
+
+- On the shared order-detail page, `service_name` is optional and must be rendered only when its trimmed value is non-empty. An absent/blank name must produce no empty label or placeholder element.
+- Internal IBSng server names/connection details remain private; this customer-facing label is distinct from the internal server name.
+- This is a presentation-only clarification. It does not alter order ownership, email recovery authorization, provisioning state, or credential disclosure rules.
