@@ -325,3 +325,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Existing `admin/orders.php` is only a paid sales aggregate report. It is not an order processing console and currently has no renewal-order handling.
 
 **Provider dependency:** repository source currently exposes no concrete gateway adapter/configuration or callback endpoint. A real callback cannot be safely implemented without the selected provider's documented initiation and server-side verification contract. Keep provider logic behind an adapter rather than fabricating a generic “verified” response or accepting browser-return parameters as proof of payment.
+
+
+### PAY-CHAIN-001 — Payment amount/currency contract and callback orchestration
+
+**Status: OPEN — adapter exists; central payment initiation, callback persistence, and provisioning idempotency are not yet implemented.**
+
+- The order schema stores the immutable price as `orders.price_minor_snapshot` with `orders.currency`; the payment ledger stores `payment_transactions.amount_minor` and `payment_transactions.currency`. The intended invariant is exact equality between those snapshots at transaction creation and callback validation. No implicit IRR/IRT/USDT conversion is permitted in the central flow.
+- `app/Payments/PaymentGateway.php` defines the adapter boundary. The Zarinpal adapter is now located at `app/Payments/zarinpal.php`; the implementation class remains `ZarinpalGateway`.
+- Checkout currently creates a pending order only. It does not persist a payment transaction, invoke the adapter, or redirect to the gateway. The explicit route map has no payment callback route.
+- Required implementation sequence: persist a transaction before redirect; bind its provider reference/Authority to the transaction; callback loads transaction/order from storage; validate stored state, provider, authority, amount, currency, and gateway-side verification; commit payment exactly once; hand off provisioning through a durable idempotency ledger and never repeat an IBSng mutation merely because a callback is replayed.
+- Payment success and IBSng provisioning outcome must remain separate states. If remote IBSng mutation has an ambiguous outcome, do not blindly replay it; mark for reconciliation/review.
+- Zarinpal API currency unit/amount interpretation and code-101 verification semantics require current authoritative documentation review and sandbox/real-provider testing before enabling live payment. No live payment validation is claimed.
+- Validation still required: transaction/order consistency tests; forged, altered, mismatched, and repeated callbacks; callback concurrency; provider timeout and duplicate callback cases; provisioning exactly-once/reconciliation behavior; PHP lint; gateway sandbox test; live IBSng integration tests.
