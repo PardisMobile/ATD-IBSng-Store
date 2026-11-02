@@ -39,6 +39,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $duration = product_post_int('duration_seconds');
                 $ibsngValidity = product_post_int('ibsng_validity_days');
                 $price = product_post_int('price_minor');
+                $priceUsdtRaw = trim((string)($_POST['price_usdt'] ?? ''));
+                $priceUsdt = null;
+                if ($priceUsdtRaw !== '') {
+                    if (!preg_match('/^(?:0|[1-9][0-9]{0,9})(?:\\.[0-9]{1,8})?$/D', $priceUsdtRaw) || (float)$priceUsdtRaw <= 0) {
+                        throw new InvalidArgumentException('قیمت USDT باید عدد مثبت با حداکثر ۸ رقم اعشار باشد.');
+                    }
+                    $priceUsdt = $priceUsdtRaw;
+                }
                 $quota = trim((string)($_POST['quota_bytes'] ?? ''));
                 $currency = strtoupper(trim((string)($_POST['currency'] ?? 'IRR')));
                 $sortOrder = product_post_int('sort_order');
@@ -75,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($id > 0) {
-                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,duration_seconds=?,ibsng_validity_days=?,price_minor=?,currency=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $currency, $quotaBytes, $active, $sortOrder, $id]);
+                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,duration_seconds=?,ibsng_validity_days=?,price_minor=?,price_usdt=?,currency=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder, $id]);
                     $check = $pdo->prepare('SELECT id FROM products WHERE id=?');
                     $check->execute([$id]);
                     if (!$check->fetchColumn()) {
@@ -84,8 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $productId = $id;
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO products (name,description,duration_seconds,ibsng_validity_days,price_minor,currency,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?,?)');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $currency, $quotaBytes, $active, $sortOrder]);
+                    $stmt = $pdo->prepare('INSERT INTO products (name,description,duration_seconds,ibsng_validity_days,price_minor,price_usdt,currency,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?)');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder]);
                     $productId = (int)$pdo->lastInsertId();
                 }
 
@@ -166,7 +174,8 @@ $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.n
 <div class="field"><label for="name">نام محصول</label><input id="name" name="name" maxlength="180" required value="<?= e((string)($product['name'] ?? '')) ?>"></div>
 <div class="field"><label for="duration_seconds">مدت اعتبار (ثانیه)</label><input id="duration_seconds" name="duration_seconds" type="number" min="1" required value="<?= e((string)($product['duration_seconds'] ?? 2592000)) ?>"></div>
 <div class="field"><label for="ibsng_validity_days">مدت تمدید IBSng (روز)</label><input id="ibsng_validity_days" name="ibsng_validity_days" type="number" min="1" max="36500" required value="<?= e((string)($product['ibsng_validity_days'] ?? '')) ?>"><div class="hint">این مقدار فقط برای تمدید IBSng است و از مدت عمومی محصول حدس زده نمی‌شود.</div></div>
-<div class="field"><label for="price_minor">قیمت (کوچک‌ترین واحد پول)</label><input id="price_minor" name="price_minor" type="number" min="0" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
+<div class="field"><label for="price_minor">قیمت پایه (کوچک‌ترین واحد پولِ ارز انتخابی)</label><input id="price_minor" name="price_minor" type="number" min="0" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
+<div class="field"><label for="price_usdt">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="number" min="0.00000001" step="0.00000001" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
 <div class="field"><label for="currency">کد پولی ISO (مثلاً IRR)</label><input id="currency" name="currency" maxlength="3" required value="<?= e((string)($product['currency'] ?? 'IRR')) ?>"></div>
 <div class="field"><label for="quota_bytes">سقف حجم (بایت؛ خالی یعنی نامشخص/نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
 <div class="field"><label for="sort_order">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
