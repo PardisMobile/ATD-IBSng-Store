@@ -23,4 +23,22 @@ foreach (['', 'unknown-provider', '../zarinpal'] as $invalidProvider) {
     payment_manager_assert($rejected, 'Unlisted provider names must fail closed.');
 }
 
-echo "PaymentManager tests passed.\n";
+final class TestPaymentGateway implements PaymentGateway
+{
+    public function code(): string { return 'testgateway'; }
+    public function initiate(array $order, array $settings): array
+    {
+        return ['redirect_url' => 'https://gateway.example/pay', 'provider_reference' => 'test-ref'];
+    }
+    public function verify(array $callback, array $transaction, array $settings): array
+    {
+        return ['verified' => false];
+    }
+}
+
+PaymentManager::registerGateway('testgateway', TestPaymentGateway::class);
+$registered = new PaymentManager('testgateway');
+payment_manager_assert($registered->selectedCode() === 'testgateway', 'A registered adapter must be selectable without modifying the manager.');
+payment_manager_assert(in_array('testgateway', PaymentManager::registeredCodes(), true), 'Registered provider codes must be exposed to trusted settings code.');
+
+echo "PaymentManager tests passed.\\n";
