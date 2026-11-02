@@ -602,3 +602,9 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Uses a CSRF token and regenerates the session ID after successful verification. Unknown email addresses receive the same generic response.
 - The route allowlist and router path contract test were already updated for this page. The page now exists on `main`.
 - Remaining: verify the recovery migration is run by the supported installation/update flow; check whether email normalization aligns with historical order records; add focused tests for code expiry, attempts, enumeration, and rate limiting; PHP lint and runtime/mail/database/browser validation. No live delivery or production validation is claimed.
+
+
+### 2026-11-03 — Recovery schema installation alignment
+- Clarified deployment: fresh installations create `customer_order_recovery_codes` from `database/schema.sql`; this migration is for already-installed databases receiving the feature, not an extra step for a fresh install.
+- Aligned the migration `code_hash` width with the fresh-install schema (`CHAR(255)`) so it can safely hold PHP password hashes.
+- Migration application on an existing installation remains a manual deployment step unless/ until the project introduces a tracked migration runner.
