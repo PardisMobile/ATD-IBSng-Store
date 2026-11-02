@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $pdo->commit();
                     $successOrder = (string)$prior['public_id'];
                 } else {
-                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.price_minor,p.currency,m.server_id,m.ibsng_group_id FROM products p JOIN product_server_groups m ON m.product_id=p.id JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE p.id=? AND p.is_active=1 AND s.is_active=1 AND g.is_active=1 LIMIT 1 FOR UPDATE');
+                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.price_minor,p.currency,m.server_id,m.ibsng_group_id,g.group_name FROM products p JOIN product_server_groups m ON m.product_id=p.id JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE p.id=? AND p.is_active=1 AND s.is_active=1 AND g.is_active=1 LIMIT 1 FOR UPDATE');
                     $fresh->execute([$productId]);
                     $current = $fresh->fetch();
                     if (!$current) {
@@ -102,11 +102,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     }
                     $publicId = bin2hex(random_bytes(16));
                     $encryptedPassword = app_encrypt_secret($password);
-                    $insert = $pdo->prepare('INSERT INTO orders (public_id,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,price_minor_snapshot,currency,username,password_ciphertext,server_policy,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'selected\',\'pending\',\'pending_payment\',?)');
+                    $insert = $pdo->prepare('INSERT INTO orders (public_id,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,price_minor_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,\'selected\',?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
                         $publicId, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
                         (int)$current['duration_seconds'], (int)$current['price_minor'], (string)$current['currency'],
-                        $username, $encryptedPassword, (string)$_SESSION['checkout_idempotency'],
+                        $username, $encryptedPassword, json_encode([['server_id' => (int)$current['server_id'], 'ibsng_group_id' => (int)$current['ibsng_group_id'], 'group_name' => (string)$current['group_name']]], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
                     $pdo->commit();
                     $successOrder = $publicId;
