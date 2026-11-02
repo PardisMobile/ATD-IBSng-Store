@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_once dirname(__DIR__) . '/app/IBSngProvisioningDispatcher.php';
+require_once dirname(__DIR__) . '/app/CustomerAccountDelivery.php';
 require_admin();
 
 $pdo = Database::connection();
@@ -18,7 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new InvalidArgumentException('شناسه عملیات معتبر نیست.');
             }
             $dispatcher = new IBSngProvisioningDispatcher($pdo);
-            if ((string)($_POST['action'] ?? 'run') === 'resolve') {
+            if ((string)($_POST['action'] ?? 'run') === 'retry_delivery') {
+                $orderId = filter_var($_POST['order_id'] ?? null, FILTER_VALIDATE_INT);
+                if ($orderId === false || $orderId === null || $orderId < 1) {
+                    throw new InvalidArgumentException('شناسه سفارش معتبر نیست.');
+                }
+                CustomerAccountDelivery::afterProvisioning($pdo, (int)$orderId);
+                $message = 'درخواست بررسی و ارسال مجدد ایمیل تحویل ثبت شد؛ وضعیت نتیجه را در جدول ایمیل‌ها ببینید.';
+            } elseif ((string)($_POST['action'] ?? 'run') === 'resolve') {
                 $outcome = (string)($_POST['outcome'] ?? '');
                 $remoteUserId = trim((string)($_POST['remote_user_id'] ?? ''));
                 $note = trim((string)($_POST['resolution_note'] ?? ''));
@@ -44,6 +52,9 @@ $sql = "SELECT a.id, a.order_id, a.server_id, a.operation, a.status, a.attempt_n
         JOIN ibsng_servers s ON s.id=a.server_id
         ORDER BY a.created_at DESC, a.id DESC LIMIT 200";
 $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+$emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.updated_at,o.public_id
+ FROM customer_email_deliveries d JOIN orders o ON o.id=d.order_id
+ ORDER BY d.updated_at DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
