@@ -591,3 +591,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Admin provisioning view now lists customer email delivery records and offers explicit retry only for `failed` records. Claim logic conditionally changes failed→sending; sent/sending rows remain blocked by the unique key and state predicate.
 - Added `tests/customer-account-delivery-contract-test.php` for static behavior contracts.
 - Not yet runtime tested (PHP CLI, database, mail server, end-to-end flow unavailable in this review).
+
+
+### 2026-11-03 — Unified My Orders email recovery initial implementation
+
+**Status: SOURCE COMMITTED ON `main`; deployment/runtime checks pending.**
+
+- Added `/my-orders.php` to provide the unified customer order retrieval surface. Customers request a six-digit email code and, after verification, receive a list of orders for that email with links to the existing order status view.
+- Uses the existing editable `order_recovery` email template and `EmailSender`; recovery challenges are stored as password hashes, expire after 10 minutes, have a five-attempt ceiling, and apply a combined per-email/IP request throttle.
+- Uses a CSRF token and regenerates the session ID after successful verification. Unknown email addresses receive the same generic response.
+- The route allowlist and router path contract test were already updated for this page. The page now exists on `main`.
+- Remaining: verify the recovery migration is run by the supported installation/update flow; check whether email normalization aligns with historical order records; add focused tests for code expiry, attempts, enumeration, and rate limiting; PHP lint and runtime/mail/database/browser validation. No live delivery or production validation is claimed.
