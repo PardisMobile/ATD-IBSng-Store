@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/PaymentGateway.php';
 require_once __DIR__ . '/zarinpal.php';
+require_once __DIR__ . '/ircrypto.php';
 
 /**
  * Central registry and dispatcher for payment gateway modules.
@@ -19,6 +20,7 @@ final class PaymentManager
     /** @var array<string, class-string<PaymentGateway>> */
     private static array $gatewayClasses = [
         'zarinpal' => ZarinpalGateway::class,
+        'ircrypto' => IRCryptoGateway::class,
     ];
 
     private readonly string $selectedProvider;
