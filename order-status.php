@@ -22,7 +22,7 @@ if (!$notFound) {
         $lookupColumn = $isTrackingCode ? 'tracking_code' : 'public_id';
         $lookupValue = $isTrackingCode ? ('ATD-' . substr($trackingCode, 3)) : $orderPublicId;
         $stmt = $pdo->prepare(
-            'SELECT id, public_id, tracking_code, product_name_snapshot, username, password_ciphertext, payment_status, order_status, created_at
+            'SELECT id, public_id, tracking_code, product_name_snapshot, duration_seconds_snapshot, price_minor_snapshot, price_usdt_snapshot, currency, username, password_ciphertext, payment_status, order_status, created_at
              FROM orders WHERE ' . $lookupColumn . ' = ? LIMIT 1'
         );
         $stmt->execute([$lookupValue]);
@@ -90,6 +90,16 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
 <div class="notice"><strong>کد پیگیری:</strong> <code><?= e((string)$order['tracking_code']) ?></code><br><strong>وضعیت سفارش:</strong> <?= e($attemptLabel((string)$order['order_status'])) ?></div>
+<div class="notice">
+<strong>مبلغ سفارش:</strong>
+<?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?>
+<?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT
+<?php else: ?>
+<?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?>
+<?php endif; ?>
+<br><strong>تاریخ ثبت:</strong> <?= e((string)$order['created_at']) ?>
+<br><strong>وضعیت پرداخت:</strong> <?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?>
+</div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
 <p class="muted">پرداخت این سفارش هنوز تأیید نشده است؛ تا پیش از تأیید پرداخت، حسابی در IBSng ایجاد نمی‌شود.</p>
 <?php elseif (!$attempts): ?>
@@ -113,7 +123,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <p class="muted">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
 <?php endif; ?>
-<?php if ($isTrackingCode): ?><p class="muted">کد پیگیری فقط برای مشاهده وضعیت سفارش است و به‌تنهایی اطلاعات ورود را نمایش نمی‌دهد. برای دریافت اطلاعات حساب از لینک خصوصی یا روش بازیابی ایمیلی استفاده کنید.</p><?php else: ?><p class="muted">این لینک خصوصی سفارش است؛ آن را در اختیار افراد دیگر قرار ندهید. اطلاعات ورود فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است.</p><?php endif; ?>
+<?php if ($isTrackingCode): ?><p class="muted">کد پیگیری فقط برای مشاهده وضعیت سفارش است و به‌تنهایی اطلاعات ورود را نمایش نمی‌دهد. رمز عبور حساب در این صفحه نمایش داده نمی‌شود.</p><?php else: ?><p class="muted">این شناسه برای پیگیری سفارش و مشاهده جزئیات خرید استفاده می‌شود.</p><?php endif; ?>
 <?php endif; ?>
 </section>
 </main>
