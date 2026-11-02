@@ -373,3 +373,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Fresh installs receive the default through `database/schema.sql`. Existing installations must back up their database and run `database/migrations/2026-11-02-pricing-policy.sql` once; this is a manual schema upgrade and is not silently run by the site.
 - Still open before gateway completion: crypto gateway enablement/configuration, deciding provider-specific transaction amount/currency from the selected payment method, transaction persistence, callback verification/idempotency, order payment status transitions, and tests. Do not treat the current price UI/storage changes as payment implementation.
 - No PHP lint, automated test suite, database migration, or runtime checkout test has been executed as part of this source update.
+
+
+### 2026-11-02 — Conditional USDT catalog display setting
+
+**Status: SOURCE IMPLEMENTED ON `main`; NOT RUNTIME-VERIFIED.**
+
+- Added the explicit `crypto_gateway_enabled` store setting, defaulting to `0` on fresh installs and in the existing-install pricing migration.
+- Admin settings can toggle whether the storefront displays each product's separately maintained `price_usdt`. The public catalog renders USDT only when this setting is enabled and the product has a positive USDT price; otherwise it remains hidden.
+- This flag currently controls display only. It is not proof that a crypto provider is integrated, configured, or able to accept payments. Keep it disabled until a real crypto gateway adapter and its server-side verification path are implemented and tested.
+- No payment amount selection, transaction initiation, callback verification, paid-state transition, or duplicate-order protection was added by this display-only change. Those remain open items under PAY-CHAIN-001.
+- No PHP lint, automated test, or live checkout verification was performed.
