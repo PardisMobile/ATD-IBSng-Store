@@ -406,3 +406,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - This aligns the admin control with the current implementation: the setting only gates storefront price visibility; no crypto payment adapter or verified crypto callback exists.
 - Commit: `ff8755c0e1b649ce12c8751f8a8404014e359ca3`.
 - No runtime/browser validation was performed.
+
+
+### 2026-11-02 — Zarinpal request currency is explicit
+
+**Status: SOURCE FIX COMMITTED ON `main`; provider/runtime verification remains pending.**
+
+- Updated `app/Payments/zarinpal.php` to send the persisted order currency (`IRR` or `IRT`) as the explicit Zarinpal request `currency` field alongside the persisted `amount_minor`.
+- This removes reliance on an implicit provider currency mode at payment-request time. The adapter still does not convert Rial/Toman; the amount and currency must originate from the same immutable order/payment transaction snapshot.
+- The verification request continues to use the transaction's stored amount and the matched Authority. The central callback route, transaction creation, atomic payment state transition, and provisioning dispatch are still not connected.
+- Commit: `a62cb1f6ca89f2a99a5730f3210825f6ffa81d24`.
+- No sandbox/live provider call or runtime test was performed by this source edit.
