@@ -27,6 +27,9 @@ jobs:
       - name: Run payment amount contract test
         run: php tests/PaymentAmountTest.php
 
+      - name: Run payment manager allowlist test
+        run: php tests/PaymentManagerTest.php
+
       - name: Run IBSng lookup contract test
         run: php tests/ibsng-lookup-contract-test.php
 
