@@ -21,6 +21,9 @@ $checks = [
     'admin has explicit failed-email retry action' => is_string($admin) && str_contains($admin, 'retry_delivery') && str_contains($admin, 'تلاش مجدد ارسال'),
     'account delivery order URL uses the order-status query parameter' => is_string($delivery) && str_contains($delivery, 'order-status.php?order=') && str_contains($delivery, "rawurlencode((string)\$order['public_id'])"),
     'guide page exists with order tracking link' => is_string($guide) && str_contains($guide, 'order-status.php'),
+    'unified customer page offers tracking by order ID and recovery by email' => is_string(file_get_contents($root . '/my-orders.php')) && str_contains(file_get_contents($root . '/my-orders.php'), 'name="order"') && str_contains(file_get_contents($root . '/my-orders.php'), 'name="email"') && str_contains(file_get_contents($root . '/my-orders.php'), 'action="<?= e(app_url(\'order-status.php\')) ?>"'),
+    'storefront links to unified order recovery and tracking' => is_string(file_get_contents($root . '/index.php')) && str_contains(file_get_contents($root . '/index.php'), 'my-orders.php'),
+    'order detail page links back to unified order recovery' => is_string(file_get_contents($root . '/order-status.php')) && str_contains(file_get_contents($root . '/order-status.php'), 'my-orders.php'),
 ];
 
 foreach ($checks as $label => $passed) {
