@@ -47,7 +47,7 @@ $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 </style>
 </head>
 <body><main class="shell">
-<header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>>داشبورد</a></header>
+<header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></header>
 <section class="panel"><div class="eyebrow">عملیات IBSng</div><h1>صف Provisioning</h1>
 <p class="hint">اجرای دستی و موردی روی عملیات queued. هر عملیات قبل از تماس با IBSng claim می‌شود. خطا یا پاسخ مبهم پس از احتمال اجرای درخواست، به «نیازمند بررسی» می‌رود و از اجرای مجدد مستقیم جلوگیری می‌شود. عملیات running مانده از قطع پردازش نیز retry نمی‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
