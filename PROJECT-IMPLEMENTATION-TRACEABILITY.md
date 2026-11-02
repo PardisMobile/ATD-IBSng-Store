@@ -496,3 +496,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - This is request-time dispatch, not a cron/worker. No automatic retry or refund is introduced. The admin page copy and payment/provisioning documentation were updated to reflect its recovery role.
 - Commits: `5d6bcfe87d8fdee1584310b7ac21a90b44665b03` (dispatch), `3434243315a8970f9e3d0e77cf9b0ef3ea6d0d95` (docs), `a291774cec90e8a0554a1b8c33d41bafc7785e2d` (admin copy).
 - CI, browser-level behavior, database concurrency, and live IBSng execution remain to be verified. No live provisioning was run.
+
+
+### 2026-11-02 — Payment architecture documentation reconciliation
+
+**Status: DOCUMENTATION CHANGES COMMITTED ON `main`; PHP lint CI pending for final doc commits.**
+
+- Added `docs/PAYMENT-ARCHITECTURE.md` as the current source of truth: checkout snapshots, fiat/USDT amount resolution, admin provider/mode settings, adapter contract/discovery, transaction confirmation, callback/webhook trust boundaries, provisioning handoff, idempotency, and deployment verification boundaries.
+- Reconciled `docs/PAYMENTS-AND-PROVISIONING.md` to link the architecture source and focus on adapter extension/provisioning lifecycle.
+- Rewrote `docs/PAYMENT-IRCrypto-Integration.md` to remove stale module paths and claims that provisioning was not implemented; it now records current adapter-specific behavior and still-unverified live deployment checks.
+- Corrected the outdated feature-branch instruction in `docs/ADMIN-ORDER-MANAGEMENT.md` to match the project rule that implementation remains on `main`.
+- Commits: `f3f962d811d7e4f76457d83cbd7f1d5087d77df2` (canonical architecture), `528fe14e8e520f1d01684abbcf027d08e05480e2` (cross-reference), `86c64fe93ed14eed0b3d9ceb0ab353b14724460d` (IRCrypto notes), `eabc7f936914fb4198d93d5fb65d255c075af5e0` (branch-rule correction).
+- Live gateway/provider callbacks, sandbox transaction, MySQL concurrency, and live IBSng actions remain deployment-level verification, not claimed as completed.
