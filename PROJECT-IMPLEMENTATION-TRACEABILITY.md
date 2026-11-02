@@ -430,3 +430,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Repeated confirmation of the same already-verified payment returns without another state transition; a conflicting replay is rejected.
 - Provisioning is intentionally not dispatched here yet. Payment callback route, gateway configuration, checkout wiring, durable provisioning handoff, automated DB-backed concurrency tests, PHP lint, and sandbox/live verification remain open.
 - Commits on `main`: `4e5925151e9c0723dd8a0fb23428909c3c424dd8`, `bf8ae1fcf942058dc639b9957e9f40cc89e03b93`.
+
+### 2026-11-02 — First checkout-to-provider callback connection
+
+**Status: SOURCE FLOW CONNECTED FOR CONFIGURED ZARINPAL; NOT YET RUNTIME OR PROVIDER-VERIFIED.**
+
+- Added `app/Payments/PaymentFlow.php` to coordinate checkout initiation and provider callback verification using the existing manager, amount resolver, and transaction state service.
+- Checkout now creates the provider transaction from the persisted order snapshot and redirects to the provider only after the transaction reference is persisted. Provider initiation errors are logged server-side and do not expose raw diagnostics to the buyer.
+- Added `payment-callback.php` and its explicit router allowlist entry. Callback lookup binds provider and Authority to the persisted transaction; only the adapter's server-side verification result reaches atomic confirmation.
+- Admin settings now allow selecting the configured Zarinpal gateway and storing its merchant ID. Selecting no provider leaves payment initiation disabled. The independent USDT price-display setting does not activate crypto payment.
+- The callback page reports payment confirmation separately from IBSng provisioning. Provisioning dispatch, order management/reconciliation, payment retry recovery, automated DB-backed tests, PHP lint completion, and Zarinpal sandbox/live verification remain outstanding. Do not enable live checkout until CI passes and provider amount/currency semantics are confirmed against current documentation and controlled tests.
