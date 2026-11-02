@@ -13,10 +13,10 @@ $checks = [
     'customer status loads service name' => is_string($status) && str_contains($status, 's.service_name') && str_contains($status, "['service_name']"),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
     'credentials are shown only for succeeded attempts' => is_string($status) && str_contains($status, "['status'] === 'succeeded'") && str_contains($status, 'نمایش رمز عبور'),
-    'empty service name is suppressed' => is_string($status) && str_contains($status, <<<'EXPR'
-trim((string)($attempt['service_name'] ?? '')) !== ''
-EXPR
-    ),
+    'empty service name is suppressed without rendering an empty label' => is_string($status)
+        && str_contains($status, "if (trim((string)(\$attempt['service_name'] ?? '')) !== ''):")
+        && str_contains($status, "<strong><?= e((string)\$attempt['service_name']) ?></strong>")
+        && !str_contains($status, "? (string)\$attempt['service_name'] : ''"),
 ];
 
 foreach ($checks as $label => $passed) {
