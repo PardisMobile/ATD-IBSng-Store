@@ -1003,3 +1003,12 @@
 - Added `admin/email-templates.php` with event selection, editable subject, HTML and plain-text bodies, save handling, and a sandboxed preview using sample values. The admin dashboard links to the editor and the explicit router allowlist includes it.
 - This is the template-management slice only. It does not yet establish that these templates are called by checkout, renewal, verification, or recovery delivery; it does not implement transport settings, test-send, delivery logging/retry, or expiration scheduling.
 - No PHP lint, browser preview, or delivery test was run in this operation. Do not mark the email system as complete until transport, integration, recovery security, and tests are completed.
+
+
+### 2026-11-03 — Host mail transport and first purchase-notice integration
+
+- Added `app/EmailSender.php`, which sends multipart HTML/plain-text messages through the hosting PHP `mail()` function, using editable sender name/address from `app_settings`. SMTP configuration is not required.
+- Added the admin email settings page for sender identity and test-send, and registered its route/dashboard entry.
+- The first verified payment transition now attempts the editable `purchase_success` notice when the customer supplied an email. Duplicate verified callbacks do not trigger another attempt. Transport failures are logged and do not reverse payment state.
+- Email content contains the order reference and private order-status URL only; IBSng credentials must never be included in email.
+- This is best-effort delivery, not a durable outbox/retry system. Actual host delivery, PHP lint, UI checks, and gateway callback testing remain unverified. Renewal, email ownership verification, email-based order recovery, delivery logging/retry, and expiry reminder scheduling remain outstanding.
