@@ -508,3 +508,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Corrected the outdated feature-branch instruction in `docs/ADMIN-ORDER-MANAGEMENT.md` to match the project rule that implementation remains on `main`.
 - Commits: `f3f962d811d7e4f76457d83cbd7f1d5087d77df2` (canonical architecture), `528fe14e8e520f1d01684abbcf027d08e05480e2` (cross-reference), `86c64fe93ed14eed0b3d9ceb0ab353b14724460d` (IRCrypto notes), `eabc7f936914fb4198d93d5fb65d255c075af5e0` (branch-rule correction).
 - Live gateway/provider callbacks, sandbox transaction, MySQL concurrency, and live IBSng actions remain deployment-level verification, not claimed as completed.
+
+
+### 2026-11-02 — IRCrypto webhook endpoint placement
+
+**Status: IMPLEMENTED ON `main`; runtime validation pending.**
+
+- Endpoint moved to `webhook/ircrypto.php`; the explicit router allowlist now maps `/webhook/ircrypto.php` to it.
+- The endpoint is outside `app/Payments/gateways/`, whose direct PHP files are auto-discovered as gateway adapters. No gateway discovery behavior was changed.
+- Updated `PROJECT-CONTEXT.md`, `docs/PAYMENT-ARCHITECTURE.md`, and `docs/PAYMENT-IRCrypto-Integration.md` to document this separation.
+- The handler's signature validation and PaymentFlow-based authoritative invoice verification were preserved. PHP lint, subdirectory/cPanel routing, and real provider webhook delivery remain unverified.
