@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS app_settings (
 INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES
     ('ibsng_gift_days_first', '1'),
     ('ibsng_gift_days_repeat', '5'),
-    ('price_display_unit', 'IRT');
+    ('price_display_unit', 'IRT'),
+    ('crypto_gateway_enabled', '0');
 
 CREATE TABLE IF NOT EXISTS admin_users (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
