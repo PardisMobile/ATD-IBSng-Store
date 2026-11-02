@@ -101,6 +101,32 @@ final class PaymentTransactionService
         }
     }
 
+    /**
+     * Manually release an ambiguous initiation only after an administrator has
+     * checked the provider and confirmed no payable invoice remains.
+     */
+    public function resolveAmbiguousInitiationAsFailed(int $transactionId, string $note): bool
+    {
+        $note = trim($note);
+        if ($transactionId < 1 || $note === '' || mb_strlen($note) > 2000) {
+            throw new InvalidArgumentException('A transaction ID and reconciliation note are required.');
+        }
+
+        $raw = json_encode([
+            'manual_resolution' => 'confirmed_no_invoice',
+            'note' => $note,
+            'resolved_at' => gmdate('c'),
+        ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+
+        $stmt = $this->pdo->prepare(
+            "UPDATE payment_transactions
+             SET status = 'failed', raw_result_json = ?
+             WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL"
+        );
+        $stmt->execute([$raw, $transactionId]);
+        return $stmt->rowCount() === 1;
+    }
+
     /** Mark a provider request as failed only before a provider reference exists. */
     public function failInitiation(int $transactionId): void
     {
