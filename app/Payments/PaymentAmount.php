@@ -4,18 +4,17 @@ declare(strict_types=1);
 /**
  * Resolves a payment amount from trusted persisted order/product snapshots.
  *
- * Fiat uses the immutable order snapshot. Crypto uses the independent product
- * USDT price and an eight-decimal integer scale (never an FX conversion).
+ * Fiat and crypto both use immutable order snapshots. Crypto uses an independent
+ * USDT price captured when the order is created (never an FX conversion).
  * Provider initiation and verification remain separate responsibilities.
  */
 final class PaymentAmount
 {
     /**
      * @param array<string,mixed> $order Persisted order row.
-     * @param array<string,mixed>|null $product Persisted product row, when needed.
      * @return array{amount_minor:int,currency:string}
      */
-    public static function resolve(string $method, array $order, ?array $product = null): array
+    public static function resolve(string $method, array $order): array
     {
         $method = strtolower(trim($method));
 
@@ -31,13 +30,9 @@ final class PaymentAmount
         }
 
         if ($method === 'crypto') {
-            if ($product === null) {
-                throw new InvalidArgumentException('A persisted product price is required for crypto settlement.');
-            }
-
-            $price = trim((string)($product['price_usdt'] ?? ''));
+            $price = trim((string)($order['price_usdt_snapshot'] ?? ''));
             if ($price === '' || !preg_match('/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$/D', $price)) {
-                throw new InvalidArgumentException('Persisted USDT product price is missing or invalid.');
+                throw new InvalidArgumentException('Persisted USDT order snapshot is missing or invalid.');
             }
 
             [$whole, $fraction] = array_pad(explode('.', $price, 2), 2, '');
