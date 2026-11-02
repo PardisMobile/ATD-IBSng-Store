@@ -47,7 +47,7 @@ if (!hash_equals($expected, $signature)) {
 }
 
 $event = json_decode($rawBody, true);
-if (!is_array($event) || strtolower((string)($event['type'] ?? $event['event'] ?? '')) !== 'invoice.paid') {
+if (!is_array($event) || strtolower(trim((string)($event['type'] ?? $event['event'] ?? $_SERVER['HTTP_IR_EVENT_TYPE'] ?? ''))) !== 'invoice.paid') {
     http_response_code(204);
     exit;
 }
