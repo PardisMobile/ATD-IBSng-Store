@@ -34,7 +34,7 @@ final class PaymentTransactionService
         $this->pdo->beginTransaction();
         try {
             $query = $this->pdo->prepare(
-                'SELECT id, product_id, price_minor_snapshot, currency, payment_status, order_status FROM orders WHERE id = ? FOR UPDATE'
+                'SELECT id, price_minor_snapshot, price_usdt_snapshot, currency, payment_status, order_status FROM orders WHERE id = ? FOR UPDATE'
             );
             $query->execute([$orderId]);
             $order = $query->fetch(PDO::FETCH_ASSOC);
@@ -44,10 +44,7 @@ final class PaymentTransactionService
             }
 
             if ($currency === 'USDT') {
-                $productQuery = $this->pdo->prepare('SELECT price_usdt FROM products WHERE id = ? LIMIT 1');
-                $productQuery->execute([(int)($order['product_id'] ?? 0)]);
-                $product = $productQuery->fetch(PDO::FETCH_ASSOC);
-                $expected = PaymentAmount::resolve('crypto', [], $product ?: null);
+                $expected = PaymentAmount::resolve('crypto', $order);
             } else {
                 $expected = PaymentAmount::resolve('fiat', [
                     'price_minor_snapshot' => $order['price_minor_snapshot'],
