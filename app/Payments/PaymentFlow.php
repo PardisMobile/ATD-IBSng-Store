@@ -132,7 +132,9 @@ final class PaymentFlow
     public static function handleCallback(PDO $pdo, string $provider, array $callback): array
     {
         $provider = strtolower(trim($provider));
-        $reference = trim((string)($callback['Authority'] ?? ''));
+        // The callback's reference field is provider-specific. Resolve it via
+        // the registered adapter instead of assuming Zarinpal's Authority key.
+        $reference = (new PaymentManager($provider))->gateway()->callbackReference($callback);
         if ($provider === '' || $reference === '') {
             throw new InvalidArgumentException('Payment callback is missing its provider reference.');
         }
