@@ -2,15 +2,14 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/PaymentGateway.php';
-require_once __DIR__ . '/zarinpal.php';
-require_once __DIR__ . '/ircrypto.php';
 
 /**
  * Central registry and dispatcher for payment gateway modules.
  *
- * New adapters implement PaymentGateway and are registered through this class
- * during trusted application bootstrap. Checkout and callbacks never select
- * adapter classes or load provider files themselves.
+ * Trusted adapters are discovered from app/Payments/gateways/*.php. Adding a
+ * provider requires one adapter file; checkout, callback, and this registry
+ * remain unchanged. Provider selection is always constrained to discovered
+ * adapters and persisted transaction provider codes.
  */
 final class PaymentManager
 {
@@ -18,15 +17,14 @@ final class PaymentManager
     private array $instances = [];
 
     /** @var array<string, class-string<PaymentGateway>> */
-    private static array $gatewayClasses = [
-        'zarinpal' => ZarinpalGateway::class,
-        'ircrypto' => IRCryptoGateway::class,
-    ];
+    private static array $gatewayClasses = [];
+
+    private static bool $discovered = false;
 
     private readonly string $selectedProvider;
 
     /**
-     * Register an adapter in the single payment-provider registry.
+     * Register an adapter programmatically when a trusted bootstrap needs it.
      *
      * @param class-string<PaymentGateway> $gatewayClass
      */
@@ -47,14 +45,51 @@ final class PaymentManager
         self::$gatewayClasses[$code] = $gatewayClass;
     }
 
+    /** Discover trusted adapter modules once per PHP request. */
+    private static function discoverGateways(): void
+    {
+        if (self::$discovered) {
+            return;
+        }
+        self::$discovered = true;
+
+        $directory = __DIR__ . '/gateways';
+        $files = glob($directory . '/*.php');
+        if ($files === false) {
+            throw new RuntimeException('Unable to discover payment gateway modules.');
+        }
+
+        foreach ($files as $file) {
+            require_once $file;
+        }
+
+        foreach (get_declared_classes() as $class) {
+            if (!is_subclass_of($class, PaymentGateway::class)) {
+                continue;
+            }
+
+            $reflection = new ReflectionClass($class);
+            $classFile = $reflection->getFileName();
+            if (!is_string($classFile)
+                || dirname(realpath($classFile) ?: $classFile) !== (realpath($directory) ?: $directory)) {
+                continue;
+            }
+
+            $instance = new $class();
+            self::registerGateway($instance->code(), $class);
+        }
+    }
+
     /** @return list<string> */
     public static function registeredCodes(): array
     {
+        self::discoverGateways();
         return array_keys(self::$gatewayClasses);
     }
 
     public function __construct(string $selectedProvider)
     {
+        self::discoverGateways();
         $provider = strtolower(trim($selectedProvider));
         if ($provider === '' || !isset(self::$gatewayClasses[$provider])) {
             throw new InvalidArgumentException('The configured payment provider is unavailable.');
@@ -77,6 +112,7 @@ final class PaymentManager
     /** Resolve the selected or transaction-specific registered adapter. */
     public function gateway(?string $provider = null): PaymentGateway
     {
+        self::discoverGateways();
         $code = strtolower(trim($provider ?? $this->selectedProvider));
         if (!isset(self::$gatewayClasses[$code])) {
             throw new InvalidArgumentException('Unknown payment provider.');
