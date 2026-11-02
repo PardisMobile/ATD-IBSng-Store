@@ -7,6 +7,7 @@ require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/messages.php';
 require_once __DIR__ . '/app/Pricing.php';
+require_once __DIR__ . '/app/Payments/PaymentFlow.php';
 
 final class UsernameAlreadyExistsException extends RuntimeException
 {
@@ -127,6 +128,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         }
     }
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error === '') {
+    try {
+        $orderLookup = $pdo->prepare('SELECT id FROM orders WHERE public_id = ? LIMIT 1');
+        $orderLookup->execute([$successOrder]);
+        $orderId = (int)$orderLookup->fetchColumn();
+        if ($orderId < 1) {
+            throw new RuntimeException('The persisted checkout order could not be resolved.');
+        }
+
+        $payment = PaymentFlow::initiate($pdo, $orderId);
+        header('Location: ' . $payment['redirect_url'], true, 303);
+        exit;
+    } catch (Throwable $e) {
+        error_log('Checkout payment initiation failed: ' . $e->getMessage());
+        $error = 'سفارش ثبت شد، اما شروع پرداخت در حال حاضر ممکن نیست. شناسه سفارش را نگه دارید و با پشتیبانی تماس بگیرید.';
+    }
+}
+
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
@@ -145,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
 <div class="eyebrow">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
 <h1>درخواست سفارش ثبت شد</h1>
+<?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <div class="notice success"><strong>شماره پیگیری:</strong><br><code><?= e($successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <a class="button primary" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
