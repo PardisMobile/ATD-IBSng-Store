@@ -37,6 +37,8 @@ final class ZarinpalGateway implements PaymentGateway
         $payload = [
             'merchant_id' => $merchantId,
             'amount' => $amount,
+            // Explicitly tell Zarinpal whether the stored amount is Rial or Toman.
+            'currency' => $currency,
             'callback_url' => $callbackUrl,
             'description' => self::limitDescription((string)($order['description'] ?? 'Store order'), 500),
             'metadata' => array_filter([
