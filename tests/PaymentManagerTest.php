@@ -12,6 +12,8 @@ function payment_manager_assert(bool $condition, string $message): void
 
 $manager = new PaymentManager('zarinpal');
 payment_manager_assert($manager->selectedCode() === 'zarinpal', 'The selected provider code must be normalized and retained.');
+payment_manager_assert($manager->supportedCurrencies() === ['IRR', 'IRT'], 'The provider must expose its supported payment currencies.');
+payment_manager_assert((new PaymentManager('ircrypto'))->supportedCurrencies() === ['IRR', 'IRT', 'USDT'], 'IRCrypto must expose crypto currency support.');
 
 foreach (['', 'unknown-provider', '../zarinpal'] as $invalidProvider) {
     $rejected = false;
@@ -26,6 +28,7 @@ foreach (['', 'unknown-provider', '../zarinpal'] as $invalidProvider) {
 final class TestPaymentGateway implements PaymentGateway
 {
     public function code(): string { return 'testgateway'; }
+    public function supportedCurrencies(): array { return ['IRR', 'IRT']; }
     public function callbackReference(array $callback): string { return trim((string)($callback['transaction_id'] ?? '')); }
     public function initiate(array $order, array $settings): array
     {
