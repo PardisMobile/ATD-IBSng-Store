@@ -21,6 +21,12 @@ final class ZarinpalGateway implements PaymentGateway
         return 'zarinpal';
     }
 
+    /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
+    public function configurationFields(): array
+    {
+        return ['merchant_id' => ['label' => 'Merchant ID', 'required' => true, 'secret' => true]];
+    }
+
     public function initiate(array $order, array $settings): array
     {
         $merchantId = trim((string)($settings['merchant_id'] ?? ''));
