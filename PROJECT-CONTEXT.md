@@ -1022,3 +1022,12 @@
 - The account delivery email must also contain a **customer usage-guide link**. The usage guide section/page is not implemented yet: do not insert a fabricated or broken URL. Build the guide destination first (or configure a real published URL), then include its link in the email. Keep the guide generic and structured by connection method/protocol and operating system/device, separate from order-specific credentials. Include the order tracking link as well.
 - Email template variables/admin preview must support the credentials, successful destination details, guide URL, and order URL. Credentials in the delivery email are an explicit approved exception to the earlier receipt-only content rule; they remain sensitive and must only be sent to the buyer's provided address after provisioning success.
 - This is a product requirement, not a claim of implementation or runtime verification. The existing `purchase_success` notification currently sends a receipt only; delivery-email integration and the usage guide remain outstanding until code and tests prove otherwise.
+
+
+### 2026-11-03 — Account delivery email and customer usage guide
+
+- Added `app/CustomerAccountDelivery.php`: when create-provisioning attempts for a paid order have all reached terminal states, it sends account credentials only if at least one destination succeeded. Failed/needs-review destinations are excluded; successful destinations use only customer-facing `service_name` (fallback label if blank), never internal server name/host/port or IBSng admin credentials.
+- Delivery is triggered from the dispatcher after its state transaction commits. It does not reverse payment/provisioning if mail transport fails.
+- Added `customer_email_deliveries` with a unique order/event key to suppress duplicate sends, included in fresh schema and migration `database/migrations/2026-11-03-customer-email-deliveries.sql`.
+- Updated the default purchase-success template to include account details, order tracking URL, and usage-guide URL. Added public `guide.php` and explicit route registration. The guide remains intentionally generic and does not invent server/protocol-specific configuration.
+- **Verification boundary:** this is source implementation only. PHP lint, DB migration execution, mail delivery, and end-to-end provisioning/email have not been run. Durable automatic retry after a failed mail send and recovery of a stale `sending` claim are still open; email failures are logged and recorded.
