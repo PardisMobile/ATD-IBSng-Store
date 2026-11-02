@@ -14,6 +14,7 @@ $checks = [
     'tracking page includes purchase amount, payment status, and timestamp' => is_string($status) && str_contains($status, 'price_minor_snapshot') && str_contains($status, 'price_usdt_snapshot') && str_contains($status, 'payment_status') && str_contains($status, 'created_at'),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
     'credentials are shown only for succeeded attempts' => is_string($status) && str_contains($status, "['status'] === 'succeeded'") && str_contains($status, 'نمایش رمز عبور'),
+    'short tracking code does not suppress verified account password' => is_string($status) && str_contains($status, "if (array_filter(\$attempts") && !str_contains($status, "!\$isTrackingCode && \$attempt['status'] === 'succeeded'") && str_contains($status, 'رمز عبور فقط برای مقصدهایی نمایش داده می‌شود'),
     'empty service name is suppressed without rendering an empty label' => is_string($status)
         && str_contains($status, "if (trim((string)(\$attempt['service_name'] ?? '')) !== ''):")
         && str_contains($status, "<strong><?= e((string)\$attempt['service_name']) ?></strong>")
