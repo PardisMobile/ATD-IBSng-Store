@@ -38,9 +38,9 @@ final class TestPaymentGateway implements PaymentGateway
 
 PaymentManager::registerGateway('testgateway', TestPaymentGateway::class);
 $registered = new PaymentManager('testgateway');
-payment_manager_assert($registered->selectedCode() === 'testgateway', 'A registered adapter must be selectable without modifying the manager.');
-payment_manager_assert(in_array('testgateway', PaymentManager::registeredCodes(), true), 'Registered provider codes must be exposed to trusted settings code.');
-payment_manager_assert($registered->gateway()->code() === 'testgateway', 'A registered class loaded by the trusted hook must resolve without a code-named adapter file.');
+payment_manager_assert($registered->selectedCode() === 'testgateway', 'A registered adapter must be selectable through PaymentManager.');
+payment_manager_assert(in_array('testgateway', PaymentManager::registeredCodes(), true), 'PaymentManager must expose its registered provider codes.');
+payment_manager_assert($registered->gateway()->code() === 'testgateway', 'A registered class must resolve without a separate provider registry file.');
 $zarinpalFields = (new PaymentManager('zarinpal'))->configurationFields('zarinpal');
 payment_manager_assert(($zarinpalFields['merchant_id']['required'] ?? false) === true, 'Adapter configuration metadata must expose required provider settings.');
 
