@@ -93,7 +93,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <div class="target-list">
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
-<div><strong><?= e(trim((string)($attempt['service_name'] ?? '')) !== '' ? (string)$attempt['service_name'] : '') ?></strong><small><?= e((string)$attempt['operation']) ?></small>
+<div><?php if (trim((string)($attempt['service_name'] ?? '')) !== ''): ?><strong><?= e((string)$attempt['service_name']) ?></strong><?php endif; ?><small><?= e((string)$attempt['operation']) ?></small>
 <?php if ($attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
 <div class="account-details"><span>نام کاربری: <code><?= e((string)$order['username']) ?></code></span>
 <details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
