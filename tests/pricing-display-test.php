@@ -27,11 +27,9 @@ assertStorePrice(
     'Rial display leaves Rial base unchanged'
 );
 assertStorePrice(
-    ['amount' => '1,234', 'currency' => 'IRR', 'label' => 'ریال'],
-    store_format_price(1234, 'IRR', 'IRT') === []
-        ? []
-        : store_format_price(1234, 'IRR', 'IRR'),
-    'Fallback behavior for the base currency'
+    ['amount' => '1,234', 'currency' => 'USD', 'label' => 'USD'],
+    store_format_price(1234, 'USD', 'IRT'),
+    'Non-IRR currencies are not affected by the Toman/Rial display preference'
 );
 
 echo "Store pricing display tests passed.\n";
