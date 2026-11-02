@@ -30,6 +30,10 @@ foreach ($cases as [$uri, $base, $expected]) {
 }
 
 $routes = store_route_map(dirname(__DIR__));
+if (!isset($routes['/my-orders.php'])) {
+    fwrite(STDERR, "FAIL: unified customer order recovery page is missing from the route allowlist.\\n");
+    exit(1);
+}
 if (!isset($routes['/order-status.php'])) {
     fwrite(STDERR, "FAIL: customer order status page is missing from the route allowlist.\\n");
     exit(1);
