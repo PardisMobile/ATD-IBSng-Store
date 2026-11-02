@@ -33,7 +33,7 @@ final class PaymentFlow
         foreach ($all as $key => $value) {
             if (str_starts_with((string)$key, $prefix)) {
                 $field = substr((string)$key, strlen($prefix));
-                if ($field !== '') {
+                if ($field !== '' && $field !== 'type') {
                     $result[$field] = (string)$value;
                 }
             }
@@ -42,7 +42,7 @@ final class PaymentFlow
     }
 
     /**
-     * Initiate a fiat checkout from an existing order's immutable snapshot.
+     * Initiate checkout using the selected gateway's configured currency type.
      *
      * @return array{redirect_url:string,transaction_id:int}
      */
@@ -66,10 +66,22 @@ final class PaymentFlow
             throw new RuntimeException('Order is not awaiting payment.');
         }
 
-        $amount = PaymentAmount::resolve('fiat', [
-            'price_minor_snapshot' => $order['price_minor_snapshot'],
-            'currency' => $order['currency'],
-        ]);
+        $paymentType = strtolower(trim((string)($all['payment_' . $provider . '_type'] ?? 'fiat')));
+        if (!in_array($paymentType, ['fiat', 'crypto'], true)) {
+            throw new RuntimeException('Configured payment gateway type is invalid.');
+        }
+
+        if ($paymentType === 'crypto') {
+            $productQuery = $pdo->prepare('SELECT price_usdt FROM products WHERE id = ? LIMIT 1');
+            $productQuery->execute([(int)($order['product_id'] ?? 0)]);
+            $product = $productQuery->fetch(PDO::FETCH_ASSOC);
+            $amount = PaymentAmount::resolve('crypto', [], $product ?: null);
+        } else {
+            $amount = PaymentAmount::resolve('fiat', [
+                'price_minor_snapshot' => $order['price_minor_snapshot'],
+                'currency' => $order['currency'],
+            ]);
+        }
         $transactions = new PaymentTransactionService($pdo);
         $transactionId = $transactions->create(
             $orderId,
