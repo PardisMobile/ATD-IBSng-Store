@@ -47,7 +47,18 @@ final class CustomerAccountDelivery
                  VALUES (?, 'account_delivery', 'sending', UTC_TIMESTAMP(), UTC_TIMESTAMP())"
             );
             $claim->execute([$orderId]);
-            if ($claim->rowCount() !== 1) {
+            $claimed = $claim->rowCount() === 1;
+            if (!$claimed) {
+                // Retry is permitted only after an explicitly recorded failed send.
+                // Sent or currently-sending records remain immutable to suppress duplicates.
+                $retry = $pdo->prepare(
+                    "UPDATE customer_email_deliveries SET status='sending', last_error=NULL, updated_at=UTC_TIMESTAMP()
+                     WHERE order_id=? AND event_key='account_delivery' AND status='failed'"
+                );
+                $retry->execute([$orderId]);
+                $claimed = $retry->rowCount() === 1;
+            }
+            if (!$claimed) {
                 $pdo->commit();
                 return;
             }
