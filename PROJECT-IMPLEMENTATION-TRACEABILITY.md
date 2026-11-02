@@ -459,3 +459,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - This stage only creates the durable queue. It does not call IBSng `createUser()`, implement an admin retry/reconciliation screen, or resolve uncertain remote outcomes. Account activation is not complete until those pieces are implemented.
 - Older orders whose target snapshot is NULL can still be marked paid, but this handoff cannot infer a correct destination for them; they require explicit reconciliation.
 - Validation not yet performed: PHP lint, migration execution, MySQL integration test, or live IBSng mutation.
+
+
+### 2026-11-02 — Per-gateway currency type setting
+
+**Status: SOURCE CHANGE COMMITTED ON `main`; RUNTIME/PAYMENT-PROVIDER TESTING NOT YET RUN.**
+
+- Each configured gateway now has one admin setting: `fiat` (IRR/IRT, regular product price) or `crypto` (USDT, independent `products.price_usdt`).
+- `PaymentFlow::initiate()` reads that setting and resolves the amount/currency accordingly. The resulting amount and currency are persisted in the payment transaction before the provider request; the existing transaction service validates them against the corresponding persisted product/order price.
+- This setting only chooses what amount/currency is sent to that gateway. It does not add or activate a gateway. A gateway configured for a currency it does not support is expected to reject the request; e.g. Zarinpal should remain `fiat`.
+- The separate `crypto_gateway_enabled` flag remains storefront USDT-price display only and is not consulted for payment type selection.
+- No new payment registry or additional payment module was introduced. Existing `PaymentManager`, `PaymentAmount`, `PaymentTransactionService`, and settings page were reused.
+- PHP lint and end-to-end/sandbox tests have not been run for this change.
+- Commits on `main`: `4025293751d2cb0e87877d623200c1bdb3497090`, `1821f88d7b0d75e984b0b559ef5f71667b632a2e`, `4d6d281be7c4fb8c38c94edd446c14d254440d06`.
