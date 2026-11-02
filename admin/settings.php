@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
+require_once dirname(__DIR__) . '/app/Payments/PaymentManager.php';
 require_admin();
 
 $pdo = Database::connection();
@@ -42,7 +43,20 @@ function support_valid_custom_url(string $value): bool
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 $paymentProvider = support_setting($pdo, 'payment_provider');
-$zarinpalMerchantId = support_setting($pdo, 'payment_zarinpal_merchant_id');
+$gatewayManager = new PaymentManager('zarinpal');
+$gatewayCodes = PaymentManager::registeredCodes();
+$gatewayFields = [];
+foreach ($gatewayCodes as $gatewayCode) {
+    try { $gatewayFields[$gatewayCode] = $gatewayManager->configurationFields($gatewayCode); }
+    catch (Throwable) { $gatewayFields[$gatewayCode] = []; }
+}
+$gatewayValues = [];
+foreach ($gatewayFields as $gatewayCode => $fields) {
+    foreach ($fields as $fieldKey => $field) {
+        $settingKey = 'payment_' . $gatewayCode . '_' . $fieldKey;
+        $gatewayValues[$gatewayCode][$fieldKey] = support_setting($pdo, $settingKey);
+    }
+}
 
 $renewalValues = [
     'ibsng_gift_days_first' => support_setting($pdo, 'ibsng_gift_days_first') ?: '1',
@@ -63,13 +77,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $priceDisplayUnit = strtoupper(trim((string)($_POST['price_display_unit'] ?? 'IRT')));
         $cryptoDisplayEnabled = (($_POST['crypto_gateway_enabled'] ?? '') === '1');
         $paymentProvider = strtolower(trim((string)($_POST['payment_provider'] ?? '')));
-        $zarinpalMerchantId = trim((string)($_POST['zarinpal_merchant_id'] ?? ''));
+        $gatewayValues = [];
+        foreach ($gatewayFields as $gatewayCode => $fields) {
+            foreach ($fields as $fieldKey => $field) {
+                $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey;
+                $gatewayValues[$gatewayCode][$fieldKey] = trim((string)($_POST[$inputName] ?? ''));
+            }
+        }
         if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
             $error = 'واحد نمایش قیمت معتبر نیست.';
-        } elseif (!in_array($paymentProvider, ['', 'zarinpal'], true)) {
+        } elseif ($paymentProvider !== '' && !in_array($paymentProvider, $gatewayCodes, true)) {
             $error = 'درگاه پرداخت انتخاب‌شده معتبر نیست.';
-        } elseif ($paymentProvider === 'zarinpal' && ($zarinpalMerchantId === '' || strlen($zarinpalMerchantId) > 100)) {
-            $error = 'برای فعال‌سازی زرین‌پال، مرچنت‌کد معتبر وارد کنید.';
+        } else {
+            foreach (($gatewayFields[$paymentProvider] ?? []) as $fieldKey => $field) {
+                $fieldValue = (string)($gatewayValues[$paymentProvider][$fieldKey] ?? '');
+                if (($field['required'] ?? false) && $fieldValue === '') {
+                    $error = 'فیلد الزامی درگاه پرداخت تکمیل نشده است: ' . (string)($field['label'] ?? $fieldKey);
+                    break;
+                }
+                if (strlen($fieldValue) > 2048) {
+                    $error = 'مقدار تنظیمات درگاه بیش از حد طولانی است.';
+                    break;
+                }
+            }
         }
         $renewalValues = [
             'ibsng_gift_days_first' => trim((string)($_POST['ibsng_gift_days_first'] ?? '1')),
@@ -106,7 +136,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute(['price_display_unit', $priceDisplayUnit]);
             $stmt->execute(['crypto_gateway_enabled', $cryptoDisplayEnabled ? '1' : '0']);
             $stmt->execute(['payment_provider', $paymentProvider]);
-            $stmt->execute(['payment_zarinpal_merchant_id', $zarinpalMerchantId]);
+            foreach ($gatewayFields as $gatewayCode => $fields) {
+                foreach ($fields as $fieldKey => $field) {
+                    $stmt->execute(['payment_' . $gatewayCode . '_' . $fieldKey, (string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')]);
+                }
+            }
             $message = 'تنظیمات راه‌های پشتیبانی، قیمت و هدیهٔ تمدید IBSng ذخیره شد.';
         }
     }
@@ -118,7 +152,11 @@ if ($error !== '') {
     $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
     $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
     $paymentProvider = support_setting($pdo, 'payment_provider');
-    $zarinpalMerchantId = support_setting($pdo, 'payment_zarinpal_merchant_id');
+    foreach ($gatewayFields as $gatewayCode => $fields) {
+        foreach ($fields as $fieldKey => $field) {
+            $gatewayValues[$gatewayCode][$fieldKey] = support_setting($pdo, 'payment_' . $gatewayCode . '_' . $fieldKey);
+        }
+    }
     foreach ($values as $key => $value) {
         $values[$key] = support_setting($pdo, $key);
     }
@@ -158,9 +196,9 @@ $config = app_config();
 <div class="field"><label for="price_display_unit">واحد نمایش</label><select id="price_display_unit" name="price_display_unit" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="IRT"<?= $priceDisplayUnit === 'IRT' ? ' selected' : '' ?>>تومان</option><option value="IRR"<?= $priceDisplayUnit === 'IRR' ? ' selected' : '' ?>>ریال</option></select></div>
 <hr>
 <h2>درگاه پرداخت</h2>
-<p class="hint">درگاه زرین‌پال تنها زمانی برای پرداخت سفارش استفاده می‌شود که مرچنت‌کد تنظیم و درگاه انتخاب شده باشد. غیرفعال‌کردن درگاه روی تراکنش‌های درحال‌پرداخت قبلی اثر نمی‌گذارد.</p>
-<div class="field"><label for="payment_provider">درگاه فعال</label><select id="payment_provider" name="payment_provider" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value=""<?= $paymentProvider === '' ? ' selected' : '' ?>>غیرفعال</option><option value="zarinpal"<?= $paymentProvider === 'zarinpal' ? ' selected' : '' ?>>زرین‌پال</option></select></div>
-<div class="field"><label for="zarinpal_merchant_id">مرچنت‌کد زرین‌پال</label><input id="zarinpal_merchant_id" name="zarinpal_merchant_id" value="<?= e($zarinpalMerchantId) ?>" maxlength="100" autocomplete="off" placeholder="شناسه پذیرنده"></div>
+<p class="hint">درگاه‌ها از ماژول‌های ثبت‌شده در سیستم دریافت می‌شوند؛ هیچ ارائه‌دهنده‌ای به‌صورت پیش‌فرض فعال نیست. تغییر درگاه روی تراکنش‌های قبلی اثر نمی‌گذارد.</p>
+<div class="field"><label for="payment_provider">درگاه فعال</label><select id="payment_provider" name="payment_provider" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value=""<?= $paymentProvider === '' ? ' selected' : '' ?>>غیرفعال</option><?php foreach ($gatewayCodes as $gatewayCode): ?><option value="<?= e($gatewayCode) ?>"<?= $paymentProvider === $gatewayCode ? ' selected' : '' ?>><?= e(ucfirst($gatewayCode)) ?></option><?php endforeach; ?></select></div>
+<?php foreach ($gatewayFields as $gatewayCode => $fields): ?><fieldset class="panel-card"><legend><?= e(ucfirst($gatewayCode)) ?></legend><?php foreach ($fields as $fieldKey => $field): $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey; ?><div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off" <?= !empty($field['required']) ? 'required' : '' ?>></div><?php endforeach; ?></fieldset><?php endforeach; ?>
 <hr>
 <h2>نمایش قیمت کریپتو</h2>
 <p class="hint">این گزینه صرفاً نمایش قیمت مستقل USDT را فعال می‌کند. تا زمان اتصال و فعال‌سازی واقعی درگاه کریپتو، آن را خاموش نگه دارید.</p>
