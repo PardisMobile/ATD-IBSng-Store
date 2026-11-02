@@ -17,10 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($attemptId === false || $attemptId === null || $attemptId < 1) {
                 throw new InvalidArgumentException('شناسه عملیات معتبر نیست.');
             }
-            $result = (new IBSngProvisioningDispatcher($pdo))->runQueued((int)$attemptId);
-            $message = $result === 'succeeded'
-                ? 'ساخت حساب در IBSng تأیید شد.'
-                : 'نتیجهٔ IBSng قطعی نیست یا تعارض وجود دارد؛ عملیات در وضعیت «نیازمند بررسی» قرار گرفت و retry خودکار انجام نشد.';
+            $dispatcher = new IBSngProvisioningDispatcher($pdo);
+            if ((string)($_POST['action'] ?? 'run') === 'resolve') {
+                $outcome = (string)($_POST['outcome'] ?? '');
+                $remoteUserId = trim((string)($_POST['remote_user_id'] ?? ''));
+                $note = trim((string)($_POST['resolution_note'] ?? ''));
+                $dispatcher->resolveManually((int)$attemptId, $outcome, $remoteUserId !== '' ? $remoteUserId : null, $note);
+                $message = 'تعیین تکلیف دستی ثبت شد؛ هیچ درخواست جدیدی به IBSng ارسال نشد.';
+            } else {
+                $result = $dispatcher->runQueued((int)$attemptId);
+                $message = $result === 'succeeded'
+                    ? 'ساخت حساب در IBSng تأیید شد.'
+                    : 'نتیجهٔ IBSng قطعی نیست یا تعارض وجود دارد؛ عملیات در وضعیت «نیازمند بررسی» قرار گرفت و retry خودکار انجام نشد.';
+            }
         } catch (Throwable $e) {
             $error = $e->getMessage();
         }
@@ -49,10 +58,10 @@ $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 <body><main class="shell">
 <header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></header>
 <section class="panel"><div class="eyebrow">عملیات IBSng</div><h1>صف Provisioning</h1>
-<p class="hint">اجرای دستی و موردی روی عملیات queued. هر عملیات قبل از تماس با IBSng claim می‌شود. خطا یا پاسخ مبهم پس از احتمال اجرای درخواست، به «نیازمند بررسی» می‌رود و از اجرای مجدد مستقیم جلوگیری می‌شود. عملیات running مانده از قطع پردازش نیز retry نمی‌شود.</p>
+<p class="hint">اجرای دستی و موردی روی queued. خطا یا پاسخ مبهم در «نیازمند بررسی» می‌ماند؛ running مانده هم retry نمی‌شود. برای needs_review یا running، مدیر پس از بررسی مستقیم IBSng می‌تواند فقط نتیجه را دستی ثبت کند؛ این کار هیچ درخواست remote جدیدی ارسال نمی‌کند.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>سفارش</th><th>نام کاربری</th><th>سرویس</th><th>سرور</th><th>وضعیت</th><th>نتیجه/خطا</th><th>عملیات</th></tr></thead><tbody>
 <?php if (!$rows): ?><tr><td colspan="8">موردی در صف ثبت نشده است.</td></tr><?php endif; ?>
-<?php foreach ($rows as $row): ?><tr><td><?= (int)$row['id'] ?></td><td>#<?= (int)$row['order_id'] ?></td><td><?= e((string)$row['username']) ?></td><td><?= e((string)$row['product_name_snapshot']) ?></td><td><?= e((string)$row['server_name']) ?></td><td><?= e((string)$row['status']) ?></td><td><?= e(trim((string)($row['error_message'] ?? '')) ?: (string)($row['remote_user_id'] ?? '—')) ?></td><td><?php if ($row['status'] === 'queued' && $row['operation'] === 'create'): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="attempt_id" value="<?= (int)$row['id'] ?>"><button class="button primary run" type="submit">اجرای یک‌باره</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
+<?php foreach ($rows as $row): ?><tr><td><?= (int)$row['id'] ?></td><td>#<?= (int)$row['order_id'] ?></td><td><?= e((string)$row['username']) ?></td><td><?= e((string)$row['product_name_snapshot']) ?></td><td><?= e((string)$row['server_name']) ?></td><td><?= e((string)$row['status']) ?></td><td><?= e(trim((string)($row['error_message'] ?? '')) ?: (string)($row['remote_user_id'] ?? '—')) ?></td><td><?php if ($row['status'] === 'queued' && $row['operation'] === 'create'): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="run"><input type="hidden" name="attempt_id" value="<?= (int)$row['id'] ?>"><button class="button primary run" type="submit">اجرای یک‌باره</button></form><?php elseif (in_array($row['status'], ['needs_review','running'], true)): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="resolve"><input type="hidden" name="attempt_id" value="<?= (int)$row['id'] ?>"><div class="field"><label>نتیجهٔ بررسی IBSng</label><select name="outcome"><option value="succeeded">حساب تأیید شد</option><option value="failed">حساب ایجاد نشده / شکست قطعی</option></select></div><div class="field"><label>Remote user ID (اختیاری)</label><input name="remote_user_id" maxlength="150" value="<?= e((string)($row['remote_user_id'] ?? '')) ?>"></div><div class="field"><label>یادداشت بررسی الزامی</label><input name="resolution_note" maxlength="1500" required placeholder="آنچه در IBSng بررسی و تأیید شد"></div><button class="button run" type="submit">ثبت تعیین تکلیف</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
 </tbody></table></div></section></main></body></html>
