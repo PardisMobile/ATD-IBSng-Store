@@ -188,7 +188,21 @@ final class IRCryptoGateway implements PaymentGateway
         $scale = strlen($m[2] ?? '');
         $digits = ltrim($m[1] . ($m[2] ?? ''), '0');
         $digits = $digits === '' ? '0' : $digits;
-        $product = (string)((int)$digits * $multiplier);
+        // Keep arithmetic in decimal strings: casting a large IRT amount to
+        // int and multiplying can overflow before JSON encoding the invoice.
+        $carry = 0;
+        $product = '';
+        for ($i = strlen($digits) - 1; $i >= 0; $i--) {
+            $digitProduct = ((int)$digits[$i] * $multiplier) + $carry;
+            $product = (string)($digitProduct % 10) . $product;
+            $carry = intdiv($digitProduct, 10);
+        }
+        while ($carry > 0) {
+            $product = (string)($carry % 10) . $product;
+            $carry = intdiv($carry, 10);
+        }
+        $product = ltrim($product, '0');
+        $product = $product === '' ? '0' : $product;
         if ($scale === 0) {
             return $product;
         }
