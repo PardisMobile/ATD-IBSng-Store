@@ -16,16 +16,24 @@ $fiat = PaymentAmount::resolve('fiat', [
 ]);
 payment_amount_assert($fiat === ['amount_minor' => 125000, 'currency' => 'IRT'], 'Fiat must use the exact order snapshot.');
 
-$crypto = PaymentAmount::resolve('crypto', [], ['price_usdt' => '12.34000005']);
+$crypto = PaymentAmount::resolve('crypto', ['price_usdt_snapshot' => '12.34000005']);
 payment_amount_assert($crypto === ['amount_minor' => 1234000005, 'currency' => 'USDT'], 'Crypto must preserve all eight decimal places.');
 
 $rejected = false;
 try {
-    PaymentAmount::resolve('crypto', [], ['price_usdt' => '12.340000059']);
+    PaymentAmount::resolve('crypto', ['price_usdt_snapshot' => '12.340000059']);
 } catch (InvalidArgumentException) {
     $rejected = true;
 }
 payment_amount_assert($rejected, 'Crypto values with more than eight decimals must fail closed.');
+
+$rejected = false;
+try {
+    PaymentAmount::resolve('crypto', ['price_usdt_snapshot' => null]);
+} catch (InvalidArgumentException) {
+    $rejected = true;
+}
+payment_amount_assert($rejected, 'Legacy orders without a stored USDT snapshot must fail closed.');
 
 $rejected = false;
 try {
