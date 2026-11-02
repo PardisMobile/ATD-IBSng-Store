@@ -80,12 +80,16 @@ final class IBSngProvisioningDispatcher
             $existingId = $client->findUserId($username);
             if ($existingId !== null) {
                 $user = $client->lookupUser($username);
-                if (trim((string)($user['group'] ?? '')) === $groupName) {
+                $expectedPassword = app_decrypt_secret((string)$row['password_ciphertext']);
+                $credentials = $client->getCredentials($username);
+                $matchesSnapshot = trim((string)($user['group'] ?? '')) === $groupName
+                    && hash_equals($expectedPassword, (string)($credentials['password'] ?? ''));
+                if ($matchesSnapshot) {
                     $this->finish($attemptId, 'succeeded', $existingId, null, null);
                     return 'succeeded';
                 }
                 $this->finish($attemptId, 'needs_review', $existingId, 'username_conflict',
-                    'IBSng already contains this username, but its group does not match the order snapshot.');
+                    'IBSng username exists, but its group or credentials do not match the immutable order snapshot.');
                 return 'needs_review';
             }
 
@@ -99,9 +103,12 @@ final class IBSngProvisioningDispatcher
                 return 'needs_review';
             }
             $user = $client->lookupUser($username);
-            if (trim((string)($user['group'] ?? '')) !== $groupName) {
-                $this->finish($attemptId, 'needs_review', $remoteId, 'group_mismatch',
-                    'The created IBSng account group does not match the order snapshot.');
+            $expectedPassword = app_decrypt_secret((string)$row['password_ciphertext']);
+            $credentials = $client->getCredentials($username);
+            if (trim((string)($user['group'] ?? '')) !== $groupName
+                || !hash_equals($expectedPassword, (string)($credentials['password'] ?? ''))) {
+                $this->finish($attemptId, 'needs_review', $remoteId, 'account_snapshot_mismatch',
+                    'The IBSng account group or credentials do not match the immutable order snapshot.');
                 return 'needs_review';
             }
             $this->finish($attemptId, 'succeeded', $remoteId, null, null);
