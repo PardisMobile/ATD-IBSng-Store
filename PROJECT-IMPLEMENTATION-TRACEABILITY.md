@@ -417,3 +417,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The verification request continues to use the transaction's stored amount and the matched Authority. The central callback route, transaction creation, atomic payment state transition, and provisioning dispatch are still not connected.
 - Commit: `a62cb1f6ca89f2a99a5730f3210825f6ffa81d24`.
 - No sandbox/live provider call or runtime test was performed by this source edit.
+
+
+### 2026-11-02 — Payment transaction persistence/state-transition service
+
+**Status: SOURCE IMPLEMENTED ON `main`; NOT YET CONNECTED TO CHECKOUT/CALLBACK OR RUNTIME-VERIFIED.**
+
+- Added `app/Payments/PaymentTransactionService.php` to persist a payment transaction before the provider redirect, then attach the provider reference after initiation.
+- Creation locks and checks the order is still awaiting payment, validates fiat amount/currency against the immutable order snapshot, and validates USDT against the separately stored product price using `PaymentAmount`.
+- Creation rejects another active transaction for the same order. Provider and amount/currency are persisted before redirect; this service does not accept client-supplied provider settings.
+- `confirmVerified()` requires an affirmative adapter verification result and exact match of the stored provider reference, amount, and currency. It updates the transaction and order paid states in one database transaction.
+- Repeated confirmation of the same already-verified payment returns without another state transition; a conflicting replay is rejected.
+- Provisioning is intentionally not dispatched here yet. Payment callback route, gateway configuration, checkout wiring, durable provisioning handoff, automated DB-backed concurrency tests, PHP lint, and sandbox/live verification remain open.
+- Commits on `main`: `4e5925151e9c0723dd8a0fb23428909c3c424dd8`, `bf8ae1fcf942058dc639b9957e9f40cc89e03b93`.
