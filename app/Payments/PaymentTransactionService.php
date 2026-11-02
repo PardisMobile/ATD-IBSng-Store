@@ -104,6 +104,19 @@ final class PaymentTransactionService
         }
     }
 
+    /** Mark a provider request as failed only before a provider reference exists. */
+    public function failInitiation(int $transactionId): void
+    {
+        $stmt = $this->pdo->prepare(
+            "UPDATE payment_transactions SET status = 'failed'
+             WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL"
+        );
+        $stmt->execute([$transactionId]);
+        if ($stmt->rowCount() !== 1) {
+            throw new RuntimeException('Payment initiation can no longer be marked failed.');
+        }
+    }
+
     /**
      * Atomically record a provider-verified payment exactly once.
      *
