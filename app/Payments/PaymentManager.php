@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/PaymentGateway.php';
-require_once __DIR__ . '/PaymentGatewayRegistry.php';
 
 /**
  * Resolves the configured payment provider without coupling checkout/callback
@@ -17,10 +16,20 @@ final class PaymentManager
     private array $instances = [];
     private readonly string $selectedProvider;
 
+    /**
+     * Keep the provider allowlist here: a separate registry file is unnecessary
+     * for the current gateway inventory.
+     *
+     * @var array<string, class-string<PaymentGateway>>
+     */
+    private const GATEWAYS = [
+        'zarinpal' => ZarinpalGateway::class,
+    ];
+
     public function __construct(string $selectedProvider)
     {
         $provider = strtolower(trim($selectedProvider));
-        if ($provider === '' || !PaymentGatewayRegistry::has($provider)) {
+        if ($provider === '' || !isset(self::GATEWAYS[$provider])) {
             throw new InvalidArgumentException('The configured payment provider is unavailable.');
         }
         $this->selectedProvider = $provider;
@@ -31,14 +40,11 @@ final class PaymentManager
         return $this->selectedProvider;
     }
 
-    /**
-     * Resolve the configured provider. Gateway adapters are loaded lazily so
-     * adding an adapter does not require changing checkout orchestration.
-     */
+    /** Resolve and lazily load the selected or transaction-specific adapter. */
     public function gateway(?string $provider = null): PaymentGateway
     {
         $code = strtolower(trim($provider ?? $this->selectedProvider));
-        if (!PaymentGatewayRegistry::has($code)) {
+        if (!isset(self::GATEWAYS[$code])) {
             throw new InvalidArgumentException('Unknown payment provider.');
         }
         if (!isset($this->instances[$code])) {
@@ -47,7 +53,7 @@ final class PaymentManager
                 throw new RuntimeException('Payment provider adapter file is missing.');
             }
             require_once $file;
-            $class = PaymentGatewayRegistry::classFor($code);
+            $class = self::GATEWAYS[$code];
             if (!class_exists($class)) {
                 throw new RuntimeException('Payment provider adapter class is missing.');
             }
@@ -71,9 +77,8 @@ final class PaymentManager
     }
 
     /**
-     * Callback processing must select the provider persisted on the transaction,
-     * not the current admin-selected provider. This preserves verification for
-     * transactions started before an admin switches gateways.
+     * Callback processing uses the provider persisted on the transaction, not
+     * the current admin selection, so older transactions remain verifiable.
      *
      * @param array<string,mixed> $callback Untrusted callback parameters.
      * @param array<string,mixed> $transaction Persisted transaction row.
