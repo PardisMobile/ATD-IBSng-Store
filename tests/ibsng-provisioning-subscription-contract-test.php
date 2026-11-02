@@ -15,7 +15,7 @@ $checks = [
     'subscription uses server-scoped account identity' =>
         str_contains($source, 'INSERT INTO subscriptions (order_id, product_id, server_id, ibsng_user_id, username, status, last_synced_at)'),
     'expiry and quota remain unknown until real sync' =>
-        str_contains($source, 'Account expiry and quota are intentionally left unknown'),
+        str_contains($source, 'expiry and quota are intentionally left unknown'),
     'manual resolution does not erase an existing remote ID when omitted' =>
         str_contains($source, 'ibsng_user_id=COALESCE(?,ibsng_user_id)'),
 ];
