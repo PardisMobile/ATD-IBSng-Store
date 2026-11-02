@@ -4,7 +4,7 @@ ALTER TABLE orders
     ADD COLUMN tracking_code VARCHAR(20) NULL AFTER public_id;
 
 UPDATE orders
-SET tracking_code = CONCAT('ATD-', UPPER(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 6)))
+SET tracking_code = CONCAT('ATD-', UPPER(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 7)))
 WHERE tracking_code IS NULL;
 
 ALTER TABLE orders
