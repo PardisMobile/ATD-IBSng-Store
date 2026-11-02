@@ -39,9 +39,12 @@ if (isset($_POST['action'])) {
                     if ((int)$throttle->fetchColumn() >= 5) {
                         $notice = 'درخواست‌های زیادی ثبت شده است. کمی بعد دوباره تلاش کنید.';
                     } else {
-                        $hasOrders = $pdo->prepare('SELECT 1 FROM orders WHERE LOWER(buyer_email) = ? LIMIT 1');
+                        $hasOrders = $pdo->prepare('SELECT 1 FROM orders WHERE LOWER(TRIM(buyer_email)) = ? LIMIT 1');
                         $hasOrders->execute([$email]);
                         if ($hasOrders->fetchColumn()) {
+                            // Only the newest email challenge remains usable.
+                            $invalidate = $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE email_normalized = ? AND consumed_at IS NULL');
+                            $invalidate->execute([$email]);
                             $code = (string)random_int(100000, 999999);
                             $hash = password_hash($code, PASSWORD_DEFAULT);
                             $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
@@ -63,7 +66,7 @@ if (isset($_POST['action'])) {
                 $challenge = $stmt->fetch(PDO::FETCH_ASSOC);
                 if (!$challenge || (int)$challenge['attempts'] >= 5 || !preg_match('/^\d{6}$/D', $code) || !password_verify($code, (string)$challenge['code_hash'])) {
                     if ($challenge) {
-                        $pdo->prepare('UPDATE customer_order_recovery_codes SET attempts = attempts + 1 WHERE id = ?')->execute([(int)$challenge['id']]);
+                        $pdo->prepare('UPDATE customer_order_recovery_codes SET attempts = LEAST(attempts + 1, 5) WHERE id = ? AND attempts < 5')->execute([(int)$challenge['id']]);
                     }
                     $stage = 'verify';
                     $notice = 'کد معتبر نیست یا منقضی شده است.';
