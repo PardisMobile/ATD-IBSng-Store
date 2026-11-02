@@ -51,8 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $currency = strtoupper(trim((string)($_POST['currency'] ?? 'IRR')));
                 $sortOrder = product_post_int('sort_order');
                 $active = isset($_POST['is_active']) ? 1 : 0;
-                $serverId = product_post_int('server_id');
-                $groupId = product_post_int('ibsng_group_id');
+                $rawMappings = $_POST['mappings'] ?? [];
+                if (!is_array($rawMappings)) throw new InvalidArgumentException('نگاشت‌های IBSng نامعتبر هستند.');
+                $mappingPairs = [];
+                foreach ($rawMappings as $rawMapping) {
+                    if (!is_array($rawMapping)) continue;
+                    $serverId = filter_var($rawMapping['server_id'] ?? null, FILTER_VALIDATE_INT);
+                    $groupId = filter_var($rawMapping['ibsng_group_id'] ?? null, FILTER_VALIDATE_INT);
+                    if (!$serverId || !$groupId || $serverId < 1 || $groupId < 1) continue;
+                    if (isset($mappingPairs[$serverId])) throw new InvalidArgumentException('برای هر سرور فقط یک گروه IBSng در یک محصول می‌توان ثبت کرد.');
+                    $mappingPairs[$serverId] = $groupId;
+                }
+                if (!$mappingPairs) throw new InvalidArgumentException('حداقل یک سرور و گروه IBSng برای محصول انتخاب کنید.');
 
                 if ($name === '' || (function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name)) > 180) {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
@@ -72,14 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $pdo->beginTransaction();
-                if ($serverId > 0 && $groupId > 0) {
-                    $mapping = $pdo->prepare('SELECT id FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
-                    $mapping->execute([$groupId, $serverId]);
-                    if (!$mapping->fetchColumn()) {
-                        throw new InvalidArgumentException('نگاشت فعال گروه IBSng برای سرور انتخاب‌شده معتبر نیست.');
-                    }
-                } else {
-                    throw new InvalidArgumentException('انتخاب سرور IBSng و نگاشت گروه فعال الزامی است.');
+                $validateMapping = $pdo->prepare('SELECT id FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
+                foreach ($mappingPairs as $serverId => $groupId) {
+                    $validateMapping->execute([$groupId, $serverId]);
+                    if (!$validateMapping->fetchColumn()) throw new InvalidArgumentException('یکی از نگاشت‌های گروه IBSng فعال نیست یا به سرور انتخاب‌شده تعلق ندارد.');
                 }
 
                 if ($id > 0) {
@@ -98,7 +104,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $pdo->prepare('DELETE FROM product_server_groups WHERE product_id=?')->execute([$productId]);
-                $pdo->prepare('INSERT INTO product_server_groups (product_id,server_id,ibsng_group_id) VALUES (?,?,?)')->execute([$productId, $serverId, $groupId]);
+                $insertMapping = $pdo->prepare('INSERT INTO product_server_groups (product_id,server_id,ibsng_group_id) VALUES (?,?,?)');
+                foreach ($mappingPairs as $serverId => $groupId) $insertMapping->execute([$productId, $serverId, $groupId]);
                 $pdo->commit();
                 header('Location: ' . app_url('admin/products.php?saved=1'));
                 exit;
@@ -135,19 +142,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if (isset($_GET['saved'])) {
-    $message = 'محصول و نگاشت IBSng ذخیره شدند.';
+    $message = 'محصول و نگاشت‌های IBSng ذخیره شدند.';
 }
 $servers = $pdo->query('SELECT id,name,host FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id')->fetchAll();
 $groups = $pdo->query('SELECT g.id,g.server_id,g.plan_name,g.group_name,s.name AS server_name FROM ibsng_groups g JOIN ibsng_servers s ON s.id=g.server_id WHERE g.is_active=1 AND s.is_active=1 ORDER BY s.is_default DESC,s.id,g.plan_name')->fetchAll();
 $product = null;
+$productMappings = [];
 if ($editId > 0) {
-    $stmt = $pdo->prepare('SELECT p.*,m.server_id,m.ibsng_group_id FROM products p LEFT JOIN product_server_groups m ON m.product_id=p.id WHERE p.id=? LIMIT 1');
+    $stmt = $pdo->prepare('SELECT * FROM products WHERE id=? LIMIT 1');
     $stmt->execute([$editId]);
     $product = $stmt->fetch() ?: null;
-    if (!$product) $error = 'محصول موردنظر پیدا نشد.';
+    if (!$product) {
+        $error = 'محصول موردنظر پیدا نشد.';
+    } else {
+        $mappingStmt = $pdo->prepare('SELECT server_id,ibsng_group_id FROM product_server_groups WHERE product_id=? ORDER BY server_id');
+        $mappingStmt->execute([$editId]);
+        $productMappings = $mappingStmt->fetchAll();
+    }
 }
+if (!$productMappings) $productMappings = [['server_id' => '', 'ibsng_group_id' => '']];
 $priceDisplayUnit = store_price_display_unit($pdo);
-$products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.name AS server_name FROM products p LEFT JOIN product_server_groups m ON m.product_id=p.id LEFT JOIN ibsng_groups g ON g.id=m.ibsng_group_id LEFT JOIN ibsng_servers s ON s.id=m.server_id ORDER BY p.sort_order,p.id DESC')->fetchAll();
+$products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_name, ' (', g.group_name, ')') ORDER BY s.is_default DESC,s.id SEPARATOR '، ') AS mapping_labels FROM products p LEFT JOIN product_server_groups m ON m.product_id=p.id LEFT JOIN ibsng_groups g ON g.id=m.ibsng_group_id LEFT JOIN ibsng_servers s ON s.id=m.server_id GROUP BY p.id ORDER BY p.sort_order,p.id DESC")->fetchAll();
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
@@ -164,7 +179,7 @@ $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.n
 <header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><nav><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a></nav></header>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1>مدیریت محصولات و پلن‌ها</h1>
-<p class="muted">هر محصول به یک سرور و یک نگاشت دستی و فعال IBSng وصل می‌شود. مدت بر حسب ثانیه، قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت ثبت می‌شود.</p>
+<p class="muted">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت بر حسب ثانیه، قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت ثبت می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers || !$groups): ?><div class="notice err">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
@@ -179,8 +194,12 @@ $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.n
 <div class="field"><label for="currency">کد پولی ISO (مثلاً IRR)</label><input id="currency" name="currency" maxlength="3" required value="<?= e((string)($product['currency'] ?? 'IRR')) ?>"></div>
 <div class="field"><label for="quota_bytes">سقف حجم (بایت؛ خالی یعنی نامشخص/نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
 <div class="field"><label for="sort_order">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
-<div class="field"><label for="server_id">سرور IBSng</label><select id="server_id" name="server_id" required><option value="">انتخاب سرور</option><?php foreach ($servers as $server): ?><option value="<?= (int)$server['id'] ?>"<?= (int)($product['server_id'] ?? 0)===(int)$server['id']?' selected':'' ?>><?= e((string)$server['name']) ?> · <?= e((string)$server['host']) ?></option><?php endforeach; ?></select></div>
-<div class="field"><label for="ibsng_group_id">نگاشت فعال گروه / پلن</label><select id="ibsng_group_id" name="ibsng_group_id" required><option value="">انتخاب نگاشت</option><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>" data-server="<?= (int)$group['server_id'] ?>"<?= (int)($product['ibsng_group_id'] ?? 0)===(int)$group['id']?' selected':'' ?>><?= e((string)$group['server_name']) ?> · <?= e((string)$group['plan_name']) ?> (<?= e((string)$group['group_name']) ?>)</option><?php endforeach; ?></select></div>
+<div class="field" style="grid-column:1/-1"><label>سرورها و گروه‌های IBSng این محصول</label>
+<div id="mapping-list"><?php foreach ($productMappings as $mappingIndex => $productMapping): ?><div class="mapping-row grid" style="align-items:end" data-mapping-row>
+<div class="field"><label>سرور IBSng</label><select name="mappings[<?= (int)$mappingIndex ?>][server_id]" data-server-select required><option value="">انتخاب سرور</option><?php foreach ($servers as $server): ?><option value="<?= (int)$server['id'] ?>"<?= (int)($productMapping['server_id'] ?? 0)===(int)$server['id']?' selected':'' ?>><?= e((string)$server['name']) ?> · <?= e((string)$server['host']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label>گروه / پلن فعال</label><div style="display:flex;gap:8px"><select name="mappings[<?= (int)$mappingIndex ?>][ibsng_group_id]" data-group-select required><option value="">انتخاب نگاشت</option><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>" data-server="<?= (int)$group['server_id'] ?>"<?= (int)($productMapping['ibsng_group_id'] ?? 0)===(int)$group['id']?' selected':'' ?>><?= e((string)$group['server_name']) ?> · <?= e((string)$group['plan_name']) ?> (<?= e((string)$group['group_name']) ?>)</option><?php endforeach; ?></select><button class="button" type="button" data-remove-mapping>حذف</button></div></div>
+</div><?php endforeach; ?></div>
+<button class="button" type="button" id="add-mapping">افزودن سرور / گروه</button><div class="hint">هر سرور فقط یک‌بار در این محصول انتخاب شود. گروه باید از نگاشت‌های دستی همان سرور باشد.</div></div>
 </div>
 <div class="field"><label for="description">توضیحات</label><textarea id="description" name="description" rows="3"><?= e((string)($product['description'] ?? '')) ?></textarea></div>
 <label><input type="checkbox" name="is_active" value="1"<?= (int)($product['is_active'] ?? 1)===1?' checked':'' ?>> نمایش در فروشگاه</label>
@@ -190,11 +209,47 @@ $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.n
 <section class="panel panel-card"><h2>محصولات ثبت‌شده</h2>
 <?php if (!$products): ?><div class="empty">هنوز محصولی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($products as $item): ?><article class="product-row panel"><div class="row-head"><strong><?= e((string)$item['name']) ?></strong><span class="status-chip"><?= (int)$item['is_active']===1?'فعال':'غیرفعال' ?></span></div>
-<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div>مدت: <?= number_format((int)$item['duration_seconds']) ?> ثانیه · تمدید IBSng: <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' روز' : 'تنظیم نشده' ?> · قیمت: <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted">نگاشت: <?= e((string)($item['server_name'] ?? '—')) ?> / <?= e((string)($item['plan_name'] ?? '—')) ?></div>
+<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div>مدت: <?= number_format((int)$item['duration_seconds']) ?> ثانیه · تمدید IBSng: <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' روز' : 'تنظیم نشده' ?> · قیمت: <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted">سرورها و گروه‌ها: <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
 <div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" onsubmit="return confirm('محصول حذف شود؟');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit">حذف</button></form></div></article><?php endforeach; ?>
 </section><footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
 </main>
 <script>
-(function(){const server=document.getElementById('server_id'),group=document.getElementById('ibsng_group_id');if(!server||!group)return;function filter(){Array.from(group.options).forEach(o=>{if(!o.value)return;o.hidden=o.dataset.server!==server.value;if(o.hidden&&o.selected)group.value='';});}server.addEventListener('change',filter);filter();})();
+(function(){
+ const list=document.getElementById('mapping-list'),add=document.getElementById('add-mapping');
+ if(!list||!add)return;
+ let nextIndex=list.querySelectorAll('[data-mapping-row]').length;
+ const template=list.querySelector('[data-mapping-row]');
+ function filterRow(row){
+  const server=row.querySelector('[data-server-select]'),group=row.querySelector('[data-group-select]');
+  Array.from(group.options).forEach(option=>{if(!option.value)return;option.hidden=option.dataset.server!==server.value;if(option.hidden&&option.selected)group.value='';});
+ }
+ function bind(row){
+  row.querySelector('[data-server-select]').addEventListener('change',()=>filterRow(row));
+  row.querySelector('[data-remove-mapping]').addEventListener('click',()=>{
+   if(list.querySelectorAll('[data-mapping-row]').length>1)row.remove();
+   else {row.querySelector('[data-server-select]').value='';row.querySelector('[data-group-select]').value='';}
+  });
+  filterRow(row);
+ }
+ list.querySelectorAll('[data-mapping-row]').forEach(bind);
+ add.addEventListener('click',()=>{
+  const row=template.cloneNode(true);
+  row.querySelectorAll('select').forEach(select=>{
+   select.name=select.name.replace(/mappings\[\d+\]/,'mappings['+nextIndex+']');
+   select.value='';
+  });
+  nextIndex++;
+  list.appendChild(row);
+  bind(row);
+ });
+ document.querySelector('form').addEventListener('submit',event=>{
+  const rows=Array.from(list.querySelectorAll('[data-mapping-row]')),seen=new Set();
+  for(const row of rows){
+   const server=row.querySelector('[data-server-select]').value;
+   if(server&&seen.has(server)){event.preventDefault();alert('هر سرور فقط یک‌بار برای محصول انتخاب شود.');return;}
+   if(server)seen.add(server);
+  }
+ });
+})();
 </script>
 </body></html>
