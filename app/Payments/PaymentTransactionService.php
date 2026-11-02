@@ -167,7 +167,8 @@ final class PaymentTransactionService
         $this->pdo->beginTransaction();
         try {
             $stmt = $this->pdo->prepare(
-                'SELECT t.*, o.payment_status AS order_payment_status
+                'SELECT t.*, o.payment_status AS order_payment_status,
+                        o.server_targets_snapshot AS server_targets_snapshot
                  FROM payment_transactions t
                  JOIN orders o ON o.id = t.order_id
                  WHERE t.id = ? FOR UPDATE'
@@ -219,6 +220,39 @@ final class PaymentTransactionService
             $orderUpdate->execute([(int)$transaction['order_id']]);
             if ($orderUpdate->rowCount() !== 1) {
                 throw new RuntimeException('Order state changed during payment confirmation.');
+            }
+
+            // Queue captured IBSng destinations exactly once in the payment
+            // transaction. Remote IBSng mutations are handled separately.
+            $targetsJson = $transaction['server_targets_snapshot'] ?? null;
+            if (is_string($targetsJson) && trim($targetsJson) !== '') {
+                $targets = json_decode($targetsJson, true, 512, JSON_THROW_ON_ERROR);
+                if (!is_array($targets) || !array_is_list($targets) || $targets === []) {
+                    throw new RuntimeException('Order has an invalid provisioning destination snapshot.');
+                }
+                $queue = $this->pdo->prepare(
+                    "INSERT IGNORE INTO provisioning_attempts
+                     (order_id, server_id, operation, status, attempt_number, idempotency_key)
+                     VALUES (?, ?, 'create', 'queued', 1, ?)"
+                );
+                $queued = 0;
+                foreach ($targets as $target) {
+                    if (!is_array($target) || (int)($target['server_id'] ?? 0) < 1
+                        || trim((string)($target['group_name'] ?? '')) === '') {
+                        throw new RuntimeException('Order provisioning destination snapshot is incomplete.');
+                    }
+                    $serverId = (int)$target['server_id'];
+                    $idempotencyKey = 'order:' . (int)$transaction['order_id'] . ':server:' . $serverId . ':create';
+                    $queue->execute([(int)$transaction['order_id'], $serverId, $idempotencyKey]);
+                    $queued += $queue->rowCount();
+                }
+                if ($queued > 0) {
+                    $markProvisioning = $this->pdo->prepare(
+                        "UPDATE orders SET order_status = 'provisioning'
+                         WHERE id = ? AND payment_status = 'paid' AND order_status = 'paid'"
+                    );
+                    $markProvisioning->execute([(int)$transaction['order_id']]);
+                }
             }
 
             $this->pdo->commit();
