@@ -143,11 +143,7 @@ final class PaymentFlow
         $verification = $manager->verify(
             $callback,
             $transaction,
-            [
-                $provider => [
-                    'merchant_id' => (string)($all['payment_' . $provider . '_merchant_id'] ?? ''),
-                ],
-            ]
+            [$provider => self::providerSettings($all, $provider)]
         );
         $transactionService = new PaymentTransactionService($pdo);
         if (($verification['verified'] ?? false) !== true) {
