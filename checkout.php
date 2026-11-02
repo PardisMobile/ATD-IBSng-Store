@@ -13,8 +13,8 @@ final class UsernameAlreadyExistsException extends RuntimeException
 }
 
 $config = app_config();
-$priceDisplayUnit = store_price_display_unit($pdo);
 $pdo = Database::connection();
+$priceDisplayUnit = store_price_display_unit($pdo);
 $error = '';
 $successOrder = null;
 
