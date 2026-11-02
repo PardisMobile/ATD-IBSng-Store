@@ -1039,3 +1039,11 @@
 - `CustomerAccountDelivery::afterProvisioning()` now permits a conditional claim only for a previously failed event, maintaining the unique order/event key to suppress duplicate sends.
 - Added `tests/customer-account-delivery-contract-test.php` with source-contract checks for paid-state gate, terminal provisioning, successful destinations, durable claim, retry path, template variables, and guide route.
 - Verification remains source-level only: the test has not been run in a PHP runtime, and mail/DB/end-to-end behavior remains unverified.
+
+
+### 2026-11-03 — Payment notice vs. account delivery email separation
+
+- Payment callback notice now uses a payment-only message stating that payment is verified and provisioning is underway; it no longer reuses the `purchase_success` account-delivery template.
+- The `purchase_success` template is reserved for the post-provisioning delivery email, preventing duplicate/misleading “account ready” emails before remote account creation is confirmed.
+- Admin provisioning email table now displays the buyer email address. Retry-delivery submissions validate only the order ID; attempt IDs remain required only for run/resolve actions.
+- Runtime verification remains outstanding (PHP lint, DB, mail transport, and end-to-end flow).
