@@ -349,3 +349,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Provider settings are passed as trusted, provider-keyed server-side settings. The manager does not accept credentials from browser input.
 - The manager currently registers only the existing Zarinpal adapter as an available implementation. This does **not** make Zarinpal mandatory: the registry is the explicit adapter inventory, and a future provider can be added as a separate adapter implementing `PaymentGateway` plus one registry entry. Admin selection/settings persistence, transaction orchestration, callback route, atomic paid transition, provisioning dispatch, tests, and live gateway verification remain incomplete.
 - No PHP runtime/lint or end-to-end payment test was executed in this environment. Do not describe payment as enabled or production-ready based on this resolver alone.
+
+
+### 2026-11-02 — Separate payment gateway inventory from manager
+
+**Status: IMPLEMENTED IN SOURCE / NOT RUNTIME-VERIFIED.**
+
+- Added `app/Payments/PaymentGatewayRegistry.php` as the standalone allowlisted inventory of adapter codes and classes.
+- Updated `app/Payments/PaymentManager.php` to resolve gateway availability and adapter classes through the registry instead of keeping its own hard-coded provider map.
+- `app/Payments/PaymentGateway.php` remains the stable interface contract and was not changed.
+- To add a provider now, implement `PaymentGateway` in a separate adapter file and add its code/class mapping to `PaymentGatewayRegistry.php`. Neither the interface nor the manager's dispatch logic needs modification. The registry is intentionally explicit/allowlisted; this is not unrestricted filesystem auto-discovery.
+- Existing Zarinpal behavior is intended to remain unchanged. The new separation is architectural groundwork only: payment settings UI, checkout initiation, callback route, transaction persistence, idempotent paid transition, provisioning integration, automated tests, PHP lint, and live/sandbox validation remain open.
+- Commits on `main`: registry `9f6cb3cb23cf62df815e27e5a934a3ecb5611323`; manager decoupling `60f800d0a3e2306164bb934ee53171d84902c743`.
