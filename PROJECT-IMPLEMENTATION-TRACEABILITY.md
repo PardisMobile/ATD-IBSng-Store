@@ -550,3 +550,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Preserved the existing separation from internal server names, per-target provisioning statuses, and credential display conditions.
 - Updated `tests/order-status-account-contract-test.php` to assert conditional rendering and reject the previous empty-string fallback pattern.
 - This is source-level implementation only. The PHP contract test, PHP lint, browser rendering, and live deployment have not been run in this operation.
+
+
+### 2026-11-02 — IRCrypto webhook guidance on gateway settings
+
+**Status: SOURCE IMPLEMENTED ON `main`; PHP lint/UI/runtime validation pending.**
+
+- Added an IRCrypto-only help block to the gateway configuration fieldset in `admin/settings.php`.
+- The displayed complete callback address is generated through `app_url('webhook/ircrypto.php')`, honoring the Store's configured base URL and mount path rather than hardcoding a domain.
+- The instructions say to register the URL in the IRCrypto dashboard and explain signature authentication plus server-side invoice/payment validation.
+- Preserved the endpoint location outside `app/Payments/gateways/`, avoiding interference with adapter auto-discovery.
+- No PHP lint, automated test, admin browser check, cPanel subdirectory test, or real webhook delivery was executed for this source change.
