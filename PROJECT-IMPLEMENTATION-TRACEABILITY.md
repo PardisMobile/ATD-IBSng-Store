@@ -472,3 +472,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - No new payment registry or additional payment module was introduced. Existing `PaymentManager`, `PaymentAmount`, `PaymentTransactionService`, and settings page were reused.
 - PHP lint and end-to-end/sandbox tests have not been run for this change.
 - Commits on `main`: `4025293751d2cb0e87877d623200c1bdb3497090`, `1821f88d7b0d75e984b0b559ef5f71667b632a2e`, `4d6d281be7c4fb8c38c94edd446c14d254440d06`.
+
+
+### 2026-11-02 — Adapter-driven currency choices in admin
+
+**Status: SOURCE CHANGE COMMITTED ON `main`; CI pending at time of entry.**
+
+- The admin currency selector now reads each adapter's declared `supportedCurrencies()` values and only renders compatible choices: fiat when IRR/IRT is supported, and USDT when USDT is supported.
+- The administrator still selects the configured payment mode for that gateway; the selection is not customer-selectable or auto-switched per transaction.
+- Server-side compatibility validation remains in place when saving settings and initiating payment, so the UI is not treated as the security boundary.
+- Documentation updated in `docs/PAYMENTS-AND-PROVISIONING.md`.
+- Commit: `20af275933748c8c033a675459eb4447bf24f8bc` (admin UI), `5ce687fa4ad93739b232c934503266f7205115a7` (documentation).
+- Browser/runtime validation and CI completion are pending; no provider sandbox or live payment was run.
