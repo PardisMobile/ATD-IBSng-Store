@@ -12,7 +12,7 @@ if (empty($_SESSION['my_orders_csrf'])) {
 }
 $csrf = (string)$_SESSION['my_orders_csrf'];
 $notice = '';
-$stage = isset($_SESSION['my_orders_email']) && (int)($_SESSION['my_orders_verified_until'] ?? 0) > time() ? 'orders' : 'request';
+$stage = isset($_SESSION['my_orders_email']) && (int)($_SESSION['my_orders_verified_until'] ?? 0) > time()\n    ? 'orders'\n    : (isset($_SESSION['my_orders_email_pending']) ? 'verify' : 'request');
 $email = strtolower(trim((string)($_SESSION['my_orders_email'] ?? '')));
 $pdo = null;
 $orders = [];
