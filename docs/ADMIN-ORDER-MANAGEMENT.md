@@ -22,7 +22,7 @@ Any future order-management or manual provisioning workflow requires its own exp
 - Keep Store Test, IBSng Test, and Sales Report separate.
 - Payment gateways are modular and are a separate concern from the test feature definitions.
 - No Telegram bot logic in the Store.
-- Work on `feat/router-safe-dispatch`; do not modify `main`.
+- All project implementation changes are made on `main`; do not create or switch to feature branches.
 
 ## Documentation status
 
