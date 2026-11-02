@@ -13,7 +13,7 @@ $errorMessage = 'پرداخت توسط درگاه تأیید نشد. اگر مب
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $provider !== '') {
     try {
         $result = PaymentFlow::handleCallback(Database::connection(), $provider, $_GET);
-        $success = true;
+        $success = (bool)($result['paid'] ?? false);
         $orderReference = (string)$result['order_public_id'];
     } catch (Throwable $e) {
         // Provider/transport details are intentionally not exposed to customers.
