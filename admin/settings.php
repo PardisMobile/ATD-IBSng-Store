@@ -43,11 +43,11 @@ function support_valid_custom_url(string $value): bool
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 $paymentProvider = support_setting($pdo, 'payment_provider');
-$gatewayManager = new PaymentManager('zarinpal');
 $gatewayCodes = PaymentManager::registeredCodes();
+$gatewayManager = $gatewayCodes !== [] ? new PaymentManager($gatewayCodes[0]) : null;
 $gatewayFields = [];
 foreach ($gatewayCodes as $gatewayCode) {
-    try { $gatewayFields[$gatewayCode] = $gatewayManager->configurationFields($gatewayCode); }
+    try { $gatewayFields[$gatewayCode] = $gatewayManager?->configurationFields($gatewayCode) ?? []; }
     catch (Throwable) { $gatewayFields[$gatewayCode] = []; }
 }
 $gatewayValues = [];
