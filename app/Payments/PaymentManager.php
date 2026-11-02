@@ -102,6 +102,12 @@ final class PaymentManager
         return $this->selectedProvider;
     }
 
+    /** @return list<string> */
+    public function supportedCurrencies(?string $provider = null): array
+    {
+        return $this->gateway($provider)->supportedCurrencies();
+    }
+
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(string $provider): array
     {
