@@ -213,7 +213,11 @@ final class PaymentFlow
                 return;
             }
             $config = app_config();
-            $template = EmailTemplates::get($pdo, 'purchase_success');
+            $template = [
+                'subject' => 'پرداخت سفارش شما تأیید شد - {{site_name}}',
+                'html' => '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><body><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>پرداخت سفارش شما تأیید شده است. فعال‌سازی اکانت در حال انجام است. پس از تأیید موفق فعال‌سازی، اطلاعات ورود به ایمیل شما ارسال می‌شود.</p><p>شناسه سفارش: <strong>{{order_id}}</strong></p><p><a href="{{order_url}}">پیگیری سفارش</a></p></main></body></html>',
+                'text' => "{{site_name}}\nسلام {{customer_name}}،\nپرداخت سفارش تأیید شد. فعال‌سازی در حال انجام است و اطلاعات ورود پس از موفقیت ارسال می‌شود.\nشناسه سفارش: {{order_id}}\nپیگیری سفارش: {{order_url}}",
+            ];
             $variables = [
                 'site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'),
                 'customer_name' => (string)($order['buyer_name'] ?? ''),
