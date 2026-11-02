@@ -987,3 +987,10 @@
 - On the shared order-detail page, `service_name` is optional and must be rendered only when its trimmed value is non-empty. An absent/blank name must produce no empty label or placeholder element.
 - Internal IBSng server names/connection details remain private; this customer-facing label is distinct from the internal server name.
 - This is a presentation-only clarification. It does not alter order ownership, email recovery authorization, provisioning state, or credential disclosure rules.
+
+
+## IRCrypto webhook settings guidance (2026-11-02)
+
+- The IRCrypto gateway settings page must show a provider-specific webhook instruction and the complete callback URL generated from the configured Store base URL plus `/webhook/ircrypto.php` (use HTTPS in production).
+- Tell the administrator to register this URL in the IRCrypto dashboard. Explain that the Store verifies the webhook signature and then validates invoice/payment status, amount, and currency server-side.
+- The webhook endpoint remains `webhook/ircrypto.php`, outside `app/Payments/gateways/`; do not move it into the auto-discovered adapter directory.
