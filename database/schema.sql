@@ -241,3 +241,19 @@ CREATE TABLE IF NOT EXISTS customer_email_deliveries (
     KEY idx_customer_email_delivery_status (status, updated_at),
     CONSTRAINT fk_customer_email_delivery_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- One-time email ownership challenges for unified customer order recovery.
+CREATE TABLE IF NOT EXISTS customer_order_recovery_codes (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email_normalized VARCHAR(190) NOT NULL,
+    code_hash CHAR(255) NOT NULL,
+    request_ip_hash CHAR(64) NOT NULL,
+    attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    expires_at DATETIME NOT NULL,
+    consumed_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_customer_recovery_email_created (email_normalized, created_at),
+    KEY idx_customer_recovery_expiry (expires_at),
+    KEY idx_customer_recovery_email_hash (email_normalized, code_hash)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
