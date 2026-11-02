@@ -274,7 +274,7 @@ This is a source-level inventory of the current `main` branch, not a claim of ru
 Targeted source review of `checkout.php`, `database/schema.sql`, `app/messages.php`, and GitHub code search on `main`:
 
 - Checkout currently accepts an optional email and warns that email-based recovery is unavailable if no email is entered. The user requirement calls for email ownership verification to recover orders; this is not yet implemented.
-- Checkout stores order email, buyer contact, chosen IBSng username, and an encrypted account password; it snapshots product name, duration, price, and currency. It currently creates a pending-payment order only. It does not initiate a gateway, verify a callback, provision the account, or send the promised purchase email.
+- Checkout stores order email, buyer contact, chosen IBSng username, and encrypted account password; it snapshots product name, duration, price, and currency. The current checkout calls `PaymentFlow::initiate()` after creating the pending order. Verified callbacks are handled by `PaymentFlow::handleCallback()`, which confirms persisted transaction data before dispatching queued provisioning. Customer delivery is handled after provisioning reaches its terminal state. These source paths have contract coverage, but require database/provider/live IBSng end-to-end verification.
 - Schema includes orders, payment transaction, subscriptions, provisioning attempts, and renewal ledger tables. Having these tables does not itself establish completed customer account authorization, email verification, actual gateway integration, or live IBSng operations.
 - Message catalog has recovery-related copy keys, but repository code search did not find a customer login using IBSng username/password plus a generated four-digit code, a customer password-change portal, an email OTP recovery flow, or a customer order-history interface.
 - Recovery must verify email ownership before returning *all* relevant orders and account details, not use a public order ID as authorization. OTP/token expiry, throttling, attempt limits, generic responses, session/CSRF protections, and owner-bound authorization are required.
@@ -329,7 +329,7 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 
 ### PAY-CHAIN-001 — Payment amount/currency contract and callback orchestration
 
-**Status: OPEN — adapter exists; central payment initiation, callback persistence, and provisioning idempotency are not yet implemented.**
+**Status: IMPLEMENTED IN SOURCE — payment initiation, persisted transaction verification, callback confirmation, and queued provisioning dispatch are wired. Contract/CI checks exist; live provider and database concurrency validation remain open.**
 
 - The order schema stores the immutable price as `orders.price_minor_snapshot` with `orders.currency`; the payment ledger stores `payment_transactions.amount_minor` and `payment_transactions.currency`. The intended invariant is exact equality between those snapshots at transaction creation and callback validation. No implicit IRR/IRT/USDT conversion is permitted in the central flow.
 - `app/Payments/PaymentGateway.php` defines the adapter boundary. The Zarinpal adapter is now located at `app/Payments/zarinpal.php`; the implementation class remains `ZarinpalGateway`.
@@ -347,7 +347,7 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Added `app/Payments/PaymentManager.php` on `main`. It resolves a gateway from a server-side allowlist and delegates initiation/verification through the existing `PaymentGateway` contract.
 - Checkout initiation resolves the configured selected provider. Callback verification resolves the provider persisted on the payment transaction, not the current global selection. This is intentional: changing the selected gateway must not invalidate or redirect an already-started transaction to another provider.
 - Provider settings are passed as trusted, provider-keyed server-side settings. The manager does not accept credentials from browser input.
-- The manager currently allows only the existing Zarinpal adapter. This does **not** make Zarinpal mandatory: a future provider can be added as a separate adapter implementing `PaymentGateway` plus one entry in the manager's explicit allowlist. Admin selection/settings persistence, transaction orchestration, callback route, atomic paid transition, provisioning dispatch, tests, and live gateway verification remain incomplete.
+- `PaymentManager` uses the adapter registry and the admin settings expose provider selection/configuration. Checkout persists a transaction before provider initiation; callback handling resolves the provider reference and requires server-side verification before the paid transition and provisioning dispatch. Provider-specific live configuration, sandbox/live invoice lifecycle, and production concurrency/replay checks remain unverified. Adding another gateway still requires its adapter contract and registration/configuration support.
 - No PHP runtime/lint or end-to-end payment test was executed in this environment. Do not describe payment as enabled or production-ready based on this resolver alone.
 
 
