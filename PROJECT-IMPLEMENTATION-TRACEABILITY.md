@@ -440,3 +440,10 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Added `payment-callback.php` and its explicit router allowlist entry. Callback lookup binds provider and Authority to the persisted transaction; only the adapter's server-side verification result reaches atomic confirmation.
 - Admin settings now allow selecting the configured Zarinpal gateway and storing its merchant ID. Selecting no provider leaves payment initiation disabled. The independent USDT price-display setting does not activate crypto payment.
 - The callback page reports payment confirmation separately from IBSng provisioning. Provisioning dispatch, order management/reconciliation, payment retry recovery, automated DB-backed tests, PHP lint completion, and Zarinpal sandbox/live verification remain outstanding. Do not enable live checkout until CI passes and provider amount/currency semantics are confirmed against current documentation and controlled tests.
+
+### 2026-11-02 — Payment contract tests and cancellation recovery
+
+- Added `PaymentManagerTest.php` and wired it plus the existing `PaymentAmountTest.php` into the PHP workflow. The provider allowlist and exact fiat/USDT integer amount contract now run in CI.
+- Added a guarded failed-payment transition for provider-declared cancellation so a canceled attempt can release the order's active-payment slot. The callback UI distinguishes a verified payment from a canceled/failed return; an unverified return is never marked paid.
+- GitHub Actions run `41434145003` passed PHP syntax lint and the router, payment amount, payment manager, IBSng lookup, renewal policy/state, and renewal ledger contract tests.
+- This is source/CI verification only: no live database checkout, Zarinpal sandbox request, or IBSng provisioning was executed. The paid-to-provisioning handoff remains the next implementation boundary.
