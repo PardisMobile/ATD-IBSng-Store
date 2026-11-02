@@ -21,6 +21,11 @@ final class ZarinpalGateway implements PaymentGateway
         return 'zarinpal';
     }
 
+    public function callbackReference(array $callback): string
+    {
+        return trim((string)($callback['Authority'] ?? ''));
+    }
+
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(): array
     {
