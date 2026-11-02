@@ -25,6 +25,22 @@ final class PaymentFlow
         return $settings;
     }
 
+    /** @return array<string,string> */
+    private static function providerSettings(array $all, string $provider): array
+    {
+        $prefix = 'payment_' . $provider . '_';
+        $result = [];
+        foreach ($all as $key => $value) {
+            if (str_starts_with((string)$key, $prefix)) {
+                $field = substr((string)$key, strlen($prefix));
+                if ($field !== '') {
+                    $result[$field] = (string)$value;
+                }
+            }
+        }
+        return $result;
+    }
+
     /**
      * Initiate a fiat checkout from an existing order's immutable snapshot.
      *
@@ -65,12 +81,8 @@ final class PaymentFlow
         try {
             $manager = new PaymentManager($provider);
             $callbackUrl = app_url('payment-callback.php?provider=' . rawurlencode($provider));
-            $providerSettings = [
-                $provider => [
-                    'merchant_id' => (string)($all['payment_' . $provider . '_merchant_id'] ?? ''),
-                    'callback_url' => $callbackUrl,
-                ],
-            ];
+            $providerSettings = [$provider => self::providerSettings($all, $provider)];
+            $providerSettings[$provider]['callback_url'] = $callbackUrl;
             $started = $manager->initiate([
                 'amount_minor' => $amount['amount_minor'],
                 'currency' => $amount['currency'],
