@@ -384,3 +384,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - This flag currently controls display only. It is not proof that a crypto provider is integrated, configured, or able to accept payments. Keep it disabled until a real crypto gateway adapter and its server-side verification path are implemented and tested.
 - No payment amount selection, transaction initiation, callback verification, paid-state transition, or duplicate-order protection was added by this display-only change. Those remain open items under PAY-CHAIN-001.
 - No PHP lint, automated test, or live checkout verification was performed.
+
+
+### PAY-CHAIN-002 — Central immutable amount resolution groundwork
+
+**Status: SOURCE IMPLEMENTED ON `main` / NOT INTEGRATED OR RUNTIME-VERIFIED.**
+
+- Added `app/Payments/PaymentAmount.php` as a provider-independent amount resolver.
+- Fiat resolution uses only the persisted order price/currency snapshot and accepts IRR/IRT; it does not apply the storefront display-unit conversion.
+- Crypto resolution uses a separately persisted product `price_usdt`, parses the decimal string without floating-point arithmetic, and scales to eight decimal places for integer storage with currency `USDT`. It does not calculate USDT from an exchange rate.
+- Invalid/missing amounts, unsupported currencies/methods, and out-of-range USDT values fail closed.
+- This is a pure amount-selection helper only. It is not yet called by checkout, does not create a transaction, and does not enable a crypto provider. Payment initiation/callback state machine and idempotent payment processing remain open.
+- No PHP lint, automated tests, gateway sandbox, or live payment verification was performed.
