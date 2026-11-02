@@ -2,9 +2,12 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/app/bootstrap.php';
+require_once __DIR__ . '/app/Pricing.php';
 
 $config = app_config();
 $pageTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
+$priceDisplayUnit = 'IRT';
+try { $priceDisplayUnit = store_price_display_unit(Database::connection()); } catch (Throwable $e) { /* use install default */ }
 $products = [];
 $catalogError = false;
 try {
@@ -75,7 +78,8 @@ function store_bytes_label(?string $bytes): string
             <div class="eyebrow">پلن سرویس</div>
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
-            <div class="plan-price"><?= number_format((int)$product['price_minor']) ?> <small><?= e((string)$product['currency']) ?></small></div>
+            <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
+            <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
             <div class="plan-meta"><span>مدت اعتبار</span><strong><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
             <div class="plan-meta"><span>حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>">ثبت سفارش</a>
