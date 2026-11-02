@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS orders (
     username VARCHAR(150) NOT NULL,
     password_ciphertext TEXT NULL,
     server_policy ENUM('selected','default','configured_set') NOT NULL DEFAULT 'default',
+    server_targets_snapshot JSON NULL,
     payment_status ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
     order_status ENUM('pending_payment','paid','provisioning','active','partial','failed','cancelled') NOT NULL DEFAULT 'pending_payment',
     idempotency_key VARCHAR(190) NULL,
