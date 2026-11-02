@@ -64,9 +64,9 @@ final class IBSngRenewalService
                 || $state['remaining_days'] < 0) {
                 throw new RuntimeException('IBSng account expiry state is incomplete; renewal stopped safely.');
             }
-            if ((string)$state['group'] !== $groupName) {
-                throw new RuntimeException('The selected renewal plan does not match the account\'s current IBSng group; renewal stopped safely.');
-            }
+            // A renewal can switch to a different plan/group. The native IBSng Edit User
+            // submission includes the selected target group with renewal attributes;
+            // the old account group must not block this supported plan change.
 
             $this->ledger->assertNoUnresolvedForAccount($serverId, (string)$state['user_id']);
             $completedRenewals = $this->ledger->completedRenewalCount($serverId, (string)$state['user_id']);
