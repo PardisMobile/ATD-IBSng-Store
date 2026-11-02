@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS orders (
     product_name_snapshot VARCHAR(180) NOT NULL,
     duration_seconds_snapshot BIGINT UNSIGNED NOT NULL,
     price_minor_snapshot BIGINT UNSIGNED NOT NULL,
+    -- Independent crypto amount captured at order creation; NULL on legacy orders without a historical snapshot.
+    price_usdt_snapshot DECIMAL(18,8) NULL,
     currency CHAR(3) NOT NULL DEFAULT 'IRR',
     username VARCHAR(150) NOT NULL,
     password_ciphertext TEXT NULL,
