@@ -99,8 +99,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             if ($paymentProvider !== '') {
                 $configuredType = $gatewayPaymentTypes[$paymentProvider] ?? 'fiat';
-                $configuredCurrency = $configuredType === 'crypto' ? 'USDT' : 'IRR';
-                if (!in_array($configuredCurrency, $gatewayManager?->supportedCurrencies($paymentProvider) ?? [], true)) {
+                $supportedCurrencies = $gatewayManager?->supportedCurrencies($paymentProvider) ?? [];
+                $typeSupported = $configuredType === 'crypto'
+                    ? in_array('USDT', $supportedCurrencies, true)
+                    : array_intersect(['IRR', 'IRT'], $supportedCurrencies) !== [];
+                if (!$typeSupported) {
                     $error = 'درگاه انتخاب‌شده از نوع ارز پرداخت تنظیم‌شده پشتیبانی نمی‌کند.';
                 }
             }
