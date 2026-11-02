@@ -41,6 +41,8 @@ function support_valid_custom_url(string $value): bool
 
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
+$paymentProvider = support_setting($pdo, 'payment_provider');
+$zarinpalMerchantId = support_setting($pdo, 'payment_zarinpal_merchant_id');
 
 $renewalValues = [
     'ibsng_gift_days_first' => support_setting($pdo, 'ibsng_gift_days_first') ?: '1',
@@ -60,8 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $priceDisplayUnit = strtoupper(trim((string)($_POST['price_display_unit'] ?? 'IRT')));
         $cryptoDisplayEnabled = (($_POST['crypto_gateway_enabled'] ?? '') === '1');
+        $paymentProvider = strtolower(trim((string)($_POST['payment_provider'] ?? '')));
+        $zarinpalMerchantId = trim((string)($_POST['zarinpal_merchant_id'] ?? ''));
         if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
             $error = 'واحد نمایش قیمت معتبر نیست.';
+        } elseif (!in_array($paymentProvider, ['', 'zarinpal'], true)) {
+            $error = 'درگاه پرداخت انتخاب‌شده معتبر نیست.';
+        } elseif ($paymentProvider === 'zarinpal' && ($zarinpalMerchantId === '' || strlen($zarinpalMerchantId) > 100)) {
+            $error = 'برای فعال‌سازی زرین‌پال، مرچنت‌کد معتبر وارد کنید.';
         }
         $renewalValues = [
             'ibsng_gift_days_first' => trim((string)($_POST['ibsng_gift_days_first'] ?? '1')),
@@ -97,6 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->execute(['price_display_unit', $priceDisplayUnit]);
             $stmt->execute(['crypto_gateway_enabled', $cryptoDisplayEnabled ? '1' : '0']);
+            $stmt->execute(['payment_provider', $paymentProvider]);
+            $stmt->execute(['payment_zarinpal_merchant_id', $zarinpalMerchantId]);
             $message = 'تنظیمات راه‌های پشتیبانی، قیمت و هدیهٔ تمدید IBSng ذخیره شد.';
         }
     }
@@ -107,6 +117,8 @@ if ($error !== '') {
 } else {
     $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
     $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
+    $paymentProvider = support_setting($pdo, 'payment_provider');
+    $zarinpalMerchantId = support_setting($pdo, 'payment_zarinpal_merchant_id');
     foreach ($values as $key => $value) {
         $values[$key] = support_setting($pdo, $key);
     }
@@ -144,6 +156,11 @@ $config = app_config();
 <h2>واحد نمایش قیمت</h2>
 <p class="hint">قیمت پایه در دیتابیس و snapshot سفارش تغییر نمی‌کند. فقط نمایش مبلغ بین تومان و ریال تبدیل می‌شود؛ ۱ تومان = ۱۰ ریال. مقدار پیش‌فرض نصب تازه تومان است.</p>
 <div class="field"><label for="price_display_unit">واحد نمایش</label><select id="price_display_unit" name="price_display_unit" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="IRT"<?= $priceDisplayUnit === 'IRT' ? ' selected' : '' ?>>تومان</option><option value="IRR"<?= $priceDisplayUnit === 'IRR' ? ' selected' : '' ?>>ریال</option></select></div>
+<hr>
+<h2>درگاه پرداخت</h2>
+<p class="hint">درگاه زرین‌پال تنها زمانی برای پرداخت سفارش استفاده می‌شود که مرچنت‌کد تنظیم و درگاه انتخاب شده باشد. غیرفعال‌کردن درگاه روی تراکنش‌های درحال‌پرداخت قبلی اثر نمی‌گذارد.</p>
+<div class="field"><label for="payment_provider">درگاه فعال</label><select id="payment_provider" name="payment_provider" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value=""<?= $paymentProvider === '' ? ' selected' : '' ?>>غیرفعال</option><option value="zarinpal"<?= $paymentProvider === 'zarinpal' ? ' selected' : '' ?>>زرین‌پال</option></select></div>
+<div class="field"><label for="zarinpal_merchant_id">مرچنت‌کد زرین‌پال</label><input id="zarinpal_merchant_id" name="zarinpal_merchant_id" value="<?= e($zarinpalMerchantId) ?>" maxlength="100" autocomplete="off" placeholder="شناسه پذیرنده"></div>
 <hr>
 <h2>نمایش قیمت کریپتو</h2>
 <p class="hint">این گزینه صرفاً نمایش قیمت مستقل USDT را فعال می‌کند. تا زمان اتصال و فعال‌سازی واقعی درگاه کریپتو، آن را خاموش نگه دارید.</p>
