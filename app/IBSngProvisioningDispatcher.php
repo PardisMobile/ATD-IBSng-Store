@@ -67,14 +67,14 @@ final class IBSngProvisioningDispatcher
             throw $e;
         }
 
-        $client = new IBSngClient(
-            (string)$row['host'],
-            (int)$row['port'],
-            (string)$row['admin_username'],
-            app_decrypt_secret((string)$row['server_password'])
-        );
         $username = (string)$row['username'];
         try {
+            $client = new IBSngClient(
+                (string)$row['host'],
+                (int)$row['port'],
+                (string)$row['admin_username'],
+                app_decrypt_secret((string)$row['server_password'])
+            );
             // Reconcile before attempting mutation. A found username in the
             // expected group is the durable result of an earlier ambiguous run.
             $existingId = $client->findUserId($username);
