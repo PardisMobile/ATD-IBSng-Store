@@ -141,9 +141,3 @@ final class PaymentManager
         return $settings;
     }
 }
-
-// Load trusted local adapter registrations consistently for checkout, callback and admin settings.
-$providerBootstrap = __DIR__ . '/providers.php';
-if (is_file($providerBootstrap)) {
-    require_once $providerBootstrap;
-}
