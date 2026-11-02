@@ -56,7 +56,7 @@ final class PaymentFlow
 
         $stmt = $pdo->prepare(
             'SELECT id, public_id, buyer_name, buyer_phone, buyer_email,
-                    product_id, product_name_snapshot, price_minor_snapshot, currency,
+                    product_id, product_name_snapshot, price_minor_snapshot, price_usdt_snapshot, currency,
                     payment_status, order_status
              FROM orders WHERE id = ? LIMIT 1'
         );
@@ -72,10 +72,7 @@ final class PaymentFlow
         }
 
         if ($paymentType === 'crypto') {
-            $productQuery = $pdo->prepare('SELECT price_usdt FROM products WHERE id = ? LIMIT 1');
-            $productQuery->execute([(int)($order['product_id'] ?? 0)]);
-            $product = $productQuery->fetch(PDO::FETCH_ASSOC);
-            $amount = PaymentAmount::resolve('crypto', [], $product ?: null);
+            $amount = PaymentAmount::resolve('crypto', $order);
         } else {
             $amount = PaymentAmount::resolve('fiat', [
                 'price_minor_snapshot' => $order['price_minor_snapshot'],
