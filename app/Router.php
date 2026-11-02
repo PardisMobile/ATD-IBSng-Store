@@ -33,6 +33,7 @@ function store_route_map(string $root): array
         '/' => $root . '/index.php',
         '/index.php' => $root . '/index.php',
         '/checkout.php' => $root . '/checkout.php',
+        '/payment-callback.php' => $root . '/payment-callback.php',
         '/admin/' => $root . '/admin/index.php',
         '/admin/index.php' => $root . '/admin/index.php',
         '/admin/login.php' => $root . '/admin/login.php',
