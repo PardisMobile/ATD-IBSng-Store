@@ -7,12 +7,13 @@ require_once __DIR__ . '/app/Pricing.php';
 $config = app_config();
 $pageTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 $priceDisplayUnit = 'IRT';
-try { $priceDisplayUnit = store_price_display_unit(Database::connection()); } catch (Throwable $e) { /* use install default */ }
+$cryptoDisplayEnabled = false;
+try { $pdoForSettings = Database::connection(); $priceDisplayUnit = store_price_display_unit($pdoForSettings); $setting = $pdoForSettings->prepare('SELECT setting_value FROM app_settings WHERE setting_key=? LIMIT 1'); $setting->execute(['crypto_gateway_enabled']); $cryptoDisplayEnabled = $setting->fetchColumn() === '1'; } catch (Throwable $e) { /* use safe install defaults */ }
 $products = [];
 $catalogError = false;
 try {
     $pdo = Database::connection();
-    $stmt = $pdo->query('SELECT id,name,description,duration_seconds,price_minor,currency,quota_bytes FROM products WHERE is_active=1 ORDER BY sort_order,id DESC');
+    $stmt = $pdo->query('SELECT id,name,description,duration_seconds,price_minor,price_usdt,currency,quota_bytes FROM products WHERE is_active=1 ORDER BY sort_order,id DESC');
     $products = $stmt->fetchAll();
 } catch (Throwable $e) {
     $catalogError = true;
@@ -80,6 +81,7 @@ function store_bytes_label(?string $bytes): string
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
+            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span>قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <div class="plan-meta"><span>مدت اعتبار</span><strong><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
             <div class="plan-meta"><span>حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>">ثبت سفارش</a>
