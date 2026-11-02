@@ -42,6 +42,7 @@ function store_route_map(string $root): array
         '/admin/logout.php' => $root . '/admin/logout.php',
         '/admin/settings.php' => $root . '/admin/settings.php',
         '/admin/email-templates.php' => $root . '/admin/email-templates.php',
+        '/admin/email-settings.php' => $root . '/admin/email-settings.php',
         '/admin/ibsng-servers.php' => $root . '/admin/ibsng-servers.php',
         '/admin/ibsng-groups.php' => $root . '/admin/ibsng-groups.php',
         '/admin/ibsng-users.php' => $root . '/admin/ibsng-users.php',
