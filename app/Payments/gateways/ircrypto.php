@@ -76,7 +76,9 @@ final class IRCryptoGateway implements PaymentGateway
             'external_ref' => (string)($order['public_id'] ?? ''),
             'description' => self::limitDescription((string)($order['description'] ?? 'Store order'), 500),
             'redirect_url' => $callbackUrl,
-            'expires_in' => 86400,
+            // Match the gateway's short hosted-checkout window; expiration is
+            // enforced by IRCrypto itself, not by a store-side scheduler.
+            'expires_in' => 600,
         ];
         if ($payload['external_ref'] === '') {
             throw new InvalidArgumentException('IRCrypto requires a stable store order reference.');
