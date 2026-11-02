@@ -44,6 +44,12 @@ payment_manager_assert(in_array('testgateway', PaymentManager::registeredCodes()
 payment_manager_assert($registered->gateway()->code() === 'testgateway', 'A registered class must resolve without a separate provider registry file.');
 payment_manager_assert($registered->gateway()->callbackReference(['transaction_id' => 'custom-ref']) === 'custom-ref', 'A provider adapter must extract its own callback reference field.');
 payment_manager_assert((new PaymentManager('zarinpal'))->gateway()->callbackReference(['Authority' => 'zarinpal-ref']) === 'zarinpal-ref', 'Zarinpal callback reference extraction must retain Authority semantics.');
+$ircrypto = new PaymentManager('ircrypto');
+payment_manager_assert($ircrypto->gateway()->code() === 'ircrypto', 'IRCrypto must be selectable through the same provider manager.');
+payment_manager_assert($ircrypto->gateway()->callbackReference(['invoice_id' => 'invoice-123']) === 'invoice-123', 'IRCrypto must extract its invoice reference.');
+$ircryptoFields = $ircrypto->configurationFields('ircrypto');
+payment_manager_assert(($ircryptoFields['api_key']['required'] ?? false) === true, 'IRCrypto API key must be required in provider settings.');
+payment_manager_assert(($ircryptoFields['webhook_secret']['secret'] ?? false) === true, 'IRCrypto webhook secret must be marked secret.');
 $zarinpalFields = (new PaymentManager('zarinpal'))->configurationFields('zarinpal');
 payment_manager_assert(($zarinpalFields['merchant_id']['required'] ?? false) === true, 'Adapter configuration metadata must expose required provider settings.');
 
