@@ -530,3 +530,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Email remains optional at checkout and the store must not add customer registration/login. Customers who omit email retain order-ID tracking.
 - Current implementation/test evidence: `tests/order-status-account-contract-test.php` covers optional service-name rendering and per-target credential visibility; it does not establish an email lookup or verification flow.
 - Follow-up implementation must use the existing shared order-detail presentation, avoid a duplicate recovery screen, and add tests for verification, authorization, expiry, throttling, and enumeration resistance. This entry records the agreed scope only; no code behavior or runtime test is claimed by this documentation update.
+
+
+### 2026-11-02 — IRCrypto settings page webhook guidance reminder
+
+**Status: NOT IMPLEMENTED — REMINDER RECORDED.**
+
+- Add instructional text to the IRCrypto gateway settings screen with the webhook callback URL, built from the configured site base URL plus `/webhook/ircrypto.php` (HTTPS for production).
+- Clarify that the URL is configured in the IRCrypto provider dashboard, and that the Store endpoint performs signature validation and authoritative server-side invoice verification.
+- Keep webhook endpoint placement outside `app/Payments/gateways/`, which is reserved for auto-discovered gateway adapters.
+- This note is a follow-up requirement only; no settings UI/code change or live webhook test is claimed.
