@@ -14,25 +14,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
         try {
-            $attemptId = filter_var($_POST['attempt_id'] ?? null, FILTER_VALIDATE_INT);
-            if ($attemptId === false || $attemptId === null || $attemptId < 1) {
-                throw new InvalidArgumentException('شناسه عملیات معتبر نیست.');
-            }
+            $action = (string)($_POST['action'] ?? 'run');
             $dispatcher = new IBSngProvisioningDispatcher($pdo);
-            if ((string)($_POST['action'] ?? 'run') === 'retry_delivery') {
+            if ($action === 'retry_delivery') {
                 $orderId = filter_var($_POST['order_id'] ?? null, FILTER_VALIDATE_INT);
                 if ($orderId === false || $orderId === null || $orderId < 1) {
                     throw new InvalidArgumentException('شناسه سفارش معتبر نیست.');
                 }
                 CustomerAccountDelivery::afterProvisioning($pdo, (int)$orderId);
                 $message = 'درخواست بررسی و ارسال مجدد ایمیل تحویل ثبت شد؛ وضعیت نتیجه را در جدول ایمیل‌ها ببینید.';
-            } elseif ((string)($_POST['action'] ?? 'run') === 'resolve') {
+            } elseif ($action === 'resolve') {
+                $attemptId = filter_var($_POST['attempt_id'] ?? null, FILTER_VALIDATE_INT);
+                if ($attemptId === false || $attemptId === null || $attemptId < 1) {
+                    throw new InvalidArgumentException('شناسه عملیات معتبر نیست.');
+                }
                 $outcome = (string)($_POST['outcome'] ?? '');
                 $remoteUserId = trim((string)($_POST['remote_user_id'] ?? ''));
                 $note = trim((string)($_POST['resolution_note'] ?? ''));
                 $dispatcher->resolveManually((int)$attemptId, $outcome, $remoteUserId !== '' ? $remoteUserId : null, $note);
                 $message = 'تعیین تکلیف دستی ثبت شد؛ هیچ درخواست جدیدی به IBSng ارسال نشد.';
             } else {
+                $attemptId = filter_var($_POST['attempt_id'] ?? null, FILTER_VALIDATE_INT);
+                if ($attemptId === false || $attemptId === null || $attemptId < 1) {
+                    throw new InvalidArgumentException('شناسه عملیات معتبر نیست.');
+                }
                 $result = $dispatcher->runQueued((int)$attemptId);
                 $message = $result === 'succeeded'
                     ? 'ساخت حساب در IBSng تأیید شد.'
@@ -52,7 +57,7 @@ $sql = "SELECT a.id, a.order_id, a.server_id, a.operation, a.status, a.attempt_n
         JOIN ibsng_servers s ON s.id=a.server_id
         ORDER BY a.created_at DESC, a.id DESC LIMIT 200";
 $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-$emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.updated_at,o.public_id
+$emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.updated_at,o.public_id,o.buyer_email
  FROM customer_email_deliveries d JOIN orders o ON o.id=d.order_id
  ORDER BY d.updated_at DESC LIMIT 100")->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -79,5 +84,5 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 <section class="panel"><h2>وضعیت ایمیل تحویل اکانت</h2><p class="hint">ارسال ناموفق قابل تلاش مجدد است. این اقدام ایمیل را دوباره می‌فرستد؛ از انتخاب مجدد پس از وضعیت sent خودداری کنید.</p>
 <div class="table-wrap"><table><thead><tr><th>شناسه سفارش</th><th>ایمیل</th><th>تعداد تلاش</th><th>آخرین خطا</th><th>به‌روزرسانی</th><th>عملیات</th></tr></thead><tbody>
 <?php if (!$emailRows): ?><tr><td colspan="6">هنوز رکوردی برای تحویل ایمیل ثبت نشده است.</td></tr><?php endif; ?>
-<?php foreach ($emailRows as $emailRow): ?><tr><td><?= e((string)$emailRow['public_id']) ?></td><td><?= e((string)$emailRow['status']) ?></td><td><?= (int)$emailRow['attempts'] ?></td><td><?= e((string)($emailRow['last_error'] ?? '—')) ?></td><td><?= e((string)$emailRow['updated_at']) ?></td><td><?php if ($emailRow['status'] === 'failed'): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="retry_delivery"><input type="hidden" name="attempt_id" value="1"><input type="hidden" name="order_id" value="<?= (int)$emailRow['order_id'] ?>"><button class="button run" type="submit">تلاش مجدد ارسال</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
+<?php foreach ($emailRows as $emailRow): ?><tr><td><?= e((string)$emailRow['public_id']) ?></td><td><?= e((string)$emailRow['buyer_email']) ?></td><td><?= (int)$emailRow['attempts'] ?></td><td><?= e((string)($emailRow['last_error'] ?? '—')) ?></td><td><?= e((string)$emailRow['updated_at']) ?></td><td><?php if ($emailRow['status'] === 'failed'): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="retry_delivery"><input type="hidden" name="order_id" value="<?= (int)$emailRow['order_id'] ?>"><button class="button run" type="submit">تلاش مجدد ارسال</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
 </tbody></table></div></section></section></main></body></html>
