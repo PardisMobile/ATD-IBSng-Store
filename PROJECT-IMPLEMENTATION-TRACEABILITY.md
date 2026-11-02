@@ -484,3 +484,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Documentation updated in `docs/PAYMENTS-AND-PROVISIONING.md`.
 - Commit: `20af275933748c8c033a675459eb4447bf24f8bc` (admin UI), `5ce687fa4ad93739b232c934503266f7205115a7` (documentation).
 - Browser/runtime validation and CI completion are pending; no provider sandbox or live payment was run.
+
+
+### 2026-11-02 — Immediate provisioning dispatch after verified payment
+
+**Status: SOURCE CHANGE COMMITTED ON `main`; CI pending at time of entry.**
+
+- After `PaymentTransactionService::confirmVerified()` commits the verified payment and durable provisioning attempts, `PaymentFlow::handleCallback()` now makes a best-effort synchronous pass over queued create attempts for that order.
+- The dispatcher still claims each attempt in the database before remote IBSng activity. Concurrent/repeated callbacks cannot claim the same attempt twice; the dispatcher converts ambiguous remote outcomes to `needs_review` and does not automatically replay them.
+- A provisioning error is logged and does not reverse or misreport an already verified payment. Remaining queued/review cases stay visible in the admin provisioning page for recovery.
+- This is request-time dispatch, not a cron/worker. No automatic retry or refund is introduced. The admin page copy and payment/provisioning documentation were updated to reflect its recovery role.
+- Commits: `5d6bcfe87d8fdee1584310b7ac21a90b44665b03` (dispatch), `3434243315a8970f9e3d0e77cf9b0ef3ea6d0d95` (docs), `a291774cec90e8a0554a1b8c33d41bafc7785e2d` (admin copy).
+- CI, browser-level behavior, database concurrency, and live IBSng execution remain to be verified. No live provisioning was run.
