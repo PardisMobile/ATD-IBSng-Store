@@ -242,7 +242,7 @@ final class IBSngProvisioningDispatcher
         $subscriptionId = $existing->fetchColumn();
         if ($subscriptionId !== false) {
             $update = $this->pdo->prepare(
-                "UPDATE subscriptions SET order_id=?, product_id=?, ibsng_user_id=?, status='active',
+                "UPDATE subscriptions SET order_id=?, product_id=?, ibsng_user_id=COALESCE(?,ibsng_user_id), status='active',
                  last_synced_at=UTC_TIMESTAMP() WHERE id=?"
             );
             $update->execute([$orderId, $orderRow['product_id'], $remoteId, (int)$subscriptionId]);
