@@ -160,21 +160,11 @@ final class PaymentFlow
         );
         $transactionService = new PaymentTransactionService($pdo);
         if (($verification['verified'] ?? false) !== true) {
-            // A matching Authority with a non-OK provider callback represents
-            // cancellation/failure, never payment proof. It may safely release
-            // the active slot so the buyer can start a fresh attempt.
-            $callbackStatus = strtoupper(trim((string)($callback['Status'] ?? '')));
-            // Some providers (including IRCrypto) return only an invoice ID in
-            // the browser/webhook payload. An absent status is not evidence of
-            // cancellation; leave the transaction pending for authoritative
-            // provider verification or reconciliation.
-            if ($callbackStatus !== '' && $callbackStatus !== 'OK') {
-                $transactionService->markFailed(
-                    (int)$transaction['id'],
-                    $reference,
-                    ['callback_status' => $callbackStatus]
-                );
-            }
+            // Browser callback parameters are untrusted. In particular, a
+            // caller must not be able to cancel an active transaction by
+            // submitting a matching reference with a forged non-OK status.
+            // Keep it active until provider-side verification or the existing
+            // administrative reconciliation establishes its final state.
             return [
                 'confirmed' => false,
                 'paid' => false,
