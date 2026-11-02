@@ -21,7 +21,7 @@
 
 ## Webhook flow
 
-- Endpoint: `ircrypto-webhook.php` (relative to the Store installation base path).
+- Endpoint: `webhook/ircrypto.php` (relative to the Store installation base path; dispatched by the explicit router allowlist).
 - Accepts POST only.
 - Validates the `ir-signature` timestamp and HMAC-SHA256 against the exact raw request body, with a 300-second timestamp tolerance.
 - A valid signature authenticates webhook delivery only. `PaymentFlow::handleCallback()` still performs provider-side invoice lookup and compares persisted transaction details before marking the order paid.
