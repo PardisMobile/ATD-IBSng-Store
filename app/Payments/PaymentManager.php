@@ -61,6 +61,13 @@ final class PaymentManager
         return $this->selectedProvider;
     }
 
+    /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
+    public function configurationFields(string $provider): array
+    {
+        $gateway = $this->gateway($provider);
+        return method_exists($gateway, 'configurationFields') ? $gateway->configurationFields() : [];
+    }
+
     /** Resolve and lazily load the selected or transaction-specific adapter. */
     public function gateway(?string $provider = null): PaymentGateway
     {
