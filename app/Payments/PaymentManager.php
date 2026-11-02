@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/PaymentGateway.php';
+require_once __DIR__ . '/PaymentGatewayRegistry.php';
 
 /**
  * Resolves the configured payment provider without coupling checkout/callback
@@ -12,11 +13,6 @@ require_once __DIR__ . '/PaymentGateway.php';
  */
 final class PaymentManager
 {
-    /** @var array<string, class-string<PaymentGateway>> */
-    private const GATEWAYS = [
-        'zarinpal' => ZarinpalGateway::class,
-    ];
-
     /** @var array<string, PaymentGateway> */
     private array $instances = [];
     private readonly string $selectedProvider;
@@ -24,7 +20,7 @@ final class PaymentManager
     public function __construct(string $selectedProvider)
     {
         $provider = strtolower(trim($selectedProvider));
-        if ($provider === '' || !isset(self::GATEWAYS[$provider])) {
+        if ($provider === '' || !PaymentGatewayRegistry::has($provider)) {
             throw new InvalidArgumentException('The configured payment provider is unavailable.');
         }
         $this->selectedProvider = $provider;
@@ -42,7 +38,7 @@ final class PaymentManager
     public function gateway(?string $provider = null): PaymentGateway
     {
         $code = strtolower(trim($provider ?? $this->selectedProvider));
-        if (!isset(self::GATEWAYS[$code])) {
+        if (!PaymentGatewayRegistry::has($code)) {
             throw new InvalidArgumentException('Unknown payment provider.');
         }
         if (!isset($this->instances[$code])) {
@@ -51,7 +47,7 @@ final class PaymentManager
                 throw new RuntimeException('Payment provider adapter file is missing.');
             }
             require_once $file;
-            $class = self::GATEWAYS[$code];
+            $class = PaymentGatewayRegistry::classFor($code);
             if (!class_exists($class)) {
                 throw new RuntimeException('Payment provider adapter class is missing.');
             }
