@@ -41,6 +41,8 @@ $registered = new PaymentManager('testgateway');
 payment_manager_assert($registered->selectedCode() === 'testgateway', 'A registered adapter must be selectable through PaymentManager.');
 payment_manager_assert(in_array('testgateway', PaymentManager::registeredCodes(), true), 'PaymentManager must expose its registered provider codes.');
 payment_manager_assert($registered->gateway()->code() === 'testgateway', 'A registered class must resolve without a separate provider registry file.');
+payment_manager_assert($registered->gateway()->callbackReference(['transaction_id' => 'custom-ref']) === 'custom-ref', 'A provider adapter must extract its own callback reference field.');
+payment_manager_assert((new PaymentManager('zarinpal'))->gateway()->callbackReference(['Authority' => 'zarinpal-ref']) === 'zarinpal-ref', 'Zarinpal callback reference extraction must retain Authority semantics.');
 $zarinpalFields = (new PaymentManager('zarinpal'))->configurationFields('zarinpal');
 payment_manager_assert(($zarinpalFields['merchant_id']['required'] ?? false) === true, 'Adapter configuration metadata must expose required provider settings.');
 
