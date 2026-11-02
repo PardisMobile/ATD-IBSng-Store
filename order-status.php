@@ -5,6 +5,8 @@ require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/OrderTrackingCode.php';
+require_once __DIR__ . '/app/IBSngClient.php';
+require_once __DIR__ . '/app/IBSngRenewalState.php';
 
 $config = app_config();
 $orderLookupValue = trim((string)($_GET['order'] ?? ''));
@@ -14,6 +16,8 @@ $trackingCode = OrderTrackingCode::normalize($orderLookupValue);
 $order = null;
 $attempts = [];
 $accountPassword = null;
+$accountDetails = [];
+$productQuotaBytes = null;
 $notFound = !$isTrackingCode && !preg_match('/^[a-f0-9]{32}$/D', $orderPublicId);
 
 if (!$notFound) {
@@ -22,8 +26,8 @@ if (!$notFound) {
         $lookupColumn = $isTrackingCode ? 'tracking_code' : 'public_id';
         $lookupValue = $isTrackingCode ? ('ATD-' . substr($trackingCode, 3)) : $orderPublicId;
         $stmt = $pdo->prepare(
-            'SELECT id, public_id, tracking_code, product_name_snapshot, duration_seconds_snapshot, price_minor_snapshot, price_usdt_snapshot, currency, username, password_ciphertext, payment_status, order_status, created_at
-             FROM orders WHERE ' . $lookupColumn . ' = ? LIMIT 1'
+            'SELECT o.id, o.public_id, o.tracking_code, o.product_id, o.product_name_snapshot, o.duration_seconds_snapshot, o.price_minor_snapshot, o.price_usdt_snapshot, o.currency, o.username, o.password_ciphertext, o.payment_status, o.order_status, o.created_at, p.quota_bytes
+             FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE ' . $lookupColumn . ' = ? LIMIT 1'
         );
         $stmt->execute([$lookupValue]);
         $order = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -31,7 +35,7 @@ if (!$notFound) {
             $notFound = true;
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
-                'SELECT a.server_id, a.operation, a.status, s.name AS server_name, s.service_name
+                'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.name AS server_name, s.service_name, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.order_id = ?
@@ -39,12 +43,40 @@ if (!$notFound) {
             );
             $attemptStmt->execute([(int)$order['id']]);
             $attempts = $attemptStmt->fetchAll(PDO::FETCH_ASSOC);
-            if (array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
+            $successfulAttempts = array_values(array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded'));
+            if ($successfulAttempts) {
                 try {
                     $accountPassword = app_decrypt_secret((string)$order['password_ciphertext']);
                 } catch (Throwable $decryptError) {
                     error_log('Customer order credential decrypt failed: ' . $decryptError->getMessage());
                     $accountPassword = null;
+                }
+                foreach ($successfulAttempts as $attempt) {
+                    try {
+                        $client = new IBSngClient(
+                            (string)$attempt['host'],
+                            (int)$attempt['port'],
+                            (string)$attempt['admin_username'],
+                            app_decrypt_secret((string)$attempt['server_password'])
+                        );
+                        $data = $client->lookupUser((string)$order['username']);
+                        $state = IBSngRenewalState::fromClient($client, (string)$order['username']);
+                        $groupName = trim((string)($data['group'] ?? ''));
+                        $planStmt = $pdo->prepare('SELECT g.plan_name FROM product_server_groups psg JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id WHERE psg.product_id=? AND psg.server_id=? AND g.group_name=? AND g.is_active=1 LIMIT 1');
+                        $planStmt->execute([(int)$order['product_id'], (int)$attempt['server_id'], $groupName]);
+                        $planName = (string)($planStmt->fetchColumn() ?: 'نامشخص');
+                        $accountDetails[(int)$attempt['server_id']] = [
+                            'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)$attempt['server_name'],
+                            'plan' => $planName,
+                            'validity' => (int)ceil((int)$order['duration_seconds_snapshot'] / 86400),
+                            'quota_bytes' => $order['quota_bytes'] === null ? null : (int)$order['quota_bytes'],
+                            'expiry' => (string)($state['nearest_exp_date'] ?? ''),
+                            'remaining' => (int)($state['remaining_days'] ?? 0),
+                            'expired' => (bool)($state['expired'] ?? false),
+                        ];
+                    } catch (Throwable $detailError) {
+                        error_log('Customer order account detail lookup failed for server ' . (int)$attempt['server_id'] . ': ' . $detailError->getMessage());
+                    }
                 }
             }
         }
