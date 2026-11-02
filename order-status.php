@@ -39,7 +39,7 @@ if (!$notFound) {
             );
             $attemptStmt->execute([(int)$order['id']]);
             $attempts = $attemptStmt->fetchAll(PDO::FETCH_ASSOC);
-            if (!$isTrackingCode && array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
+            if (array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
                 try {
                     $accountPassword = app_decrypt_secret((string)$order['password_ciphertext']);
                 } catch (Throwable $decryptError) {
@@ -110,10 +110,10 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
 <div><?php if (trim((string)($attempt['service_name'] ?? '')) !== ''): ?><strong><?= e((string)$attempt['service_name']) ?></strong><?php endif; ?><small><?= e((string)$attempt['operation']) ?></small>
-<?php if (!$isTrackingCode && $attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
+<?php if ($attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
 <div class="account-details"><span>نام کاربری: <code><?= e((string)$order['username']) ?></code></span>
 <details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
-<?php elseif (!$isTrackingCode && $attempt['status'] === 'succeeded'): ?>
+<?php elseif ($attempt['status'] === 'succeeded'): ?>
 <small>حساب ایجاد شده است؛ نمایش رمز در حال حاضر در دسترس نیست.</small>
 <?php endif; ?>
 </div>
@@ -123,7 +123,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <p class="muted">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
 <?php endif; ?>
-<?php if ($isTrackingCode): ?><p class="muted">کد پیگیری فقط برای مشاهده وضعیت سفارش است و به‌تنهایی اطلاعات ورود را نمایش نمی‌دهد. رمز عبور حساب در این صفحه نمایش داده نمی‌شود.</p><?php else: ?><p class="muted">این شناسه برای پیگیری سفارش و مشاهده جزئیات خرید استفاده می‌شود.</p><?php endif; ?>
+<p class="muted">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
 <?php endif; ?>
 </section>
 </main>
