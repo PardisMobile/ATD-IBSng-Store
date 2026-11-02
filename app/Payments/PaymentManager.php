@@ -2,17 +2,20 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/PaymentGateway.php';
+require_once __DIR__ . '/zarinpal.php';
 
 /**
- * Resolves payment adapters using a small explicit allowlist.
- * Provider settings must come from trusted server-side storage.
+ * Central registry and dispatcher for payment gateway modules.
+ *
+ * New adapters implement PaymentGateway and are registered through this class
+ * during trusted application bootstrap. Checkout and callbacks never select
+ * adapter classes or load provider files themselves.
  */
 final class PaymentManager
 {
     /** @var array<string, PaymentGateway> */
     private array $instances = [];
 
-    /** @var array<string, class-string<PaymentGateway>> */
     /** @var array<string, class-string<PaymentGateway>> */
     private static array $gatewayClasses = [
         'zarinpal' => ZarinpalGateway::class,
@@ -21,8 +24,7 @@ final class PaymentManager
     private readonly string $selectedProvider;
 
     /**
-     * Register a provider adapter without changing checkout, callback, or order code.
-     * Registration is expected during trusted application bootstrap.
+     * Register an adapter in the single payment-provider registry.
      *
      * @param class-string<PaymentGateway> $gatewayClass
      */
@@ -34,10 +36,12 @@ final class PaymentManager
             || !is_subclass_of($gatewayClass, PaymentGateway::class)) {
             throw new InvalidArgumentException('Payment gateway registration is invalid.');
         }
+
         $instance = new $gatewayClass();
         if ($instance->code() !== $code) {
             throw new InvalidArgumentException('Payment gateway code does not match its registration key.');
         }
+
         self::$gatewayClasses[$code] = $gatewayClass;
     }
 
@@ -68,7 +72,7 @@ final class PaymentManager
         return method_exists($gateway, 'configurationFields') ? $gateway->configurationFields() : [];
     }
 
-    /** Resolve and lazily load the selected or transaction-specific adapter. */
+    /** Resolve the selected or transaction-specific registered adapter. */
     public function gateway(?string $provider = null): PaymentGateway
     {
         $code = strtolower(trim($provider ?? $this->selectedProvider));
@@ -78,13 +82,6 @@ final class PaymentManager
 
         if (!isset($this->instances[$code])) {
             $class = self::$gatewayClasses[$code];
-            if (!class_exists($class)) {
-                $file = __DIR__ . '/' . $code . '.php';
-                if (!is_file($file)) {
-                    throw new RuntimeException('Payment provider adapter file is missing.');
-                }
-                require_once $file;
-            }
             if (!class_exists($class)) {
                 throw new RuntimeException('Payment provider adapter class is missing.');
             }
@@ -112,11 +109,11 @@ final class PaymentManager
     }
 
     /**
-     * Verify with the provider persisted on the transaction, not the current
-     * global selection, so an admin setting change does not affect old payments.
+     * Verify against the provider persisted on the transaction, not the current
+     * global selection, so changing the selected gateway cannot affect old payments.
      *
      * @param array<string,mixed> $callback Untrusted callback parameters.
-     * @param array<string,mixed> $transaction Persisted transaction.
+     * @param array<string,mixed> $transaction Persisted payment transaction.
      * @param array<string,mixed> $allSettings Trusted server-side provider settings.
      * @return array<string,mixed>
      */
@@ -143,10 +140,4 @@ final class PaymentManager
         }
         return $settings;
     }
-}
-
-// Load trusted local adapter registrations consistently for checkout, callback and admin settings.
-$providerBootstrap = __DIR__ . '/providers.php';
-if (is_file($providerBootstrap)) {
-    require_once $providerBootstrap;
 }
