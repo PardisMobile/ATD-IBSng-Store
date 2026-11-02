@@ -164,11 +164,16 @@ final class PaymentFlow
             // A matching Authority with a non-OK provider callback represents
             // cancellation/failure, never payment proof. It may safely release
             // the active slot so the buyer can start a fresh attempt.
-            if (strtoupper(trim((string)($callback['Status'] ?? ''))) !== 'OK') {
+            $callbackStatus = strtoupper(trim((string)($callback['Status'] ?? '')));
+            // Some providers (including IRCrypto) return only an invoice ID in
+            // the browser/webhook payload. An absent status is not evidence of
+            // cancellation; leave the transaction pending for authoritative
+            // provider verification or reconciliation.
+            if ($callbackStatus !== '' && $callbackStatus !== 'OK') {
                 $transactionService->markFailed(
                     (int)$transaction['id'],
                     $reference,
-                    ['callback_status' => (string)($callback['Status'] ?? '')]
+                    ['callback_status' => $callbackStatus]
                 );
             }
             return [
