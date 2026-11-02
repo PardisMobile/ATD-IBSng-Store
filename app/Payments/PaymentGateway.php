@@ -12,6 +12,9 @@ interface PaymentGateway
 {
     public function code(): string;
 
+    /** Currency codes accepted by this adapter, before any provider-side denomination mapping. @return list<string> */
+    public function supportedCurrencies(): array;
+
     /** Extract the provider's transaction reference from untrusted callback data. */
     public function callbackReference(array $callback): string;
 
