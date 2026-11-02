@@ -25,7 +25,8 @@ function store_format_price(int $amount, string $currency, string $displayUnit):
         $displayAmount = number_format($whole, 0, '.', ',') . ($remainder > 0 ? '.' . $remainder : '');
         $currency = 'IRT';
     } elseif ($currency === 'IRT' && $displayUnit === 'IRR') {
-        $displayAmount = number_format($amount, 0, '.', ',') . '0';
+        $digits = (string)$amount . '0';
+        $displayAmount = preg_replace('/\\B(?=(\\d{3})+(?!\\d))/', ',', $digits) ?? $digits;
         $currency = 'IRR';
     } else {
         $displayAmount = number_format($amount, 0, '.', ',');
