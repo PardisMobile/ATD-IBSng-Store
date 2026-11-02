@@ -994,3 +994,12 @@
 - The IRCrypto gateway settings page must show a provider-specific webhook instruction and the complete callback URL generated from the configured Store base URL plus `/webhook/ircrypto.php` (use HTTPS in production).
 - Tell the administrator to register this URL in the IRCrypto dashboard. Explain that the Store verifies the webhook signature and then validates invoice/payment status, amount, and currency server-side.
 - The webhook endpoint remains `webhook/ircrypto.php`, outside `app/Payments/gateways/`; do not move it into the auto-discovered adapter directory.
+
+### 2026-11-03 — First implementation slice: editable customer email templates
+
+**Status: TEMPLATE CATALOG AND ADMIN EDITOR COMMITTED ON `main`; runtime and delivery integration remain unverified.**
+
+- Added `app/EmailTemplates.php` with a separate event catalog for purchase success, renewal success, order recovery, email verification, and expiration reminder. It resolves persisted subject/HTML/plain-text content from `app_settings`, provides HTML and plain-text defaults, and renders named template variables.
+- Added `admin/email-templates.php` with event selection, editable subject, HTML and plain-text bodies, save handling, and a sandboxed preview using sample values. The admin dashboard links to the editor and the explicit router allowlist includes it.
+- This is the template-management slice only. It does not yet establish that these templates are called by checkout, renewal, verification, or recovery delivery; it does not implement transport settings, test-send, delivery logging/retry, or expiration scheduling.
+- No PHP lint, browser preview, or delivery test was run in this operation. Do not mark the email system as complete until transport, integration, recovery security, and tests are completed.
