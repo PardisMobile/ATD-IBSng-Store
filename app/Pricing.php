@@ -20,13 +20,12 @@ function store_format_price(int $amount, string $currency, string $displayUnit):
     $currency = strtoupper(trim($currency));
     $displayAmount = (string)$amount;
     if ($currency === 'IRR' && $displayUnit === 'IRT') {
-        $displayAmount = number_format($amount / 10, 1, '.', ',');
-        if (str_ends_with($displayAmount, '.0')) {
-            $displayAmount = substr($displayAmount, 0, -2);
-        }
+        $whole = intdiv($amount, 10);
+        $remainder = $amount % 10;
+        $displayAmount = number_format($whole, 0, '.', ',') . ($remainder > 0 ? '.' . $remainder : '');
         $currency = 'IRT';
     } elseif ($currency === 'IRT' && $displayUnit === 'IRR') {
-        $displayAmount = number_format($amount * 10, 0, '.', ',');
+        $displayAmount = number_format($amount, 0, '.', ',') . '0';
         $currency = 'IRR';
     } else {
         $displayAmount = number_format($amount, 0, '.', ',');
