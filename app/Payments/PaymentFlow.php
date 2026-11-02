@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/PaymentAmount.php';
 require_once __DIR__ . '/PaymentManager.php';
 require_once __DIR__ . '/PaymentTransactionService.php';
+require_once __DIR__ . '/../IBSngProvisioningDispatcher.php';
 
 /**
  * Coordinates the customer-facing payment boundary.
@@ -188,11 +189,58 @@ final class PaymentFlow
 
         $confirmed = $transactionService->confirmVerified((int)$transaction['id'], $verification);
 
+        // Payment confirmation and remote IBSng provisioning are separate
+        // durable stages. Kick queued creates immediately after the payment
+        // transaction commits, but never let a provisioning issue turn a
+        // verified payment into a failed callback response.
+        self::dispatchQueuedProvisioning($pdo, (int)$transaction['order_id']);
+
         return [
             'confirmed' => $confirmed,
             'paid' => true,
             'order_id' => (int)$transaction['order_id'],
             'order_public_id' => (string)$transaction['order_public_id'],
         ];
+    }
+
+    /**
+     * Best-effort synchronous kick of the durable queue after verified payment.
+     * Each dispatcher claim is guarded in the database; repeated callbacks
+     * cannot execute the same attempt twice. Queued leftovers remain available
+     * in the admin recovery screen if this request is interrupted.
+     */
+    private static function dispatchQueuedProvisioning(PDO $pdo, int $orderId): void
+    {
+        try {
+            $stmt = $pdo->prepare(
+                "SELECT id FROM provisioning_attempts
+                 WHERE order_id = ? AND operation = 'create' AND status = 'queued'
+                 ORDER BY id ASC"
+            );
+            $stmt->execute([$orderId]);
+            $attemptIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            if (!is_array($attemptIds) || $attemptIds === []) {
+                return;
+            }
+
+            $dispatcher = new IBSngProvisioningDispatcher($pdo);
+            foreach ($attemptIds as $attemptId) {
+                try {
+                    $dispatcher->runQueued((int)$attemptId);
+                } catch (Throwable $e) {
+                    // Payment is already verified. Leave a recoverable queue
+                    // state and log diagnostics for the administrator.
+                    error_log(
+                        'Automatic IBSng provisioning dispatch failed for attempt '
+                        . (int)$attemptId . ': ' . $e->getMessage()
+                    );
+                }
+            }
+        } catch (Throwable $e) {
+            error_log(
+                'Unable to load queued IBSng provisioning attempts for order '
+                . $orderId . ': ' . $e->getMessage()
+            );
+        }
     }
 }
