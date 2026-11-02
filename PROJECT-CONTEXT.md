@@ -960,3 +960,15 @@
 - Provider webhook handlers are request endpoints, not payment gateway adapters. Keep IRCrypto's signed webhook handler at `webhook/ircrypto.php`, outside `app/Payments/gateways/`.
 - `PaymentManager` intentionally discovers every PHP file directly inside `app/Payments/gateways/`; placing webhook code there could cause it to be included during adapter discovery and interfere with gateway registration.
 - The explicit root router maps `/webhook/ircrypto.php` to the handler. Keep this route allowlisted and preserve signature validation plus server-side invoice verification through `PaymentFlow`.
+
+
+## 49. یکپارچه‌سازی پیگیری سفارش و بازیابی خرید با شناسه یا ایمیل (تصمیم ثبت‌شده، 2026-11-02)
+
+- مشتری در یک بخش واحد با عنوان عمومی «پیگیری سفارش و بازیابی خریدها» سفارش خود را پیدا می‌کند؛ صفحه/مسیر جداگانه‌ای برای بازیابی ایمیلی ساخته نشود.
+- دو روش جست‌وجو در همان بخش ارائه می‌شود: **شناسه سفارش** (با حفظ مسیر فعلی مبتنی بر `orders.public_id`) و **ایمیل خریدار** (برای پیدا کردن سفارش‌های مرتبط با همان ایمیل).
+- نتیجه هر دو روش به همان نمایش جزئیات سفارش هدایت/منتقل می‌شود؛ وضعیت سفارش و پرداخت، محصول، و وضعیت provisioning هر مقصد IBSng مستقل نمایش داده می‌شوند.
+- برای هر مقصد، اطلاعات حساب فقط بر اساس وضعیت واقعی همان مقصد و سیاست دسترسی مجاز نمایش داده شود. جزئیات داخلی سرور مانند نام داخلی، host، port و credential مدیریتی IBSng هرگز در بخش مشتری افشا نشوند.
+- فیلد اختیاری `service_name` با عنوان «نام سرویس» نمایش داده می‌شود فقط اگر مقدار داشته باشد؛ مقدار خالی یا null به‌طور کامل مخفی می‌ماند.
+- **ایمیل به‌تنهایی مجوز دسترسی به سفارش یا رمز حساب نیست.** روش ایمیلی باید مالکیت ایمیل را با کد/لینک تأیید یک‌بارمصرف قبل از نمایش سفارش‌های مرتبط ثابت کند. پاسخ اولیه نباید وجود/عدم وجود سفارش برای ایمیل را افشا کند. محدودیت زمان اعتبار، تعداد تلاش، ارسال مجدد و نرخ درخواست الزامی است.
+- ایمیل checkout همچنان اختیاری است؛ مشتری بدون ایمیل از شناسه سفارش استفاده می‌کند. عضویت/ورود مشتری به فروشگاه ایجاد نمی‌شود.
+- وضعیت فعلی: پیگیری با شناسه سفارش و صفحه جزئیات مشترک در سورس موجودند؛ مسیر جست‌وجو/تأیید مالکیت ایمیلی هنوز پیاده‌سازی نشده است. این ثبت نیازمندی، به معنی تکمیل یا runtime verification نیست.
