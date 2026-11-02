@@ -73,7 +73,7 @@ final class CustomerAccountDelivery
             $siteStmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key='site_title' LIMIT 1");
             $siteStmt->execute();
             $siteName = (string)($siteStmt->fetchColumn() ?: 'ATD IBSng Store');
-            $orderUrl = app_url('order-status.php?id=' . rawurlencode((string)$order['public_id']));
+            $orderUrl = app_url('order-status.php?order=' . rawurlencode((string)$order['public_id']));
             $guideUrl = app_url('guide.php');
             $destinations = '';
             $destinationsText = '';
