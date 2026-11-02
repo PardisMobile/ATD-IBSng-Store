@@ -5,6 +5,8 @@ require_once __DIR__ . '/PaymentAmount.php';
 require_once __DIR__ . '/PaymentManager.php';
 require_once __DIR__ . '/PaymentTransactionService.php';
 require_once __DIR__ . '/../IBSngProvisioningDispatcher.php';
+require_once __DIR__ . '/../EmailSender.php';
+require_once __DIR__ . '/../EmailTemplates.php';
 
 /**
  * Coordinates the customer-facing payment boundary.
@@ -175,6 +177,12 @@ final class PaymentFlow
 
         $confirmed = $transactionService->confirmVerified((int)$transaction['id'], $verification);
 
+        // Send a non-sensitive receipt notification only on the first verified
+        // transition. Credentials remain exclusively on the private order page.
+        if ($confirmed) {
+            self::sendPurchaseNotice($pdo, (int)$transaction['order_id'], (string)$transaction['order_public_id']);
+        }
+
         // Payment confirmation and remote IBSng provisioning are separate
         // durable stages. Kick queued creates immediately after the payment
         // transaction commits, but never let a provisioning issue turn a
@@ -187,6 +195,44 @@ final class PaymentFlow
             'order_id' => (int)$transaction['order_id'],
             'order_public_id' => (string)$transaction['order_public_id'],
         ];
+    }
+
+    /**
+     * Send the purchase notice once per first payment confirmation. This is
+     * best-effort: mail transport failure is logged and cannot undo payment.
+     * No credentials are ever included in customer email.
+     */
+    private static function sendPurchaseNotice(PDO $pdo, int $orderId, string $publicId): void
+    {
+        try {
+            $stmt = $pdo->prepare('SELECT buyer_email, buyer_name FROM orders WHERE id=? LIMIT 1');
+            $stmt->execute([$orderId]);
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+            $email = trim((string)($order['buyer_email'] ?? ''));
+            if ($email === '') {
+                return;
+            }
+            $config = app_config();
+            $template = EmailTemplates::get($pdo, 'purchase_success');
+            $variables = [
+                'site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'),
+                'customer_name' => (string)($order['buyer_name'] ?? ''),
+                'order_id' => $publicId,
+                'order_url' => app_url('order-status.php?order=' . rawurlencode($publicId)),
+            ];
+            $sent = EmailSender::send(
+                $pdo,
+                $email,
+                EmailTemplates::render($template['subject'], $variables),
+                EmailTemplates::render($template['html'], $variables),
+                EmailTemplates::render($template['text'], $variables)
+            );
+            if (!$sent) {
+                error_log('Purchase email was not accepted by host mail() for order ' . $orderId);
+            }
+        } catch (Throwable $e) {
+            error_log('Purchase email notification failed for order ' . $orderId . ': ' . $e->getMessage());
+        }
     }
 
     /**
