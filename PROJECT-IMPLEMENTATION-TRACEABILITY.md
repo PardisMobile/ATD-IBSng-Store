@@ -520,16 +520,17 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The handler's signature validation and PaymentFlow-based authoritative invoice verification were preserved. PHP lint, subdirectory/cPanel routing, and real provider webhook delivery remain unverified.
 
 
-### 2026-11-02 — Unified order tracking and email purchase recovery requirement
+### 2026-11-02 — «سفارش‌های من»: پیگیری شناسه‌ای و بازیابی ایمیلی در یک بخش
 
-**Status: PARTIALLY IMPLEMENTED IN SOURCE; EMAIL RECOVERY NOT IMPLEMENTED.**
+**Status: PARTIALLY IMPLEMENTED IN SOURCE; EMAIL OWNERSHIP RECOVERY NOT IMPLEMENTED.**
 
-- Product decision recorded: one customer-facing area, “Order tracking and purchase recovery,” supports both the existing public order ID and email lookup. Both modes must resolve to the same order-detail view; do not create a separate email-recovery page.
-- The existing order-ID lookup and shared detail view are present in `order-status.php`. Per-IBSng-target provisioning status is rendered independently. The optional `service_name` is displayed as “Service name” only when non-empty; internal server connection details remain private.
-- Email lookup is not present. Email alone must not authorize access: require ownership verification by a one-time code/link sent to the submitted address before revealing associated orders/account data. Use generic initial responses to prevent order/email enumeration, plus expiry, attempt limits, and resend/rate limiting.
-- Email remains optional at checkout and the store must not add customer registration/login. Customers who omit email retain order-ID tracking.
-- Current implementation/test evidence: `tests/order-status-account-contract-test.php` covers optional service-name rendering and per-target credential visibility; it does not establish an email lookup or verification flow.
-- Follow-up implementation must use the existing shared order-detail presentation, avoid a duplicate recovery screen, and add tests for verification, authorization, expiry, throttling, and enumeration resistance. This entry records the agreed scope only; no code behavior or runtime test is claimed by this documentation update.
+- **محل واحد مشتری:** «سفارش‌های من». بازیابی ایمیلی روش دسترسی داخل همین بخش است؛ صفحه/منوی مستقل برای «بازیابی ایمیلی» نسازید. دو روش (شناسه سفارش و ایمیل) باید به نمایش جزئیات مشترک سفارش منتهی شوند.
+- **شناسه سفارش:** lookup موجود بر پایه `orders.public_id` و صفحه جزئیات در `order-status.php` حاضر است. وضعیت provisioning هر مقصد مستقل نمایش داده می‌شود. `service_name` اختیاری تنها با مقدار غیرخالی نمایش داده می‌شود و اطلاعات اتصال داخلی سرور پنهان می‌ماند.
+- **بازیابی با ایمیل:** هنوز پیاده‌سازی نشده. ایمیل تنها مجوز نیست؛ پیش از نمایش سفارش‌ها یا داده حساب باید مالکیت آن با کد/لینک یک‌بارمصرف تأیید شود. پاسخ اولیه نباید وجود سفارش را افشا کند. expiry، محدودیت تلاش، ارسال مجدد و rate limiting لازم‌اند.
+- ایمیل checkout اختیاری باقی می‌ماند؛ خریدار بدون ایمیل همچنان از شناسه سفارش استفاده می‌کند. ثبت‌نام/ورود مشتری اضافه نشود.
+- **تمدید سرویس** مسیر مستقلی دارد؛ **پنل کاربری** هم مستقل است و وضعیت سرویس قابلیتی درون پنل است، نه منوی جدا.
+- شواهد فعلی: `tests/order-status-account-contract-test.php` شروط نمایش `service_name` و اطلاعات حساب مقصدها را پوشش می‌دهد؛ آزمون آن اثبات‌کننده بازیابی ایمیلی نیست.
+- کارهای باز برای همین جریان واحد: رابط «سفارش‌های من» با هر دو روش، ارسال و تأیید توکن ایمیل، محدودیت/انقضا و پاسخ ضد-enumeration، اتصال به جزئیات مشترک، و آزمون‌های authorization، expiry، throttling و enumeration. هیچ‌یک از این موارد با این ثبت مستنداتی به‌عنوان پیاده‌سازی یا runtime-verified اعلام نمی‌شود.
 
 
 ### 2026-11-02 — IRCrypto settings page webhook guidance reminder
