@@ -14,19 +14,23 @@ function store_price_display_unit(PDO $pdo): string
     return in_array($value, ['IRR', 'IRT'], true) ? (string)$value : 'IRT';
 }
 
-/** @return array{amount:int,currency:string,label:string} */
+/** @return array{amount:string,currency:string,label:string} */
 function store_format_price(int $amount, string $currency, string $displayUnit): array
 {
     $currency = strtoupper(trim($currency));
-    if ($currency === 'IRR') {
-        if ($displayUnit === 'IRT') {
-            $amount = intdiv($amount, 10);
-            $currency = 'IRT';
+    $displayAmount = (string)$amount;
+    if ($currency === 'IRR' && $displayUnit === 'IRT') {
+        $displayAmount = number_format($amount / 10, 1, '.', ',');
+        if (str_ends_with($displayAmount, '.0')) {
+            $displayAmount = substr($displayAmount, 0, -2);
         }
+        $currency = 'IRT';
     } elseif ($currency === 'IRT' && $displayUnit === 'IRR') {
-        $amount *= 10;
+        $displayAmount = number_format($amount * 10, 0, '.', ',');
         $currency = 'IRR';
+    } else {
+        $displayAmount = number_format($amount, 0, '.', ',');
     }
     $label = $currency === 'IRT' ? 'تومان' : ($currency === 'IRR' ? 'ریال' : $currency);
-    return ['amount' => $amount, 'currency' => $currency, 'label' => $label];
+    return ['amount' => $displayAmount, 'currency' => $currency, 'label' => $label];
 }
