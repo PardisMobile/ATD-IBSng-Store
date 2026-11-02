@@ -39,6 +39,8 @@ function support_valid_custom_url(string $value): bool
         && !isset($parts['user']) && !isset($parts['pass']);
 }
 
+$priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
+
 $renewalValues = [
     'ibsng_gift_days_first' => support_setting($pdo, 'ibsng_gift_days_first') ?: '1',
     'ibsng_gift_days_repeat' => support_setting($pdo, 'ibsng_gift_days_repeat') ?: '5',
@@ -55,6 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
+        $priceDisplayUnit = strtoupper(trim((string)($_POST['price_display_unit'] ?? 'IRT')));
+        if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
+            $error = 'واحد نمایش قیمت معتبر نیست.';
+        }
         $renewalValues = [
             'ibsng_gift_days_first' => trim((string)($_POST['ibsng_gift_days_first'] ?? '1')),
             'ibsng_gift_days_repeat' => trim((string)($_POST['ibsng_gift_days_repeat'] ?? '5')),
@@ -87,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($renewalValues as $key => $value) {
                 $stmt->execute([$key, $value]);
             }
-            $message = 'تنظیمات راه‌های پشتیبانی و هدیهٔ تمدید IBSng ذخیره شد.';
+            $stmt->execute(['price_display_unit', $priceDisplayUnit]);
+            $message = 'تنظیمات راه‌های پشتیبانی، قیمت و هدیهٔ تمدید IBSng ذخیره شد.';
         }
     }
 }
@@ -95,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($error !== '') {
     // Keep entered values visible after a validation failure.
 } else {
+    $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
     foreach ($values as $key => $value) {
         $values[$key] = support_setting($pdo, $key);
     }
@@ -128,6 +136,10 @@ $config = app_config();
 <div class="field"><label for="whatsapp_target">شناسه یا مقصد WhatsApp</label><input id="whatsapp_target" name="whatsapp_target" value="<?= e($values['support_whatsapp_target']) ?>" maxlength="80" placeholder="شناسه یا مقصد" autocomplete="off"><div class="hint">فقط مقصد را وارد کنید؛ دامنه و URL لازم نیست. این فیلد محدود به قالب شماره تلفن نیست.</div></div>
 <div class="field"><label for="custom_label">عنوان لینک دلخواه</label><input id="custom_label" name="custom_label" value="<?= e($values['support_custom_label']) ?>" maxlength="60" placeholder="مثلاً پشتیبانی آنلاین"></div>
 <div class="field"><label for="custom_url">نشانی کامل لینک دلخواه</label><input id="custom_url" name="custom_url" type="url" value="<?= e($values['support_custom_url']) ?>" placeholder="https://example.com/contact" autocomplete="url"><div class="hint">برای پیام‌رسان یا سرویس دیگر؛ فقط لینک HTTPS معتبر پذیرفته می‌شود.</div></div>
+<hr>
+<h2>واحد نمایش قیمت</h2>
+<p class="hint">قیمت پایه در دیتابیس و snapshot سفارش تغییر نمی‌کند. فقط نمایش مبلغ بین تومان و ریال تبدیل می‌شود؛ ۱ تومان = ۱۰ ریال. مقدار پیش‌فرض نصب تازه تومان است.</p>
+<div class="field"><label for="price_display_unit">واحد نمایش</label><select id="price_display_unit" name="price_display_unit" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="IRT"<?= $priceDisplayUnit === 'IRT' ? ' selected' : '' ?>>تومان</option><option value="IRR"<?= $priceDisplayUnit === 'IRR' ? ' selected' : '' ?>>ریال</option></select></div>
 <hr>
 <h2>سیاست هدیهٔ تمدید IBSng</h2>
 <p class="hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
