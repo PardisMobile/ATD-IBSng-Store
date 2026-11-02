@@ -81,7 +81,7 @@ function store_bytes_label(?string $bytes): string
   <main class="store-shell">
     <header class="topbar">
       <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
-      <span class="status-chip">فروشگاه سرویس‌های IBSng</span>
+      <nav class="hero-actions" aria-label="دسترسی مشتری"><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><span class="status-chip">فروشگاه سرویس‌های IBSng</span></nav>
     </header>
     <section class="hero panel">
       <div class="eyebrow">ATD • IBSng</div>
