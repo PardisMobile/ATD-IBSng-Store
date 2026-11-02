@@ -19,8 +19,9 @@ final class PaymentManager
 
     /** @var array<string, PaymentGateway> */
     private array $instances = [];
+    private readonly string $selectedProvider;
 
-    public function __construct(private readonly string $selectedProvider)
+    public function __construct(string $selectedProvider)
     {
         $provider = strtolower(trim($selectedProvider));
         if ($provider === '' || !isset(self::GATEWAYS[$provider])) {
