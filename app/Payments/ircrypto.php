@@ -52,7 +52,12 @@ final class IRCryptoGateway implements PaymentGateway
             $amount = self::multiplyDecimalByInteger($amount, 10);
             $invoiceCurrency = 'IRR';
         } elseif ($currency === 'USDT') {
-            $amount = self::minorToDecimal($amountMinor, 8);
+            // IRCrypto invoice amount precision is capped at six decimals.
+            // Refuse unsupported 7th/8th decimal places rather than rounding.
+            if ($amountMinor % 100 !== 0) {
+                throw new InvalidArgumentException('IRCrypto supports at most six decimal places for invoice amounts.');
+            }
+            $amount = self::minorToDecimal(intdiv($amountMinor, 100), 6);
             $invoiceCurrency = 'USD';
         } else {
             $amount = self::minorToDecimal($amountMinor, 0);
@@ -104,9 +109,12 @@ final class IRCryptoGateway implements PaymentGateway
         $invoice = $response['invoice'] ?? [];
         $expectedRef = (string)($transaction['order_public_id'] ?? '');
         $expectedCurrency = $currency === 'USDT' ? 'USD' : 'IRR';
+        if ($currency === 'USDT' && $amountMinor % 100 !== 0) {
+            return ['verified' => false];
+        }
         $expectedAmount = $currency === 'IRT'
             ? self::multiplyDecimalByInteger(self::minorToDecimal($amountMinor, 0), 10)
-            : self::minorToDecimal($amountMinor, $currency === 'USDT' ? 8 : 0);
+            : self::minorToDecimal($currency === 'USDT' ? intdiv($amountMinor, 100) : $amountMinor, $currency === 'USDT' ? 6 : 0);
         $actualAmount = trim((string)($invoice['price_amount'] ?? ''));
         $actualCurrency = strtoupper(trim((string)($invoice['price_currency'] ?? '')));
         $referenceMatches = $expectedRef !== ''
