@@ -6,12 +6,14 @@ require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/messages.php';
+require_once __DIR__ . '/app/Pricing.php';
 
 final class UsernameAlreadyExistsException extends RuntimeException
 {
 }
 
 $config = app_config();
+$priceDisplayUnit = store_price_display_unit($pdo);
 $pdo = Database::connection();
 $error = '';
 $successOrder = null;
@@ -149,7 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
 <h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url()) ?>">بازگشت</a>
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
-<div class="price"><?= number_format((int)$product['price_minor']) ?> <?= e((string)$product['currency']) ?></div>
+<?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
+<div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
 <p class="muted">مدت: <?= number_format((int)$product['duration_seconds']) ?> ثانیه</p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
