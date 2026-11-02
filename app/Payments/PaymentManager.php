@@ -13,16 +13,44 @@ final class PaymentManager
     private array $instances = [];
 
     /** @var array<string, class-string<PaymentGateway>> */
-    private const GATEWAYS = [
+    /** @var array<string, class-string<PaymentGateway>> */
+    private static array $gatewayClasses = [
         'zarinpal' => ZarinpalGateway::class,
     ];
 
     private readonly string $selectedProvider;
 
+    /**
+     * Register a provider adapter without changing checkout, callback, or order code.
+     * Registration is expected during trusted application bootstrap.
+     *
+     * @param class-string<PaymentGateway> $gatewayClass
+     */
+    public static function registerGateway(string $code, string $gatewayClass): void
+    {
+        $code = strtolower(trim($code));
+        if (!preg_match('/^[a-z][a-z0-9_-]{1,79}$/D', $code)
+            || !class_exists($gatewayClass)
+            || !is_subclass_of($gatewayClass, PaymentGateway::class)) {
+            throw new InvalidArgumentException('Payment gateway registration is invalid.');
+        }
+        $instance = new $gatewayClass();
+        if ($instance->code() !== $code) {
+            throw new InvalidArgumentException('Payment gateway code does not match its registration key.');
+        }
+        self::$gatewayClasses[$code] = $gatewayClass;
+    }
+
+    /** @return list<string> */
+    public static function registeredCodes(): array
+    {
+        return array_keys(self::$gatewayClasses);
+    }
+
     public function __construct(string $selectedProvider)
     {
         $provider = strtolower(trim($selectedProvider));
-        if ($provider === '' || !isset(self::GATEWAYS[$provider])) {
+        if ($provider === '' || !isset(self::$gatewayClasses[$provider])) {
             throw new InvalidArgumentException('The configured payment provider is unavailable.');
         }
         $this->selectedProvider = $provider;
@@ -37,7 +65,7 @@ final class PaymentManager
     public function gateway(?string $provider = null): PaymentGateway
     {
         $code = strtolower(trim($provider ?? $this->selectedProvider));
-        if (!isset(self::GATEWAYS[$code])) {
+        if (!isset(self::$gatewayClasses[$code])) {
             throw new InvalidArgumentException('Unknown payment provider.');
         }
 
@@ -47,7 +75,7 @@ final class PaymentManager
                 throw new RuntimeException('Payment provider adapter file is missing.');
             }
             require_once $file;
-            $class = self::GATEWAYS[$code];
+            $class = self::$gatewayClasses[$code];
             if (!class_exists($class)) {
                 throw new RuntimeException('Payment provider adapter class is missing.');
             }
