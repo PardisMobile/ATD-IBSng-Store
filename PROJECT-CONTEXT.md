@@ -972,3 +972,11 @@
 - **ایمیل به‌تنهایی مجوز دسترسی به سفارش یا رمز حساب نیست.** روش ایمیلی باید مالکیت ایمیل را با کد/لینک تأیید یک‌بارمصرف قبل از نمایش سفارش‌های مرتبط ثابت کند. پاسخ اولیه نباید وجود/عدم وجود سفارش برای ایمیل را افشا کند. محدودیت زمان اعتبار، تعداد تلاش، ارسال مجدد و نرخ درخواست الزامی است.
 - ایمیل checkout همچنان اختیاری است؛ مشتری بدون ایمیل از شناسه سفارش استفاده می‌کند. عضویت/ورود مشتری به فروشگاه ایجاد نمی‌شود.
 - وضعیت فعلی: پیگیری با شناسه سفارش و صفحه جزئیات مشترک در سورس موجودند؛ مسیر جست‌وجو/تأیید مالکیت ایمیلی هنوز پیاده‌سازی نشده است. این ثبت نیازمندی، به معنی تکمیل یا runtime verification نیست.
+
+
+## IRCrypto gateway settings — webhook help text reminder (2026-11-02)
+
+- Add a clear help/instruction block to the **admin IRCrypto gateway settings page** explaining the webhook configuration.
+- The endpoint path is `/webhook/ircrypto.php`; display the complete absolute callback URL using the configured site base URL (HTTPS in production), rather than hardcoding a domain.
+- Explain that this is the provider's webhook/callback destination and that the handler validates the signed request and then verifies the invoice/payment server-side. Do not ask the administrator to place webhook code or endpoint files inside `app/Payments/gateways/`.
+- Keep this as visible guidance in the gateway settings UI; documentation-only reminder for now, not yet implemented or runtime-verified.
