@@ -953,3 +953,10 @@
 - در تنظیمات هر درگاه، یک انتخاب سادهٔ نوع ارز وجود دارد: **ریالی/تومانی** یا **کریپتو (USDT)**. این انتخاب فقط تعیین می‌کند کدام قیمت و کدام ارز به همان درگاه ارسال شود: قیمت پایهٔ fiat با ارز IRR/IRT، یا قیمت مستقل محصول با ارز USDT. این تنظیم، ثبت یا فعال‌سازی درگاه جدیدی انجام نمی‌دهد.
 - سازگاری نوع ارز انتخاب‌شده با خود درگاه باید برقرار باشد. برای نمونه، انتخاب USDT برای زرین‌پال که پرداخت ریالی/تومانی می‌پذیرد، درخواست نامعتبر ایجاد می‌کند و باید با انتخاب نوع fiat اصلاح شود. مبلغ و ارز تراکنش در backend ثبت و هنگام callback با همان تراکنش اعتبارسنجی می‌شوند.
 - این بخش تصمیم محصول/معماری است و به‌تنهایی به معنی پشتیبانی واقعی درگاه از کریپتو نیست. وضعیت اجرایی، آزمون و پشتیبانی هر درگاه باید جداگانه و بر اساس شواهد مخزن گزارش شود.
+
+
+## Payment webhook file placement (2026-11-02)
+
+- Provider webhook handlers are request endpoints, not payment gateway adapters. Keep IRCrypto's signed webhook handler at `webhook/ircrypto.php`, outside `app/Payments/gateways/`.
+- `PaymentManager` intentionally discovers every PHP file directly inside `app/Payments/gateways/`; placing webhook code there could cause it to be included during adapter discovery and interfere with gateway registration.
+- The explicit root router maps `/webhook/ircrypto.php` to the handler. Keep this route allowlisted and preserve signature validation plus server-side invoice verification through `PaymentFlow`.
