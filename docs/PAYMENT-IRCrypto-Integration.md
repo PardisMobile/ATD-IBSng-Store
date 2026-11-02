@@ -1,27 +1,34 @@
-# IRCrypto Payment Adapter — Implementation Notes
+# IRCrypto Payment Adapter — Current Integration Notes
 
-## Scope
+> The canonical flow, state model, and currency configuration are documented in [PAYMENT-ARCHITECTURE.md](PAYMENT-ARCHITECTURE.md). This document records IRCrypto-specific behavior only.
 
-The IRCrypto adapter is registered in the Store's explicit `PaymentManager` allowlist and implements the existing `PaymentGateway` contract. It is an independent provider adapter; the order and transaction state services remain provider-neutral.
+## Adapter location and registration
 
-## Implemented on main
+- Adapter: `app/Payments/gateways/ircrypto.php`
+- Contract: `PaymentGateway`
+- Discovery: `PaymentManager` scans trusted adapter files in `app/Payments/gateways/*.php`; there is no separate hard-coded provider registration requirement for the normal extension path.
+- Declared currencies: `IRR`, `IRT`, `USDT`.
+- Admin fields are exposed through `configurationFields()`: API key and webhook secret. The admin enters the values; the module defines the fields.
+- Admin selects one configured mode (`fiat` or `crypto`) per provider. This does not offer simultaneous customer-side currency choice.
 
-- `app/Payments/ircrypto.php`: provider settings metadata, fixed invoice creation, provider invoice reference, hosted payment redirect, and server-side invoice lookup during verification.
-- `app/Payments/PaymentManager.php`: explicit IRCrypto registration.
-- `ircrypto-webhook.php`: POST-only webhook endpoint that checks the `ir-signature` timestamp and HMAC-SHA256 against the exact raw body, applies a 300-second timestamp tolerance, and then routes invoice verification through `PaymentFlow`.
-- `app/Router.php`: explicit route allowlist entry for the webhook.
-- `tests/PaymentManagerTest.php`: registration, invoice-reference, and secret-setting metadata checks.
+## Invoice denomination
 
-## Amount behavior
+- IRR order amounts are sent as IRR.
+- IRT order amounts are converted to IRR using the exact 10:1 relation.
+- USDT snapshot amount is mapped nominally 1:1 to USD invoice amount. The payer selects the settlement asset/network on IRCrypto's hosted invoice page.
+- IRCrypto invoice amount precision is limited to six decimal places for the USDT-to-USD mapping. The adapter rejects values with unsupported precision instead of rounding.
+- Verification retrieves the invoice server-side and checks paid status, external order reference, amount, and provider invoice currency against the persisted payment transaction.
 
-- IRR invoices use the transaction's integer amount directly.
-- IRT amounts are converted to IRR using the fixed 10:1 unit relation.
-- USDT catalog price is mapped to a nominal USD invoice amount at 1:1. IRCrypto's hosted page chooses the actual enabled crypto asset/network. The adapter rejects USDT values with nonzero 7th/8th decimal places because IRCrypto documents a maximum of six decimal places for invoice amounts; it does not silently round.
-- The adapter verifies the remote invoice is `paid`, and compares invoice `external_ref`, amount, and currency with the stored transaction/order.
+## Webhook flow
 
-## Operational requirements / not yet verified
+- Endpoint: `ircrypto-webhook.php` (relative to the Store installation base path).
+- Accepts POST only.
+- Validates the `ir-signature` timestamp and HMAC-SHA256 against the exact raw request body, with a 300-second timestamp tolerance.
+- A valid signature authenticates webhook delivery only. `PaymentFlow::handleCallback()` still performs provider-side invoice lookup and compares persisted transaction details before marking the order paid.
+- Non-paid or unrelated events do not confirm a payment.
 
-- Configure both `payment_ircrypto_api_key` and `payment_ircrypto_webhook_secret` in Admin > Store settings > Payment gateway. The webhook endpoint is `/ircrypto-webhook.php` relative to the Store installation base path; configure that exact HTTPS URL in the IRCrypto dashboard.
-- A signed webhook is only the delivery authenticity check. PaymentFlow still calls IRCrypto's invoice-read endpoint to establish provider-side paid status and compare the persisted transaction details.
-- Provider sandbox/live payment, callback redirect parameter behavior, actual webhook payload shape under the merchant account, MySQL callback replay/concurrency, and provisioning execution have not been verified in this environment.
-- Do not enable live payment until these checks and CI are confirmed. The existing queue after payment is durable but remote IBSng provisioning is not yet implemented.
+## Setup and operational checks
+
+Configure `payment_ircrypto_api_key` and `payment_ircrypto_webhook_secret` in Admin → Store settings → Payment gateway, then set the matching HTTPS webhook URL in IRCrypto.
+
+Live provider account configuration, actual webhook payload shape, sandbox/live invoice lifecycle, replay/concurrency, and live provisioning are deployment checks. Do not claim these are verified from syntax/CI alone.
