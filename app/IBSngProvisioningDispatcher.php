@@ -120,6 +120,51 @@ final class IBSngProvisioningDispatcher
         }
     }
 
+    /**
+     * Resolve an ambiguous/stale attempt after an operator has independently
+     * inspected IBSng. This records a decision only; it never sends a remote call.
+     */
+    public function resolveManually(int $attemptId, string $outcome, ?string $remoteUserId, string $note): void
+    {
+        if ($attemptId < 1 || !in_array($outcome, ['succeeded', 'failed'], true)
+            || trim($note) === '' || strlen($note) > 1500
+            || ($remoteUserId !== null && strlen($remoteUserId) > 150)) {
+            throw new InvalidArgumentException('Manual reconciliation details are invalid.');
+        }
+        $this->pdo->beginTransaction();
+        try {
+            $lock = $this->pdo->prepare('SELECT order_id, status FROM provisioning_attempts WHERE id=? FOR UPDATE');
+            $lock->execute([$attemptId]);
+            $row = $lock->fetch(PDO::FETCH_ASSOC);
+            if (!$row || !in_array($row['status'], ['needs_review', 'running'], true)) {
+                throw new RuntimeException('Only needs-review or stale-running attempts can be reconciled manually.');
+            }
+            $update = $this->pdo->prepare(
+                "UPDATE provisioning_attempts SET status=?, remote_user_id=?, error_code='manual_reconciliation',
+                 error_message=?, finished_at=UTC_TIMESTAMP() WHERE id=?"
+            );
+            $update->execute([$outcome, $remoteUserId, trim($note), $attemptId]);
+
+            $counts = $this->pdo->prepare(
+                "SELECT SUM(status='succeeded') AS succeeded, SUM(status IN ('queued','running')) AS pending,
+                        SUM(status IN ('failed','needs_review')) AS issues
+                 FROM provisioning_attempts WHERE order_id=?"
+            );
+            $counts->execute([(int)$row['order_id']]);
+            $state = $counts->fetch(PDO::FETCH_ASSOC) ?: [];
+            $orderStatus = ((int)($state['pending'] ?? 0) > 0) ? 'provisioning'
+                : (((int)($state['issues'] ?? 0) > 0)
+                    ? (((int)($state['succeeded'] ?? 0) > 0) ? 'partial' : 'failed')
+                    : 'active');
+            $orderUpdate = $this->pdo->prepare("UPDATE orders SET order_status=? WHERE id=? AND payment_status='paid'");
+            $orderUpdate->execute([$orderStatus, (int)$row['order_id']]);
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
     private function finish(int $attemptId, string $status, ?string $remoteId, ?string $errorCode, ?string $errorMessage): void
     {
         $stmt = $this->pdo->prepare(
