@@ -540,3 +540,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Clarify that the URL is configured in the IRCrypto provider dashboard, and that the Store endpoint performs signature validation and authoritative server-side invoice verification.
 - Keep webhook endpoint placement outside `app/Payments/gateways/`, which is reserved for auto-discovered gateway adapters.
 - This note is a follow-up requirement only; no settings UI/code change or live webhook test is claimed.
+
+
+### 2026-11-02 — Hide empty customer service-name element
+
+**Status: SOURCE AND CONTRACT TEST UPDATED ON `main`; execution/runtime validation pending.**
+
+- Updated `order-status.php` to render the customer-facing `service_name` label only when the trimmed value is non-empty. Blank values now omit the entire `<strong>` element rather than emitting an empty label.
+- Preserved the existing separation from internal server names, per-target provisioning statuses, and credential display conditions.
+- Updated `tests/order-status-account-contract-test.php` to assert conditional rendering and reject the previous empty-string fallback pattern.
+- This is source-level implementation only. The PHP contract test, PHP lint, browser rendering, and live deployment have not been run in this operation.
