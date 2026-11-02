@@ -35,7 +35,7 @@ function store_route_map(string $root): array
         '/checkout.php' => $root . '/checkout.php',
         '/order-status.php' => $root . '/order-status.php',
         '/payment-callback.php' => $root . '/payment-callback.php',
-        '/ircrypto-webhook.php' => $root . '/ircrypto-webhook.php',
+        '/webhook/ircrypto.php' => $root . '/webhook/ircrypto.php',
         '/admin/' => $root . '/admin/index.php',
         '/admin/index.php' => $root . '/admin/index.php',
         '/admin/login.php' => $root . '/admin/login.php',
