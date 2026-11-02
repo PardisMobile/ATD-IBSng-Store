@@ -6,7 +6,7 @@ PaymentManager is the single registry and dispatcher for payment modules. No pro
 
 Adapters are auto-discovered from app/Payments/gateways/*.php. To add a gateway, add one PHP adapter file in that directory, implement PaymentGateway, and ensure the adapter's code() matches its filename/provider code. PaymentManager loads trusted adapter modules and the admin settings page obtains available provider codes and configuration fields from that same registry. No edits to PaymentManager, PaymentFlow, payment-callback.php, or a separate provider list should be needed. The optional registerGateway() method remains available for trusted programmatic registration/tests, not the normal extension path.
 
-Keep provider secrets server-side and never trust callback values as payment proof. Adapter-level tests and CI are required; runtime credentials and live gateway sandbox checks remain deployment verification tasks.
+Keep provider secrets server-side and never trust callback values as payment proof. Fiat and USDT amounts are both captured on the order before payment initiation; the USDT snapshot is stored in `orders.price_usdt_snapshot` and is never re-read from the mutable product row during payment creation or verification. Fresh installs get this field from `database/schema.sql`; existing installs must apply `database/migrations/2026-11-02-order-usdt-price-snapshot.sql`. Legacy orders remain NULL because their historic crypto price cannot be inferred safely; crypto initiation for such orders fails closed. Adapter-level tests and CI are required; runtime credentials and live gateway sandbox checks remain deployment verification tasks.
 
 ## IBSng provisioning
 
