@@ -3,12 +3,40 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Pricing.php';
+require_once __DIR__ . '/app/Payments/PaymentManager.php';
 
 $config = app_config();
 $pageTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 $priceDisplayUnit = 'IRT';
 $cryptoDisplayEnabled = false;
-try { $pdoForSettings = Database::connection(); $priceDisplayUnit = store_price_display_unit($pdoForSettings); $setting = $pdoForSettings->prepare('SELECT setting_value FROM app_settings WHERE setting_key=? LIMIT 1'); $setting->execute(['crypto_gateway_enabled']); $cryptoDisplayEnabled = $setting->fetchColumn() === '1'; } catch (Throwable $e) { /* use safe install defaults */ }
+try {
+    $pdoForSettings = Database::connection();
+    $priceDisplayUnit = store_price_display_unit($pdoForSettings);
+    $settingsQuery = $pdoForSettings->prepare(
+        "SELECT setting_key, setting_value FROM app_settings
+         WHERE setting_key IN ('crypto_gateway_enabled', 'payment_provider')"
+    );
+    $settingsQuery->execute();
+    $storePaymentSettings = [];
+    foreach ($settingsQuery->fetchAll(PDO::FETCH_ASSOC) as $settingRow) {
+        $storePaymentSettings[(string)$settingRow['setting_key']] = (string)$settingRow['setting_value'];
+    }
+    $selectedProvider = strtolower(trim((string)($storePaymentSettings['payment_provider'] ?? '')));
+    $showCryptoPrice = ($storePaymentSettings['crypto_gateway_enabled'] ?? '') === '1';
+    $selectedTypeQuery = $pdoForSettings->prepare(
+        'SELECT setting_value FROM app_settings WHERE setting_key = ? LIMIT 1'
+    );
+    if ($showCryptoPrice && $selectedProvider !== '') {
+        $selectedTypeQuery->execute(['payment_' . $selectedProvider . '_type']);
+        $selectedType = strtolower(trim((string)$selectedTypeQuery->fetchColumn()));
+        if ($selectedType === 'crypto' && in_array($selectedProvider, PaymentManager::registeredCodes(), true)) {
+            $cryptoDisplayEnabled = in_array('USDT', (new PaymentManager($selectedProvider))->supportedCurrencies(), true);
+        }
+    }
+} catch (Throwable $e) {
+    // Fail closed: do not advertise a crypto price unless the selected gateway
+    // is configured for crypto and explicitly supports USDT.
+}
 $products = [];
 $catalogError = false;
 try {
