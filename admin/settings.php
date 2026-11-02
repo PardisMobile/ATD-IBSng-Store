@@ -47,10 +47,16 @@ $gatewayPaymentTypes = [];
 $gatewayCodes = PaymentManager::registeredCodes();
 $gatewayManager = $gatewayCodes !== [] ? new PaymentManager($gatewayCodes[0]) : null;
 $gatewayFields = [];
+$gatewaySupportedCurrencies = [];
 foreach ($gatewayCodes as $gatewayCode) {
     $gatewayPaymentTypes[$gatewayCode] = support_setting($pdo, 'payment_' . $gatewayCode . '_type') ?: 'fiat';
-    try { $gatewayFields[$gatewayCode] = $gatewayManager?->configurationFields($gatewayCode) ?? []; }
-    catch (Throwable) { $gatewayFields[$gatewayCode] = []; }
+    try {
+        $gatewayFields[$gatewayCode] = $gatewayManager?->configurationFields($gatewayCode) ?? [];
+        $gatewaySupportedCurrencies[$gatewayCode] = $gatewayManager?->supportedCurrencies($gatewayCode) ?? [];
+    } catch (Throwable) {
+        $gatewayFields[$gatewayCode] = [];
+        $gatewaySupportedCurrencies[$gatewayCode] = [];
+    }
 }
 $gatewayValues = [];
 foreach ($gatewayFields as $gatewayCode => $fields) {
@@ -222,7 +228,7 @@ $config = app_config();
 <h2>درگاه پرداخت</h2>
 <p class="hint">درگاه‌ها از ماژول‌های ثبت‌شده در سیستم دریافت می‌شوند؛ هیچ ارائه‌دهنده‌ای به‌صورت پیش‌فرض فعال نیست. تغییر درگاه روی تراکنش‌های قبلی اثر نمی‌گذارد.</p>
 <div class="field"><label for="payment_provider">درگاه فعال</label><select id="payment_provider" name="payment_provider" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value=""<?= $paymentProvider === '' ? ' selected' : '' ?>>غیرفعال</option><?php foreach ($gatewayCodes as $gatewayCode): ?><option value="<?= e($gatewayCode) ?>"<?= $paymentProvider === $gatewayCode ? ' selected' : '' ?>><?= e(ucfirst($gatewayCode)) ?></option><?php endforeach; ?></select></div>
-<?php foreach ($gatewayFields as $gatewayCode => $fields): ?><fieldset class="panel-card"><legend><?= e(ucfirst($gatewayCode)) ?></legend><div class="field"><label for="gateway_<?= e($gatewayCode) ?>_type">نوع ارز درگاه</label><select id="gateway_<?= e($gatewayCode) ?>_type" name="gateway_<?= e($gatewayCode) ?>_type" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="fiat"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'fiat' ? ' selected' : '' ?>>ریالی / تومانی</option><option value="crypto"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'crypto' ? ' selected' : '' ?>>کریپتو (USDT)</option></select><div class="hint">این گزینه فقط نوع ارز و قیمت ارسالی به همین درگاه را تعیین می‌کند. سازگاری نوع انتخاب‌شده با درگاه باید رعایت شود.</div></div><?php foreach ($fields as $fieldKey => $field): $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey; ?><div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"></div><?php endforeach; ?></fieldset><?php endforeach; ?>
+<?php foreach ($gatewayFields as $gatewayCode => $fields): ?><fieldset class="panel-card"><legend><?= e(ucfirst($gatewayCode)) ?></legend><div class="field"><label for="gateway_<?= e($gatewayCode) ?>_type">نوع ارز درگاه</label><select id="gateway_<?= e($gatewayCode) ?>_type" name="gateway_<?= e($gatewayCode) ?>_type" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><?php if (array_intersect(['IRR', 'IRT'], $gatewaySupportedCurrencies[$gatewayCode] ?? []) !== []): ?><option value="fiat"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'fiat' ? ' selected' : '' ?>>ریالی / تومانی</option><?php endif; ?><?php if (in_array('USDT', $gatewaySupportedCurrencies[$gatewayCode] ?? [], true)): ?><option value="crypto"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'crypto' ? ' selected' : '' ?>>کریپتو (USDT)</option><?php endif; ?></select><div class="hint">این گزینه فقط نوع ارز و قیمت ارسالی به همین درگاه را تعیین می‌کند. سازگاری نوع انتخاب‌شده با درگاه باید رعایت شود.</div></div><?php foreach ($fields as $fieldKey => $field): $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey; ?><div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"></div><?php endforeach; ?></fieldset><?php endforeach; ?>
 <hr>
 <h2>نمایش قیمت کریپتو</h2>
 <p class="hint">این گزینه فقط نمایش قیمت مستقل USDT را در فروشگاه فعال می‌کند و به‌تنهایی امکان پرداخت کریپتویی ایجاد نمی‌کند. برای دریافت پرداخت USDT، باید یک درگاه کریپتویی سازگار را در بخش «درگاه پرداخت» انتخاب و فعال کنید و نوع ارز همان درگاه را روی «کریپتو (USDT)» بگذارید. اگر درگاه فعال یا سازگار نباشد، این گزینه صرفاً نمایشی است.</p>
