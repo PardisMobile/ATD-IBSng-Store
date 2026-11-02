@@ -295,3 +295,21 @@ A follow-up inspection of the current schema and source was performed before beg
 - Implementation sequencing recommendation: (1) define and migrate the customer access/recovery persistence model and shared mail contract, (2) build and test email ownership verification + order recovery, (3) build the owner-bound order history/details UI, (4) connect account panel actions only after confirming IBSng user lookup, credential handling, and renewal contracts. Preserve the no-registration checkout and avoid claiming live email/IBSng success without runtime validation.
 
 Status: dependency audit only. No customer workflow or mail delivery was implemented by this audit; no PHP lint/runtime execution was available in this environment.
+
+
+## 2026-11-02 — Customer store renewal order-flow audit
+
+**Status: SOURCE TRACE COMPLETE FOR THE CURRENT ENTRY POINTS / CUSTOMER RENEWAL FLOW NOT IMPLEMENTED.**
+
+Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `app/IBSngRenewalService.php`, `app/IBSngRenewalCoordinator.php`, and `database/schema.sql`.
+
+- `checkout.php` is currently the new-account checkout only. It validates a customer-selected username, checks availability against the mapped IBSng server, and creates an order with `payment_status='pending'` and `order_status='pending_payment'`. The order stores product name/duration/price/currency snapshots and an encrypted password. It does not currently create a renewal order or initiate a payment gateway.
+- `database/schema.sql` already defines `payment_transactions`, including provider/reference, status, callback ID, and verification timestamp. These tables are persistence groundwork only; their existence does not mean a gateway integration or verified callback exists.
+- The inspected repository code search did not identify an implemented customer payment initiation/callback handler that verifies the gateway and idempotently transitions an order to paid. Do not mark an order paid based only on a browser return or unverified callback parameters.
+- `admin/ibsng-users.php` has a separate admin-initiated renewal action. It chooses a mapped active product for the selected server and calls the central `IBSngRenewalService`; this is not a customer renewal order and must not be treated as such.
+- The central service already serializes per-account operations, uses a durable `ibsng_renewals` ledger, checks for unresolved attempts, and marks uncertain remote outcomes `needs_review`. Its idempotency key currently identifies the renewal-service attempt; it is not yet wired to a paid customer renewal order.
+- No customer order-to-renewal provisioning/callback path was established by this source review. Consequently, the intended sequence (renewal order with immutable plan snapshot + idempotency key → pending payment → verified idempotent callback → exactly-once service dispatch → needs-review on uncertain IBSng response) remains an implementation task.
+
+**Required implementation boundary:** introduce the customer renewal order path and payment-provider contract using the existing Store order/payment/provisioning architecture. The payment callback must verify amount, currency, order identity, provider reference and provider result; persist the transaction and paid transition atomically/idempotently; and dispatch renewal through the existing central service using an order-bound idempotency key. Repeated callbacks must return the prior result without another IBSng mutation. If the remote mutation result is uncertain, persist a review-required state and prohibit automatic replay.
+
+**Not changed in this audit:** no UI/sidebar changes, no direct IBSng user-management scope, no customer payment status changes, and no claim of live gateway or IBSng verification.
