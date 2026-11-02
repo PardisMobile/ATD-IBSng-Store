@@ -3,18 +3,20 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
+require_once __DIR__ . '/app/Crypto.php';
 
 $config = app_config();
 $orderPublicId = strtolower(trim((string)($_GET['order'] ?? '')));
 $order = null;
 $attempts = [];
+$accountPassword = null;
 $notFound = !preg_match('/^[a-f0-9]{32}$/D', $orderPublicId);
 
 if (!$notFound) {
     try {
         $pdo = Database::connection();
         $stmt = $pdo->prepare(
-            'SELECT id, public_id, product_name_snapshot, username, payment_status, order_status, created_at
+            'SELECT id, public_id, product_name_snapshot, username, password_ciphertext, payment_status, order_status, created_at
              FROM orders WHERE public_id = ? LIMIT 1'
         );
         $stmt->execute([$orderPublicId]);
@@ -23,7 +25,7 @@ if (!$notFound) {
             $notFound = true;
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
-                'SELECT a.server_id, a.operation, a.status, s.name AS server_name
+                'SELECT a.server_id, a.operation, a.status, s.name AS server_name, s.service_name
                  FROM provisioning_attempts a
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.order_id = ?
@@ -31,6 +33,14 @@ if (!$notFound) {
             );
             $attemptStmt->execute([(int)$order['id']]);
             $attempts = $attemptStmt->fetchAll(PDO::FETCH_ASSOC);
+            if (array_filter($attempts, static fn(array $attempt): bool => $attempt['status'] === 'succeeded')) {
+                try {
+                    $accountPassword = app_decrypt_secret((string)$order['password_ciphertext']);
+                } catch (Throwable $decryptError) {
+                    error_log('Customer order credential decrypt failed: ' . $decryptError->getMessage());
+                    $accountPassword = null;
+                }
+            }
         }
     } catch (Throwable $e) {
         error_log('Customer order status lookup failed: ' . $e->getMessage());
@@ -60,7 +70,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <title>وضعیت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.status-shell{width:min(820px,calc(100% - 32px));margin:0 auto}.status-card{padding:clamp(20px,4vw,34px);margin:24px 0}.notice{padding:15px;border:1px solid var(--border);border-radius:14px;margin:16px 0;line-height:1.9}.muted{color:var(--muted);line-height:1.8}.target-list{display:grid;gap:12px;margin:18px 0}.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}.target strong{display:block}.target small{display:block;color:var(--muted);margin-top:4px}.state{white-space:nowrap;font-weight:700}@media(max-width:520px){.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}}
+.status-shell{width:min(820px,calc(100% - 32px));margin:0 auto}.status-card{padding:clamp(20px,4vw,34px);margin:24px 0}.notice{padding:15px;border:1px solid var(--border);border-radius:14px;margin:16px 0;line-height:1.9}.muted{color:var(--muted);line-height:1.8}.target-list{display:grid;gap:12px;margin:18px 0}.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}.target strong{display:block}.target small{display:block;color:var(--muted);margin-top:4px}.account-details{display:grid;gap:8px;margin-top:10px}.account-details code{overflow-wrap:anywhere}.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:8px}.state{white-space:nowrap;font-weight:700}@media(max-width:520px){.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}}
 </style>
 </head>
 <body>
@@ -83,14 +93,21 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <div class="target-list">
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
-<div><strong><?= e((string)$attempt['server_name']) ?></strong><small><?= e((string)$attempt['operation']) ?></small></div>
+<div><strong><?= e(trim((string)($attempt['service_name'] ?? '')) !== '' ? (string)$attempt['service_name'] : '') ?></strong><small><?= e((string)$attempt['operation']) ?></small>
+<?php if ($attempt['status'] === 'succeeded' && is_string($accountPassword)): ?>
+<div class="account-details"><span>نام کاربری: <code><?= e((string)$order['username']) ?></code></span>
+<details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
+<?php elseif ($attempt['status'] === 'succeeded'): ?>
+<small>حساب ایجاد شده است؛ نمایش رمز در حال حاضر در دسترس نیست.</small>
+<?php endif; ?>
+</div>
 <div class="state"><?= e($attemptLabel((string)$attempt['status'])) ?></div>
 </div>
 <?php endforeach; ?>
 </div>
 <p class="muted">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
 <?php endif; ?>
-<p class="muted">این لینک برای مشاهده وضعیت همین سفارش است؛ آن را در اختیار افراد دیگر قرار ندهید. اطلاعات رمز حساب در این صفحه نمایش داده نمی‌شود.</p>
+<p class="muted">این لینک خصوصی سفارش است؛ آن را در اختیار افراد دیگر قرار ندهید. اطلاعات ورود فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است.</p>
 <?php endif; ?>
 </section>
 </main>
