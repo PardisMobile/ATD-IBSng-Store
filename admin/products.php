@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
+require_once dirname(__DIR__) . '/app/Pricing.php';
 require_admin();
 
 $config = app_config();
@@ -137,6 +138,7 @@ if ($editId > 0) {
     $product = $stmt->fetch() ?: null;
     if (!$product) $error = 'محصول موردنظر پیدا نشد.';
 }
+$priceDisplayUnit = store_price_display_unit($pdo);
 $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.name AS server_name FROM products p LEFT JOIN product_server_groups m ON m.product_id=p.id LEFT JOIN ibsng_groups g ON g.id=m.ibsng_group_id LEFT JOIN ibsng_servers s ON s.id=m.server_id ORDER BY p.sort_order,p.id DESC')->fetchAll();
 ?>
 <!doctype html>
@@ -179,7 +181,7 @@ $products = $pdo->query('SELECT p.*,m.server_id,m.ibsng_group_id,g.plan_name,s.n
 <section class="panel panel-card"><h2>محصولات ثبت‌شده</h2>
 <?php if (!$products): ?><div class="empty">هنوز محصولی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($products as $item): ?><article class="product-row panel"><div class="row-head"><strong><?= e((string)$item['name']) ?></strong><span class="status-chip"><?= (int)$item['is_active']===1?'فعال':'غیرفعال' ?></span></div>
-<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div>مدت: <?= number_format((int)$item['duration_seconds']) ?> ثانیه · تمدید IBSng: <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' روز' : 'تنظیم نشده' ?> · قیمت: <?= number_format((int)$item['price_minor']) ?> <?= e((string)$item['currency']) ?></div><div class="muted">نگاشت: <?= e((string)($item['server_name'] ?? '—')) ?> / <?= e((string)($item['plan_name'] ?? '—')) ?></div>
+<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div>مدت: <?= number_format((int)$item['duration_seconds']) ?> ثانیه · تمدید IBSng: <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' روز' : 'تنظیم نشده' ?> · قیمت: <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted">نگاشت: <?= e((string)($item['server_name'] ?? '—')) ?> / <?= e((string)($item['plan_name'] ?? '—')) ?></div>
 <div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" onsubmit="return confirm('محصول حذف شود؟');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit">حذف</button></form></div></article><?php endforeach; ?>
 </section><footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
 </main>
