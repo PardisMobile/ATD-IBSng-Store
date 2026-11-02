@@ -38,7 +38,7 @@ final class ZarinpalGateway implements PaymentGateway
             'merchant_id' => $merchantId,
             'amount' => $amount,
             'callback_url' => $callbackUrl,
-            'description' => mb_substr((string)($order['description'] ?? 'Store order'), 0, 500),
+            'description' => self::limitDescription((string)($order['description'] ?? 'Store order'), 500),
             'metadata' => array_filter([
                 'mobile' => (string)($order['buyer_phone'] ?? ''),
                 'email' => (string)($order['buyer_email'] ?? ''),
@@ -92,6 +92,20 @@ final class ZarinpalGateway implements PaymentGateway
             'currency' => $currency,
             'result' => $response,
         ];
+    }
+
+    private static function limitDescription(string $value, int $limit): string
+    {
+        // Keep this adapter usable on typical cPanel PHP installations where
+        // mbstring may not be enabled. UTF-8 aware truncation is preferred.
+        if (function_exists('mb_substr')) {
+            return mb_substr($value, 0, $limit, 'UTF-8');
+        }
+        if (preg_match('//u', $value) === 1) {
+            $characters = preg_split('//u', $value, -1, PREG_SPLIT_NO_EMPTY);
+            return is_array($characters) ? implode('', array_slice($characters, 0, $limit)) : substr($value, 0, $limit);
+        }
+        return substr($value, 0, $limit);
     }
 
     /** @return array<string,mixed> */
