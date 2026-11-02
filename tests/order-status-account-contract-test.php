@@ -11,6 +11,7 @@ $checks = [
     'admin form accepts service name on create and update' => is_string($servers) && substr_count($servers, 'name="service_name"') === 2,
     'server name and customer service label are distinct' => is_string($servers) && str_contains($servers, 'نام سرور (داخلی)') && str_contains($servers, 'service_name'),
     'customer status loads service name' => is_string($status) && str_contains($status, 's.service_name') && str_contains($status, "['service_name']"),
+    'tracking page includes purchase amount, payment status, and timestamp' => is_string($status) && str_contains($status, 'price_minor_snapshot') && str_contains($status, 'price_usdt_snapshot') && str_contains($status, 'payment_status') && str_contains($status, 'created_at'),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
     'credentials are shown only for succeeded attempts' => is_string($status) && str_contains($status, "['status'] === 'succeeded'") && str_contains($status, 'نمایش رمز عبور'),
     'empty service name is suppressed without rendering an empty label' => is_string($status)
