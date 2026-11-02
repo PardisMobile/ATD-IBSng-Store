@@ -30,6 +30,10 @@ foreach ($cases as [$uri, $base, $expected]) {
 }
 
 $routes = store_route_map(dirname(__DIR__));
+if (!isset($routes['/admin/provisioning.php'])) {
+    fwrite(STDERR, "FAIL: provisioning admin page is missing from the route allowlist.\\n");
+    exit(1);
+}
 foreach ($routes as $route => $target) {
     if (!is_file($target)) {
         fwrite(STDERR, "FAIL: allowlisted route {$route} points to missing file {$target}\n");
