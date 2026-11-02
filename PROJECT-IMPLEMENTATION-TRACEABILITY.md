@@ -347,17 +347,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Added `app/Payments/PaymentManager.php` on `main`. It resolves a gateway from a server-side allowlist and delegates initiation/verification through the existing `PaymentGateway` contract.
 - Checkout initiation resolves the configured selected provider. Callback verification resolves the provider persisted on the payment transaction, not the current global selection. This is intentional: changing the selected gateway must not invalidate or redirect an already-started transaction to another provider.
 - Provider settings are passed as trusted, provider-keyed server-side settings. The manager does not accept credentials from browser input.
-- The manager currently registers only the existing Zarinpal adapter as an available implementation. This does **not** make Zarinpal mandatory: the registry is the explicit adapter inventory, and a future provider can be added as a separate adapter implementing `PaymentGateway` plus one registry entry. Admin selection/settings persistence, transaction orchestration, callback route, atomic paid transition, provisioning dispatch, tests, and live gateway verification remain incomplete.
+- The manager currently allows only the existing Zarinpal adapter. This does **not** make Zarinpal mandatory: a future provider can be added as a separate adapter implementing `PaymentGateway` plus one entry in the manager's explicit allowlist. Admin selection/settings persistence, transaction orchestration, callback route, atomic paid transition, provisioning dispatch, tests, and live gateway verification remain incomplete.
 - No PHP runtime/lint or end-to-end payment test was executed in this environment. Do not describe payment as enabled or production-ready based on this resolver alone.
 
 
-### 2026-11-02 — Separate payment gateway inventory from manager
+### 2026-11-02 — Simplify gateway inventory
 
-**Status: IMPLEMENTED IN SOURCE / NOT RUNTIME-VERIFIED.**
+**Status: SIMPLIFIED IN SOURCE / NOT RUNTIME-VERIFIED.**
 
-- Added `app/Payments/PaymentGatewayRegistry.php` as the standalone allowlisted inventory of adapter codes and classes.
-- Updated `app/Payments/PaymentManager.php` to resolve gateway availability and adapter classes through the registry instead of keeping its own hard-coded provider map.
-- `app/Payments/PaymentGateway.php` remains the stable interface contract and was not changed.
-- To add a provider now, implement `PaymentGateway` in a separate adapter file and add its code/class mapping to `PaymentGatewayRegistry.php`. Neither the interface nor the manager's dispatch logic needs modification. The registry is intentionally explicit/allowlisted; this is not unrestricted filesystem auto-discovery.
-- Existing Zarinpal behavior is intended to remain unchanged. The new separation is architectural groundwork only: payment settings UI, checkout initiation, callback route, transaction persistence, idempotent paid transition, provisioning integration, automated tests, PHP lint, and live/sandbox validation remain open.
-- Commits on `main`: registry `9f6cb3cb23cf62df815e27e5a934a3ecb5611323`; manager decoupling `60f800d0a3e2306164bb934ee53171d84902c743`.
+- The separate `PaymentGatewayRegistry.php` was removed as unnecessary indirection for the current gateway inventory.
+- `PaymentManager.php` contains the explicit allowlist and dispatches to adapter files; `PaymentGateway.php` remains the shared interface and each provider remains an independent adapter.
+- Adding a provider requires its adapter file and one allowlist entry in `PaymentManager.php`. No separate registry file or filesystem-wide auto-discovery is used.
+- This keeps the adapter modules independent without multiplying manager/registry files. Payment settings UI, checkout initiation, callback route, transaction persistence, idempotent paid transition, provisioning integration, automated tests, PHP lint, and live/sandbox validation remain open.
+- Simplification commits on `main`: manager `c999ea62ec4077025c4ece90f5c4ebefd4ce8ed3`; registry removal `9d917837f98bcc6d19af92f7827b7f451677c392`. Earlier registry commits remain in history but their implementation was superseded.
