@@ -58,7 +58,7 @@ $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 <body><main class="shell">
 <header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></header>
 <section class="panel"><div class="eyebrow">عملیات IBSng</div><h1>صف Provisioning</h1>
-<p class="hint">اجرای دستی و موردی روی queued. خطا یا پاسخ مبهم در «نیازمند بررسی» می‌ماند؛ running مانده هم retry نمی‌شود. برای needs_review یا running، مدیر پس از بررسی مستقیم IBSng می‌تواند فقط نتیجه را دستی ثبت کند؛ این کار هیچ درخواست remote جدیدی ارسال نمی‌کند.</p>
+<p class="hint">بعد از تأیید پرداخت، اجرای اولیهٔ صف به‌صورت best-effort انجام می‌شود. این صفحه برای اجرای مجدد موردهای queued باقی‌مانده و تعیین تکلیف موارد مبهم است. خطا یا پاسخ مبهم در «نیازمند بررسی» می‌ماند؛ running مانده هم retry خودکار نمی‌شود. برای needs_review یا running، مدیر پس از بررسی مستقیم IBSng می‌تواند فقط نتیجه را دستی ثبت کند؛ این کار هیچ درخواست remote جدیدی ارسال نمی‌کند.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>سفارش</th><th>نام کاربری</th><th>سرویس</th><th>سرور</th><th>وضعیت</th><th>نتیجه/خطا</th><th>عملیات</th></tr></thead><tbody>
