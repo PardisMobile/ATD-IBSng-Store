@@ -71,6 +71,12 @@ final class PaymentFlow
             throw new RuntimeException('Configured payment gateway type is invalid.');
         }
 
+        $manager = new PaymentManager($provider);
+        $requestedCurrency = $paymentType === 'crypto' ? 'USDT' : strtoupper(trim((string)$order['currency']));
+        if (!in_array($requestedCurrency, $manager->supportedCurrencies(), true)) {
+            throw new RuntimeException('The selected payment gateway does not support the configured payment currency.');
+        }
+
         if ($paymentType === 'crypto') {
             $amount = PaymentAmount::resolve('crypto', $order);
         } else {
@@ -88,7 +94,6 @@ final class PaymentFlow
         );
 
         try {
-            $manager = new PaymentManager($provider);
             $callbackUrl = app_url('payment-callback.php?provider=' . rawurlencode($provider));
             $providerSettings = [$provider => self::providerSettings($all, $provider)];
             $providerSettings[$provider]['callback_url'] = $callbackUrl;
