@@ -447,3 +447,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Added a guarded failed-payment transition for provider-declared cancellation so a canceled attempt can release the order's active-payment slot. The callback UI distinguishes a verified payment from a canceled/failed return; an unverified return is never marked paid.
 - GitHub Actions run `41434145003` passed PHP syntax lint and the router, payment amount, payment manager, IBSng lookup, renewal policy/state, and renewal ledger contract tests.
 - This is source/CI verification only: no live database checkout, Zarinpal sandbox request, or IBSng provisioning was executed. The paid-to-provisioning handoff remains the next implementation boundary.
+
+
+## Payment-to-provisioning handoff (2026-11-02)
+
+**Status: destination snapshot and durable queue code added; remote provisioning execution NOT implemented or runtime-verified.**
+
+- Checkout persists the selected IBSng server ID, group ID, and exact group name into `orders.server_targets_snapshot`; later product/server-group mapping changes do not silently redirect the order.
+- Fresh-install schema includes the JSON snapshot column. Existing installations require the one-time migration `database/migrations/2026-11-02-order-target-snapshot.sql`.
+- After verified payment, `PaymentTransactionService::confirmVerified()` inserts idempotent `create` provisioning attempts using only captured order targets, in the same database transaction. It changes order status to `provisioning` when a queue row is inserted.
+- This stage only creates the durable queue. It does not call IBSng `createUser()`, implement an admin retry/reconciliation screen, or resolve uncertain remote outcomes. Account activation is not complete until those pieces are implemented.
+- Older orders whose target snapshot is NULL can still be marked paid, but this handoff cannot infer a correct destination for them; they require explicit reconciliation.
+- Validation not yet performed: PHP lint, migration execution, MySQL integration test, or live IBSng mutation.
