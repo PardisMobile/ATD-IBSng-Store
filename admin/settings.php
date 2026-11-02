@@ -40,6 +40,8 @@ function support_valid_custom_url(string $value): bool
 }
 
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
+    $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
+$cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 
 $renewalValues = [
     'ibsng_gift_days_first' => support_setting($pdo, 'ibsng_gift_days_first') ?: '1',
@@ -58,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
         $priceDisplayUnit = strtoupper(trim((string)($_POST['price_display_unit'] ?? 'IRT')));
+        $cryptoDisplayEnabled = (($_POST['crypto_gateway_enabled'] ?? '') === '1');
         if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
             $error = 'واحد نمایش قیمت معتبر نیست.';
         }
@@ -94,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$key, $value]);
             }
             $stmt->execute(['price_display_unit', $priceDisplayUnit]);
+            $stmt->execute(['crypto_gateway_enabled', $cryptoDisplayEnabled ? '1' : '0']);
             $message = 'تنظیمات راه‌های پشتیبانی، قیمت و هدیهٔ تمدید IBSng ذخیره شد.';
         }
     }
@@ -140,6 +144,10 @@ $config = app_config();
 <h2>واحد نمایش قیمت</h2>
 <p class="hint">قیمت پایه در دیتابیس و snapshot سفارش تغییر نمی‌کند. فقط نمایش مبلغ بین تومان و ریال تبدیل می‌شود؛ ۱ تومان = ۱۰ ریال. مقدار پیش‌فرض نصب تازه تومان است.</p>
 <div class="field"><label for="price_display_unit">واحد نمایش</label><select id="price_display_unit" name="price_display_unit" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="IRT"<?= $priceDisplayUnit === 'IRT' ? ' selected' : '' ?>>تومان</option><option value="IRR"<?= $priceDisplayUnit === 'IRR' ? ' selected' : '' ?>>ریال</option></select></div>
+<hr>
+<h2>نمایش قیمت کریپتو</h2>
+<p class="hint">این گزینه صرفاً نمایش قیمت مستقل USDT را فعال می‌کند. تا زمان اتصال و فعال‌سازی واقعی درگاه کریپتو، آن را خاموش نگه دارید.</p>
+<div class="field"><label><input type="checkbox" name="crypto_gateway_enabled" value="1"<?= $cryptoDisplayEnabled ? ' checked' : '' ?>> درگاه کریپتو فعال است؛ قیمت USDT در فروشگاه نمایش داده شود</label></div>
 <hr>
 <h2>سیاست هدیهٔ تمدید IBSng</h2>
 <p class="hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
