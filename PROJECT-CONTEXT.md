@@ -1031,3 +1031,11 @@
 - Added `customer_email_deliveries` with a unique order/event key to suppress duplicate sends, included in fresh schema and migration `database/migrations/2026-11-03-customer-email-deliveries.sql`.
 - Updated the default purchase-success template to include account details, order tracking URL, and usage-guide URL. Added public `guide.php` and explicit route registration. The guide remains intentionally generic and does not invent server/protocol-specific configuration.
 - **Verification boundary:** this is source implementation only. PHP lint, DB migration execution, mail delivery, and end-to-end provisioning/email have not been run. Durable automatic retry after a failed mail send and recovery of a stale `sending` claim are still open; email failures are logged and recorded.
+
+
+### 2026-11-03 — Controlled recovery for failed account delivery email
+
+- Added an explicit admin retry action and status list to `admin/provisioning.php`. A failed delivery can be retried after correcting mail configuration; sent and currently-sending records are not reclaimed.
+- `CustomerAccountDelivery::afterProvisioning()` now permits a conditional claim only for a previously failed event, maintaining the unique order/event key to suppress duplicate sends.
+- Added `tests/customer-account-delivery-contract-test.php` with source-contract checks for paid-state gate, terminal provisioning, successful destinations, durable claim, retry path, template variables, and guide route.
+- Verification remains source-level only: the test has not been run in a PHP runtime, and mail/DB/end-to-end behavior remains unverified.
