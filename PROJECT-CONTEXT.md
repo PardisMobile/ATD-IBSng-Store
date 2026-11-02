@@ -1047,3 +1047,12 @@
 - The `purchase_success` template is reserved for the post-provisioning delivery email, preventing duplicate/misleading “account ready” emails before remote account creation is confirmed.
 - Admin provisioning email table now displays the buyer email address. Retry-delivery submissions validate only the order ID; attempt IDs remain required only for run/resolve actions.
 - Runtime verification remains outstanding (PHP lint, DB, mail transport, and end-to-end flow).
+
+
+### 2026-11-03 — Customer order tracking decision (confirmed)
+
+- Customer tracking reference is `ATD-` plus **7 random characters**. Keep it seven characters; do not add a separate private-link/OTP mechanism just to reveal account details.
+- The short code should reopen the same purchased account details delivered after checkout/provisioning: username/password and customer-facing service label for every successful IBSng destination, with individual state shown for incomplete/failed targets.
+- Do not hide a created account's credentials merely because the customer used the short code rather than the legacy public ID. Internal IBSng server names, addresses, ports and admin credentials remain excluded.
+- Source currently decrypts and displays stored credentials for paid orders when at least one create attempt is `succeeded`; unsuccessful destinations are not presented as successful accounts. If account data cannot be decrypted, do not fabricate it.
+- This is the agreed product behavior. CI/source checks do not establish live database or provisioning verification.
