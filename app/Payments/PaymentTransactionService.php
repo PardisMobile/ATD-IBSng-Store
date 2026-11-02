@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/PaymentAmount.php';
+
 /**
  * Durable payment-transaction state transitions.
  *
@@ -32,13 +34,36 @@ final class PaymentTransactionService
         $this->pdo->beginTransaction();
         try {
             $query = $this->pdo->prepare(
-                'SELECT id, payment_status, order_status FROM orders WHERE id = ? FOR UPDATE'
+                'SELECT id, product_id, price_minor_snapshot, currency, payment_status, order_status FROM orders WHERE id = ? FOR UPDATE'
             );
             $query->execute([$orderId]);
             $order = $query->fetch(PDO::FETCH_ASSOC);
             if (!$order || $order['payment_status'] !== 'pending'
                 || $order['order_status'] !== 'pending_payment') {
                 throw new RuntimeException('Order is not eligible for payment initiation.');
+            }
+
+            if ($currency === 'USDT') {
+                $productQuery = $this->pdo->prepare('SELECT price_usdt FROM products WHERE id = ? LIMIT 1');
+                $productQuery->execute([(int)($order['product_id'] ?? 0)]);
+                $product = $productQuery->fetch(PDO::FETCH_ASSOC);
+                $expected = PaymentAmount::resolve('crypto', [], $product ?: null);
+            } else {
+                $expected = PaymentAmount::resolve('fiat', [
+                    'price_minor_snapshot' => $order['price_minor_snapshot'],
+                    'currency' => $order['currency'],
+                ]);
+            }
+            if ($expected['amount_minor'] !== $amountMinor || $expected['currency'] !== $currency) {
+                throw new RuntimeException('Payment amount/currency does not match the persisted order price.');
+            }
+
+            $active = $this->pdo->prepare(
+                "SELECT id FROM payment_transactions WHERE order_id = ? AND status IN ('initiated','pending') LIMIT 1 FOR UPDATE"
+            );
+            $active->execute([$orderId]);
+            if ($active->fetch(PDO::FETCH_ASSOC)) {
+                throw new RuntimeException('Order already has an active payment transaction.');
             }
 
             $insert = $this->pdo->prepare(
@@ -118,6 +143,13 @@ final class PaymentTransactionService
             }
 
             if ($transaction['status'] === 'verified') {
+                $samePayment = is_string($transaction['provider_reference'])
+                    && hash_equals((string)$transaction['provider_reference'], $reference)
+                    && (int)$transaction['amount_minor'] === $amount
+                    && strtoupper((string)$transaction['currency']) === $currency;
+                if (!$samePayment) {
+                    throw new RuntimeException('Replay does not match the already verified payment.');
+                }
                 $this->pdo->commit();
                 return false;
             }
