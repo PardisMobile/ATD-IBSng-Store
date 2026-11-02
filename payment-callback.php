@@ -37,7 +37,7 @@ $config = app_config();
 <section class="result-card panel">
 <?php if ($success): ?>
 <h1>پرداخت تأیید شد</h1>
-<div class="notice ok">پرداخت سفارش شما توسط درگاه تأیید شد.<br><strong>شناسه سفارش:</strong> <code><?= e($orderReference) ?></code><p>نتیجه فعال‌سازی سرویس جداگانه ثبت و پیگیری می‌شود.</p></div>
+<div class="notice ok">پرداخت سفارش شما توسط درگاه تأیید شد.<br><strong>شناسه سفارش:</strong> <code><?= e($orderReference) ?></code><p>نتیجه فعال‌سازی سرویس جداگانه ثبت و پیگیری می‌شود.</p><p><a class="button" href="<?= e(app_url('order-status.php?order=' . rawurlencode($orderReference))) ?>">پیگیری وضعیت فعال‌سازی</a></p></div>
 <?php else: ?>
 <h1>نتیجه پرداخت</h1>
 <div class="notice fail"><?= e($errorMessage) ?></div>
