@@ -114,14 +114,10 @@ final class PaymentFlow
             }
             return ['redirect_url' => $redirect, 'transaction_id' => $transactionId];
         } catch (Throwable $e) {
-            // A provider reference may already have been issued. Never mark such
-            // a transaction failed or automatically retry the external request.
-            try {
-                $transactions->failInitiation($transactionId);
-            } catch (Throwable) {
-                // Preserve the original error; the persisted transaction remains
-                // available for operator reconciliation if issuance was ambiguous.
-            }
+            // Once the outbound initiation call has started, its outcome may be
+            // ambiguous (for example, a provider created an invoice but its
+            // response timed out). Keep the transaction active and let an
+            // administrator reconcile it; do not release the order for retry.
             throw $e;
         }
     }
