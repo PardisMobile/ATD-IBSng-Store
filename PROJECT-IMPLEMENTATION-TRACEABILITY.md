@@ -518,3 +518,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The endpoint is outside `app/Payments/gateways/`, whose direct PHP files are auto-discovered as gateway adapters. No gateway discovery behavior was changed.
 - Updated `PROJECT-CONTEXT.md`, `docs/PAYMENT-ARCHITECTURE.md`, and `docs/PAYMENT-IRCrypto-Integration.md` to document this separation.
 - The handler's signature validation and PaymentFlow-based authoritative invoice verification were preserved. PHP lint, subdirectory/cPanel routing, and real provider webhook delivery remain unverified.
+
+
+### 2026-11-02 — Unified order tracking and email purchase recovery requirement
+
+**Status: PARTIALLY IMPLEMENTED IN SOURCE; EMAIL RECOVERY NOT IMPLEMENTED.**
+
+- Product decision recorded: one customer-facing area, “Order tracking and purchase recovery,” supports both the existing public order ID and email lookup. Both modes must resolve to the same order-detail view; do not create a separate email-recovery page.
+- The existing order-ID lookup and shared detail view are present in `order-status.php`. Per-IBSng-target provisioning status is rendered independently. The optional `service_name` is displayed as “Service name” only when non-empty; internal server connection details remain private.
+- Email lookup is not present. Email alone must not authorize access: require ownership verification by a one-time code/link sent to the submitted address before revealing associated orders/account data. Use generic initial responses to prevent order/email enumeration, plus expiry, attempt limits, and resend/rate limiting.
+- Email remains optional at checkout and the store must not add customer registration/login. Customers who omit email retain order-ID tracking.
+- Current implementation/test evidence: `tests/order-status-account-contract-test.php` covers optional service-name rendering and per-target credential visibility; it does not establish an email lookup or verification flow.
+- Follow-up implementation must use the existing shared order-detail presentation, avoid a duplicate recovery screen, and add tests for verification, authorization, expiry, throttling, and enumeration resistance. This entry records the agreed scope only; no code behavior or runtime test is claimed by this documentation update.
