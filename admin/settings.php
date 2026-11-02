@@ -97,7 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($paymentProvider !== '' && !in_array($paymentProvider, $gatewayCodes, true)) {
             $error = 'درگاه پرداخت انتخاب‌شده معتبر نیست.';
         } else {
-            foreach (($gatewayFields[$paymentProvider] ?? []) as $fieldKey => $field) {
+            if ($paymentProvider !== '') {
+                $configuredType = $gatewayPaymentTypes[$paymentProvider] ?? 'fiat';
+                $configuredCurrency = $configuredType === 'crypto' ? 'USDT' : 'IRR';
+                if (!in_array($configuredCurrency, $gatewayManager?->supportedCurrencies($paymentProvider) ?? [], true)) {
+                    $error = 'درگاه انتخاب‌شده از نوع ارز پرداخت تنظیم‌شده پشتیبانی نمی‌کند.';
+                }
+            }
+            foreach (($error === '' ? ($gatewayFields[$paymentProvider] ?? []) : []) as $fieldKey => $field) {
                 $fieldValue = (string)($gatewayValues[$paymentProvider][$fieldKey] ?? '');
                 if (($field['required'] ?? false) && $fieldValue === '') {
                     $error = 'فیلد الزامی درگاه پرداخت تکمیل نشده است: ' . (string)($field['label'] ?? $fieldKey);
