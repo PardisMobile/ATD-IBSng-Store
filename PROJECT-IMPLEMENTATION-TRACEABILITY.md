@@ -584,3 +584,10 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Updated default `purchase_success` template with credentials, successful destination labels, guide link, and order tracking link. Added public `guide.php` and its explicit router entry.
 - Customer-facing destination name only: uses configured `service_name`; no internal server name, address/port, or IBSng administrator credentials are included.
 - Verification outstanding: PHP lint, schema/migration execution, mail transport test, and full payment→provisioning→email end-to-end test. Failed-send retry/recovery is not implemented yet; the delivery record is durable and the error is logged.
+
+
+### 2026-11-03 — Failed delivery recovery and contract coverage
+
+- Admin provisioning view now lists customer email delivery records and offers explicit retry only for `failed` records. Claim logic conditionally changes failed→sending; sent/sending rows remain blocked by the unique key and state predicate.
+- Added `tests/customer-account-delivery-contract-test.php` for static behavior contracts.
+- Not yet runtime tested (PHP CLI, database, mail server, end-to-end flow unavailable in this review).
