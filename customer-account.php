@@ -35,16 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 try {
                     $data = $client->lookupUser($username);
-                    $state = $client->getRenewalState($username);
+                    $state = IBSngRenewalState::fromClient($client, $username);
                     $credentials = $client->getCredentials($username);
                     if (!hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
                         // Account username exists, but supplied IBSng account password is invalid.
                         continue;
                     }
+                    $groupName = trim((string)($data['group'] ?? ''));
+                    $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
+                    $planStmt->execute([(int)$server['id'], $groupName]);
+                    $planName = (string)($planStmt->fetchColumn() ?: '');
+
                     $matched[] = [
                         'server' => (string)($server['service_name'] ?: $server['name']),
                         'username' => $username,
-                        'group' => (string)($data['group'] ?? ''),
+                        // Customer-facing label is the Store plan name mapped to the exact IBSng group.
+                        'plan' => $planName,
                         'expiry' => (string)($state['nearest_exp_date'] ?? ''),
                         'remaining' => (int)($state['remaining_days'] ?? 0),
                         'expired' => (bool)($state['expired'] ?? false),
@@ -103,7 +109,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-grid">
 <div class="account-item"><small>نام کاربری</small><strong><?= e($item['username']) ?></strong></div>
 <div class="account-item"><small>سرویس</small><strong><?= e($item['server']) ?></strong></div>
-<div class="account-item"><small>گروه سرویس</small><strong><?= e($item['group'] !== '' ? $item['group'] : '—') ?></strong></div>
+<div class="account-item"><small>پلن</small><strong><?= e($item['plan'] !== '' ? $item['plan'] : '—') ?></strong></div>
 <div class="account-item"><small>وضعیت اعتبار</small><strong><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
 <div class="account-item"><small>تاریخ انقضا</small><strong><?= e($item['expiry'] !== '' ? $item['expiry'] : 'بدون تاریخ انقضای قابل نمایش') ?></strong></div>
 <div class="account-item"><small>روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?></strong></div>
