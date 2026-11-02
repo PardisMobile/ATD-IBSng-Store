@@ -21,6 +21,11 @@ final class ZarinpalGateway implements PaymentGateway
         return 'zarinpal';
     }
 
+    public function supportedCurrencies(): array
+    {
+        return ['IRR', 'IRT'];
+    }
+
     public function callbackReference(array $callback): string
     {
         return trim((string)($callback['Authority'] ?? ''));
