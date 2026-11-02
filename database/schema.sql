@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS product_server_groups (
 CREATE TABLE IF NOT EXISTS orders (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     public_id CHAR(32) NOT NULL,
+    tracking_code VARCHAR(20) NOT NULL,
     buyer_name VARCHAR(150) NOT NULL DEFAULT '',
     buyer_phone VARCHAR(40) NOT NULL DEFAULT '',
     buyer_email VARCHAR(190) NOT NULL DEFAULT '',
@@ -113,6 +114,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_order_public_id (public_id),
+    UNIQUE KEY uq_order_tracking_code (tracking_code),
     UNIQUE KEY uq_order_idempotency (idempotency_key),
     KEY idx_order_status_created (order_status, created_at),
     CONSTRAINT fk_orders_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
