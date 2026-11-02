@@ -4,7 +4,7 @@
 
 PaymentManager is the single registry and dispatcher for payment modules. No provider is selected on a fresh install; an empty payment_provider setting means payment is disabled. Each adapter implements PaymentGateway; its optional configurationFields() metadata drives the admin settings UI and validation. Provider-specific values are stored as payment_<provider-code>_<field-key> and passed generically to the adapter.
 
-Trusted adapter registrations belong in app/Payments/providers.php, which PaymentManager loads consistently for checkout, callback verification, and admin settings. Register an adapter with PaymentManager::registerGateway('<code>', AdapterClass::class), or require a local provider module that performs this registration. This file is an extension hook—not a second registry; PaymentManager remains the single registry and dispatcher. The adapter code must match the registration key. Keep provider secrets server-side and never trust callback values as payment proof.
+Register additional adapters with PaymentManager::registerGateway('<code>', AdapterClass::class) during trusted application bootstrap. There is no second provider registry file. The adapter code must match the registration key. Keep provider secrets server-side and never trust callback values as payment proof.
 
 Zarinpal is currently a built-in adapter, not a payment-core default. Adding a gateway requires its adapter, trusted registration, and adapter-level tests. Runtime credentials and live gateway sandbox checks are deployment verification tasks.
 
