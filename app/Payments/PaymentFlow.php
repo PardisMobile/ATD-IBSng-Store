@@ -137,13 +137,31 @@ final class PaymentFlow
                 ],
             ]
         );
-        $confirmed = (new PaymentTransactionService($pdo))->confirmVerified(
-            (int)$transaction['id'],
-            $verification
-        );
+        $transactionService = new PaymentTransactionService($pdo);
+        if (($verification['verified'] ?? false) !== true) {
+            // A matching Authority with a non-OK provider callback represents
+            // cancellation/failure, never payment proof. It may safely release
+            // the active slot so the buyer can start a fresh attempt.
+            if (strtoupper(trim((string)($callback['Status'] ?? ''))) !== 'OK') {
+                $transactionService->markFailed(
+                    (int)$transaction['id'],
+                    $reference,
+                    ['callback_status' => (string)($callback['Status'] ?? '')]
+                );
+            }
+            return [
+                'confirmed' => false,
+                'paid' => false,
+                'order_id' => (int)$transaction['order_id'],
+                'order_public_id' => (string)$transaction['order_public_id'],
+            ];
+        }
+
+        $confirmed = $transactionService->confirmVerified((int)$transaction['id'], $verification);
 
         return [
             'confirmed' => $confirmed,
+            'paid' => true,
             'order_id' => (int)$transaction['order_id'],
             'order_public_id' => (string)$transaction['order_public_id'],
         ];
