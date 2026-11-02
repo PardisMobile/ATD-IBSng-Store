@@ -147,7 +147,7 @@ $config = app_config();
 <hr>
 <h2>نمایش قیمت کریپتو</h2>
 <p class="hint">این گزینه صرفاً نمایش قیمت مستقل USDT را فعال می‌کند. تا زمان اتصال و فعال‌سازی واقعی درگاه کریپتو، آن را خاموش نگه دارید.</p>
-<div class="field"><label><input type="checkbox" name="crypto_gateway_enabled" value="1"<?= $cryptoDisplayEnabled ? ' checked' : '' ?>> درگاه کریپتو فعال است؛ قیمت USDT در فروشگاه نمایش داده شود</label></div>
+<div class="field"><label><input type="checkbox" name="crypto_gateway_enabled" value="1"<?= $cryptoDisplayEnabled ? ' checked' : '' ?>> نمایش قیمت USDT (این گزینه پرداخت کریپتو را فعال نمی‌کند)</label></div>
 <hr>
 <h2>سیاست هدیهٔ تمدید IBSng</h2>
 <p class="hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
