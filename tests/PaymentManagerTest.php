@@ -26,6 +26,7 @@ foreach (['', 'unknown-provider', '../zarinpal'] as $invalidProvider) {
 final class TestPaymentGateway implements PaymentGateway
 {
     public function code(): string { return 'testgateway'; }
+    public function callbackReference(array $callback): string { return trim((string)($callback['transaction_id'] ?? '')); }
     public function initiate(array $order, array $settings): array
     {
         return ['redirect_url' => 'https://gateway.example/pay', 'provider_reference' => 'test-ref'];
