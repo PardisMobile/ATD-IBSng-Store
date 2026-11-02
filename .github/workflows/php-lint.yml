@@ -30,6 +30,9 @@ jobs:
       - name: Run payment manager allowlist test
         run: php tests/PaymentManagerTest.php
 
+      - name: Run customer order account display contract test
+        run: php tests/order-status-account-contract-test.php
+
       - name: Run IBSng lookup contract test
         run: php tests/ibsng-lookup-contract-test.php
 
