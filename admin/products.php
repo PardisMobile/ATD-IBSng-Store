@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $pdo->beginTransaction();
-                $validateMapping = $pdo->prepare('SELECT id FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
+                $validateMapping = $pdo->prepare('SELECT g.id FROM ibsng_groups g JOIN ibsng_servers s ON s.id=g.server_id WHERE g.id=? AND g.server_id=? AND g.is_active=1 AND s.is_active=1');
                 foreach ($mappingPairs as $serverId => $groupId) {
                     $validateMapping->execute([$groupId, $serverId]);
                     if (!$validateMapping->fetchColumn()) throw new InvalidArgumentException('یکی از نگاشت‌های گروه IBSng فعال نیست یا به سرور انتخاب‌شده تعلق ندارد.');
