@@ -360,3 +360,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Adding a provider requires its adapter file and one allowlist entry in `PaymentManager.php`. No separate registry file or filesystem-wide auto-discovery is used.
 - This keeps the adapter modules independent without multiplying manager/registry files. Payment settings UI, checkout initiation, callback route, transaction persistence, idempotent paid transition, provisioning integration, automated tests, PHP lint, and live/sandbox validation remain open.
 - Simplification commits on `main`: manager `c999ea62ec4077025c4ece90f5c4ebefd4ce8ed3`; registry removal `9d917837f98bcc6d19af92f7827b7f451677c392`. Earlier registry commits remain in history but their implementation was superseded.
+
+
+### 2026-11-02 — Pricing policy foundation (display unit + independent USDT catalog price)
+
+**Status: SOURCE CHANGES ON `main`; NOT YET RUNTIME-VERIFIED; PAYMENT FLOW REMAINS OPEN.**
+
+- Added `app/Pricing.php` as the shared formatter for storefront catalog, checkout summary, and admin product list.
+- Store setting `price_display_unit` accepts only `IRT` (Toman) or `IRR` (Rial). Missing setting defaults to Toman, including existing installations until the setting is explicitly changed.
+- Display conversion is presentation-only: IRR↔IRT uses the fixed 10:1 relation. Product base values and already-created order price/currency snapshots are not rewritten. Checkout continues to snapshot the stored base amount/currency.
+- Added nullable `products.price_usdt DECIMAL(18,8)` as a separately maintained per-product crypto price; it is not calculated from an FX rate. Product admin validates positive decimal input up to eight decimal places. The public catalog does not expose this value before a crypto gateway is enabled.
+- Fresh installs receive the default through `database/schema.sql`. Existing installations must back up their database and run `database/migrations/2026-11-02-pricing-policy.sql` once; this is a manual schema upgrade and is not silently run by the site.
+- Still open before gateway completion: crypto gateway enablement/configuration, deciding provider-specific transaction amount/currency from the selected payment method, transaction persistence, callback verification/idempotency, order payment status transitions, and tests. Do not treat the current price UI/storage changes as payment implementation.
+- No PHP lint, automated test suite, database migration, or runtime checkout test has been executed as part of this source update.
