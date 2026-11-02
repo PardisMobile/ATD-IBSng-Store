@@ -118,6 +118,29 @@ final class PaymentTransactionService
     }
 
     /**
+     * Record a provider-declared cancellation/failure without ever treating it
+     * as payment proof. The provider reference must match the stored transaction.
+     */
+    public function markFailed(int $transactionId, string $providerReference, ?array $result = null): bool
+    {
+        $providerReference = trim($providerReference);
+        if ($transactionId < 1 || $providerReference === '') {
+            throw new InvalidArgumentException('Failed payment reference is invalid.');
+        }
+
+        $raw = $result !== null
+            ? json_encode($result, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
+            : null;
+        $stmt = $this->pdo->prepare(
+            "UPDATE payment_transactions
+             SET status = 'failed', raw_result_json = ?
+             WHERE id = ? AND provider_reference = ? AND status IN ('initiated','pending')"
+        );
+        $stmt->execute([$raw, $transactionId, $providerReference]);
+        return $stmt->rowCount() === 1;
+    }
+
+    /**
      * Atomically record a provider-verified payment exactly once.
      *
      * The caller must have verified with the gateway using this persisted
