@@ -40,7 +40,6 @@ function support_valid_custom_url(string $value): bool
 }
 
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
-    $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 
 $renewalValues = [
@@ -107,6 +106,7 @@ if ($error !== '') {
     // Keep entered values visible after a validation failure.
 } else {
     $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
+    $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
     foreach ($values as $key => $value) {
         $values[$key] = support_setting($pdo, $key);
     }
