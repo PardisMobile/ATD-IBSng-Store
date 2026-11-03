@@ -1117,4 +1117,13 @@
 
 - Generated username random suffix length and generated password length are both configured within 4–12 characters; the previous generated-password bounds of 8–64 were tightened to 4–12.
 - Checkout method labels are now exactly: `نام کاربری و رمز عبور دلخواه` and `نام کاربری و رمز عبور اتوماتیک`.
-- These length settings apply to generated credentials. Customer-entered/manual password validation remains separate (currently 8–200 characters) unless a later requirement explicitly changes it.
+- These length settings apply to generated credentials. Customer-entered/manual password validation is also 4–12 characters, per the later user clarification.
+
+
+### 2026-11-03 — Admin password recovery by email
+
+- Added a forgotten-password link to admin login and public request/reset pages. Request responses are generic regardless of whether the email matches an active admin, preventing account enumeration.
+- Recovery tokens are cryptographically random, stored only as SHA-256 hashes, expire after 30 minutes, and are single-use. A successful reset updates the admin password hash and invalidates outstanding reset tokens.
+- Request throttling is applied per requester IP in the database. Recovery email uses the configured host-mail sender and the registered admin email.
+- Added the reset-token table to fresh schema and a standalone migration for existing installs.
+- Source implementation committed; PHP lint, migration execution, host-mail delivery and end-to-end browser flow remain to be verified in a live runtime.
