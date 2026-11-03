@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>تنظیمات ایمیل | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_admin_email_settings">تنظیمات ایمیل | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .admin-shell{width:min(850px,calc(100% - 32px));margin:0 auto;padding-bottom:30px}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:24px 0}.panel-card{padding:clamp(18px,4vw,30px);margin:18px 0}.field{display:grid;gap:8px;margin:16px 0}.field label{color:var(--muted)}.field input{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md);background:var(--control-bg);color:var(--text);font:inherit;min-height:var(--ui-control-height)}.field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.field input::placeholder{color:var(--muted)}.field input[type=email]{direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.hint{font-size:.88rem;line-height:1.8;color:var(--muted)}.notice{padding:13px 15px;border-radius:12px;margin:14px 0}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
@@ -86,21 +86,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>">بازگشت به داشبورد</a></header>
+<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_settings_admin">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_settings_back">بازگشت به داشبورد</a></header>
 <section class="panel panel-card">
-<div class="eyebrow">ارتباط با مشتری</div><h1>تنظیمات ارسال ایمیل</h1>
-<p class="hint">ارسال با mail() سرویس ایمیل هاست انجام می‌شود؛ تنظیم SMTP جداگانه لازم نیست. برای تحویل بهتر، دامنه و فرستنده باید در هاست مجاز و دارای تنظیمات DNS ایمیل مناسب باشند. این صفحه ایمیل تست می‌فرستد و تحویل نهایی را تضمین نمی‌کند.</p>
+<div class="eyebrow" data-ui-text="email_settings_customer">ارتباط با مشتری</div><h1 data-ui-text="email_settings_title">تنظیمات ارسال ایمیل</h1>
+<p class="hint" data-ui-text="email_settings_intro">ارسال با mail() سرویس ایمیل هاست انجام می‌شود؛ تنظیم SMTP جداگانه لازم نیست. برای تحویل بهتر، دامنه و فرستنده باید در هاست مجاز و دارای تنظیمات DNS ایمیل مناسب باشند. این صفحه ایمیل تست می‌فرستد و تحویل نهایی را تضمین نمی‌کند.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
-<div class="field"><label for="from_address">ایمیل فرستنده</label><input id="from_address" type="email" name="from_address" required maxlength="190" value="<?= e($settings['email_from_address']) ?>" placeholder="noreply@example.com"></div>
-<div class="field"><label for="from_name">نام نمایشی فرستنده</label><input id="from_name" name="from_name" required maxlength="150" value="<?= e($settings['email_from_name']) ?>" placeholder="نام فروشگاه"></div>
-<div class="actions"><button class="button" type="submit" name="action" value="save">ذخیره تنظیمات</button></div>
+<div class="field"><label for="from_address" data-ui-text="email_settings_from_address">ایمیل فرستنده</label><input id="from_address" type="email" name="from_address" required maxlength="190" value="<?= e($settings['email_from_address']) ?>" placeholder="noreply@example.com"></div>
+<div class="field"><label for="from_name" data-ui-text="email_settings_from_name">نام نمایشی فرستنده</label><input id="from_name" name="from_name" required maxlength="150" value="<?= e($settings['email_from_name']) ?>" placeholder="نام فروشگاه"></div>
+<div class="actions"><button class="button" type="submit" name="action" value="save" data-ui-text="email_settings_save">ذخیره تنظیمات</button></div>
 <hr>
-<h2>ارسال ایمیل تست</h2>
-<div class="field"><label for="test_to">ارسال به این ایمیل</label><input id="test_to" type="email" name="test_to" maxlength="190" placeholder="you@example.com"></div>
-<div class="actions"><button class="button" type="submit" name="action" value="test">ذخیره و ارسال تست</button><a class="button" href="<?= e(app_url('admin/email-templates.php')) ?>">مدیریت قالب‌ها</a></div>
+<h2 data-ui-text="email_settings_test_title">ارسال ایمیل تست</h2>
+<div class="field"><label for="test_to" data-ui-text="email_settings_test_to">ارسال به این ایمیل</label><input id="test_to" type="email" name="test_to" maxlength="190" placeholder="you@example.com"></div>
+<div class="actions"><button class="button" type="submit" name="action" value="test" data-ui-text="email_settings_send_test">ذخیره و ارسال تست</button><a class="button" href="<?= e(app_url('admin/email-templates.php')) ?>" data-ui-text="email_settings_manage_templates">مدیریت قالب‌ها</a></div>
 </form>
 </section>
 </main>
