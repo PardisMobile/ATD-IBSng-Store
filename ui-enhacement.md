@@ -938,3 +938,10 @@ The following UI-only changes have been committed to `main`:
 
 - Added English copy for the renewal schema upgrade explanation, ready/not-ready states, product-duration follow-up link, database upgrade action, confirmation prompt, and browser title.
 - The migration itself, idempotency, schema checks, renewal ledger, default gift settings, and product-duration values are unchanged. Source review only; no migration was run and browser QA remains pending.
+
+
+### UI implementation note — admin password recovery English localization (2026-11-03)
+
+- Added English copy for the administrator forgot-password and reset-password pages, including titles, email/password fields, success/invalid-link states, and navigation actions.
+- Generic recovery and reset validation feedback now uses the shared bilingual message catalog, so server-rendered notices follow the selected locale cookie.
+- Password-reset token issuance, expiry, one-time use, email transport, CSRF, password constraints, and credential updates are unchanged. No recovery email was sent and no password was reset; browser QA remains pending.
