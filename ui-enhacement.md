@@ -295,3 +295,54 @@ This section preserves the screenshot-specific audit table as concrete, page-by-
 - **انیمیشن:** به‌ویژه انیمیشن لوگو؛ محدوده اجرای آن باید خود لوگو باشد و روی wrapper یا سطح مستطیلی اطراف پخش نشود.
 
 The table and checklist above are the specific screenshot-derived items requested by the project owner. Keep them intact as a traceable checklist; do not replace them with a high-level summary.
+
+
+## 18. Theme modes and user-selectable color schemes — required
+
+This requirement is explicit and applies to the public storefront and the administration UI. It is not satisfied by merely having a light and a dark theme or by changing a single accent-colored button.
+
+### Theme mode palettes
+
+Implement a complete, coherent palette for both modes using shared design tokens:
+
+| Token / role | Light mode (Windows 11-inspired) | Dark mode (modern) |
+|---|---|---|
+| Page background | `#F3F6FC` | `#0B1020` |
+| Main surface / cards | `#FFFFFF` | `#151D30` |
+| Primary text | `#0F172A` | `#F1F5F9` |
+| Secondary text | `#64748B` | `#A7B3C8` |
+| Borders / separators | `#E2E8F0` | `#293449` |
+| Default accent (initial scheme) | `#2563EB` | `#7AA7FF` |
+| Complementary accent | `#0D9488` | `#42D6B0` |
+
+These are initial design values; tune contrast and component states during implementation while retaining the intended Windows 11-inspired light and contemporary dark appearance.
+
+### Accent/color-scheme selection
+
+- Provide a clear user-facing color-scheme picker, not just a light/dark toggle.
+- Offer multiple cohesive accent choices (for example: blue, violet, teal/green, rose, and amber) with visible color swatches and a selected state.
+- Selecting a scheme must update the complete UI through CSS design tokens: primary/secondary buttons, links, active navigation and tabs, focus rings, selected controls, highlights, and other accent-dependent components across storefront and admin pages.
+- Keep semantic colors for success, warning, error, and informational states distinct from the chosen accent so status meaning and accessibility remain clear.
+- Verify accessible contrast for text, controls, hover/focus/disabled states in every supported mode and scheme.
+
+### Persistence and global behavior
+
+- Theme mode and accent scheme must persist across page navigation and subsequent visits; use the project’s appropriate preference mechanism without changing business logic or database schema.
+- Apply the same design system consistently to public pages, checkout, order tracking/recovery, account details, admin pages, and installer UI where applicable.
+- Avoid flashes of the wrong theme on initial page load where feasible.
+- Respect reduced-motion preferences; color selection must not depend on animation.
+
+### Theme and language controls
+
+- Make theme mode and color scheme discoverable and easy to change through consistent controls.
+- Keep language selection as a separate, explicit control: Persian must use RTL and English must use LTR, with the selected language consistently reflected in page language, direction, labels, and dynamic UI.
+- Do not treat the language selector as a substitute for the color-scheme picker; both are required.
+
+### Acceptance criteria
+
+- [ ] Light and dark palettes are fully applied across the storefront and administration UI.
+- [ ] User can switch among multiple accent/color schemes; the change is visibly applied throughout the interface.
+- [ ] Theme mode and selected color scheme persist after navigation and reload.
+- [ ] Language selection remains independent and correctly switches Persian/RTL and English/LTR.
+- [ ] Semantic status colors remain meaningful and readable in all themes.
+- [ ] Theme controls and all palette states are included in responsive and accessibility QA.
