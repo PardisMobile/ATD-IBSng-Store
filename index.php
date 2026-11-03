@@ -81,7 +81,7 @@ function store_bytes_label(?string $bytes): string
   <main class="store-shell">
     <header class="topbar">
       <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
-      <nav class="hero-actions" aria-label="دسترسی مشتری"><a class="button" href="<?= e(app_url('customer-account.php')) ?>">مشاهده حساب IBSng</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><span class="status-chip">فروشگاه سرویس‌های IBSng</span></nav>
+      <nav class="hero-actions" aria-label="دسترسی مشتری"><a class="button" href="<?= e(app_url('customer-account.php')) ?>">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><span class="status-chip">فروشگاه سرویس‌ها</span></nav>
     </header>
     <section class="hero panel">
       <div class="eyebrow">ATD • IBSng</div>
@@ -120,5 +120,6 @@ function store_bytes_label(?string $bytes): string
     </section>
     <footer>© <?= date('Y') ?> <?= e($pageTitle) ?> · <a class="admin-link" href="<?= e(app_url('admin/login.php')) ?>">ورود مدیریت</a></footer>
   </main>
+  <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body>
 </html>
