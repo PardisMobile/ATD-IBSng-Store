@@ -613,3 +613,10 @@ The following UI-only changes have been committed to `main`:
 - Updated subject, event selector, and template editor controls to use shared theme-aware control colors, consistent radius/height, and visible keyboard focus styling instead of fixed dark surfaces.
 - Kept HTML/plain-text editors LTR and monospaced, enabled deliberate vertical resizing, and constrained editor sizing to prevent narrow-screen overflow.
 - Made the preview frame width-safe with a viewport-aware height range. Template event selection, save/preview POST behavior, escaping, and email rendering remain unchanged. Browser/viewport QA remains pending.
+
+
+### UI implementation note — admin sign-in form (2026-11-03)
+
+- Made the sign-in card width-safe on narrow screens and aligned its spacing with the shared responsive sizing conventions.
+- Username/password controls now use shared control height/radius, theme-aware backgrounds, and a visible keyboard-focus ring; inputs are border-box and cannot expand the card.
+- Login form, autocomplete attributes, CSRF protection, credential validation, and password-reset link are unchanged. Browser/viewport QA remains pending.
