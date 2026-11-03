@@ -189,6 +189,7 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
 .top .atd-preferences button{width:42px;min-width:42px;height:42px;min-height:42px;padding:10px;border-radius:11px}
 .top .atd-preferences .atd-pref-language span{font-size:.72rem;font-weight:700}
 .top .atd-palette-popover{display:flex;align-items:center;gap:9px;min-width:max-content;padding:12px}
+.top .atd-palette-popover[hidden]{display:none!important}
 .top .atd-palette-popover .atd-swatch{display:block!important;box-sizing:border-box;width:30px!important;min-width:30px!important;height:30px!important;min-height:30px!important;padding:3px!important;border:1px solid var(--border)!important;border-radius:50%!important;flex:0 0 30px!important}
 .top .atd-palette-popover .atd-swatch span{display:block;width:100%;height:100%;border-radius:50%;background:var(--swatch)}
 .top .atd-palette-popover .atd-swatch[aria-pressed="true"]{outline:2px solid var(--text);outline-offset:2px}
@@ -197,7 +198,7 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
 </head>
 <body>
 <main class="setup panel">
- <div class="top"><div class="brand"><div class="mark">ATD</div><div><div class="eyebrow"><?= install_e(it('tag')) ?></div><strong>ATD IBSng Store</strong></div></div>
+ <div class="top"><div class="brand"><div class="mark">ATD</div><div><strong>ATD IBSng Store Script</strong></div></div>
 </div>
  <div class="progress" aria-hidden="true"><span></span><span></span><span></span></div>
  <div class="eyebrow"><?= install_e(it('step')) ?></div><h1><?= install_e(it('title')) ?></h1><p class="muted"><?= install_e(it('intro')) ?></p>
