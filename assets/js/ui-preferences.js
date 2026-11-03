@@ -72,10 +72,15 @@
       title_admin_products: 'Product management',
       title_admin_settings: 'Support settings',
       title_admin_orders: 'Sales report',
-      title_admin_ibsng_groups: 'IBSng plan and group mapping'
+      title_admin_ibsng_groups: 'IBSng plan and group mapping',
+      title_admin_ibsng_servers: 'IBSng servers'
     },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
+      server_title: 'IBSng servers',
+      server_intro: 'Connection testing performs a real login to the Web Panel. The password is stored encrypted in the database.',
+      server_add_heading: 'Add server',
+      server_default_label: '· Default',
       server_management_title: 'IBSng server management',
       server_host_label: 'Host or IP (without http or path)',
       server_web_panel_port: 'Web Panel port',
