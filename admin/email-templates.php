@@ -64,7 +64,7 @@ $config = app_config();
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_templates_admin">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_templates_back">بازگشت به داشبورد</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow" data-ui-text="email_templates_customer">ارتباط با مشتری</div><h1 data-ui-text="email_templates_title">مدیریت قالب‌های ایمیل</h1>
 <p class="hint" data-ui-text="email_templates_variables">قالب‌ها مستقل از روش ارسال هستند. متغیرهای قابل استفاده در قالب: {{site_name}}، {{customer_name}}، {{order_id}}، {{order_url}}، {{verification_code}}، {{expires_in}}، {{verification_url}}، {{expiration_date}} و {{service_url}}. متغیرهای نامرتبط با یک رویداد در آن رویداد مقدار ندارند.</p>
