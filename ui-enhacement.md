@@ -854,3 +854,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for the dashboard navigation, support link, dashboard welcome/introduction, database-statistics error, metric labels, catalog-management summary, and storefront return link.
 - Dashboard navigation and statistics regions now expose localized accessible names as well as visible copy. Existing destinations, logout POST/CSRF form, database statistics, and administration operations remain unchanged.
 - Source review only; browser and responsive visual QA remains pending.
+
+
+### UI implementation note — product administration English localization (2026-11-03)
+
+- Added English copy to the product editor's core fields, pricing/USDT guidance, IBSng server/group mapping controls, helper text, publication state, saved product cards, and their routine actions.
+- Dynamic active/inactive state and product validity duration labels follow the selected language. The duplicate-server and delete confirmation prompts now use the active locale, while retaining their existing native dialog behavior and action flow.
+- Product persistence, validation rules, server/group mapping constraints, CSRF, product queries, and store publication behavior were not changed. Validation/error copy is not yet fully translated; browser QA and operation-state verification remain pending.
