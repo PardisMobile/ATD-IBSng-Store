@@ -1579,3 +1579,68 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 
 /* Shared brand treatment on both storefront and administration shells. */
 .storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}.storefront-brand-mark{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;position:relative;overflow:hidden;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-strong,var(--accent)),var(--accent-soft,var(--accent)));color:#fff}.storefront-brand-mark svg{display:block;width:100%;height:100%;position:relative;z-index:0}.storefront-brand-mark:after{content:"";position:absolute;inset:-70%;z-index:1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffffff55 50%,transparent 60%);transform:translateX(-80%) rotate(10deg);animation:storefrontLogoShine 7s ease-in-out infinite}.storefront-brand-title{position:relative;display:inline-block;isolation:isolate;overflow:hidden;max-width:100%;border-radius:2px}.storefront-brand-title:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(108deg,transparent 0%,transparent 38%,rgba(255,255,255,.08) 44%,rgba(255,255,255,.72) 50%,rgba(255,255,255,.12) 56%,transparent 63%,transparent 100%);transform:translateX(-125%);animation:storefrontBrandTextShine 5.8s ease-in-out infinite}@keyframes storefrontLogoShine{0%,65%,100%{transform:translateX(-80%) rotate(10deg)}80%{transform:translateX(80%) rotate(10deg)}}@keyframes storefrontBrandTextShine{0%,66%{transform:translateX(-125%)}100%{transform:translateX(125%)}}@media(prefers-reduced-motion:reduce){.storefront-brand-title:after,.storefront-brand-mark:after{animation:none;display:none}}
+
+
+/* Final canonical navigation contract: menu actions use the same .button
+   foundation as Account Services; layout classes must never restyle states. */
+.atd-store-nav .atd-store-nav-link,
+.atd-admin-nav .atd-admin-nav-link {
+  min-height:var(--atd-button-min-height,44px);
+  padding:10px 15px;
+  border:1px solid var(--atd-button-border,var(--border));
+  border-radius:var(--atd-button-radius,14px);
+  background:var(--atd-button-bg,var(--surface-2));
+  color:var(--atd-button-fg,var(--text));
+  font:inherit;
+  font-weight:700;
+  line-height:1.45;
+  text-decoration:none;
+  box-shadow:none;
+  transition:color .16s ease,background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+}
+.atd-store-nav .atd-store-nav-link:hover,
+.atd-admin-nav .atd-admin-nav-link:hover:not(:disabled) {
+  background:var(--atd-button-hover-bg,var(--surface-2));
+  color:var(--atd-button-fg,var(--text));
+  border-color:var(--atd-button-hover-border,var(--accent));
+  transform:translateY(-1px);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--accent) 10%,transparent);
+}
+.atd-store-nav .atd-store-nav-link:active,
+.atd-admin-nav .atd-admin-nav-link:active:not(:disabled) {
+  background:var(--atd-button-active-bg,var(--surface-2));
+  transform:translateY(0) scale(.985);
+  box-shadow:none;
+}
+.atd-store-nav .atd-store-nav-link:focus-visible,
+.atd-admin-nav .atd-admin-nav-link:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  box-shadow:0 0 0 4px var(--ui-focus-ring,color-mix(in srgb,var(--accent) 16%,transparent));
+}
+.atd-store-nav .atd-store-nav-link[aria-current="page"],
+.atd-admin-nav .atd-admin-nav-link[aria-current="page"] {
+  color:var(--accent-foreground,#fff);
+  background:var(--accent);
+  border-color:transparent;
+  box-shadow:0 7px 20px var(--ui-focus-ring,color-mix(in srgb,var(--accent) 18%,transparent));
+}
+.atd-store-nav .atd-store-nav-link[aria-current="page"]:hover,
+.atd-admin-nav .atd-admin-nav-link[aria-current="page"]:hover {
+  color:var(--accent-foreground,#fff);
+  background:color-mix(in srgb,var(--accent) 90%,white 10%);
+}
+.atd-store-nav .atd-store-nav-link svg { width:18px;height:18px;flex:0 0 18px; }
+.atd-admin-nav .atd-admin-logout { display:inline-flex;flex:1 1 145px;margin:0; }
+.atd-admin-nav .atd-admin-logout .atd-admin-nav-link { width:100%; }
+.atd-admin-header-top .atd-admin-preferences-slot { display:flex;align-items:center;justify-content:flex-end; }
+.atd-shared-header-top .atd-shared-preferences-slot { display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-inline-start:auto; }
+.atd-store-animated-header { min-height:190px; }
+@media(max-width:620px) {
+  .atd-store-nav .atd-store-nav-link,.atd-admin-nav .atd-admin-nav-link { width:100%;min-height:44px; }
+  .atd-shared-header-top .atd-shared-preferences-slot { margin-inline-start:auto; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .atd-store-nav .atd-store-nav-link,.atd-admin-nav .atd-admin-nav-link { transition:none!important; }
+  .atd-store-nav .atd-store-nav-link:hover,.atd-admin-nav .atd-admin-nav-link:hover { transform:none!important; }
+}
