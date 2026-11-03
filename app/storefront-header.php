@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 $storeHeaderConfig = isset($config) && is_array($config) ? $config : app_config();
 $storeHeaderTitle = (string)($storeHeaderConfig['site_title'] ?? 'ATD IBSng Store');
 ?>
