@@ -210,10 +210,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top">
-<a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a>
-<nav><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a><button class="button lang-toggle" id="langToggle" type="button" aria-label="Switch language">English</button></nav>
-</header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng</div><h1 style="font-size:2rem" data-ui-text="server_title">سرورهای IBSng</h1>
 <p class="muted" data-ui-text="server_intro">در این مرحله، تست اتصال با ورود واقعی به Web Panel انجام می‌شود. رمز عبور در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</p>
