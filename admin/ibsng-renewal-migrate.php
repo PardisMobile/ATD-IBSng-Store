@@ -114,5 +114,6 @@ $config = app_config();
 <?php endif; ?>
 </section>
 </main>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body>
 </html>
