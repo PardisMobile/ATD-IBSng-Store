@@ -825,3 +825,11 @@ The following UI-only changes have been committed to `main`:
 - `app/messages.php` now resolves the default display locale from that validated cookie, while callers that explicitly pass a locale keep their existing behavior. This lets existing server-rendered checkout validation/status messages use the selected language without changing their keys or business decisions.
 - Checkout's static customer-facing copy now has localization keys for its heading, navigation, order confirmation, tracking action, buyer fields, credential method choices, notices, and submit action. The shared language preference applies English copy and restores Persian copy when switched back; configured product names and store title remain as entered.
 - Source review confirmed this work is limited to presentation/localization. Browser interaction, real form-submit language persistence, and responsive visual QA have not yet been run.
+
+
+### UI implementation note — order recovery and order-status English localization (2026-11-03)
+
+- Added English presentation copy for the unified order lookup/email recovery page: both entry paths, verification step, order-history labels, tracking ID placeholder, and order actions.
+- Added English copy for order status details, payment/order states, account attributes, quota units, password disclosure, and activation-status labels. Dynamic status values use explicit status keys rather than translating arbitrary user/server data.
+- Hard-coded order-recovery feedback now resolves through the shared bilingual message catalog, which follows the persisted locale cookie. Order lookup queries, email verification, CSRF, session expiry, payment/provisioning state, and account data are unchanged.
+- Source-level checks only. Browser-based English/RTL/LTR and responsive QA, including recovery-code submissions and real order states, remains outstanding.
