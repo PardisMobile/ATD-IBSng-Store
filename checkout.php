@@ -225,7 +225,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <title>ثبت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.checkout-shell{width:min(760px,calc(100% - 32px));margin:0 auto}.checkout-card{padding:clamp(20px,4vw,34px);margin:24px 0}.field{display:grid;gap:8px;margin:16px 0}.field label{color:var(--muted)}.field input{width:100%;min-width:0;padding:13px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;line-height:1.6;transition:border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}.field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.field input::placeholder{color:var(--muted);opacity:.75}.notice{padding:15px;border:1px solid var(--border);border-radius:14px;margin:16px 0;line-height:1.85}.error{border-color:#ff718055;background:#ff718012}.success{border-color:#44d6a055;background:#44d6a012}.price{font-size:1.6rem;font-weight:800}.muted{color:var(--muted);line-height:1.8}
+.checkout-shell{width:min(760px,calc(100% - 32px));margin:0 auto}
+.checkout-card{padding:clamp(20px,4vw,34px);margin:24px 0}
+.checkout-card h1{margin:8px 0 14px;line-height:1.45;overflow-wrap:anywhere}
+.checkout-card .eyebrow{font-size:.82rem;font-weight:800;letter-spacing:.02em}
+.checkout-card form{display:grid;gap:4px}
+.checkout-card .field{display:grid;gap:8px;margin:12px 0}
+.checkout-card .field>label{color:var(--muted);font-weight:700}
+.checkout-card .field input{box-sizing:border-box;width:100%;min-width:0;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;line-height:1.6;transition:border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}
+.checkout-card .field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}
+.checkout-card .field input::placeholder{color:var(--muted);opacity:.75}
+.checkout-card .field input[type=radio]{width:18px;min-height:18px;height:18px;flex:0 0 18px;margin:0;accent-color:var(--accent)}
+.checkout-card .field:has(input[type=radio])>label:not(:first-child){display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--surface-2);color:var(--text);font-weight:600}
+.checkout-card .notice{padding:14px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:14px 0;line-height:1.85;overflow-wrap:anywhere}
+.checkout-card .error{border-color:color-mix(in srgb,var(--danger,#dc2626) 35%,transparent);background:color-mix(in srgb,var(--danger,#dc2626) 7%,transparent)}
+.checkout-card .success{border-color:color-mix(in srgb,var(--success,#16a34a) 35%,transparent);background:color-mix(in srgb,var(--success,#16a34a) 7%,transparent)}
+.checkout-card .price{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:8px;font-size:clamp(1.45rem,5vw,1.8rem);font-weight:800;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
+.checkout-card .muted{color:var(--muted);line-height:1.85}
+.checkout-card form>.button[type=submit]{width:100%;justify-content:center;margin-top:8px}
+.checkout-card .topbar{gap:12px}
+@media(max-width:560px){
+ .checkout-shell{width:calc(100% - 20px)}
+ .checkout-card{margin:14px 0;padding:clamp(16px,5vw,22px);border-radius:16px}
+ .checkout-card .notice{padding:12px 14px}
+ .checkout-card form>.button[type=submit]{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){.checkout-card *{transition:none!important}}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
