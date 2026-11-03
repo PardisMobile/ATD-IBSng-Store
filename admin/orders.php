@@ -69,8 +69,8 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <body><main class="admin-shell">
 <header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></header>
 <section class="panel report"><div class="eyebrow">گزارشات</div><h1>گزارش خرید و فروش</h1><p class="muted">فروش بر اساس سفارش‌هایی محاسبه می‌شود که وضعیت پرداخت آن‌ها «پرداخت‌شده» است. سفارش‌های در انتظار پرداخت در فروش لحاظ نمی‌شوند. مقادیر از snapshot سفارش خوانده می‌شوند تا تغییر نام یا قیمت محصول گزارش تاریخی را تغییر ندهد.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="stats"><div class="panel stat"><span class="muted">کل سفارش‌های پرداخت‌شده</span><strong><?= number_format($totalPaid) ?></strong></div><div class="panel stat"><span class="muted">سفارش‌های در انتظار پرداخت</span><strong><?= number_format($totalPending) ?></strong></div></div>
 <div class="table-wrap"><table><thead><tr><th>سرویس</th><th>تعداد سفارش پرداخت‌شده</th><th>فعال‌سازی موفق</th><th>نتیجه جزئی</th><th>مبلغ ناخالص</th><th>واحد</th></tr></thead><tbody>
 <?php if (!$rows): ?><tr><td colspan="6">هنوز فروش پرداخت‌شده‌ای ثبت نشده است.</td></tr><?php endif; ?>
