@@ -82,22 +82,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['account_password'] ?? '');
 
+        $credentialGenerationFailed = false;
         if ($credentialMethod === 'automatic') {
             $username = '';
             $password = '';
             $usernameAlphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-            for ($attempt = 0; $attempt < 12 && $username === ''; $attempt++) {
-                $candidate = $credentialPrefix . checkout_random_string($usernameAlphabet, $credentialSuffixLength);
-                if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
-                    $available = true;
-                    foreach ($productTargets as $target) {
-                        $ibsngCheck = new IBSngClient((string)$target['host'], (int)$target['port'], (string)$target['admin_username'], app_decrypt_secret((string)$target['server_password']));
-                        if (!$ibsngCheck->isUsernameAvailable($candidate)) { $available = false; break; }
+            try {
+                for ($attempt = 0; $attempt < 12 && $username === ''; $attempt++) {
+                    $candidate = $credentialPrefix . checkout_random_string($usernameAlphabet, $credentialSuffixLength);
+                    if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
+                        $available = true;
+                        foreach ($productTargets as $target) {
+                            $ibsngCheck = new IBSngClient((string)$target['host'], (int)$target['port'], (string)$target['admin_username'], app_decrypt_secret((string)$target['server_password']));
+                            if (!$ibsngCheck->isUsernameAvailable($candidate)) { $available = false; break; }
+                        }
+                        if ($available) $username = $candidate;
                     }
-                    if ($available) $username = $candidate;
                 }
+                if ($username !== '') $password = checkout_random_string($generatedPasswordCharset, $generatedPasswordLength);
+            } catch (Throwable $generationError) {
+                $credentialGenerationFailed = true;
             }
-            if ($username !== '') $password = checkout_random_string($generatedPasswordCharset, $generatedPasswordLength);
         }
 
         if ($name === '' || strlen($name) > 150) {
@@ -106,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             $error = app_message('buyer_phone_invalid');
         } elseif ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             $error = app_message('buyer_email_invalid');
-        } elseif ($credentialMethod === 'automatic' && ($username === '' || $password === '')) {
+        } elseif ($credentialMethod === 'automatic' && ($credentialGenerationFailed || $username === '' || $password === '')) {
             $error = app_message('username_available_check_failed');
         } elseif ($credentialMethod === 'customer' && ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username))) {
             $error = app_message('username_format_invalid');
