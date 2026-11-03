@@ -87,7 +87,7 @@ $config = app_config();
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ارتقای تمدید IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_admin_renewal_migration">ارتقای تمدید IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .admin-shell{width:min(900px,calc(100% - 32px));margin:0 auto;padding-bottom:28px}.admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:24px 0}.panel-card{padding:clamp(18px,4vw,30px);margin:18px 0}.notice{padding:14px 16px;border-radius:13px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.muted{color:var(--muted);line-height:1.8}
@@ -95,21 +95,21 @@ $config = app_config();
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><a class="button" href="<?= e(app_url('admin/products.php')) ?>">بازگشت به محصولات</a></header>
+<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><a class="button" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="renewal_migration_back_products">بازگشت به محصولات</a></header>
 <section class="panel panel-card">
 <div class="eyebrow">Database · Renewal Upgrade</div>
-<h1>ارتقای ساختار تمدید IBSng</h1>
-<p class="muted">این مرحله ستون مستقل مدت اعتبار IBSng، جدول Ledger تمدید و تنظیمات پیش‌فرض هدیه را به‌صورت امن و قابل‌تکرار آماده می‌کند. مدت عمومی محصولات به‌صورت خودکار کپی یا تغییر داده نمی‌شود؛ برای هر محصول باید مدت تمدید IBSng را جداگانه مشخص کنید.</p>
+<h1 data-ui-text="renewal_migration_title">ارتقای ساختار تمدید IBSng</h1>
+<p class="muted" data-ui-text="renewal_migration_intro">این مرحله ستون مستقل مدت اعتبار IBSng، جدول Ledger تمدید و تنظیمات پیش‌فرض هدیه را به‌صورت امن و قابل‌تکرار آماده می‌کند. مدت عمومی محصولات به‌صورت خودکار کپی یا تغییر داده نمی‌شود؛ برای هر محصول باید مدت تمدید IBSng را جداگانه مشخص کنید.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
-<div class="notice ok">ساختار دیتابیس برای تمدید IBSng آماده است.</div>
-<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>">تنظیم مدت تمدید محصولات</a>
+<div class="notice ok" data-ui-text="renewal_migration_ready">ساختار دیتابیس برای تمدید IBSng آماده است.</div>
+<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="renewal_migration_products">تنظیم مدت تمدید محصولات</a>
 <?php else: ?>
-<div class="notice err">ساختار جدید تمدید هنوز روی دیتابیس این نصب اعمال نشده است.</div>
-<form method="post" onsubmit="return confirm('ارتقای ساختار تمدید IBSng روی دیتابیس انجام شود؟');">
+<div class="notice err" data-ui-text="renewal_migration_not_ready">ساختار جدید تمدید هنوز روی دیتابیس این نصب اعمال نشده است.</div>
+<form method="post" onsubmit="return confirm(document.documentElement.lang==='en'?'Apply the IBSng renewal schema upgrade to the database?':'ارتقای ساختار تمدید IBSng روی دیتابیس انجام شود؟');">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
-<button class="button primary" type="submit">اعمال ارتقای دیتابیس</button>
+<button class="button primary" type="submit" data-ui-text="renewal_migration_apply">اعمال ارتقای دیتابیس</button>
 </form>
 <?php endif; ?>
 </section>
