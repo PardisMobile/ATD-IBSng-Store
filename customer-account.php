@@ -122,7 +122,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section class="panel account-card">
 <div class="eyebrow">پنل مشتری</div><h1>مشاهده مشخصات حساب</h1>
 <p class="muted-note">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
-<?php if ($error !== ''): ?><div class="account-error"><?= e($error) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="account-form">
 <div style="display:grid;gap:12px">
 <div class="field"><label for="username">نام کاربری</label><input id="username" name="username" dir="ltr" value="<?= e($username) ?>" required autocomplete="username"></div>
