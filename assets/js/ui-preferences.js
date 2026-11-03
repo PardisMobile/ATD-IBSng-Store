@@ -63,6 +63,15 @@
       orders_send_code: 'Send verification code',
       orders_order_placeholder: 'ATD-XXXXXXX or order ID'
     },
+    document_titles: {
+      title_checkout: 'Checkout',
+      title_orders: 'My orders',
+      title_order_status: 'Order status',
+      title_customer_account: 'Customer account',
+      title_admin_dashboard: 'Admin dashboard',
+      title_admin_products: 'Product management',
+      title_admin_settings: 'Support settings'
+    },
     admin_settings: {
       settings_admin: 'Store administration',
       settings_back_dashboard: 'Back to dashboard',
@@ -284,6 +293,17 @@
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
       element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
+    });
+    document.querySelectorAll('[data-ui-title-key]').forEach((element) => {
+      const key = element.dataset.uiTitleKey;
+      const translated = pageCopy.document_titles[key];
+      if (element.dataset.uiOriginalTitle === undefined) element.dataset.uiOriginalTitle = element.textContent;
+      const original = element.dataset.uiOriginalTitle;
+      const separator = original.indexOf('|');
+      const brand = separator >= 0 ? original.slice(separator + 1).trim() : '';
+      element.textContent = language === 'en' && translated
+        ? translated + (brand ? ' | ' + brand : '')
+        : original;
     });
     document.querySelectorAll('[data-ui-placeholder]').forEach((element) => {
       const key = element.dataset.uiPlaceholder;
