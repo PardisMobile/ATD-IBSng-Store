@@ -81,7 +81,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>پنل حساب | <?= e($title) ?></title>
+<title data-ui-title-key="title_customer_account">پنل حساب | <?= e($title) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .account-shell{width:min(900px,calc(100% - 28px));margin:0 auto;padding:clamp(16px,3vw,28px) 0}
