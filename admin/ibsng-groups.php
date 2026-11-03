@@ -175,6 +175,7 @@ function setLang(lang){walk(document.body,lang==='en'?pairs:reverse);root.lang=l
 let lang='en';try{lang=localStorage.getItem('atd-ibsng-language')||'en'}catch(e){}
 if(button)button.addEventListener('click',()=>setLang(root.lang==='fa'?'en':'fa'));
 setLang(lang);
+ document.addEventListener('atd:language-change',event=>setLang(event.detail?.language==='en'?'en':'fa'));
 })();
 </script>
 </body>
