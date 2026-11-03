@@ -33,7 +33,8 @@ $config = app_config();
 </head>
 <body>
 <main class="result-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a></header>
+<?php require __DIR__ . '/app/storefront-header.php'; ?>
+<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
 <section class="result-card panel">
 <?php if ($success): ?>
 <h1>پرداخت تأیید شد</h1>
