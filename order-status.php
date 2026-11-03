@@ -149,7 +149,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </head>
 <body>
 <main class="status-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><nav class="hero-actions" aria-label="ناوبری سفارش" data-ui-aria="status_nav_recovery"><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="status_nav_recovery">پیگیری و بازیابی خریدها</a><a class="button" href="<?= e(app_url()) ?>" data-ui-text="status_nav_store">بازگشت به فروشگاه</a></nav></header>
+<?php require __DIR__ . '/app/storefront-header.php'; ?>
+<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
 <section class="status-card panel">
 <div class="eyebrow" data-ui-text="status_page_heading">پیگیری سفارش</div>
 <?php if ($notFound || !$order): ?>
