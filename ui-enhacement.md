@@ -481,3 +481,4 @@ The following UI-only changes have been committed to `main`:
 - Keep these labels synchronized when the language changes. This is a presentation/accessibility refinement only; theme, accent, and locale persistence behavior is unchanged.
 - Validation note: source-level inspection only; no browser or screen-reader test is claimed.
 - Follow-up correction: the theme toggle now keeps its action label and tooltip localized after a mode change, rather than switching to English or mixing languages while Persian is selected.
+- Touch-target refinement: appearance toolbar buttons now retain a 40px minimum target on mobile and desktop, with 34px color swatches; this increases usable hit area without changing control behavior.
