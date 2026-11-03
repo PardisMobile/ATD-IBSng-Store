@@ -467,3 +467,9 @@ The following UI-only changes have been committed to `main`:
 - Unified placeholder contrast and added token-based invalid-field styling for controls marked with `aria-invalid="true"` or the existing `.is-invalid` class.
 - These styles only respond to existing UI state markers; they do not add validation, alter submission, or change server-side behavior.
 - Browser/contrast verification is still required; this source change alone is not reported as visual QA.
+
+### Preference toolbar accessible naming (2026-11-03)
+
+- Improved accessible names and tooltips for the theme toggle, palette control, and accent swatches; color names are localized for Persian and English.
+- The preference toolbar's accessible name and control labels update when the language preference changes, instead of retaining the initial-language labels.
+- This is a JavaScript accessibility improvement only; theme, accent, and language persistence remain unchanged. Browser and screen-reader QA remains outstanding.
