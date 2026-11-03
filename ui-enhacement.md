@@ -489,3 +489,11 @@ The following UI-only changes have been committed to `main`:
 - Removed the shared shine pseudo-element from `.brand` wrappers. Current brand links render text rather than an isolated logo mark, so applying the shine to the wrapper produced an unintended rectangular highlight.
 - The shine keyframe remains available for a future dedicated logo-mark element; no markup, navigation, or business behavior was changed.
 - Source-level correction only. Browser visual confirmation remains outstanding.
+
+
+### Checkout field theme-token alignment (2026-11-03)
+
+- Replaced the checkout page's fixed dark input background with shared surface/control, border, radius, text, and accent-focus tokens. Checkout fields can now follow the selected light/dark theme instead of remaining dark-only.
+- Added consistent focus-visible and placeholder styling to the existing checkout field rule.
+- Only inline presentation CSS was changed. Checkout form markup, POST fields, validation, payment initiation, and order processing remain untouched.
+- Source inspection only; light-theme browser rendering and responsive visual QA are still pending.
