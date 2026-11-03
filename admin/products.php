@@ -178,6 +178,21 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .notice{padding:13px 15px;border-radius:var(--ui-radius-md,12px);margin:14px 0;line-height:1.8}.ok{background:color-mix(in srgb,var(--success,var(--green)) 10%,transparent);border:1px solid color-mix(in srgb,var(--success,var(--green)) 30%,transparent)}.err{background:color-mix(in srgb,var(--danger,#ff7180) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger,#ff7180) 30%,transparent)}
 .product-row{padding:clamp(16px,3vw,20px);margin:14px 0;min-width:0}.row-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer}.muted{overflow-wrap:anywhere}.empty{padding:24px;text-align:center;color:var(--muted)}
+/* Product editor and saved-plan cards: clearer grouping without changing form behavior. */
+.product-row{border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);transition:border-color .18s ease,transform .18s ease;}
+.product-row:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));transform:translateY(-1px)}
+.product-row .row-head{align-items:center;margin-bottom:8px}
+.product-row .row-head strong{font-size:1.05rem;overflow-wrap:anywhere}
+.product-row>div:not(.row-head){line-height:1.85;overflow-wrap:anywhere}
+.product-row .actions form{display:flex;min-width:0}
+.product-row .actions .button{min-height:44px;white-space:normal}
+.mapping-row{padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);align-items:end!important}
+.mapping-row .field{margin:6px 0;min-width:0}
+.mapping-row .field>div{min-width:0;flex-wrap:wrap}
+.mapping-row select{min-width:0;flex:1 1 180px}
+#add-mapping{margin-top:8px;min-height:44px}
+@media(max-width:680px){.grid{grid-template-columns:minmax(0,1fr)}.mapping-row{grid-template-columns:minmax(0,1fr)!important}.mapping-row .field>div{align-items:stretch}.mapping-row .field>div .button{flex:0 0 auto}.product-row .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.product-row .actions form,.product-row .actions form .button{width:100%}}
+@media(prefers-reduced-motion:reduce){.product-row{transition:none}.product-row:hover{transform:none}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.admin-shell{width:calc(100% - 24px)}.admin-top{align-items:flex-start;flex-direction:column}.actions>*{flex:1 1 auto}}
 </style>
 </head>
