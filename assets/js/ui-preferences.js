@@ -60,7 +60,8 @@
       orders_track_submit: 'Track order',
       orders_email_recovery_heading: 'Or recover all purchases by email',
       orders_email_at_purchase: 'Email used at checkout',
-      orders_send_code: 'Send verification code'
+      orders_send_code: 'Send verification code',
+      orders_order_placeholder: 'ATD-XXXXXXX or order ID'
     },
     status: {
       pending_payment: 'Awaiting payment',
@@ -102,6 +103,12 @@
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
       element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
+    });
+    document.querySelectorAll('[data-ui-placeholder]').forEach((element) => {
+      const key = element.dataset.uiPlaceholder;
+      const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
+      if (element.dataset.uiOriginalPlaceholder === undefined) element.dataset.uiOriginalPlaceholder = element.getAttribute('placeholder') || '';
+      element.setAttribute('placeholder', language === 'en' && translated ? translated : element.dataset.uiOriginalPlaceholder);
     });
     document.querySelectorAll('[data-ui-aria]').forEach((element) => {
       const key = element.dataset.uiAria;
