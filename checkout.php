@@ -17,6 +17,27 @@ final class UsernameAlreadyExistsException extends RuntimeException
 $config = app_config();
 $pdo = Database::connection();
 $priceDisplayUnit = store_price_display_unit($pdo);
+$credentialSettingsStmt = $pdo->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?,?)');
+$credentialSettingsStmt->execute(['credential_mode','username_prefix','username_suffix_length','password_length','password_charset']);
+$credentialSettings = [];
+foreach ($credentialSettingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) {
+    $credentialSettings[(string)$setting['setting_key']] = (string)$setting['setting_value'];
+}
+$credentialPolicy = $credentialSettings['credential_mode'] ?? 'customer';
+$credentialPrefix = $credentialSettings['username_prefix'] ?? 'atd';
+$credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 6)));
+$generatedPasswordLength = max(8, min(64, (int)($credentialSettings['password_length'] ?? 12)));
+$generatedPasswordCharset = ($credentialSettings['password_charset'] ?? 'mixed') === 'alphanumeric'
+    ? 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
+    : 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*-_';
+function checkout_random_string(string $alphabet, int $length): string
+{
+    if ($alphabet === '' || $length < 1) throw new InvalidArgumentException('Invalid random string settings.');
+    $result = '';
+    $max = strlen($alphabet) - 1;
+    for ($i = 0; $i < $length; $i++) $result .= $alphabet[random_int(0, $max)];
+    return $result;
+}
 $error = '';
 $successOrder = null;
 $successTrackingCode = null;
@@ -54,8 +75,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $name = trim((string)($_POST['buyer_name'] ?? ''));
         $phone = trim((string)($_POST['buyer_phone'] ?? ''));
         $email = trim((string)($_POST['buyer_email'] ?? ''));
+        $requestedCredentialMethod = (string)($_POST['credential_method'] ?? 'customer');
+        $credentialMethod = $credentialPolicy === 'automatic'
+            ? 'automatic'
+            : ($credentialPolicy === 'choice' && $requestedCredentialMethod === 'automatic' ? 'automatic' : 'customer');
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['account_password'] ?? '');
+
+        if ($credentialMethod === 'automatic') {
+            $username = '';
+            $password = '';
+            $usernameAlphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            for ($attempt = 0; $attempt < 12 && $username === ''; $attempt++) {
+                $candidate = $credentialPrefix . checkout_random_string($usernameAlphabet, $credentialSuffixLength);
+                if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
+                    $available = true;
+                    foreach ($productTargets as $target) {
+                        $ibsngCheck = new IBSngClient((string)$target['host'], (int)$target['port'], (string)$target['admin_username'], app_decrypt_secret((string)$target['server_password']));
+                        if (!$ibsngCheck->isUsernameAvailable($candidate)) { $available = false; break; }
+                    }
+                    if ($available) $username = $candidate;
+                }
+            }
+            if ($username !== '') $password = checkout_random_string($generatedPasswordCharset, $generatedPasswordLength);
+        }
 
         if ($name === '' || strlen($name) > 150) {
             $error = app_message('buyer_name_required');
@@ -63,9 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             $error = app_message('buyer_phone_invalid');
         } elseif ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             $error = app_message('buyer_email_invalid');
-        } elseif ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username)) {
+        } elseif ($credentialMethod === 'automatic' && ($username === '' || $password === '')) {
+            $error = app_message('username_available_check_failed');
+        } elseif ($credentialMethod === 'customer' && ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username))) {
             $error = app_message('username_format_invalid');
-        } elseif (strlen($password) < 8 || strlen($password) > 200) {
+        } elseif ($credentialMethod === 'customer' && (strlen($password) < 8 || strlen($password) > 200)) {
             $error = app_message('password_length_invalid');
         } else {
             try {
@@ -87,6 +132,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                             app_decrypt_secret((string)$target['server_password'])
                         );
                         if (!$ibsng->isUsernameAvailable($username)) {
+                            if ($credentialMethod === 'automatic') {
+                                throw new RuntimeException('Generated username collision; retry checkout.');
+                            }
                             throw new UsernameAlreadyExistsException('IBSng username already exists on a configured product target.');
                         }
                     }
@@ -199,8 +247,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <div class="field"><label for="buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_email">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
-<div class="field"><label for="username">نام کاربری IBSng</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="field"><label for="account_password">رمز حساب IBSng</label><input id="account_password" name="account_password" type="password" minlength="8" maxlength="200" required autocomplete="new-password"></div>
+<?php if ($credentialPolicy === 'choice'): ?>
+<div class="field"><label>روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> تولید خودکار توسط فروشگاه</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? '') === 'customer') ? ' checked' : '' ?>> انتخاب نام کاربری و رمز توسط من</label></div>
+<?php endif; ?>
+<?php if ($credentialPolicy !== 'automatic' && ($credentialPolicy !== 'choice' || (($_POST['credential_method'] ?? 'automatic') !== 'automatic'))): ?>
+<div class="field"><label for="username">نام کاربری</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
+<div class="field"><label for="account_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="8" maxlength="200" required autocomplete="new-password"></div>
+<?php elseif ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
+<p class="notice">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
+<?php endif; ?>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</div>
 <button class="button primary" type="submit">ثبت سفارش</button>
 </form>
