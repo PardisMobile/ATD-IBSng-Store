@@ -84,7 +84,31 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <title>پنل حساب | <?= e($title) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.account-shell{width:min(900px,calc(100% - 30px));margin:0 auto;padding:24px 0}.account-card{padding:clamp(18px,4vw,30px);margin-top:20px}.account-form{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}.field{display:grid;gap:8px}.field label{color:var(--muted)}.field input{width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font:inherit}.captcha-row{display:flex;align-items:center;gap:10px}.captcha-code{direction:ltr;text-align:center;font-weight:800;letter-spacing:4px;padding:10px 14px;border-radius:10px;background:var(--surface-2);border:1px dashed var(--border);font-size:1.15rem;font-variant-numeric:tabular-nums}.account-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:18px}.account-item{padding:15px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}.account-item small{display:block;color:var(--muted);margin-bottom:8px}.account-item strong{overflow-wrap:anywhere}.account-item strong[dir="ltr"],.password-value[dir="ltr"]{direction:ltr;unicode-bidi:plaintext;text-align:left;display:inline-block;max-width:100%;font-variant-numeric:tabular-nums}.field input[dir="ltr"]{direction:ltr;text-align:left;unicode-bidi:plaintext}.account-error{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:15px 0}.password-line{display:flex;align-items:center;gap:10px}.password-line button{font:inherit;cursor:pointer}.muted-note{color:var(--muted);line-height:1.8}@media(max-width:560px){.account-form{grid-template-columns:1fr}}
+.account-shell{width:min(900px,calc(100% - 28px));margin:0 auto;padding:clamp(16px,3vw,28px) 0}
+.account-card{padding:clamp(18px,4vw,30px);margin-top:20px;min-width:0}
+.account-card h1,.account-card h2{line-height:1.5;overflow-wrap:anywhere}
+.account-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,auto);gap:14px;align-items:end}
+.field{display:grid;gap:8px;min-width:0}
+.field label{color:var(--muted);font-size:.92rem}
+.field input{box-sizing:border-box;width:100%;min-height:46px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;transition:border-color .18s ease,box-shadow .18s ease}
+.field input::placeholder{color:var(--muted);opacity:.8}
+.field input:focus-visible{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.captcha-row{display:flex;align-items:stretch;gap:10px;min-width:0}
+.captcha-row input{flex:1;min-width:0}
+.captcha-code{direction:ltr;text-align:center;font-weight:800;letter-spacing:4px;padding:10px 14px;border-radius:var(--ui-radius-md,14px);background:var(--surface-2);border:1px dashed var(--border);font-size:1.15rem;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;min-width:92px}
+.account-form>.button{min-height:46px;white-space:normal}
+.account-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px;margin-top:18px}
+.account-item{padding:clamp(13px,2.5vw,17px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);min-width:0;transition:border-color .18s ease,background-color .18s ease}
+.account-item small{display:block;color:var(--muted);margin-bottom:8px;line-height:1.6}
+.account-item strong{overflow-wrap:anywhere;line-height:1.7}
+.account-item strong[dir="ltr"],.password-value[dir="ltr"]{direction:ltr;unicode-bidi:isolate;text-align:left;display:inline-block;max-width:100%;font-variant-numeric:tabular-nums}
+.field input[dir="ltr"]{direction:ltr;text-align:left;unicode-bidi:isolate}
+.account-error{padding:13px 15px;border:1px solid color-mix(in srgb,var(--danger,var(--red)) 35%,var(--border));background:color-mix(in srgb,var(--danger,var(--red)) 9%,var(--surface));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:15px 0;line-height:1.8;overflow-wrap:anywhere}
+.password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.password-line button{font:inherit;cursor:pointer;min-height:40px}
+.muted-note{color:var(--muted);line-height:1.85}
+@media(max-width:560px){.account-form{grid-template-columns:minmax(0,1fr)}.captcha-row{gap:8px}.account-form>.button{width:100%}}
+@media(prefers-reduced-motion:reduce){.field input,.account-item{transition:none}}
 </style>
 </head>
 <body>
