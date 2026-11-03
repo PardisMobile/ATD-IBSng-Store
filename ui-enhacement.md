@@ -918,3 +918,10 @@ The following UI-only changes have been committed to `main`:
 - Added English labels and guidance for email-template event selection, subject/HTML/plain-text fields, variable help, save/preview actions, and preview frame title. Email event names use explicit event keys for translation.
 - Added English copy for sender address/name, mail() delivery explanation, test-email destination, save/test actions, and template-management navigation.
 - Actual email template bodies, subjects, text versions, event definitions, sender settings, mail transport, and delivery behavior are unchanged. Source review only; browser preview and test-email flow have not been exercised.
+
+
+### UI implementation note — admin email tools and sign-in localization (2026-11-03)
+
+- Email-template editor, email delivery settings, and admin sign-in now expose English labels, help text, document titles, and actions through the shared locale. Email event names use explicit event identifiers.
+- Editable email subject/HTML/plain-text content and provider/user-configured values are deliberately preserved as entered rather than translated.
+- Email transport, template persistence, preview rendering, login authentication, CSRF, and password-recovery behavior are unchanged. Source review only; browser preview, test email, and sign-in flows have not been run.
