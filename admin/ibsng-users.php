@@ -239,6 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.panel-card{padding:24px;margin-top:20px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.field{display:grid;gap:8px;margin:14px 0}.field label{color:var(--muted);font-size:.9rem}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit}.notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.result{margin-top:16px;padding:18px;overflow-wrap:anywhere}.actions{display:flex;gap:10px;flex-wrap:wrap}.danger{color:#ff8e9a}.muted{color:var(--muted);line-height:1.8}@media(max-width:600px){.grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}}
 </style>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body>
 <main class="admin-shell">
