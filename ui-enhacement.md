@@ -238,3 +238,29 @@ After UI changes are authorized and implemented, verify at minimum:
 ---
 
 This file is a working UI backlog. It records the intended direction and discovered concerns so future work can proceed systematically without repeatedly re-auditing the same items or crossing into core functionality.
+
+
+## 0. Main audit axes — required review before implementation
+
+The following are the principal audit dimensions, not merely a list of cosmetic fixes. Review each against the actual page and user journey, then record the finding, severity, and UI-only remedy.
+
+### Core customer journeys and page composition
+- **Public store/catalog:** unified product card hierarchy for product name, price, validity, quota/specifications, and primary CTA; handle long names, unavailable/empty catalog, and responsive layouts.
+- **Checkout:** organize the multi-part form with a persistent or clearly visible order summary; make required/optional fields, credential generation/selection, payment choice, notices, and next steps understandable.
+- **Order tracking and purchase recovery:** one unified section with two explicit access methods—order/tracking ID and email-based verification/recovery—not separate disconnected experiences.
+- **Order status:** visually distinguish order state, payment state, and provisioned service/account state so they are not conflated.
+- **Customer account/details:** present account attributes in a clear information card, group related fields, handle LTR values in RTL pages, and make password visibility/copy affordances understandable.
+- **Admin products:** use a sectioned editor and a scannable list; clarify duration, IBSng validity, currency/price, USDT price, quota, server/group mappings, publication state, and actions.
+- **Order reporting/management:** separate summary metrics from details; ensure order and transaction details remain usable on mobile; clarify review/confirmation actions.
+- **Settings:** group settings by purpose and gateway; provide contextual helper text and clear feedback.
+- **IBSng servers and groups:** use consistent reusable UI patterns for cards, mapping rows, statuses, and actions; preserve the manually managed group mapping model.
+- **Installer:** retain the approved decorative background while redesigning the foreground layout, step hierarchy, field groups, copy, and responsive behavior.
+
+### Cross-cutting UI states and quality
+- Audit success, error, warning, connection-test, empty/no-product, no-order, loading/processing, pending, inactive, and disabled states.
+- Review product descriptions and primary/secondary CTA wording for clarity and consistency.
+- Check Persian and English language coverage, RTL/LTR direction, and correct rendering of dates (Persian and Gregorian), currencies, USDT, and Unlimited quota label.
+- Review complex forms for grouping, labels, helper text, field-level feedback, keyboard focus, and clear required/optional status.
+- Use deliberate confirmation and feedback UI for delete, status changes, payment review/confirmation, and sensitive settings changes, without changing their underlying behavior.
+- Validate mobile layouts and touch targets across public and admin pages; avoid clipped content and accidental horizontal overflow.
+- Treat these as audit criteria and document functional defects separately; this UI backlog does not authorize core logic changes.
