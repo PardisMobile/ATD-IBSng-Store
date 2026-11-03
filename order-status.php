@@ -199,7 +199,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <?php endif; ?>
 </div>
-<div class="state"><?= e($attemptLabel((string)$attempt['status'])) ?></div>
+<div class="state" data-ui-status="<?= e((string)$attempt['status']) ?>"><?= e($attemptLabel((string)$attempt['status'])) ?></div>
 </div>
 <?php endforeach; ?>
 </div>
