@@ -904,3 +904,10 @@ The following UI-only changes have been committed to `main`:
 - Added English labels for the remaining renewal-plan placeholder and day unit, plus the existing-user group-change section, its prerequisite/empty state, username and destination fields, and submit action.
 - Added an English browser title for IBSng account management. Existing legacy translation dictionary continues to cover the page's other matched labels and feedback.
 - No account creation, renewal, group-change, or deletion logic was changed. Source key review only; browser and operational QA remains pending.
+
+
+### UI implementation note — installer locale and shared preference integration (2026-11-03)
+
+- Installer locale resolution now accepts the shared language cookie after an explicit POST/`?lang` choice and before the session fallback. The installer writes its server-rendered locale into the shared and legacy localStorage keys plus the language cookie before the shared preference script initializes.
+- Shared preference controls now mount in the installer's existing top header row rather than falling back to the end of the page.
+- Installer validation, database connection testing, schema installation, admin creation, and configuration-file writing are unchanged. Source review only; installer/browser visual QA remains pending.
