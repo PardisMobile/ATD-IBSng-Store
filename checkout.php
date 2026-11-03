@@ -235,6 +235,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 .checkout-card .field input{box-sizing:border-box;width:100%;min-width:0;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;line-height:1.6;transition:border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}
 .checkout-card .field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}
 .checkout-card .field input::placeholder{color:var(--muted);opacity:.75}
+.checkout-card .field input[type="email"],.checkout-card .field input[type="tel"],.checkout-card #username,.checkout-card #account_password{direction:ltr;text-align:left;unicode-bidi:plaintext;font-variant-numeric:tabular-nums}
+.checkout-card .notice code{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.checkout-card .field:has(input[type="radio"]){gap:10px}
+.checkout-card .field:has(input[type="radio"])>label:first-child{margin-bottom:2px}
+.checkout-card .field input[type="radio"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
 .checkout-card .field input[type=radio]{width:18px;min-height:18px;height:18px;flex:0 0 18px;margin:0;accent-color:var(--accent)}
 .checkout-card .field:has(input[type=radio])>label:not(:first-child){display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--surface-2);color:var(--text);font-weight:600}
 .checkout-card .notice{padding:14px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:14px 0;line-height:1.85;overflow-wrap:anywhere}
