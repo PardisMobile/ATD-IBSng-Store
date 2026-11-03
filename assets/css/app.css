@@ -928,3 +928,96 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 .atd-store-nav-link[aria-current=page]{color:#fff;background:linear-gradient(120deg,var(--blue),var(--purple));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
 @media(max-width:560px){.atd-store-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.atd-store-nav-link{padding:10px 8px;font-size:.88rem;white-space:normal;text-align:center}}
 @media(prefers-reduced-motion:reduce){.atd-store-nav-link{transition:none}.atd-store-nav-link:hover{transform:none}}
+
+
+/* ATD storefront button foundation. New controls should use .button (and an
+   optional semantic variant); this shared rule owns sizing, theme, hover,
+   focus and pressed feedback so pages do not need bespoke button CSS. */
+:root {
+  --atd-button-radius: 14px;
+  --atd-button-min-height: 44px;
+  --atd-button-bg: color-mix(in srgb,var(--surface) 88%,var(--accent) 12%);
+  --atd-button-fg: var(--text);
+  --atd-button-border: color-mix(in srgb,var(--accent) 22%,var(--border));
+  --atd-button-hover-bg: color-mix(in srgb,var(--surface-2) 76%,var(--accent) 24%);
+  --atd-button-hover-border: color-mix(in srgb,var(--accent) 48%,var(--border));
+  --atd-button-active-bg: color-mix(in srgb,var(--surface-2) 64%,var(--accent) 36%);
+}
+:where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link) {
+  min-height:var(--atd-button-min-height);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.55rem;
+  padding:10px 15px;
+  border:1px solid var(--atd-button-border);
+  border-radius:var(--atd-button-radius);
+  background:var(--atd-button-bg);
+  color:var(--atd-button-fg);
+  font:inherit;
+  font-weight:700;
+  line-height:1.45;
+  text-decoration:none;
+  cursor:pointer;
+  transition:color .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+:where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):hover {
+  color:var(--atd-button-fg);
+  background:var(--atd-button-hover-bg);
+  border-color:var(--atd-button-hover-border);
+  transform:translateY(-1px);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--accent) 10%,transparent);
+}
+:where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):active {
+  background:var(--atd-button-active-bg);
+  transform:translateY(0) scale(.985);
+  box-shadow:none;
+}
+:where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  box-shadow:0 0 0 4px var(--ui-focus-ring, color-mix(in srgb,var(--accent) 16%,transparent));
+}
+:where(.button.primary,button.button.primary,summary.button.primary,input[type="submit"].primary,.button-primary,button.button-primary,input.button-primary[type="submit"]) {
+  color:var(--accent-foreground,#fff);
+  background:var(--accent);
+  border-color:transparent;
+  box-shadow:0 7px 20px var(--ui-focus-ring, color-mix(in srgb,var(--accent) 18%,transparent));
+}
+:where(.button.primary,button.button.primary,summary.button.primary,input[type="submit"].primary,.button-primary,button.button-primary,input.button-primary[type="submit"]):hover {
+  color:var(--accent-foreground,#fff);
+  background:color-mix(in srgb,var(--accent) 90%,white 10%);
+  border-color:transparent;
+  filter:none;
+}
+:where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):disabled,
+:where(.button,[role="button"])[aria-disabled="true"] {
+  opacity:.52;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+:root[data-theme="light"] {
+  --atd-button-bg:#fff;
+  --atd-button-fg:#27334a;
+  --atd-button-border:rgba(55,75,110,.18);
+}
+.atd-store-nav-link { color:var(--atd-button-fg); }
+.atd-store-nav-link:hover { color:var(--atd-button-fg); }
+.atd-store-nav-link[aria-current="page"] {
+  color:var(--accent-foreground,#fff);
+  background:var(--accent);
+  border-color:transparent;
+  box-shadow:0 7px 20px var(--ui-focus-ring, color-mix(in srgb,var(--accent) 18%,transparent));
+}
+.atd-store-nav-link[aria-current="page"]:hover {
+  color:var(--accent-foreground,#fff);
+  background:color-mix(in srgb,var(--accent) 90%,white 10%);
+}
+@media(prefers-reduced-motion:reduce) {
+  :where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link) { transition:none!important; }
+  :where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):hover,
+  :where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):active { transform:none!important; }
+}
