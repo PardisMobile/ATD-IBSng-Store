@@ -76,12 +76,14 @@ function store_bytes_label(?string $bytes): string
   <style>
 /* Brand shimmer is deliberately clipped to the title text; the mark stays still. */
 .storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
-.storefront-brand-mark{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;color:var(--accent)}
-.storefront-brand-mark svg{display:block;width:100%;height:100%}
+.storefront-brand-mark{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;position:relative;overflow:hidden;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-strong,var(--accent)),var(--accent-soft,var(--accent)));color:#fff}
+.storefront-brand-mark svg{display:block;width:100%;height:100%;position:relative;z-index:0}
+.storefront-brand-mark::after{content:"";position:absolute;inset:-70%;z-index:1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffffff55 50%,transparent 60%);transform:translateX(-80%) rotate(10deg);animation:storefrontLogoShine 7s ease-in-out infinite}
+@keyframes storefrontLogoShine{0%,65%,100%{transform:translateX(-80%) rotate(10deg)}80%{transform:translateX(80%) rotate(10deg)}}
 .storefront-brand-title{position:relative;display:inline-block;isolation:isolate;overflow:hidden;max-width:100%;border-radius:2px}
 .storefront-brand-title::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(108deg,transparent 0%,transparent 38%,rgba(255,255,255,.08) 44%,rgba(255,255,255,.72) 50%,rgba(255,255,255,.12) 56%,transparent 63%,transparent 100%);transform:translateX(-125%);animation:storefrontBrandTextShine 5.8s ease-in-out infinite}
 @keyframes storefrontBrandTextShine{0%,66%{transform:translateX(-125%)}100%{transform:translateX(125%)}}
-@media(prefers-reduced-motion:reduce){.storefront-brand-title::after{animation:none;display:none}}
+@media(prefers-reduced-motion:reduce){.storefront-brand-title::after,.storefront-brand-mark::after{animation:none;display:none}}
 /* ATD Files Portal-inspired hero motion; storefront palette remains inherited. */
 .storefront-hero{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;align-items:center}
 .storefront-hero-content{position:relative;z-index:2;max-width:min(66%,680px)}
@@ -139,9 +141,9 @@ function store_bytes_label(?string $bytes): string
     <header class="topbar">
       <a class="brand storefront-brand" href="<?= e(app_url()) ?>" aria-label="<?= e($pageTitle) ?>">
         <span class="storefront-brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 40 40" fill="none" focusable="false">
-            <path d="M20 3.5 35 12v16L20 36.5 5 28V12L20 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-            <path d="m11 25 6.1-12h2.2l6.2 12M13.5 20.5h9M25.5 14.5h3.2v11h-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" focusable="false">
+            <path d="M5 10a3 3 0 0 1 3-3h6l3 3h7a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/>
+            <path d="M10 17h12M10 21h8" opacity=".7"/>
           </svg>
         </span>
         <span class="storefront-brand-title"><?= e($pageTitle) ?></span>
