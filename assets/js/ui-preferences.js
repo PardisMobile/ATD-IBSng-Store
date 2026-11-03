@@ -39,7 +39,7 @@
     controls.innerHTML =
       '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" aria-pressed="'+(get(storage.mode,'dark')==='light')+'" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="Choose color scheme" title="Color scheme">'+svg('palette')+'</button>'+
-      '<button type="button" class="atd-pref-language" aria-label="Switch language" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'EN':'فا')+'</span></button>';
+      '<button type="button" class="atd-pref-language" aria-label="'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
     palette.className='atd-palette-popover'; palette.hidden=true;
     palette.setAttribute('role','group'); palette.setAttribute('aria-label','Color scheme');
