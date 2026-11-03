@@ -446,3 +446,10 @@ The following UI-only changes have been committed to `main`:
 
 - Added the shared `assets/js/ui-preferences.js` include to `admin/ibsng-renewal-migrate.php`, so the appearance, accent, and language controls are available on this admin utility page as well.
 - Kept the migration form, CSRF handling, and database migration behavior unchanged; this is presentation-only integration.
+
+
+### Preference palette accessibility follow-up (2026-11-03)
+
+- The accent palette toggle now exposes `aria-controls` and synchronized `aria-expanded` state, so assistive technology can identify whether the color options are open.
+- Outside-click and Escape dismissal now reset the expanded state as well as hiding the palette. This is a focused accessibility/UI change; preference persistence and application are unchanged.
+- Browser and assistive-technology validation remains outstanding.
