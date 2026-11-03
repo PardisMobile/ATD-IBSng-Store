@@ -391,3 +391,23 @@ Shared components must look and behave consistently across public storefront, ch
 - [ ] Mobile, tablet, and desktop layouts are deliberately composed and checked separately.
 - [ ] No accidental horizontal page overflow, clipped primary actions, or unusable touch targets remain in tested views.
 - [ ] UI-only work preserves all existing business logic and server-side behavior.
+
+
+## 20. Implementation progress — shared UI layer (2026-11-03)
+
+The following UI-only changes have been committed to `main`:
+
+- Shared theme tokens and commercial surface styling were added to `assets/css/app.css`, including dark/light surfaces, reusable cards, controls, buttons, table states, focus rings, and accent palette variables.
+- `assets/js/ui-preferences.js` applies theme, accent, language/direction attributes and mounts the preference toolbar. Language changes emit the `atd:language-change` event for page-level localization.
+- The public catalog, customer account, order history/recovery, installer, and several admin screens now load the shared preference controls.
+- Catalog card rhythm and narrow-screen composition were improved; customer-facing account wording avoids exposing the technical IBSng product name.
+- Order list card surfaces and installer foreground styles now use theme variables rather than fixed dark colors.
+- Admin login, dashboard, product editor, and orders pages load the shared UI preference controls; order table cells are allowed to wrap and align consistently.
+
+### Remaining verification / implementation work
+
+- The language preference mechanism and event are in place, but **page-wide Persian/English translation is not yet complete**. Each page needs a translation dictionary or localized server-rendered copy, including validation, status, and empty-state messages.
+- Continue auditing remaining public/admin pages for shared preference script integration, hard-coded theme colors, inline component duplication, and responsive behavior.
+- Run PHP syntax checks and browser-based visual/functional checks at mobile, tablet, and desktop widths. Do not treat code review alone as visual QA.
+- Confirm the final icon system is consistent across all pages and that meaningful icons have accessible labels.
+- Keep all remaining changes UI-only; do not alter payment, callback, IBSng, database, authentication, or business-operation behavior.
