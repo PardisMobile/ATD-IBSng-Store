@@ -77,7 +77,11 @@
       palette.setAttribute('aria-label',next==='fa'?'طرح رنگ':'Color scheme');
       controls.querySelector('.atd-pref-language').setAttribute('aria-label',next==='fa'?'Switch language to English':'تغییر زبان به فارسی');
       controls.querySelector('.atd-pref-language').title=next==='fa'?'زبان':'Language';
-      controls.querySelector('.atd-pref-mode').setAttribute('aria-label',next==='fa'?(get(storage.mode,'dark')==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(get(storage.mode,'dark')==='dark'?'Switch to light mode':'Switch to dark mode'));
+      const currentMode=get(storage.mode,'dark')==='light'?'light':'dark';
+      const modeButton=controls.querySelector('.atd-pref-mode');
+      modeButton.setAttribute('aria-label',next==='fa'?(currentMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(currentMode==='dark'?'Switch to light mode':'Switch to dark mode'));
+      modeButton.title=next==='fa'?(currentMode==='dark'?'حالت تاریک':'حالت روشن'):(currentMode==='dark'?'Dark mode':'Light mode');
+      modeButton.setAttribute('aria-pressed',String(currentMode==='light'));
       controls.querySelector('.atd-pref-palette').setAttribute('aria-label',next==='fa'?'انتخاب طرح رنگ':'Choose color scheme');
       controls.querySelector('.atd-pref-palette').title=next==='fa'?'طرح رنگ':'Color scheme';
       palette.querySelectorAll('.atd-swatch').forEach((swatch)=>{const key=swatch.dataset.accent;swatch.setAttribute('aria-label',(next==='fa'?'طرح رنگ ':'')+schemeNames[key][next]);swatch.title=schemeNames[key][next];});
