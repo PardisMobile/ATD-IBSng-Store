@@ -725,3 +725,10 @@ The following UI-only changes have been committed to `main`:
 - Isolated email, phone, username, account-password, and displayed order tracking-code values in LTR direction so their technical strings remain readable inside the Persian checkout layout.
 - Added a clear keyboard focus treatment for the credential-method radio controls and tightened their field spacing using existing theme tokens.
 - CSS-only: form submission, credential policy, order creation, payment initiation, and validation remain unchanged. Source inspection only; visual browser/mobile QA remains pending.
+
+
+### Store catalog responsive navigation and focus refinement (2026-11-03)
+
+- Added a consistent visible keyboard-focus treatment to catalog purchase buttons, using existing accent/focus tokens.
+- Applied tabular numeral styling to product prices and key plan values for steadier alignment; allowed the customer navigation links to wrap cleanly on narrow screens.
+- Presentation-only changes in `index.php`; catalog queries, price eligibility, product values, and checkout destinations remain unchanged. Source review only; browser/device visual QA remains pending.
