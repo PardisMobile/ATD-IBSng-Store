@@ -4,16 +4,16 @@ require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_once dirname(__DIR__) . '/app/EmailSender.php';
 $pdo = Database::connection();
 $config = app_config();
-$generic = 'اگر ایمیل متعلق به مدیر فعال باشد، لینک بازیابی برای آن ارسال می‌شود.';
+$generic = app_message('admin_forgot_generic');
 $error = '';
 $ipHash = hash('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
-        $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+        $error = app_message('admin_forgot_invalid_request');
     } else {
         $email = trim((string)($_POST['email'] ?? ''));
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || strlen($email) > 190) {
-            $error = 'ایمیل معتبر وارد کنید.';
+            $error = app_message('admin_forgot_email_invalid');
         } else {
             try {
                 $rate = $pdo->prepare('SELECT COUNT(*) FROM admin_password_resets WHERE request_ip_hash = ? AND created_at >= (NOW() - INTERVAL 15 MINUTE)');
