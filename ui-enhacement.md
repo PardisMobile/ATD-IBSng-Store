@@ -833,3 +833,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for order status details, payment/order states, account attributes, quota units, password disclosure, and activation-status labels. Dynamic status values use explicit status keys rather than translating arbitrary user/server data.
 - Hard-coded order-recovery feedback now resolves through the shared bilingual message catalog, which follows the persisted locale cookie. Order lookup queries, email verification, CSRF, session expiry, payment/provisioning state, and account data are unchanged.
 - Source-level checks only. Browser-based English/RTL/LTR and responsive QA, including recovery-code submissions and real order states, remains outstanding.
+
+
+### UI implementation note — customer account lookup/details English localization (2026-11-03)
+
+- Added English labels and explanatory copy for the customer account lookup form, CAPTCHA input, returned account details, validity, expiration, remaining days, and password reveal control. The reveal button label now follows the selected locale even when the password is already shown.
+- Customer account lookup's generic validation and unavailable/not-found feedback now uses the shared bilingual message catalog. Server-provided service and plan names, usernames, credentials, and expiration values remain data values rather than being translated.
+- Account lookup, CAPTCHA/session behavior, IBSng requests, password matching, and returned account data are unchanged. Source review only; browser-based language switching and visual verification remain pending.
