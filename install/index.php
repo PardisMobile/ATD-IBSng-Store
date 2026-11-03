@@ -184,6 +184,15 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.actions button{font:inherit;cursor:pointer}.actions .secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.setup{padding:clamp(18px,5vw,24px);border-radius:20px;margin:18px auto}.actions>*{width:100%}.top{align-items:flex-start}.progress{margin:20px 0}.field input{min-height:46px}}
 @media(prefers-reduced-motion:reduce){.field input{transition:none}}
+/* Installer-specific presentation for the shared preference toolbar. */
+.top .atd-preferences{flex:0 0 auto;border-radius:14px;gap:5px;padding:4px;background:var(--surface-2)}
+.top .atd-preferences button{width:42px;min-width:42px;height:42px;min-height:42px;padding:10px;border-radius:11px}
+.top .atd-preferences .atd-pref-language span{font-size:.72rem;font-weight:700}
+.top .atd-palette-popover{display:flex;align-items:center;gap:9px;min-width:max-content;padding:12px}
+.top .atd-palette-popover .atd-swatch{display:block!important;box-sizing:border-box;width:30px!important;min-width:30px!important;height:30px!important;min-height:30px!important;padding:3px!important;border:1px solid var(--border)!important;border-radius:50%!important;flex:0 0 30px!important}
+.top .atd-palette-popover .atd-swatch span{display:block;width:100%;height:100%;border-radius:50%;background:var(--swatch)}
+.top .atd-palette-popover .atd-swatch[aria-pressed="true"]{outline:2px solid var(--text);outline-offset:2px}
+@media(max-width:620px){.top .atd-preferences{margin-inline-start:auto}.top .atd-palette-popover{inset-inline-end:0}}
 </style>
 </head>
 <body>
