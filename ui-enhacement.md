@@ -482,3 +482,10 @@ The following UI-only changes have been committed to `main`:
 - Validation note: source-level inspection only; no browser or screen-reader test is claimed.
 - Follow-up correction: the theme toggle now keeps its action label and tooltip localized after a mode change, rather than switching to English or mixing languages while Persian is selected.
 - Touch-target refinement: appearance toolbar buttons now retain a 40px minimum target on mobile and desktop, with 34px color swatches; this increases usable hit area without changing control behavior.
+
+
+### Brand wrapper animation correction (2026-11-03)
+
+- Removed the shared shine pseudo-element from `.brand` wrappers. Current brand links render text rather than an isolated logo mark, so applying the shine to the wrapper produced an unintended rectangular highlight.
+- The shine keyframe remains available for a future dedicated logo-mark element; no markup, navigation, or business behavior was changed.
+- Source-level correction only. Browser visual confirmation remains outstanding.
