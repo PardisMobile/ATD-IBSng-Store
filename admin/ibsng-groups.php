@@ -115,10 +115,7 @@ if ($selectedServerId > 0) {
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top">
-<a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a>
-<nav><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>">سرورهای IBSng</a><button class="button lang-toggle" id="langToggle" type="button" aria-label="Switch language">English</button></nav>
-</header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · Group / Plan Mapping</div>
 <h1 style="font-size:2rem">نگاشت پلن فروشگاه به گروه IBSng</h1>
