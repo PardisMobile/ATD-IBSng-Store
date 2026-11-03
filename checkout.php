@@ -255,11 +255,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($credentialPolicy === 'choice'): ?>
 <div class="field"><label>روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> تولید خودکار توسط فروشگاه</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? '') === 'customer') ? ' checked' : '' ?>> انتخاب نام کاربری و رمز توسط من</label></div>
 <?php endif; ?>
-<?php if ($credentialPolicy !== 'automatic' && ($credentialPolicy !== 'choice' || (($_POST['credential_method'] ?? 'automatic') !== 'automatic'))): ?>
+<?php if ($credentialPolicy !== 'automatic'): ?>
+<div id="manual-credentials" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? 'display:none' : '' ?>">
 <div class="field"><label for="username">نام کاربری</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
 <div class="field"><label for="account_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="8" maxlength="200" required autocomplete="new-password"></div>
-<?php elseif ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
-<p class="notice">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
+</div>
+<?php endif; ?>
+<?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
+<p id="automatic-credentials-note" class="notice" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
 <?php endif; ?>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</div>
 <button class="button primary" type="submit">ثبت سفارش</button>
@@ -267,5 +270,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php endif; ?>
 </section>
 </main>
+<script>
+(function () {
+  const radios = document.querySelectorAll('input[name="credential_method"]');
+  const manual = document.getElementById('manual-credentials');
+  const automaticNote = document.getElementById('automatic-credentials-note');
+  function updateCredentialFields() {
+    const automatic = document.querySelector('input[name="credential_method"]:checked')?.value === 'automatic';
+    if (manual) {
+      manual.style.display = automatic ? 'none' : '';
+      manual.querySelectorAll('input').forEach((input) => { input.required = !automatic; });
+    }
+    if (automaticNote) automaticNote.style.display = automatic ? '' : 'none';
+  }
+  radios.forEach((radio) => radio.addEventListener('change', updateCredentialFields));
+  updateCredentialFields();
+})();
+</script>
 </body>
 </html>
