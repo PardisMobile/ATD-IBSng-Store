@@ -640,3 +640,25 @@ tr:hover td { background:var(--hover-surface); }
 @media(prefers-reduced-motion:reduce) {
   body,.button,.panel-card,.plan-card { transition:none!important; }
 }
+
+/* Catalog polish: stable card rhythm, readable product copy and mobile-first actions. */
+.catalog-grid { align-items:stretch; }
+.plan-card { min-width:0; overflow-wrap:anywhere; }
+.plan-card .plan-description { margin:0; min-height:3.4em; }
+.plan-card .plan-price { display:flex; align-items:baseline; flex-wrap:wrap; gap:7px; line-height:1.35; }
+.plan-card .plan-price small { font-size:.78rem; font-weight:600; color:var(--muted); }
+.plan-card .plan-meta { align-items:center; flex-wrap:wrap; }
+.plan-card .plan-meta strong { text-align:end; overflow-wrap:anywhere; }
+.plan-card > .button { margin-top:auto; width:100%; justify-content:center; }
+.catalog-notice { color:var(--text); }
+.topbar .hero-actions { align-items:center; flex-wrap:wrap; }
+.topbar .hero-actions .button { white-space:normal; }
+.store-shell > footer { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; padding:24px 0; }
+@media(max-width:560px) {
+  .catalog-grid { grid-template-columns:minmax(0,1fr); }
+  .topbar { align-items:flex-start; flex-direction:column; gap:14px; }
+  .topbar .hero-actions { width:100%; }
+  .topbar .hero-actions .button { flex:1 1 auto; }
+  .hero { padding:clamp(20px,6vw,30px); }
+  .plan-card .plan-price { font-size:clamp(1.45rem,7vw,1.8rem); }
+}
