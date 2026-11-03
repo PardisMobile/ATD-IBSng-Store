@@ -592,3 +592,10 @@ The following UI-only changes have been committed to `main`:
 - Isolated returned IBSng username, user ID, group name, and password in the admin result panel with explicit LTR direction, numeric alignment, and safe wrapping for long values.
 - Password/code output can wrap within the panel instead of pushing the page width, while retaining the existing escaped output and visibility behavior.
 - Only result presentation CSS/markup changed. No IBSng request, credential handling, result fields, or operation logic was modified. Browser viewport verification remains pending.
+
+
+### UI implementation note — admin dashboard navigation layout (2026-11-03)
+
+- Reorganized the crowded dashboard header into a compact brand/settings row and a distinct responsive navigation grid, giving management links consistent spacing and touch-friendly minimum heights.
+- Kept every existing admin destination, logout POST endpoint, and CSRF token intact; this is a presentation/markup organization change only.
+- Navigation collapses from four columns to two and then one on narrower screens. Browser/viewport QA remains pending.
