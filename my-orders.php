@@ -22,7 +22,7 @@ $orders = [];
 if (isset($_POST['action'])) {
     if (!hash_equals($csrf, (string)($_POST['csrf'] ?? ''))) {
         http_response_code(400);
-        $notice = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+        $notice = app_message('order_recovery_invalid_request');
     } else {
         try {
             $pdo = Database::connection();
@@ -30,14 +30,14 @@ if (isset($_POST['action'])) {
             if ($action === 'request') {
                 $email = strtolower(trim((string)($_POST['email'] ?? '')));
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 190) {
-                    $notice = 'ایمیل واردشده معتبر نیست.';
+                    $notice = app_message('order_recovery_email_invalid');
                 } else {
                     $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '');
                     $ipHash = hash('sha256', $ip);
                     $throttle = $pdo->prepare('SELECT COUNT(*) FROM customer_order_recovery_codes WHERE (email_normalized = ? OR request_ip_hash = ?) AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
                     $throttle->execute([$email, $ipHash]);
                     if ((int)$throttle->fetchColumn() >= 5) {
-                        $notice = 'درخواست‌های زیادی ثبت شده است. کمی بعد دوباره تلاش کنید.';
+                        $notice = app_message('order_recovery_rate_limited');
                     } else {
                         $hasOrders = $pdo->prepare('SELECT 1 FROM orders WHERE LOWER(TRIM(buyer_email)) = ? LIMIT 1');
                         $hasOrders->execute([$email]);
@@ -55,7 +55,7 @@ if (isset($_POST['action'])) {
                         }
                         $_SESSION['my_orders_email_pending'] = $email;
                         $stage = 'verify';
-                        $notice = 'اگر این ایمیل سفارش ثبت‌شده‌ای داشته باشد، کد تأیید برای آن ارسال می‌شود.';
+                        $notice = app_message('order_recovery_code_sent_generic');
                     }
                 }
             } elseif ($action === 'verify') {
@@ -69,7 +69,7 @@ if (isset($_POST['action'])) {
                         $pdo->prepare('UPDATE customer_order_recovery_codes SET attempts = LEAST(attempts + 1, 5) WHERE id = ? AND attempts < 5')->execute([(int)$challenge['id']]);
                     }
                     $stage = 'verify';
-                    $notice = 'کد معتبر نیست یا منقضی شده است.';
+                    $notice = app_message('order_recovery_code_invalid');
                 } else {
                     $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE id = ?')->execute([(int)$challenge['id']]);
                     session_regenerate_id(true);
@@ -77,17 +77,17 @@ if (isset($_POST['action'])) {
                     $_SESSION['my_orders_verified_until'] = time() + 1800;
                     unset($_SESSION['my_orders_email_pending']);
                     $stage = 'orders';
-                    $notice = 'ایمیل با موفقیت تأیید شد.';
+                    $notice = app_message('order_recovery_email_verified');
                 }
             } elseif ($action === 'logout') {
                 unset($_SESSION['my_orders_email'], $_SESSION['my_orders_verified_until'], $_SESSION['my_orders_email_pending']);
                 $email = '';
                 $stage = 'request';
-                $notice = 'از بخش سفارش‌های من خارج شدید.';
+                $notice = app_message('order_recovery_logged_out');
             }
         } catch (Throwable $error) {
             error_log('Customer order recovery failed: ' . $error->getMessage());
-            $notice = 'در حال حاضر امکان انجام درخواست وجود ندارد. لطفاً بعداً تلاش کنید.';
+            $notice = app_message('order_recovery_unavailable');
         }
     }
 }
@@ -100,7 +100,7 @@ if ($stage === 'orders' && $email !== '') {
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Throwable $error) {
         error_log('Customer order list failed: ' . $error->getMessage());
-        $notice = 'دریافت فهرست سفارش‌ها موقتاً ممکن نیست.';
+        $notice = app_message('order_recovery_list_unavailable');
     }
 }
 $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' => 'پرداخت تأیید شد', 'provisioning' => 'در حال فعال‌سازی', 'active' => 'فعال', 'partial' => 'فعال‌سازی ناقص', 'failed' => 'ناموفق'];
