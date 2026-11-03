@@ -16,6 +16,7 @@
   const svg = (name) => '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(icons[name]||'')+'</svg>';
   const get = (k, fallback) => { try { return localStorage.getItem(k) || fallback; } catch (_) { return fallback; } };
   const set = (k,v) => { try { localStorage.setItem(k,v); } catch (_) {} };
+  const schemeNames = { blue:{fa:'آبی',en:'Blue'}, violet:{fa:'بنفش',en:'Violet'}, teal:{fa:'فیروزه‌ای',en:'Teal'}, rose:{fa:'صورتی',en:'Rose'}, amber:{fa:'کهربایی',en:'Amber'} };
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
@@ -35,7 +36,7 @@
     if (document.querySelector('.atd-preferences')) return;
     const controls = document.createElement('div');
     controls.className = 'atd-preferences';
-    controls.setAttribute('aria-label','Appearance and language');
+    controls.setAttribute('aria-label',get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'ظاهر و زبان':'Appearance and language');
     controls.innerHTML =
       '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" aria-pressed="'+(get(storage.mode,'dark')==='light')+'" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="Choose color scheme" title="Color scheme">'+svg('palette')+'</button>'+
@@ -46,7 +47,9 @@
     palette.setAttribute('role','group'); palette.setAttribute('aria-label','Color scheme');
     Object.entries(accents).forEach(([name,colors])=>{
       const b=document.createElement('button'); b.type='button'; b.className='atd-swatch'; b.dataset.accent=name;
-      b.style.setProperty('--swatch',colors[0]); b.setAttribute('aria-label',name); b.title=name;
+      b.style.setProperty('--swatch',colors[0]);
+      const currentLanguage=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
+      b.setAttribute('aria-label',(currentLanguage==='fa'?'طرح رنگ ':'')+schemeNames[name][currentLanguage]); b.title=schemeNames[name][currentLanguage];
       b.innerHTML='<span></span>'; b.addEventListener('click',()=>{set(storage.accent,name);apply();palette.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
       b.setAttribute('aria-pressed',String(get(storage.accent,'blue')===name)); palette.appendChild(b);
     });
@@ -56,6 +59,8 @@
       const modeButton=controls.querySelector('.atd-pref-mode');
       modeButton.innerHTML=svg(next==='dark'?'sun':'moon');
       modeButton.setAttribute('aria-pressed',String(next==='light'));
+      modeButton.setAttribute('aria-label',next==='dark'?'Switch to dark mode':'روشن کردن حالت روشن');
+      modeButton.title=next==='dark'?'Dark mode':'حالت روشن';
     });
     const paletteButton=controls.querySelector('.atd-pref-palette');
     paletteButton.setAttribute('aria-controls',palette.id);
@@ -65,7 +70,13 @@
     controls.querySelector('.atd-pref-language').addEventListener('click',()=>{
       const next=(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'en':'fa');set(storage.lang,next);set(storage.legacyLang,next);apply();
       controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
+      controls.setAttribute('aria-label',next==='fa'?'ظاهر و زبان':'Appearance and language');
       controls.querySelector('.atd-pref-language').setAttribute('aria-label',next==='fa'?'Switch language to English':'تغییر زبان به فارسی');
+      controls.querySelector('.atd-pref-language').title=next==='fa'?'زبان':'Language';
+      controls.querySelector('.atd-pref-mode').setAttribute('aria-label',next==='fa'?(get(storage.mode,'dark')==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(get(storage.mode,'dark')==='dark'?'Switch to light mode':'Switch to dark mode'));
+      controls.querySelector('.atd-pref-palette').setAttribute('aria-label',next==='fa'?'انتخاب طرح رنگ':'Choose color scheme');
+      controls.querySelector('.atd-pref-palette').title=next==='fa'?'طرح رنگ':'Color scheme';
+      palette.querySelectorAll('.atd-swatch').forEach((swatch)=>{const key=swatch.dataset.accent;swatch.setAttribute('aria-label',(next==='fa'?'طرح رنگ ':'')+schemeNames[key][next]);swatch.title=schemeNames[key][next];});
       root.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
       document.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
     });
