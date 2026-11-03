@@ -74,8 +74,33 @@ function store_bytes_label(?string $bytes): string
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
   <style>
-  .catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}.plan-card{padding:24px;display:flex;flex-direction:column;gap:12px}.plan-card h3{margin:0;font-size:1.25rem}.plan-price{font-size:1.8rem;font-weight:800}.plan-meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);padding:10px 0;border-bottom:1px solid var(--border)}.plan-description{color:var(--muted);line-height:1.8;min-height:48px}.catalog-notice{padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2);line-height:1.8}.section{margin:30px 0}.section-heading{margin-bottom:18px}.section-heading h2{margin:6px 0}.admin-link{font-size:.9rem;color:var(--muted)}@media(max-width:560px){.plan-card{padding:18px}}
-  </style>
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:clamp(14px,2.4vw,20px);align-items:stretch}
+.plan-card{padding:clamp(18px,3vw,26px);display:flex;flex-direction:column;gap:13px;min-width:0;position:relative;overflow:hidden;transition:transform var(--ui-transition,180ms ease),border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}
+.plan-card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--accent);opacity:.72}
+.plan-card:hover{transform:translateY(-2px);border-color:var(--border-strong,var(--accent));box-shadow:var(--ui-shadow,0 18px 48px rgba(0,0,0,.18))}
+.plan-card h3{margin:0;font-size:clamp(1.12rem,2vw,1.28rem);line-height:1.55;overflow-wrap:anywhere}
+.plan-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:7px;font-size:clamp(1.55rem,4vw,1.9rem);font-weight:800;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
+.plan-price small{font-size:.8rem;font-weight:600;color:var(--muted)}
+.plan-meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:var(--muted);padding:10px 0;border-bottom:1px solid var(--border);min-width:0}
+.plan-meta strong{text-align:end;color:var(--text);overflow-wrap:anywhere}
+.plan-description{color:var(--muted);line-height:1.85;min-height:3.5em;margin:0;overflow-wrap:anywhere}
+.plan-card>.button{width:100%;justify-content:center;margin-top:auto;white-space:normal}
+.catalog-notice{padding:clamp(15px,3vw,20px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);background:var(--surface-2);color:var(--text);line-height:1.85;overflow-wrap:anywhere}
+.section{margin:clamp(26px,5vw,40px) 0}
+.section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px}
+.section-heading h2{margin:6px 0;line-height:1.45}
+.admin-link{font-size:.9rem;color:var(--muted)}
+.empty-state{min-width:0;padding:clamp(22px,5vw,36px);text-align:center}
+.empty-state h3,.empty-state p{overflow-wrap:anywhere}
+@media(max-width:560px){
+ .catalog-grid{grid-template-columns:minmax(0,1fr)}
+ .plan-card{padding:18px}
+ .plan-description{min-height:0}
+ .section-heading{align-items:flex-start;flex-direction:column}
+ .plan-meta{gap:8px}
+}
+@media(prefers-reduced-motion:reduce){.plan-card{transition:none}.plan-card:hover{transform:none}}
+</style>
 </head>
 <body>
   <main class="store-shell">
