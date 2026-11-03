@@ -261,42 +261,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 </head>
 <body>
 <main class="checkout-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></header>
+<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><a class="button" href="<?= e(app_url()) ?>" data-ui-text="checkout_back_store" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a></header>
 <section class="checkout-card panel">
-<div class="eyebrow">ثبت سفارش</div>
+<div class="eyebrow" data-ui-text="checkout_heading">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
-<h1>درخواست سفارش ثبت شد</h1>
+<h1 data-ui-text="checkout_success_title">درخواست سفارش ثبت شد</h1>
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<div class="notice success" role="status" aria-live="polite"><strong>کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
-<?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>">پیگیری وضعیت سفارش</a><?php endif; ?>
+<div class="notice success" role="status" aria-live="polite"><strong data-ui-text="checkout_tracking_code">کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
+<?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-ui-text="checkout_track_order">پیگیری وضعیت سفارش</a><?php endif; ?>
 <a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
-<h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url()) ?>">بازگشت</a>
+<h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url()) ?>" data-ui-text="checkout_back">بازگشت</a>
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<p class="muted">مدت: <?= number_format((int)$product['duration_seconds']) ?> ثانیه</p>
+<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= number_format((int)$product['duration_seconds']) ?> ثانیه"><?= number_format((int)$product['duration_seconds']) ?> ثانیه</span></p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
-<div class="field"><label for="buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
-<div class="field"><label for="buyer_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
-<div class="field"><label for="buyer_email">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
+<div class="field"><label for="buyer_name" data-ui-text="checkout_buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
+<div class="field"><label for="buyer_phone" data-ui-text="checkout_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
+<div class="field"><label for="buyer_email" data-ui-text="checkout_email_optional">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted" data-ui-text="checkout_email_help">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
 <?php if ($credentialPolicy === 'choice'): ?>
-<div class="field"><label>روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> نام کاربری و رمز عبور دلخواه</label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> نام کاربری و رمز عبور اتوماتیک</label></div>
+<div class="field"><label data-ui-text="checkout_credentials_method">روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> <span data-ui-text="checkout_custom_credentials">نام کاربری و رمز عبور دلخواه</span></label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> <span data-ui-text="checkout_auto_credentials">نام کاربری و رمز عبور اتوماتیک</span></label></div>
 <?php endif; ?>
 <?php if ($credentialPolicy !== 'automatic'): ?>
 <div id="manual-credentials" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? 'display:none' : '' ?>">
-<div class="field"><label for="username">نام کاربری</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="field"><label for="account_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="4" maxlength="12" required autocomplete="new-password"></div>
+<div class="field"><label for="username" data-ui-text="checkout_username">نام کاربری</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
+<div class="field"><label for="account_password" data-ui-text="checkout_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="4" maxlength="12" required autocomplete="new-password"></div>
 </div>
 <?php endif; ?>
 <?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
-<p id="automatic-credentials-note" class="notice" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
+<p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
 <?php endif; ?>
-<div class="notice"><?= e(app_message('order_submitted_notice')) ?> اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</div>
-<button class="button primary" type="submit">ثبت سفارش</button>
+<div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
+<button class="button primary" type="submit" data-ui-text="checkout_submit">ثبت سفارش</button>
 </form>
 <?php endif; ?>
 </section>
