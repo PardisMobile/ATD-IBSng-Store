@@ -61,8 +61,9 @@
       const modeButton=controls.querySelector('.atd-pref-mode');
       modeButton.innerHTML=svg(next==='dark'?'sun':'moon');
       modeButton.setAttribute('aria-pressed',String(next==='light'));
-      modeButton.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
-      modeButton.title=next==='dark'?'Dark mode':'حالت روشن';
+      const language=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
+      modeButton.setAttribute('aria-label',language==='fa'?(next==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(next==='dark'?'Switch to light mode':'Switch to dark mode'));
+      modeButton.title=language==='fa'?(next==='dark'?'حالت تاریک':'حالت روشن'):(next==='dark'?'Dark mode':'Light mode');
     });
     const paletteButton=controls.querySelector('.atd-pref-palette');
     paletteButton.setAttribute('aria-controls',palette.id);
