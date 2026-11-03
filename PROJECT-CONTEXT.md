@@ -1093,3 +1093,12 @@
 - Do not hide a created account's credentials merely because the customer used the short code rather than the legacy public ID. Internal IBSng server names, addresses, ports and admin credentials remain excluded.
 - Source currently decrypts and displays stored credentials for paid orders when at least one create attempt is `succeeded`; unsuccessful destinations are not presented as successful accounts. If account data cannot be decrypted, do not fabricate it.
 - This is the agreed product behavior. CI/source checks do not establish live database or provisioning verification.
+
+
+### 2026-11-03 — Account credential creation modes (confirmed; implementation underway)
+
+- New account checkout must support two credential paths: automatic generation by the Store and customer-entered username/password. Depending on the product/admin policy, the customer may be offered a choice or one mode may be enforced.
+- All automatic-generation controls must be configurable in the website admin (not hardcoded): username prefix and suffix generation rules/length, password length and allowed character composition, and related safe defaults.
+- The server must generate credentials securely, validate the final username against every configured destination server before accepting the order, and keep order credential snapshots immutable after order creation. Remote IBSng account creation remains gated behind verified payment.
+- Existing checkout currently supports manual credentials only; automatic generation and its admin settings are not implemented as of this audit. Do not report partial functionality as complete.
+- Implementation must preserve the existing encrypted order password storage, idempotent checkout, multi-server target behavior, and customer-facing terminology (do not expose IBSng internals). Verify using focused source tests and PHP lint where runtime is available.
