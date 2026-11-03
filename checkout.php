@@ -266,8 +266,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <div class="eyebrow">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
 <h1>درخواست سفارش ثبت شد</h1>
-<?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
-<div class="notice success"><strong>کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
+<?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
+<div class="notice success" role="status" aria-live="polite"><strong>کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>">پیگیری وضعیت سفارش</a><?php endif; ?>
 <a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
