@@ -667,7 +667,7 @@
       const paths = {'home':'','account':'customer-account.php','orders':'my-orders.php','guide':'guide.php'};
       entries.forEach(([key,fa,en,icon]) => {
         const a = document.createElement('a');
-        a.className = 'atd-store-nav-link';
+        a.className = 'atd-store-nav-link button';
         a.href = rootUrl + paths[key];
         a.dataset.navKey = key;
         a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+(root.lang === 'fa' ? fa : en)+'</span>';
@@ -691,7 +691,9 @@
           });
           header.prepend(row);
         }
-        row.appendChild(controls);
+        const preferenceSlot = header.querySelector(':scope > .atd-shared-header-top > .atd-shared-preferences-slot');
+        if (preferenceSlot) preferenceSlot.appendChild(controls);
+        else row.appendChild(controls);
         if (nav.parentElement !== header) header.appendChild(nav);
         else if (nav.previousElementSibling !== row) row.insertAdjacentElement('afterend', nav);
       } else {
