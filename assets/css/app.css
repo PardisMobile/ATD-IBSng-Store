@@ -17,8 +17,8 @@
 * { box-sizing: border-box; }
 body {
   margin: 0; min-height: 100vh; color: var(--text);
-  background: radial-gradient(ellipse at 15% 0%, rgba(87,149,255,.16), transparent 34%),
-              radial-gradient(ellipse at 90% 15%, rgba(155,123,255,.13), transparent 30%), var(--bg);
+  background: radial-gradient(ellipse at 15% 0%, color-mix(in srgb,var(--accent) 16%,transparent), transparent 34%),
+              radial-gradient(ellipse at 90% 15%, color-mix(in srgb,var(--accent) 13%,transparent), transparent 30%), var(--bg);
 }
 a { color: inherit; text-decoration: none; }
 .store-shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
@@ -28,13 +28,13 @@ a { color: inherit; text-decoration: none; }
 .status-chip { padding:8px 13px; border:1px solid rgba(68,214,160,.2); border-radius:999px; background:rgba(68,214,160,.07); }
 .panel { background:var(--surface); border:1px solid var(--border); border-radius:24px; box-shadow:0 20px 70px rgba(0,0,0,.18); backdrop-filter:blur(18px); }
 .hero { padding:clamp(28px,6vw,72px); overflow:hidden; position:relative; }
-.hero:after { content:""; position:absolute; width:280px;height:280px;border-radius:50%;border:1px solid rgba(87,149,255,.16);left:-90px;top:-110px;box-shadow:0 0 0 35px rgba(87,149,255,.025),0 0 0 75px rgba(155,123,255,.025);pointer-events:none; }
+.hero:after { content:""; position:absolute; width:280px;height:280px;border-radius:50%;border:1px solid color-mix(in srgb,var(--accent) 16%,transparent);left:-90px;top:-110px;box-shadow:0 0 0 35px color-mix(in srgb,var(--accent) 2.5%,transparent),0 0 0 75px color-mix(in srgb,var(--accent) 2.5%,transparent);pointer-events:none; }
 h1 { font-size:clamp(2rem,5vw,3.5rem); line-height:1.35; max-width:720px; margin:14px 0; }
 .hero p,.empty-state p { color:var(--muted); line-height:2; max-width:650px; }
 .hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:16px; margin-top:28px; }
 .button { display:inline-flex;align-items:center;justify-content:center;padding:12px 22px;border-radius:12px;font-weight:700;transition:transform .2s,filter .2s; }
 .button:hover { transform:translateY(-2px);filter:brightness(1.1); }
-.button.primary { background:linear-gradient(120deg,var(--blue),var(--purple));color:#fff;box-shadow:0 8px 24px rgba(87,149,255,.2); }
+.button.primary { background:linear-gradient(120deg,var(--blue),var(--purple));color:#fff;box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 20%,transparent); }
 .muted { color:var(--muted);font-size:.9rem; }
 .section { margin:42px 0; }
 .section-heading { display:flex;justify-content:space-between;align-items:center;margin-bottom:18px; }
@@ -51,8 +51,8 @@ footer { text-align:center;padding:28px 0;color:var(--muted);font-size:.85rem; }
 :root {
   --atd-glass: rgba(21, 31, 49, .86);
   --atd-card: rgba(24, 36, 58, .92);
-  --atd-blue-glow: rgba(87, 149, 255, .18);
-  --atd-violet-glow: rgba(155, 123, 255, .13);
+  --atd-blue-glow: color-mix(in srgb,var(--accent) 18%,transparent);
+  --atd-violet-glow: color-mix(in srgb,var(--accent) 13%,transparent);
 }
 body {
   background:
@@ -71,7 +71,7 @@ body {
   transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 .panel-card:hover, .server:hover, .group-row:hover {
-  border-color: rgba(87,149,255,.28);
+  border-color: color-mix(in srgb,var(--accent) 28%,transparent);
 }
 .field input, .field select, .field textarea {
   background: var(--control-bg, rgba(10, 17, 32, .78)) !important;
@@ -84,7 +84,7 @@ body {
 .field input:focus, .field select:focus, .field textarea:focus {
   outline: none;
   border-color: var(--accent, var(--blue)) !important;
-  box-shadow: 0 0 0 3px var(--ui-focus-ring, rgba(87,149,255,.13));
+  box-shadow: 0 0 0 3px var(--ui-focus-ring, color-mix(in srgb,var(--accent) 13%,transparent));
 }
 .button, button.button, summary.button {
   border: 1px solid var(--border);
@@ -96,14 +96,14 @@ body {
 }
 .button:hover, button.button:hover, summary.button:hover {
   transform: translateY(-1px);
-  border-color: rgba(87,149,255,.42);
+  border-color: color-mix(in srgb,var(--accent) 42%,transparent);
   filter: brightness(1.08);
 }
 .button.primary, button.button.primary {
   background: linear-gradient(120deg, var(--blue), var(--purple));
   border: 0;
   color: #fff;
-  box-shadow: 0 8px 24px rgba(87,149,255,.18);
+  box-shadow: 0 8px 24px color-mix(in srgb,var(--accent) 18%,transparent);
 }
 .button.danger, button.button.danger, .danger {
   color: #ff9aa5;
@@ -157,7 +157,7 @@ body::before {
 body::after {
   content: ""; position: fixed; width: 32vw; height: 32vw; min-width: 220px; min-height: 220px;
   top: 2vh; right: -10vw; border-radius: 50%; pointer-events: none; z-index: -1;
-  background: radial-gradient(circle, rgba(155,123,255,.13), transparent 68%);
+  background: radial-gradient(circle, color-mix(in srgb,var(--accent) 13%,transparent), transparent 68%);
   filter: blur(12px); animation: atd-orb-float 11s ease-in-out infinite;
 }
 .admin-top, .panel-card, .server, .group-row, .result, .admin-welcome, .stat {
@@ -176,8 +176,8 @@ body::after {
 .panel-card { position: relative; overflow: hidden; }
 .panel-card::after {
   content: ""; position: absolute; width: 170px; height: 170px; top: -95px; left: -65px;
-  border-radius: 50%; border: 1px solid rgba(87,149,255,.13);
-  box-shadow: 0 0 0 22px rgba(87,149,255,.025), 0 0 0 48px rgba(155,123,255,.025);
+  border-radius: 50%; border: 1px solid color-mix(in srgb,var(--accent) 13%,transparent);
+  box-shadow: 0 0 0 22px color-mix(in srgb,var(--accent) 2.5%,transparent), 0 0 0 48px color-mix(in srgb,var(--accent) 2.5%,transparent);
   pointer-events: none; animation: atd-hero-pulse 8s ease-in-out infinite;
 }
 .panel-card > * { position: relative; z-index: 1; }
@@ -189,7 +189,7 @@ body::after {
 /* Attach the remaining reference motion primitives to visible decorative details. */
 .panel-card::before {
   content: ""; position: absolute; width: 190px; height: 190px; top: -82px; left: -72px;
-  border: 1px dashed rgba(155,123,255,.16); border-radius: 50%; pointer-events: none;
+  border: 1px dashed color-mix(in srgb,var(--accent) 16%,transparent); border-radius: 50%; pointer-events: none;
   animation: atd-orbit-spin 42s linear infinite;
 }
 .lang-toggle::before {
@@ -211,7 +211,7 @@ html[dir="ltr"] .admin-top { text-align: left; }
 .plan-card:nth-child(2) { animation-delay:.07s; }
 .plan-card:nth-child(3) { animation-delay:.14s; }
 .plan-card:nth-child(4) { animation-delay:.21s; }
-.plan-card:hover { transform:translateY(-4px); border-color:rgba(87,149,255,.34); box-shadow:0 24px 60px rgba(0,0,0,.25),0 0 0 1px rgba(87,149,255,.08); }
+.plan-card:hover { transform:translateY(-4px); border-color:color-mix(in srgb,var(--accent) 34%,transparent); box-shadow:0 24px 60px rgba(0,0,0,.25),0 0 0 1px color-mix(in srgb,var(--accent) 8%,transparent); }
 .button:focus-visible, a:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 @media(max-width:760px) {
   .catalog-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr)); }
@@ -239,7 +239,7 @@ html[dir="ltr"] .admin-top { text-align: left; }
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 :where(.server,.group-row,.stat,.report):hover {
-  border-color:rgba(87,149,255,.3);
+  border-color:color-mix(in srgb,var(--accent) 30%,transparent);
 }
 :where(.admin-top,.top,.admin-welcome,.stat,.report,.server,.group-row,.result) {
   animation:atd-fade-up .48s both ease-out;
@@ -348,11 +348,11 @@ body {
   color: var(--text);
   line-height: 1.75;
   background:
-    radial-gradient(ellipse at 8% -8%, rgba(86, 145, 255, .15), transparent 36%),
-    radial-gradient(ellipse at 96% 12%, rgba(154, 119, 255, .11), transparent 31%),
+    radial-gradient(ellipse at 8% -8%, color-mix(in srgb,var(--accent) 15%,transparent), transparent 36%),
+    radial-gradient(ellipse at 96% 12%, color-mix(in srgb,var(--accent) 11%,transparent), transparent 31%),
     #080d18;
 }
-::selection { color: #fff; background: rgba(106, 164, 255, .35); }
+::selection { color: #fff; background: color-mix(in srgb,var(--accent) 35%,transparent); }
 :where(h1,h2,h3,h4) { letter-spacing: -.018em; line-height: 1.45; }
 :where(p,li) { overflow-wrap: anywhere; }
 :where(.panel,.panel-card,.server,.group-row,.result,.stat,.report,.plan-card,.orders-card,.status-card) {
@@ -382,8 +382,8 @@ body {
   line-height: 1.45;
 }
 :where(.button.primary,button.button.primary) {
-  background: linear-gradient(115deg, #4e8df5, #8d6cf0);
-  box-shadow: 0 8px 22px rgba(85, 133, 245, .2);
+  background: linear-gradient(115deg, var(--accent), var(--accent));
+  box-shadow: 0 8px 22px color-mix(in srgb,var(--accent) 20%,transparent);
 }
 :where(.button.danger,button.button.danger) {
   background: rgba(255, 104, 125, .08);
