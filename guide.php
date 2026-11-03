@@ -10,7 +10,21 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <title>راهنمای استفاده | <?= e($siteTitle) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.guide{max-width:850px;margin:32px auto;padding:clamp(20px,4vw,36px)}.guide h1{margin-top:0}.guide section{padding:18px 0;border-bottom:1px solid var(--border);line-height:1.9}.guide .muted{color:var(--muted)}.guide a{color:var(--accent,#9baaff)}
+.guide{width:min(850px,calc(100% - 28px));margin:clamp(16px,4vw,32px) auto;padding:clamp(20px,4.5vw,38px);min-width:0}
+.guide h1{margin:8px 0 14px;font-size:clamp(1.65rem,4vw,2.35rem);line-height:1.45;overflow-wrap:anywhere}
+.guide>p{line-height:1.95}
+.guide .muted{color:var(--muted)}
+.guide section{position:relative;padding:clamp(16px,3vw,22px);margin:14px 0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);line-height:1.95;min-width:0;transition:border-color .18s ease,background-color .18s ease}
+.guide section:hover{border-color:color-mix(in srgb,var(--accent,var(--blue)) 30%,var(--border))}
+.guide section h2{font-size:clamp(1.05rem,2.5vw,1.25rem);line-height:1.6;margin:0 0 10px;overflow-wrap:anywhere}
+.guide section p{margin:0;line-height:1.95}
+.guide section ul{margin:8px 0 0;padding-inline-start:1.35rem}
+.guide section li{padding:3px 0}
+.guide a{color:var(--accent,var(--blue));text-decoration:underline;text-underline-offset:3px}
+.guide section a{display:inline-flex;align-items:center;gap:8px;margin-top:4px;font-weight:700}
+.guide section a:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:4px;border-radius:4px}
+@media(max-width:560px){.guide{width:calc(100% - 20px);border-radius:18px}.guide section{padding:15px}.guide section ul{padding-inline-start:1.1rem}}
+@media(prefers-reduced-motion:reduce){.guide section{transition:none}}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
