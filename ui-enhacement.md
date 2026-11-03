@@ -840,3 +840,10 @@ The following UI-only changes have been committed to `main`:
 - Added English labels and explanatory copy for the customer account lookup form, CAPTCHA input, returned account details, validity, expiration, remaining days, and password reveal control. The reveal button label now follows the selected locale even when the password is already shown.
 - Customer account lookup's generic validation and unavailable/not-found feedback now uses the shared bilingual message catalog. Server-provided service and plan names, usernames, credentials, and expiration values remain data values rather than being translated.
 - Account lookup, CAPTCHA/session behavior, IBSng requests, password matching, and returned account data are unchanged. Source review only; browser-based language switching and visual verification remain pending.
+
+
+### UI implementation note — customer account English localization (2026-11-03)
+
+- Added English copy for customer account navigation, lookup labels/instructions, CAPTCHA label/placeholder, account result headings, service/plan/validity fields, expiration, remaining-day units, and password reveal controls.
+- The password reveal control now keeps its visible/hidden action label synchronized with the active locale. Generic lookup validation and unavailable/not-found messages use the bilingual message catalog.
+- This is UI/localization work only. CAPTCHA, session, IBSng lookup, credential matching, and account result behavior are unchanged. Source inspection only; browser and device QA remains pending.
