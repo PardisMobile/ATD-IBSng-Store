@@ -227,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <style>
 .checkout-shell{width:min(760px,calc(100% - 32px));margin:0 auto}.checkout-card{padding:clamp(20px,4vw,34px);margin:24px 0}.field{display:grid;gap:8px;margin:16px 0}.field label{color:var(--muted)}.field input{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit}.notice{padding:15px;border:1px solid var(--border);border-radius:14px;margin:16px 0;line-height:1.85}.error{border-color:#ff718055;background:#ff718012}.success{border-color:#44d6a055;background:#44d6a012}.price{font-size:1.6rem;font-weight:800}.muted{color:var(--muted);line-height:1.8}
 </style>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body>
 <main class="checkout-shell">
