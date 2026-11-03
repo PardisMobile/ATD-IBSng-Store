@@ -599,3 +599,10 @@ The following UI-only changes have been committed to `main`:
 - Reorganized the crowded dashboard header into a compact brand/settings row and a distinct responsive navigation grid, giving management links consistent spacing and touch-friendly minimum heights.
 - Kept every existing admin destination, logout POST endpoint, and CSRF token intact; this is a presentation/markup organization change only.
 - Navigation collapses from four columns to two and then one on narrower screens. Browser/viewport QA remains pending.
+
+
+### UI implementation note — email sender settings controls (2026-11-03)
+
+- Replaced the sender/test email fields' fixed dark background with shared theme-aware control tokens, consistent control height/radius, and the shared visible keyboard-focus ring.
+- Email addresses now render explicitly LTR and isolated within the RTL settings page, improving address readability and editing.
+- The change is limited to presentation CSS; form names, validation, CSRF, save/test actions, and mail delivery behavior are unchanged. Browser/viewport QA remains pending.
