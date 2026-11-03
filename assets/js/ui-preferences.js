@@ -634,6 +634,39 @@
         swatch.title = schemeNames[key][next];
       });
     });
+    // A single storefront navigation is mounted on every public page.
+    // Keep this separate from the administration navigation.
+    const publicPage = !location.pathname.includes('/admin') && !location.pathname.includes('/install');
+    if (publicPage && !document.querySelector('.atd-store-nav')) {
+      const nav = document.createElement('nav');
+      nav.className = 'atd-store-nav';
+      nav.setAttribute('aria-label', root.lang === 'fa' ? 'منوی فروشگاه' : 'Store navigation');
+      const base = document.querySelector('base')?.href || location.href;
+      const rootUrl = new URL('.', base).href;
+      const entries = [
+        ['home','خانه','Home','<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+        ['account','حساب کاربری','Account','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
+        ['orders','پیگیری و بازیابی خریدها','Track & recover','<path d="M3 4h18v16H3z"/><path d="M7 8h10M7 12h6M7 16h4"/>'],
+        ['guide','راهنما','Help','<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1.2.8-1.5 1.2-1.5 2.5M12 17h.01"/>']
+      ];
+      const paths = {'home':'','account':'customer-account.php','orders':'my-orders.php','guide':'guide.php'};
+      entries.forEach(([key,fa,en,icon]) => {
+        const a = document.createElement('a');
+        a.className = 'atd-store-nav-link';
+        a.href = rootUrl + paths[key];
+        a.dataset.navKey = key;
+        a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+(root.lang === 'fa' ? fa : en)+'</span>';
+        const current = location.pathname.replace(/\\/$/,'');
+        if ((key === 'home' && (current === '' || current.endsWith('/index.php'))) ||
+            (key === 'account' && current.endsWith('/customer-account.php')) ||
+            (key === 'orders' && (current.endsWith('/my-orders.php') || current.endsWith('/order-status.php'))) ||
+            (key === 'guide' && current.endsWith('/guide.php'))) a.setAttribute('aria-current','page');
+        nav.appendChild(a);
+      });
+      const main = document.querySelector('main');
+      if (main) main.insertBefore(nav, main.firstChild);
+      else document.body.insertBefore(nav, document.body.firstChild);
+    }
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
