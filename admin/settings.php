@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             || !ctype_digit($credentialValues['username_suffix_length'])
             || (int)$credentialValues['username_suffix_length'] < 4 || (int)$credentialValues['username_suffix_length'] > 12
             || !ctype_digit($credentialValues['password_length'])
-            || (int)$credentialValues['password_length'] < 8 || (int)$credentialValues['password_length'] > 64
+            || (int)$credentialValues['password_length'] < 4 || (int)$credentialValues['password_length'] > 12
             || !in_array($credentialValues['password_charset'], ['alphanumeric', 'mixed'], true)) {
             $error = 'تنظیمات تولید اطلاعات اکانت معتبر نیست.';
         }
@@ -269,7 +269,7 @@ $config = app_config();
 <div class="field"><label for="credential_mode">روش ورود اطلاعات</label><select id="credential_mode" name="credential_mode" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="customer"<?= $credentialValues['credential_mode'] === 'customer' ? ' selected' : '' ?>>مشتری نام کاربری و رمز را وارد کند</option><option value="automatic"<?= $credentialValues['credential_mode'] === 'automatic' ? ' selected' : '' ?>>تولید خودکار توسط فروشگاه</option><option value="choice"<?= $credentialValues['credential_mode'] === 'choice' ? ' selected' : '' ?>>مشتری بین خودکار و دستی انتخاب کند</option></select></div>
 <div class="field"><label for="username_prefix">پیشوند نام کاربری</label><input id="username_prefix" name="username_prefix" maxlength="24" pattern="[A-Za-z0-9_.-]+" required value="<?= e($credentialValues['username_prefix']) ?>"><div class="hint">فقط حروف لاتین، عدد و . _ -؛ برای مثال atd</div></div>
 <div class="field"><label for="username_suffix_length">طول بخش تصادفی نام کاربری</label><input id="username_suffix_length" name="username_suffix_length" type="number" min="4" max="12" required value="<?= e($credentialValues['username_suffix_length']) ?>"></div>
-<div class="field"><label for="password_length">طول رمز تولیدشده</label><input id="password_length" name="password_length" type="number" min="8" max="64" required value="<?= e($credentialValues['password_length']) ?>"></div>
+<div class="field"><label for="password_length">طول رمز تولیدشده</label><input id="password_length" name="password_length" type="number" min="4" max="12" required value="<?= e($credentialValues['password_length']) ?>"></div>
 <div class="field"><label for="password_charset">ترکیب کاراکتر رمز</label><select id="password_charset" name="password_charset" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="alphanumeric"<?= $credentialValues['password_charset'] === 'alphanumeric' ? ' selected' : '' ?>>حروف لاتین و عدد</option><option value="mixed"<?= $credentialValues['password_charset'] === 'mixed' ? ' selected' : '' ?>>حروف لاتین، عدد و نشانه‌های امن</option></select></div>
 <hr>
 <h2>سیاست هدیهٔ تمدید IBSng</h2>
