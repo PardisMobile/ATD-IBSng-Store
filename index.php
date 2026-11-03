@@ -111,44 +111,44 @@ function store_bytes_label(?string $bytes): string
   <main class="store-shell">
     <header class="topbar">
       <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
-      <nav class="hero-actions" aria-label="دسترسی مشتری"><a class="button" href="<?= e(app_url('customer-account.php')) ?>">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><span class="status-chip">فروشگاه سرویس‌ها</span></nav>
+      <nav class="hero-actions" aria-label="دسترسی مشتری" data-ui-aria="customer_account"><a class="button" href="<?= e(app_url('customer-account.php')) ?>" data-ui-text="customer_account">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="order_tracking">پیگیری و بازیابی خریدها</a><span class="status-chip" data-ui-text="storefront_status">فروشگاه سرویس‌ها</span></nav>
     </header>
     <section class="hero panel">
       <div class="eyebrow">ATD • IBSng</div>
-      <h1>سرویس موردنیازت رو ساده انتخاب کن</h1>
-      <p>پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
+      <h1 data-ui-text="catalog_hero_title">سرویس موردنیازت رو ساده انتخاب کن</h1>
+      <p data-ui-text="catalog_hero_intro">پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
       <div class="hero-actions">
-        <a class="button primary" href="#services">مشاهده سرویس‌ها</a>
-        <span class="muted">بدون نیاز به ثبت‌نام فروشگاهی</span>
+        <a class="button primary" href="#services" data-ui-text="catalog_view_services">مشاهده سرویس‌ها</a>
+        <span class="muted" data-ui-text="catalog_no_registration">بدون نیاز به ثبت‌نام فروشگاهی</span>
       </div>
     </section>
     <section id="services" class="section">
       <div class="section-heading">
-        <div><div class="eyebrow">خدمات</div><h2>سرویس‌های فروشگاه</h2></div>
+        <div><div class="eyebrow" data-ui-text="catalog_section_eyebrow">خدمات</div><h2 data-ui-text="catalog_section_title">سرویس‌های فروشگاه</h2></div>
       </div>
       <?php if ($catalogError): ?>
-        <div class="catalog-notice">نمایش محصولات فعلاً ممکن نیست. اتصال دیتابیس و نصب schema را بررسی کنید.</div>
+        <div class="catalog-notice" data-ui-text="catalog_load_error">نمایش محصولات فعلاً ممکن نیست. اتصال دیتابیس و نصب schema را بررسی کنید.</div>
       <?php elseif (!$products): ?>
-        <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3>هنوز پلنی برای فروش فعال نشده است</h3><p>مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
+        <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3 data-ui-text="catalog_empty_title">هنوز پلنی برای فروش فعال نشده است</h3><p data-ui-text="catalog_empty_intro">مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
       <?php else: ?>
         <div class="catalog-grid">
         <?php foreach ($products as $product): ?>
           <article class="plan-card panel">
-            <div class="eyebrow">پلن سرویس</div>
+            <div class="eyebrow" data-ui-text="catalog_plan_eyebrow">پلن سرویس</div>
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
-            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span>قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
-            <div class="plan-meta"><span>مدت اعتبار</span><strong><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
-            <div class="plan-meta"><span>حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
-            <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>">ثبت سفارش</a>
+            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
+            <div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(store_duration_label((int)$product['duration_seconds'])) ?>"><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
+            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
+            <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>" data-ui-text="catalog_order">ثبت سفارش</a>
           </article>
         <?php endforeach; ?>
         </div>
       <?php endif; ?>
     </section>
-    <footer>© <?= date('Y') ?> <?= e($pageTitle) ?> · <a class="admin-link" href="<?= e(app_url('admin/login.php')) ?>">ورود مدیریت</a></footer>
+    <footer>© <?= date('Y') ?> <?= e($pageTitle) ?> · <a class="admin-link" href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="admin_login">ورود مدیریت</a></footer>
   </main>
   <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body>
