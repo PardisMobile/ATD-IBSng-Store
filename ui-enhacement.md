@@ -796,3 +796,9 @@ The following UI-only changes have been committed to `main`:
 - `admin/settings.php`: expose successful settings-save feedback through a polite status region and validation/save errors through an assertive alert.
 - This completes the same dynamic feedback semantics used across the other reviewed admin pages; static explanatory notices remain unchanged.
 - Markup-only update; payment configuration, settings persistence, validation, CSRF, and webhook behavior were not changed. Source review only; browser and assistive-technology QA remains pending.
+
+
+## 23. Admin dashboard database-error announcement (implemented)
+
+- The dashboard's conditional database-statistics failure notice now uses an assertive alert live region so the error is announced when present.
+- The notice text, dashboard queries, statistics, and database handling remain unchanged. Source review only; browser and assistive-technology QA remains pending.
