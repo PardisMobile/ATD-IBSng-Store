@@ -74,7 +74,9 @@
       title_admin_orders: 'Sales report',
       title_admin_ibsng_groups: 'IBSng plan and group mapping',
       title_admin_ibsng_servers: 'IBSng servers',
-      title_admin_ibsng_users: 'IBSng account management'
+      title_admin_ibsng_users: 'IBSng account management',
+      title_admin_email_templates: 'Email templates',
+      title_admin_email_settings: 'Email settings'
     },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
@@ -97,6 +99,41 @@
     },
     admin_ibsng_groups: {
       groups_add_mapping: 'Add mapping'
+    },
+    admin_email_templates: {
+      email_templates_admin: 'Store administration',
+      email_templates_back: 'Back to dashboard',
+      email_templates_customer: 'Customer communication',
+      email_templates_title: 'Manage email templates',
+      email_templates_variables: 'Available template variables: {{site_name}}, {{customer_name}}, {{order_id}}, {{order_url}}, {{verification_code}}, {{expires_in}}, {{verification_url}}, {{expiration_date}}, and {{service_url}}. Variables unrelated to an event will be empty for that event.',
+      email_templates_event: 'Email event',
+      email_templates_subject: 'Email subject',
+      email_templates_html: 'HTML template',
+      email_templates_html_hint: 'Edit the email HTML. A sample-data preview is available on this page.',
+      email_templates_text: 'Fallback plain-text version',
+      email_templates_save: 'Save template',
+      email_templates_preview_save: 'Save and preview',
+      email_templates_preview: 'Preview',
+      email_templates_preview_title: 'Email template preview',
+      email_event_purchase_success: 'Successful purchase',
+      email_event_renewal_success: 'Successful renewal',
+      email_event_order_recovery: 'Order recovery / purchase details',
+      email_event_email_verification: 'Email verification',
+      email_event_expiration_reminder: 'Expiration reminder'
+    },
+    admin_email_settings: {
+      email_settings_admin: 'Store administration',
+      email_settings_back: 'Back to dashboard',
+      email_settings_customer: 'Customer communication',
+      email_settings_title: 'Email delivery settings',
+      email_settings_intro: 'Mail is sent through the hosting provider’s mail() service; separate SMTP configuration is not required. For better delivery, the domain and sender must be authorized by the host and have appropriate email DNS records. This page sends a test email but cannot guarantee final delivery.',
+      email_settings_from_address: 'Sender email',
+      email_settings_from_name: 'Sender display name',
+      email_settings_save: 'Save settings',
+      email_settings_test_title: 'Send test email',
+      email_settings_test_to: 'Send to this email',
+      email_settings_send_test: 'Save and send test',
+      email_settings_manage_templates: 'Manage templates'
     },
     admin_ibsng_users: {
       users_select_plan: 'Select plan',
