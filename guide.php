@@ -12,6 +12,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <style>
 .guide{max-width:850px;margin:32px auto;padding:clamp(20px,4vw,36px)}.guide h1{margin-top:0}.guide section{padding:18px 0;border-bottom:1px solid var(--border);line-height:1.9}.guide .muted{color:var(--muted)}.guide a{color:var(--accent,#9baaff)}
 </style>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body>
 <main class="guide panel">
