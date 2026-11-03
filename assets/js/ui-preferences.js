@@ -85,6 +85,7 @@
       products_group_plan: 'Active group / plan',
       products_select_mapping: 'Select mapping',
       products_remove_mapping: 'Remove',
+      products_delete: 'Delete',
       products_add_mapping: 'Add server / group',
       products_mapping_hint: 'Select each server only once per product. The group must be a manual mapping for that server.',
       products_description: 'Description',
