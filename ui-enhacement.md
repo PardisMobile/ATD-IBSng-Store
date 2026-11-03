@@ -897,3 +897,10 @@ The following UI-only changes have been committed to `main`:
 - Added localization keys for remaining IBSng server-page headings, introduction, host/port/admin credential labels, save-and-test action, empty state, and dynamic last-test/default/error labels. Server deletion confirmation now follows the active language.
 - Added the missing group-mapping page title and “Add mapping” heading translation. Existing legacy dictionaries continue to handle their previously mapped copy and validation messages.
 - Shared translation-key source check passed for the newly added server/group keys. IBSng server creation/edit/test, manual group mapping, validation, default selection, deletion constraints, and data remain unchanged. Browser QA remains pending.
+
+
+### UI implementation note — IBSng account management page translation gaps (2026-11-03)
+
+- Added English labels for the remaining renewal-plan placeholder and day unit, plus the existing-user group-change section, its prerequisite/empty state, username and destination fields, and submit action.
+- Added an English browser title for IBSng account management. Existing legacy translation dictionary continues to cover the page's other matched labels and feedback.
+- No account creation, renewal, group-change, or deletion logic was changed. Source key review only; browser and operational QA remains pending.
