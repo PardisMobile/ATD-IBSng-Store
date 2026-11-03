@@ -746,3 +746,11 @@ The following UI-only changes have been committed to `main`:
 - Set administrator username/password fields to explicit LTR isolated rendering for predictable entry in the Persian interface.
 - Harmonized login error notices with shared theme danger/surface tokens and improved wrapping, keyboard focus visibility, and small-screen card sizing.
 - CSS-only: authentication, CSRF, login throttling, and password recovery routing are unchanged. Source review only; browser/device visual QA remains pending.
+
+
+### Admin store settings — consolidated responsive and technical-field UI pass (2026-11-03)
+
+- Completed one cohesive page-level styling pass for `admin/settings.php`: aligned section/card spacing, form labels and controls, focus states, responsive action layout, notice presentation, and theme-aware gateway fieldsets.
+- Isolated URL/email/numeric and gateway configuration values as LTR technical strings; made the generated IRCrypto webhook endpoint readable and safely wrapping within RTL help text.
+- Confirmed the page already contains the requested IRCrypto webhook guidance; retained its generated URL and the existing explanation of signature, status, amount, and currency validation rather than duplicating or changing payment logic.
+- CSS-only presentation update. Settings persistence, provider/currency selection, validation, CSRF, webhook route and payment behavior were not changed. Source review only; browser/viewport QA remains pending.
