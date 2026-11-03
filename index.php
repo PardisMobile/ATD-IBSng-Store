@@ -74,6 +74,14 @@ function store_bytes_label(?string $bytes): string
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
   <style>
+/* Brand shimmer is deliberately clipped to the title text; the mark stays still. */
+.storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
+.storefront-brand-mark{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;color:var(--accent)}
+.storefront-brand-mark svg{display:block;width:100%;height:100%}
+.storefront-brand-title{position:relative;display:inline-block;isolation:isolate;overflow:hidden;max-width:100%;border-radius:2px}
+.storefront-brand-title::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(108deg,transparent 0%,transparent 38%,rgba(255,255,255,.08) 44%,rgba(255,255,255,.72) 50%,rgba(255,255,255,.12) 56%,transparent 63%,transparent 100%);transform:translateX(-125%);animation:storefrontBrandTextShine 5.8s ease-in-out infinite}
+@keyframes storefrontBrandTextShine{0%,66%{transform:translateX(-125%)}100%{transform:translateX(125%)}}
+@media(prefers-reduced-motion:reduce){.storefront-brand-title::after{animation:none;display:none}}
 /* ATD Files Portal-inspired hero motion; storefront palette remains inherited. */
 .storefront-hero{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;align-items:center}
 .storefront-hero-content{position:relative;z-index:2;max-width:min(66%,680px)}
@@ -129,7 +137,15 @@ function store_bytes_label(?string $bytes): string
 <body>
   <main class="store-shell">
     <header class="topbar">
-      <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
+      <a class="brand storefront-brand" href="<?= e(app_url()) ?>" aria-label="<?= e($pageTitle) ?>">
+        <span class="storefront-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none" focusable="false">
+            <path d="M20 3.5 35 12v16L20 36.5 5 28V12L20 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="m11 25 6.1-12h2.2l6.2 12M13.5 20.5h9M25.5 14.5h3.2v11h-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="storefront-brand-title"><?= e($pageTitle) ?></span>
+      </a>
       <nav class="hero-actions" aria-label="دسترسی مشتری" data-ui-aria="customer_account"><a class="button" href="<?= e(app_url('customer-account.php')) ?>" data-ui-text="customer_account">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="order_tracking">پیگیری و بازیابی خریدها</a><span class="status-chip" data-ui-text="storefront_status">فروشگاه سرویس‌ها</span></nav>
     </header>
     <section class="hero panel storefront-hero">
