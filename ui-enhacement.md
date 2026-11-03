@@ -561,3 +561,7 @@ The following UI-only changes have been committed to `main`:
 
 ### UI implementation note — customer account technical values
 - `customer-account.php`: force usernames, passwords, and the four-digit anti-bot code into a predictable LTR presentation; center and space the code and keep account values readable in RTL cards. Lookup/authentication behavior and password visibility interaction remain unchanged.
+
+
+### UI implementation note — admin payment report identifiers and values
+- `admin/orders.php`: display transaction/order references, phone numbers, amount+currency, and timestamps with isolated LTR direction and tabular numerals to prevent bidi reordering in the RTL review table. Existing table data, review confirmation, POST fields, and transaction resolution behavior remain unchanged.
