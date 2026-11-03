@@ -497,3 +497,10 @@ The following UI-only changes have been committed to `main`:
 - Added consistent focus-visible and placeholder styling to the existing checkout field rule.
 - Only inline presentation CSS was changed. Checkout form markup, POST fields, validation, payment initiation, and order processing remain untouched.
 - Source inspection only; light-theme browser rendering and responsive visual QA are still pending.
+
+
+### Admin store settings form theme alignment (2026-11-03)
+
+- Updated the support/payment/settings page's existing input and select presentation to use the shared theme, control-surface, border, radius, and focus tokens. This removes the remaining fixed dark backgrounds from the settings form and allows its controls to follow light/dark mode and the selected accent.
+- Added consistent fieldset/legend spacing for gateway configuration groups. The existing IRCrypto Webhook help text remains in place and continues to show the installation-aware webhook URL.
+- UI-only CSS/class adjustments: no settings keys, submitted names, gateway configuration, Webhook endpoint, validation, or save behavior were changed. Browser visual QA remains outstanding.
