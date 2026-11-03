@@ -419,3 +419,10 @@ The following UI-only changes have been committed to `main`:
 - The payment callback endpoint was intentionally not changed: it is a processing endpoint rather than a user-facing page, and the UI preference layer is not relevant to its server-side payment flow.
 - This integration provides shared preference state and direction/theme application; it does **not** by itself complete full text translation. Existing IBSng management pages still have legacy page-level translation scripts and need a dedicated consolidation pass to avoid divergent language keys/behavior.
 - Browser rendering and viewport-based QA remain outstanding; no visual test is claimed from source edits alone.
+
+
+### Shared language preference compatibility (2026-11-03)
+
+- The shared preference toolbar now reads the legacy `atd-ibsng-language` key when no shared language preference has been set, and writes both keys when the user switches language. This preserves prior user-selected language across IBSng admin screens while consolidating the preference source going forward.
+- The toolbar emits the language-change event on both the root element and `document` to support existing page integrations listening at either level.
+- This is a compatibility bridge, not a claim that legacy page translation dictionaries have been fully unified. Translation coverage and actual browser behavior still require follow-up verification.
