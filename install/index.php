@@ -161,7 +161,7 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
  document.cookie='atd-ui-language='+encodeURIComponent(locale)+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
 })();
 </script>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= "../assets/js/ui-preferences.js" ?>" defer></script>
 <style>
 body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,transparent 34%),radial-gradient(ellipse at 88% 90%,#20c9971c,transparent 30%),var(--bg)}
 .setup{width:min(920px,calc(100% - 28px));margin:clamp(22px,6vh,64px) auto;padding:clamp(22px,5vw,48px);border:1px solid var(--border);border-radius:var(--ui-radius-xl,26px);background:linear-gradient(145deg,var(--surface),var(--surface-2));box-shadow:var(--ui-shadow,0 28px 90px #0005);min-width:0}
