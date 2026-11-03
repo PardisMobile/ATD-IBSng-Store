@@ -925,3 +925,10 @@ The following UI-only changes have been committed to `main`:
 - Email-template editor, email delivery settings, and admin sign-in now expose English labels, help text, document titles, and actions through the shared locale. Email event names use explicit event identifiers.
 - Editable email subject/HTML/plain-text content and provider/user-configured values are deliberately preserved as entered rather than translated.
 - Email transport, template persistence, preview rendering, login authentication, CSRF, and password-recovery behavior are unchanged. Source review only; browser preview, test email, and sign-in flows have not been run.
+
+
+### UI implementation note — provisioning queue English localization (2026-11-03)
+
+- Added English copy for the provisioning queue explanation, attempt table, empty state, manual IBSng resolution controls, email-delivery status table, retry action, and browser title. Known provisioning states and result options use explicit status keys.
+- The warning that manual resolution sends no remote request and the email retry warning are retained in the translated guidance.
+- Queue execution, needs_review/running resolution, remote-user-ID recording, email retry, CSRF, and provisioning state transitions are unchanged. Source review only; no real IBSng action or email retry was executed, and browser QA remains pending.
