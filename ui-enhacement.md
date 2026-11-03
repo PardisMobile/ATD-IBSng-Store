@@ -411,3 +411,11 @@ The following UI-only changes have been committed to `main`:
 - Run PHP syntax checks and browser-based visual/functional checks at mobile, tablet, and desktop widths. Do not treat code review alone as visual QA.
 - Confirm the final icon system is consistent across all pages and that meaningful icons have accessible labels.
 - Keep all remaining changes UI-only; do not alter payment, callback, IBSng, database, authentication, or business-operation behavior.
+
+
+### Continued audit — preference control coverage (2026-11-03)
+
+- Added the shared `assets/js/ui-preferences.js` include to the admin settings page and the public checkout, order-status, and guide pages. This closes the identified gaps in shared theme/accent/language preference control loading for these screens.
+- The payment callback endpoint was intentionally not changed: it is a processing endpoint rather than a user-facing page, and the UI preference layer is not relevant to its server-side payment flow.
+- This integration provides shared preference state and direction/theme application; it does **not** by itself complete full text translation. Existing IBSng management pages still have legacy page-level translation scripts and need a dedicated consolidation pass to avoid divergent language keys/behavior.
+- Browser rendering and viewport-based QA remain outstanding; no visual test is claimed from source edits alone.
