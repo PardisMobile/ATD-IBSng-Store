@@ -243,8 +243,8 @@ $config = app_config();
 <section class="panel panel-card">
 <div class="eyebrow">تنظیمات فروشگاه</div><h1>راه‌های پشتیبانی</h1>
 <p class="hint">هر راه ارتباطی اختیاری است. گزینه‌ای که خالی بماند در فروشگاه نمایش داده نمی‌شود.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field"><label for="telegram_id">شناسه Telegram</label><input id="telegram_id" name="telegram_id" value="<?= e($values['support_telegram_id']) ?>" maxlength="32" placeholder="im000ki6" autocomplete="off"><div class="hint">فقط شناسه را وارد کنید، بدون @ یا آدرس سایت. لینک t.me به‌صورت خودکار ساخته می‌شود.</div></div>
