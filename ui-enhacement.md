@@ -634,3 +634,10 @@ The following UI-only changes have been committed to `main`:
 - Server cards now have a defined theme-aware outline, consistent rounded corners, and restrained hover feedback.
 - Card action buttons share a minimum touch height, padding, radius, and clear keyboard-focus treatment; action forms wrap more safely in narrow layouts.
 - Server management actions, connection testing, default selection, activation, deletion, and credential handling were not changed. Visual browser QA is pending.
+
+
+### UI note — provisioning queue action layout (2026-11-03)
+
+- Made the provisioning attempts and email-delivery action column more usable by giving its inline forms a stable grid, consistent spacing, and full-width bounded controls. Action buttons retain a minimum touch height and wrap labels rather than forcing the table wider.
+- Error/result text now has a readable wrapping width, and table headers/row hover use the shared theme surface tokens for clearer scanning in the admin view.
+- No queries, POST fields, CSRF handling, retry/resolve behavior, or email/provisioning operations were changed. This is source-level UI work; browser and viewport QA remains pending.
