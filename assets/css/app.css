@@ -1249,3 +1249,122 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   .topbar > nav,.topbar .hero-actions { width:100%; justify-content:stretch; }
   .topbar > nav .button,.topbar .hero-actions .button { flex:1 1 140px; }
 }
+
+
+/* Site-wide page frame: header, body and footer share one rhythm. */
+:where(.store-shell,.account-shell,.orders-shell,.checkout-shell,.status-shell,.guide,.admin-shell) {
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+:where(.store-shell,.account-shell,.orders-shell,.checkout-shell,.status-shell,.admin-shell) > .topbar,
+:where(.store-shell,.account-shell,.orders-shell,.checkout-shell,.status-shell,.admin-shell) > .atd-admin-header {
+  flex:0 0 auto;
+}
+:where(.store-shell,.account-shell,.orders-shell,.checkout-shell,.status-shell,.admin-shell) > :is(.hero,.panel,.account-card,.orders-card,.checkout-card,.status-card,.admin-welcome,.admin-grid) {
+  flex:0 0 auto;
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > :is(.account-card,.orders-card,.checkout-card,.status-card) {
+  width:100%;
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar {
+  padding-block:clamp(18px,3vw,28px);
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar .brand,
+.store-shell > .topbar .brand {
+  color:var(--accent);
+  font-weight:800;
+  letter-spacing:-.015em;
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar nav,
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar .hero-actions {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar :is(a.button,.button) {
+  min-height:44px;
+  padding:10px 16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:14px;
+  border:1px solid var(--atd-nav-border);
+  background:var(--atd-nav-bg);
+  color:var(--atd-nav-fg);
+  font:inherit;
+  font-weight:700;
+  text-align:center;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar :is(a.button,.button):hover {
+  background:var(--atd-nav-hover-bg);
+  border-color:var(--atd-nav-hover-border);
+  transform:translateY(-1px);
+}
+:where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar :is(a.button,.button):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+:where(.store-shell,.account-shell,.orders-shell,.checkout-shell,.status-shell,.guide,.admin-shell) > footer {
+  margin-top:auto;
+  padding:24px 0;
+  color:var(--muted);
+  border-top:1px solid var(--border);
+}
+.atd-admin-header {
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:20px 0 22px;
+  margin-bottom:24px;
+  border-bottom:1px solid var(--border);
+}
+.atd-admin-header-top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.atd-admin-header .brand {
+  color:var(--accent);
+  font-weight:800;
+}
+.atd-admin-nav {
+  display:flex;
+  align-items:stretch;
+  flex-wrap:wrap;
+  gap:9px;
+}
+.atd-admin-nav > .atd-admin-nav-link,
+.atd-admin-nav .atd-admin-logout {
+  flex:1 1 145px;
+}
+.atd-admin-logout .atd-admin-nav-link {
+  width:100%;
+}
+.atd-admin-nav .atd-admin-nav-link {
+  min-height:44px;
+  padding:10px 14px;
+  border-radius:14px;
+}
+.atd-admin-preferences-slot {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+@media(max-width:720px) {
+  .atd-admin-nav { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .atd-admin-nav > .atd-admin-nav-link,.atd-admin-nav .atd-admin-logout { min-width:0; }
+}
+@media(max-width:480px) {
+  .atd-admin-header-top { align-items:flex-start;flex-direction:column; }
+  .atd-admin-preferences-slot { width:100%;justify-content:flex-start; }
+  .atd-admin-nav { grid-template-columns:1fr; }
+  :where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar { align-items:flex-start; }
+  :where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar nav,
+  :where(.account-shell,.orders-shell,.checkout-shell,.status-shell) > .topbar .hero-actions { width:100%; }
+}
