@@ -608,3 +608,28 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Clarified deployment: fresh installations create `customer_order_recovery_codes` from `database/schema.sql`; this migration is for already-installed databases receiving the feature, not an extra step for a fresh install.
 - Aligned the migration `code_hash` width with the fresh-install schema (`CHAR(255)`) so it can safely hold PHP password hashes.
 - Migration application on an existing installation remains a manual deployment step unless/ until the project introduces a tracked migration runner.
+
+
+## 2026-11-03 — Documentation-to-main audit checkpoint
+
+**Audit scope:** Read the current root `PROJECT-CONTEXT.md`, `PROJECT-IMPLEMENTATION-TRACEABILITY.md`, `README.md`, `docs/PAYMENT-ARCHITECTURE.md`, and `docs/PAYMENTS-AND-PROVISIONING.md` on `main`; checked the current admin password recovery implementation files and the repository root/docs/database directory inventories. This is a source/documentation audit checkpoint, not a claim that every requirement in the 193 KB Context file has been exhaustively mapped to every PHP call site or runtime-tested.
+
+### Confirmed documentation/code alignment
+
+- Admin password recovery now has request and reset endpoints, login-page link, token table in fresh schema, and a standalone existing-install migration. The implementation uses hashed random tokens, 30-minute expiry, one-use consumption, and generic matching/non-matching account responses. The docs correctly mark PHP/runtime, migration, mail delivery, and browser flow as not verified.
+- Payment docs describe the current provider adapter discovery path, order price/currency snapshots, callback/webhook separation, ambiguous payment reconciliation, and request-time (not worker) provisioning dispatch. The README also explicitly marks cPanel/IBSng end-to-end verification as outstanding.
+- The customer-facing recovery / email-delivery feature records in Context distinguish product requirements from implemented slices and explicitly name unresolved retry/runtime checks; these should remain requirement/status entries, not be promoted to completed guarantees.
+
+### Discrepancies and documentation debt identified
+
+1. **Traceability file contains duplicated and temporally conflicting audit records.** In particular, `IBSNG-ERR-003` first appears as OPEN (request body handling uninspected) and later as FIXED at source level. Keep the later source state authoritative, but preserve validation as NOT VERIFIED; mark the earlier entry as superseded or consolidate it so readers do not mistake the old state for current status.
+2. **The Context file is a requirements/history ledger, not a concise implementation status report.** It contains earlier dated “implementation underway” statements (e.g. credential creation) followed by later implementation slices. Readers must use the latest dated section and the traceability evidence; historical statements should be explicitly tagged as superseded when consolidated.
+3. **README feature bullets are intentionally broad/aspirational.** Its status section qualifies that payment/provisioning, recovery, installer, and cPanel end-to-end readiness are not complete/verified. Do not treat the feature list alone as a completion claim.
+4. **A full requirements-to-code matrix is still missing.** This pass did not establish line-by-line coverage for all Context requirements (especially store recovery by email, service renewal, all gateway lifecycle details, installer/update lifecycle, and multi-server/product policy edge cases). These remain open audit scope, not silently “matched.”
+
+### Next reconciliation rules
+
+- For each requirement, record one status only: `IMPLEMENTED — NOT VERIFIED`, `PARTIAL`, `OPEN`, or `VERIFIED` with named evidence. Do not use “done” for source-only changes.
+- Resolve contradictory historical entries by preserving the date and adding `SUPERSEDED by <later section>`; do not erase the audit trail.
+- Keep user-approved product decisions in `PROJECT-CONTEXT.md`; keep current implementation facts, exact source paths, tests, and verification gaps here.
+- No PHP lint, automated suite, DB migration execution, live email, cPanel, gateway, or IBSng E2E run is claimed in this audit checkpoint.
