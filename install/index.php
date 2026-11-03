@@ -153,6 +153,7 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= install_e(it('title')) ?></title>
 <link rel="stylesheet" href="../assets/css/app.css">
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 <style>
 :root{color-scheme:dark}
 body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,transparent 34%),radial-gradient(ellipse at 88% 90%,#20c9971c,transparent 30%),var(--bg)}
