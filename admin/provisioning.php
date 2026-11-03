@@ -66,7 +66,7 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_provisioning">اجرای Provisioning | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
 <style>
 .shell{width:min(1200px,calc(100% - 32px));margin:0 auto;padding-bottom:30px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:24px 0}.panel{padding:22px;margin:16px 0}.hint{color:var(--muted);line-height:1.8}.notice{padding:12px 14px;border-radius:12px;margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}.run{border:0;cursor:pointer;font:inherit}
 .provisioning-page .provisioning-table{min-width:860px}
@@ -86,7 +86,7 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 .provisioning-page .provisioning-table th{background:var(--surface);color:var(--text)}
 @media(max-width:760px){.provisioning-page .panel{padding:16px}.provisioning-page .table-wrap{border-radius:12px}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body><main class="shell provisioning-page">
 <?php require __DIR__ . '/_navigation.php'; ?>
@@ -102,4 +102,4 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 <div class="table-wrap"><table class="provisioning-table email-table"><thead><tr><th data-ui-text="provisioning_order_id">شناسه سفارش</th><th data-ui-text="provisioning_email">ایمیل</th><th data-ui-text="provisioning_attempts">تعداد تلاش</th><th data-ui-text="provisioning_last_error">آخرین خطا</th><th data-ui-text="provisioning_updated">به‌روزرسانی</th><th data-ui-text="provisioning_action">عملیات</th></tr></thead><tbody>
 <?php if (!$emailRows): ?><tr><td colspan="6" data-ui-text="provisioning_email_empty">هنوز رکوردی برای تحویل ایمیل ثبت نشده است.</td></tr><?php endif; ?>
 <?php foreach ($emailRows as $emailRow): ?><tr><td><span class="technical-value"><?= e((string)$emailRow['public_id']) ?></span></td><td><span class="technical-value"><?= e((string)$emailRow['buyer_email']) ?></span></td><td><span class="technical-value"><?= (int)$emailRow['attempts'] ?></span></td><td><?= e((string)($emailRow['last_error'] ?? '—')) ?></td><td><span class="technical-value"><?= e((string)$emailRow['updated_at']) ?></span></td><td><?php if ($emailRow['status'] === 'failed'): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="retry_delivery"><input type="hidden" name="order_id" value="<?= (int)$emailRow['order_id'] ?>"><button class="button run" type="submit" data-ui-text="provisioning_retry_email">تلاش مجدد ارسال</button></form><?php else: ?>—<?php endif; ?></td></tr><?php endforeach; ?>
-</tbody></table></div></section></section></main></body></html>
+</tbody></table></div></section></section><?php require __DIR__ . '/_footer.php'; ?></main></body></html>

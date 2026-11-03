@@ -1,16 +1,17 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
+require_once __DIR__ . '/app/StorefrontView.php';
 $config = app_config();
 $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 ?><!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>راهنمای استفاده | <?= e($siteTitle) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<title data-ui-title-key="title_guide">راهنمای استفاده | <?= e($siteTitle) ?></title>
+<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
 <style>
-.guide{width:min(850px,calc(100% - 28px));margin:clamp(16px,4vw,32px) auto;padding:clamp(20px,4.5vw,38px);min-width:0}
+.guide{width:min(850px,calc(100% - 28px));margin:0 auto;padding:clamp(20px,4.5vw,38px);min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--ui-radius-lg,20px)}
 .guide h1{margin:8px 0 14px;font-size:clamp(1.65rem,4vw,2.35rem);line-height:1.45;overflow-wrap:anywhere}
 .guide>p{line-height:1.95}
 .guide .muted{color:var(--muted)}
@@ -26,27 +27,18 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 @media(max-width:560px){.guide{width:calc(100% - 20px);border-radius:18px}.guide section{padding:15px}.guide section ul{padding-inline-start:1.1rem}}
 @media(prefers-reduced-motion:reduce){.guide section{transition:none}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
-<main class="store-shell">
-<header class="topbar">
-  <a class="brand storefront-brand" href="<?= e(app_url()) ?>"><?= e($siteTitle) ?></a>
-  <nav class="hero-actions" aria-label="دسترسی مشتری" data-ui-aria="customer_account">
-    <a class="button" href="<?= e(app_url('customer-account.php')) ?>" data-ui-text="customer_account">حساب کاربری</a>
-    <a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="order_tracking">پیگیری و بازیابی خریدها</a>
-  </nav>
-</header>
-<main class="guide panel">
-<p class="muted"><?= e($siteTitle) ?></p>
-<h1>راهنمای استفاده از اکانت</h1>
-<p class="muted">اطلاعات ورود اکانت خریداری‌شده در ایمیل تحویل اکانت و صفحه پیگیری سفارش درج می‌شود. مراحل اتصال به نوع سرویس و برنامه‌ای که ارائه‌دهنده شما پشتیبانی می‌کند بستگی دارد.</p>
-<section><h2>۱. اطلاعات اکانت را پیدا کنید</h2><p>ایمیل تحویل اکانت را باز کنید یا از لینک پیگیری سفارش استفاده کنید. نام کاربری و رمز عبور را دقیقاً مطابق اطلاعات ارائه‌شده وارد کنید. به بزرگی و کوچکی حروف و فاصله‌های اضافی توجه داشته باشید.</p></section>
-<section><h2>۲. برنامه یا روش اتصال مناسب را انتخاب کنید</h2><p>برنامه، سیستم‌عامل و روش اتصال باید با مشخصات سرویس خریداری‌شده مطابقت داشته باشد. از تنظیمات یا راهنمای اختصاصی ارائه‌دهنده سرویس استفاده کنید؛ این صفحه اطلاعات سرور یا پروتکل را حدس نمی‌زند.</p></section>
-<section><h2>۳. اتصال و عیب‌یابی اولیه</h2><ul><li>نام کاربری و رمز عبور را دوباره بررسی کنید.</li><li>مطمئن شوید سرویس هنوز فعال و منقضی نشده است.</li><li>اگر اطلاعات مقصد یا روش اتصال در ایمیل مشخص شده، همان مورد را انتخاب کنید.</li><li>در صورت باقی‌ماندن مشکل، شناسه سفارش را هنگام تماس با پشتیبانی ارائه دهید؛ رمز عبور را در پیام عمومی منتشر نکنید.</li></ul></section>
-<section><h2>پیگیری سفارش</h2><p>برای مشاهده وضعیت پرداخت، provisioning و جزئیات حساب، از صفحه پیگیری سفارش استفاده کنید.</p><p><a href="<?= e(app_url('order-status.php')) ?>">رفتن به پیگیری سفارش</a></p></section>
-</main>
-<footer>© <?= date('Y') ?> <?= e($siteTitle) ?> · <a class="admin-link" href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="admin_login">ورود مدیریت</a></footer>
+<main class="guide">
+<?php storefront_header($siteTitle, 'guide'); ?>
+<h1 data-ui-text="guide_title">راهنمای استفاده از اکانت</h1>
+<p class="muted" data-ui-text="guide_intro">اطلاعات ورود اکانت خریداری‌شده در ایمیل تحویل اکانت و صفحه پیگیری سفارش درج می‌شود. مراحل اتصال به نوع سرویس و برنامه‌ای که ارائه‌دهنده شما پشتیبانی می‌کند بستگی دارد.</p>
+<section><h2 data-ui-text="guide_step_account_title">۱. اطلاعات اکانت را پیدا کنید</h2><p data-ui-text="guide_step_account_body">ایمیل تحویل اکانت را باز کنید یا از لینک پیگیری سفارش استفاده کنید. نام کاربری و رمز عبور را دقیقاً مطابق اطلاعات ارائه‌شده وارد کنید. به بزرگی و کوچکی حروف و فاصله‌های اضافی توجه داشته باشید.</p></section>
+<section><h2 data-ui-text="guide_step_app_title">۲. برنامه یا روش اتصال مناسب را انتخاب کنید</h2><p data-ui-text="guide_step_app_body">برنامه، سیستم‌عامل و روش اتصال باید با مشخصات سرویس خریداری‌شده مطابقت داشته باشد. از تنظیمات یا راهنمای اختصاصی ارائه‌دهنده سرویس استفاده کنید؛ این صفحه اطلاعات سرور یا پروتکل را حدس نمی‌زند.</p></section>
+<section><h2 data-ui-text="guide_step_troubleshoot_title">۳. اتصال و عیب‌یابی اولیه</h2><ul><li data-ui-text="guide_troubleshoot_credentials">نام کاربری و رمز عبور را دوباره بررسی کنید.</li><li data-ui-text="guide_troubleshoot_expiry">مطمئن شوید سرویس هنوز فعال و منقضی نشده است.</li><li data-ui-text="guide_troubleshoot_destination">اگر اطلاعات مقصد یا روش اتصال در ایمیل مشخص شده، همان مورد را انتخاب کنید.</li><li data-ui-text="guide_troubleshoot_support">در صورت باقی‌ماندن مشکل، شناسه سفارش را هنگام تماس با پشتیبانی ارائه دهید؛ رمز عبور را در پیام عمومی منتشر نکنید.</li></ul></section>
+<section><h2 data-ui-text="guide_tracking_title">پیگیری سفارش</h2><p data-ui-text="guide_tracking_body">برای مشاهده وضعیت پرداخت، provisioning و جزئیات حساب، از صفحه پیگیری سفارش استفاده کنید.</p><p><a href="<?= e(app_url('order-status.php')) ?>" data-ui-text="guide_tracking_link">رفتن به پیگیری سفارش</a></p></section>
+<?php storefront_footer($siteTitle); ?>
 </main>
 </body>
 </html>

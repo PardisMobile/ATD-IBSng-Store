@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title data-ui-title-key="title_admin_forgot_password">فراموشی رمز مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title><link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<title data-ui-title-key="title_admin_forgot_password">فراموشی رمز مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title><link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
 <style>
 .auth-card{width:min(480px,calc(100% - 24px));margin:clamp(24px,8vh,72px) auto;padding:clamp(22px,5vw,40px);min-width:0}
 .auth-card h1{font-size:clamp(1.5rem,4vw,2rem);line-height:1.5;overflow-wrap:anywhere}
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 .auth-card a:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:3px;border-radius:4px}
 @media(max-width:480px){.auth-card{border-radius:18px}.auth-card form>.button{width:100%}}
 @media(prefers-reduced-motion:reduce){.field input{transition:none}}
-</style><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
-</head><body><main class="auth-card panel"><div class="eyebrow" data-ui-text="forgot_panel">پنل مدیریت</div><h1 data-ui-text="forgot_title">فراموشی رمز عبور</h1><p class="muted" data-ui-text="forgot_intro">ایمیل ثبت‌شده برای مدیر را وارد کنید.</p>
+</style><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+</head><body><main class="auth-card panel"><div class="auth-toolbar"><div class="atd-preferences-slot" aria-label="ظاهر و زبان"></div></div><div class="eyebrow" data-ui-text="forgot_panel">پنل مدیریت</div><h1 data-ui-text="forgot_title">فراموشی رمز عبور</h1><p class="muted" data-ui-text="forgot_intro">ایمیل ثبت‌شده برای مدیر را وارد کنید.</p>
 <?php if ($error !== ''): ?><div class="notice"><?= e($error) ?></div><?php else: ?><div class="notice"><?= e($generic) ?></div><?php endif; ?>
-<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><div class="field"><label for="email" data-ui-text="forgot_email">ایمیل مدیر</label><input id="email" name="email" type="email" required maxlength="190" autocomplete="email"></div><button class="button primary" type="submit" data-ui-text="forgot_submit">ارسال لینک بازیابی</button></form><p class="muted" style="margin-top:20px"><a href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="forgot_back_login">بازگشت به ورود</a></p></main></body></html>
+<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><div class="field"><label for="email" data-ui-text="forgot_email">ایمیل مدیر</label><input id="email" name="email" type="email" required maxlength="190" autocomplete="email"></div><button class="button primary" type="submit" data-ui-text="forgot_submit">ارسال لینک بازیابی</button></form><p class="muted utility-mt"><a href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="forgot_back_login">بازگشت به ورود</a></p></main></body></html>

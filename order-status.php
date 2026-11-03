@@ -7,6 +7,7 @@ require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/OrderTrackingCode.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/IBSngRenewalState.php';
+require_once __DIR__ . '/app/StorefrontView.php';
 
 $config = app_config();
 $orderLookupValue = trim((string)($_GET['order'] ?? ''));
@@ -106,7 +107,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_order_status">وضعیت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
 <style>
 .status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}
 .status-card{padding:clamp(18px,4vw,30px);margin:22px 0 36px;min-width:0}
@@ -145,11 +146,11 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 @media(max-width:560px){.status-shell{width:calc(100% - 24px)}.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}.purchase-summary,.account-specs{grid-template-columns:1fr}.credential-row{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.target{transition:none}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="status-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><nav class="hero-actions" aria-label="ناوبری سفارش" data-ui-aria="status_nav_recovery"><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="status_nav_recovery">پیگیری و بازیابی خریدها</a><a class="button" href="<?= e(app_url()) ?>" data-ui-text="status_nav_store">بازگشت به فروشگاه</a></nav></header>
+<?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'orders'); ?>
 <section class="status-card panel">
 <div class="eyebrow" data-ui-text="status_page_heading">پیگیری سفارش</div>
 <?php if ($notFound || !$order): ?>
@@ -208,6 +209,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <p class="muted" data-ui-text="status_keep_tracking_private">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
 <?php endif; ?>
 </section>
+<?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 </main>
 </body>
 </html>

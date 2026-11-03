@@ -26,7 +26,7 @@ try {
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_dashboard">داشبورد مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}
 .admin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:28px 0}
@@ -55,12 +55,12 @@ try {
 <div class="stat panel"><span data-ui-text="dashboard_stat_orders">سفارش‌ها</span><strong><?= $stats['orders'] ?></strong></div>
 <div class="stat panel"><span data-ui-text="dashboard_stat_admins">مدیران</span><strong><?= $stats['admins'] ?></strong></div>
 </section>
-<section class="panel" style="padding:24px">
+<section class="panel panel-card">
 <h2 data-ui-text="dashboard_catalog_title">مدیریت کاتالوگ فروشگاه</h2>
 <p class="muted" data-ui-text="dashboard_catalog_intro">از بخش محصولات، پلن‌های فروش را تعریف و به نگاشت فعال سرور/گروه IBSng وصل کنید. محصولات فعال در صفحه عمومی فروشگاه نمایش داده می‌شوند. ثبت سفارش، پرداخت و provisioning در حال تکمیل هستند.</p>
 </section>
-<footer><a href="<?= e(app_url()) ?>" data-ui-text="dashboard_back_store">بازگشت به فروشگاه</a></footer>
+<?php require __DIR__ . '/_footer.php'; ?>
 </main>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
 </body>
 </html>
