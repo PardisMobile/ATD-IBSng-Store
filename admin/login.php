@@ -54,6 +54,7 @@ $config = app_config();
 <style>
 .auth-card{max-width:480px;margin:8vh auto;padding:clamp(24px,5vw,40px)}.field{display:grid;gap:8px;margin:18px 0}.field label{color:var(--muted)}.field input{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit}.notice{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:16px 0}.auth-card button{width:100%;border:0;cursor:pointer;font:inherit}.auth-card h1{font-size:1.8rem}
 </style>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body>
 <main class="auth-card panel">
