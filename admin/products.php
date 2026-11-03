@@ -202,8 +202,8 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1>مدیریت محصولات و پلن‌ها</h1>
 <p class="muted">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت بر حسب ثانیه، قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت ثبت می‌شود.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers || !$groups): ?><div class="notice err">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= (int)($product['id'] ?? 0) ?>">
