@@ -728,3 +728,9 @@ tr:hover td { background:var(--hover-surface); }
 @media (prefers-reduced-motion: reduce) {
   .atd-preferences *, .atd-palette-popover { transition: none !important; }
 }
+
+
+/* The current brand links are text wrappers, not isolated logo marks.
+   Disable the wrapper-wide shine to prevent a rectangular highlight artifact.
+   A future dedicated logo-mark element can opt into this effect explicitly. */
+.brand::after { content: none; animation: none; }
