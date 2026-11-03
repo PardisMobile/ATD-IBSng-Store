@@ -411,9 +411,7 @@
       queued: 'Queued',
       needs_review: 'Needs review',
       running: 'Running',
-      succeeded: 'Succeeded',
       expired: 'Expired',
-      succeeded: 'Succeeded',
       pending: 'Pending',
       cancelled: 'Cancelled'
     },
