@@ -572,7 +572,7 @@
       b.style.setProperty('--swatch',colors[0]);
       const currentLanguage=initialLanguage;
       b.setAttribute('aria-label',(currentLanguage==='fa'?'طرح رنگ ':'')+schemeNames[name][currentLanguage]); b.title=schemeNames[name][currentLanguage];
-      b.innerHTML='<span></span>'; b.addEventListener('click',()=>{set(storage.accent,name);apply();palette.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
+      b.innerHTML='<span></span>'; b.addEventListener('click',()=>{set(storage.accent,name);apply();palette.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));closePalette();});
       b.setAttribute('aria-pressed',String(get(storage.accent,'blue')===name)); palette.appendChild(b);
     });
     controls.appendChild(palette);
