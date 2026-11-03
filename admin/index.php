@@ -55,5 +55,6 @@ try {
 </section>
 <footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
 </main>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body>
 </html>
