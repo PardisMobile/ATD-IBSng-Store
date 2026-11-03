@@ -122,7 +122,10 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 .muted{color:var(--muted);line-height:1.8}
 .form-field{display:block;width:100%;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:8px 0 16px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}
 .form-field:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
-.form-field[dir="ltr"]{text-align:left;unicode-bidi:plaintext}\n#code.form-field{max-width:280px;text-align:center;letter-spacing:.22em;font-variant-numeric:tabular-nums;font-weight:700}
+.orders-card form>label{display:block;margin-top:8px;color:var(--muted);font-size:.9rem;font-weight:600;line-height:1.6}
+.order-row code{direction:ltr;unicode-bidi:isolate;display:inline-block;max-width:100%;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.form-field[dir="ltr"]{text-align:left;unicode-bidi:plaintext}
+#code.form-field{max-width:280px;text-align:center;letter-spacing:.22em;font-variant-numeric:tabular-nums;font-weight:700}
 .notice{padding:14px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:14px 0;background:var(--surface-2);color:var(--text);line-height:1.8}
 .history-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
 .history-facts>span{padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface)}
