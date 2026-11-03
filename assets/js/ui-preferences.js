@@ -640,7 +640,9 @@
       const updateAdminNav = (language) => {
         adminNav.setAttribute('aria-label', language === 'fa' ? 'منوی مدیریت' : 'Administration navigation');
         adminNav.querySelectorAll('[data-fa][data-en]').forEach((item) => {
-          item.textContent = language === 'fa' ? item.dataset.fa : item.dataset.en;
+          const label = item.querySelector('span');
+          if (label) label.textContent = language === 'fa' ? item.dataset.fa : item.dataset.en;
+          else item.textContent = language === 'fa' ? item.dataset.fa : item.dataset.en;
         });
       };
       updateAdminNav(root.lang === 'en' ? 'en' : 'fa');
