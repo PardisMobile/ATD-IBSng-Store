@@ -85,6 +85,11 @@ function store_bytes_label(?string $bytes): string
 .plan-meta strong{text-align:end;color:var(--text);overflow-wrap:anywhere}
 .plan-description{color:var(--muted);line-height:1.85;min-height:3.5em;margin:0;overflow-wrap:anywhere}
 .plan-card>.button{width:100%;justify-content:center;margin-top:auto;white-space:normal}
+.plan-card>.button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.plan-price,.plan-meta strong{font-variant-numeric:tabular-nums}
+.topbar nav.hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
+.topbar nav.hero-actions .button{white-space:normal;text-align:center}
+@media(max-width:560px){.topbar nav.hero-actions{width:100%;justify-content:flex-start}.topbar nav.hero-actions .button{flex:1 1 auto}}
 .catalog-notice{padding:clamp(15px,3vw,20px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);background:var(--surface-2);color:var(--text);line-height:1.85;overflow-wrap:anywhere}
 .section{margin:clamp(26px,5vw,40px) 0}
 .section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:18px}
