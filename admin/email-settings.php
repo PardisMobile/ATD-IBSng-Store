@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_settings_admin">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="email_settings_back">بازگشت به داشبورد</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow" data-ui-text="email_settings_customer">ارتباط با مشتری</div><h1 data-ui-text="email_settings_title">تنظیمات ارسال ایمیل</h1>
 <p class="hint" data-ui-text="email_settings_intro">ارسال با mail() سرویس ایمیل هاست انجام می‌شود؛ تنظیم SMTP جداگانه لازم نیست. برای تحویل بهتر، دامنه و فرستنده باید در هاست مجاز و دارای تنظیمات DNS ایمیل مناسب باشند. این صفحه ایمیل تست می‌فرستد و تحویل نهایی را تضمین نمی‌کند.</p>
