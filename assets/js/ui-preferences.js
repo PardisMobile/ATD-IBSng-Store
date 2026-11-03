@@ -634,6 +634,20 @@
         swatch.title = schemeNames[key][next];
       });
     });
+    // Shared administration navigation is server-rendered; keep its labels in sync with the global language preference.
+    const adminNav = document.querySelector('.atd-admin-nav');
+    if (adminNav) {
+      const updateAdminNav = (language) => {
+        adminNav.setAttribute('aria-label', language === 'fa' ? 'منوی مدیریت' : 'Administration navigation');
+        adminNav.querySelectorAll('[data-fa][data-en]').forEach((item) => {
+          item.textContent = language === 'fa' ? item.dataset.fa : item.dataset.en;
+        });
+      };
+      updateAdminNav(root.lang === 'en' ? 'en' : 'fa');
+      document.addEventListener('atd:language-change', (event) => {
+        updateAdminNav(event.detail?.language === 'en' ? 'en' : 'fa');
+      });
+    }
     // A single storefront navigation is mounted on every public page.
     // Keep this separate from the administration navigation.
     const publicPage = !location.pathname.includes('/admin') && !location.pathname.includes('/install');
@@ -667,7 +681,7 @@
       if (main) main.insertBefore(nav, main.firstChild);
       else document.body.insertBefore(nav, document.body.firstChild);
     }
-    const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
+    const host=document.querySelector('.atd-admin-preferences-slot')||document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();
