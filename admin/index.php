@@ -33,21 +33,7 @@ try {
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top">
-<div class="admin-brand-row"><a class="brand" href="<?= e(app_url('admin/')) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?> · مدیریت</a><a class="button" href="<?= e(app_url('admin/settings.php')) ?>" data-ui-text="dashboard_support">راه‌های پشتیبانی</a></div>
-<nav class="admin-nav" aria-label="بخش‌های مدیریت" data-ui-aria="dashboard_nav_aria">
-<a class="button" href="<?= e(app_url('admin/email-templates.php')) ?>" data-ui-text="dashboard_email_templates">قالب‌های ایمیل</a>
-<a class="button" href="<?= e(app_url('admin/email-settings.php')) ?>" data-ui-text="dashboard_email_settings">تنظیمات ارسال ایمیل</a>
-<a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>" data-ui-text="dashboard_ibsng_servers">سرورهای IBSng</a>
-<a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>" data-ui-text="dashboard_group_mapping">نگاشت پلن/گروه</a>
-<a class="button" href="<?= e(app_url('admin/ibsng-users.php')) ?>" data-ui-text="dashboard_ibsng_users">مدیریت حساب‌های IBSng</a>
-<a class="button" href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>" data-ui-text="dashboard_renewal_migration">ارتقای تمدید IBSng</a>
-<a class="button" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="dashboard_products">مدیریت محصولات</a>
-<a class="button" href="<?= e(app_url('admin/provisioning.php')) ?>" data-ui-text="dashboard_provisioning">صف Provisioning</a>
-<a class="button" href="<?= e(app_url('admin/orders.php')) ?>" data-ui-text="dashboard_sales">گزارش فروش</a>
-<form method="post" action="<?= e(app_url('admin/logout.php')) ?>"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><button class="button" type="submit" data-ui-text="dashboard_logout">خروج</button></form>
-</nav>
-</header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="admin-welcome panel">
 <div class="eyebrow" data-ui-text="dashboard_eyebrow">داشبورد</div>
 <h1><span data-ui-text="dashboard_greeting">سلام،</span> <?= e((string)($_SESSION['admin_display_name'] ?? $_SESSION['admin_username'] ?? 'مدیر')) ?></h1>
