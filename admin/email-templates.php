@@ -80,7 +80,7 @@ $config = app_config();
 </form>
 </section>
 <?php if ($previewHtml !== ''): ?><section class="panel panel-card"><h2 data-ui-text="email_templates_preview">پیش‌نمایش</h2><iframe title="پیش‌نمایش قالب ایمیل" data-ui-aria="email_templates_preview_title" sandbox="" srcdoc="<?= e($previewHtml) ?>"></iframe></section><?php endif; ?>
-<footer><a href="<?= e(app_url('admin/')) ?>" data-ui-text="email_templates_back">بازگشت به داشبورد</a></footer>
+
 </main>
 </body>
 </html>
