@@ -11,7 +11,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-$locale = (string)($_POST['locale'] ?? $_GET['lang'] ?? $_SESSION['install_locale'] ?? 'fa');
+$locale = (string)($_POST['locale'] ?? $_GET['lang'] ?? $_COOKIE['atd-ui-language'] ?? $_SESSION['install_locale'] ?? 'fa');
 $locale = in_array($locale, ['fa', 'en'], true) ? $locale : 'fa';
 $_SESSION['install_locale'] = $locale;
 $rtl = $locale === 'fa';
@@ -148,11 +148,19 @@ if($_SERVER['REQUEST_METHOD']==='POST' && !is_file($configPath)) {
 if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_bytes(32));
 ?>
 <!doctype html>
-<html lang="<?= $locale ?>" dir="<?= $rtl?'rtl':'ltr' ?>">
+<html lang="<?= $locale ?>" dir="<?= $rtl?'rtl':'ltr' ?>" data-ui-installer-locale="<?= install_e($locale) ?>">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= install_e(it('title')) ?></title>
 <link rel="stylesheet" href="../assets/css/app.css">
+<script>
+(function(){
+ const locale=document.documentElement.dataset.uiInstallerLocale;
+ if(locale!=='fa'&&locale!=='en')return;
+ try{localStorage.setItem('atd-ui-language',locale);localStorage.setItem('atd-ibsng-language',locale)}catch(e){}
+ document.cookie='atd-ui-language='+encodeURIComponent(locale)+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
+})();
+</script>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 <style>
 body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,transparent 34%),radial-gradient(ellipse at 88% 90%,#20c9971c,transparent 30%),var(--bg)}
