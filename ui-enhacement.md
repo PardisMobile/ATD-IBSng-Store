@@ -577,3 +577,11 @@ The following UI-only changes have been committed to `main`:
 - Set the remote IBSng user-ID input to LTR, left-aligned text, and gave the tables a deliberate minimum width within their existing horizontal-scroll containers so columns remain legible instead of collapsing unpredictably on narrow screens.
 - Kept error messages in their natural text direction and did not change table queries, action forms, CSRF, retry/resolve operations, or any provisioning/email-delivery behavior.
 - Source-level change only; browser and viewport QA has not been performed.
+
+
+### UI implementation note — IBSng user management theme and technical inputs (2026-11-03)
+
+- Scoped the IBSng account-management page's form styles to its body and replaced the fixed dark input/select background with shared theme control tokens. Inputs now follow the selected theme and accent focus ring, with a visible keyboard focus treatment and consistent placeholder color.
+- Username, password, remote-user-ID (where present), and credit inputs render LTR with isolated direction and tabular numerals to avoid bidirectional text confusion in the RTL admin workflow.
+- Refined narrow-screen card padding while retaining the existing single-column form layout.
+- Only markup class and inline presentation styles changed. IBSng calls, renewal flow, form names/values, validation, POST behavior, and confirmation prompts are unchanged. Browser and viewport QA remains pending.
