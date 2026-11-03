@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             $error = app_message('username_available_check_failed');
         } elseif ($credentialMethod === 'customer' && ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username))) {
             $error = app_message('username_format_invalid');
-        } elseif ($credentialMethod === 'customer' && (strlen($password) < 8 || strlen($password) > 200)) {
+        } elseif ($credentialMethod === 'customer' && (strlen($password) < 4 || strlen($password) > 12)) {
             $error = app_message('password_length_invalid');
         } else {
             try {
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($credentialPolicy !== 'automatic'): ?>
 <div id="manual-credentials" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? 'display:none' : '' ?>">
 <div class="field"><label for="username">نام کاربری</label><input id="username" name="username" maxlength="150" pattern="[A-Za-z0-9_.-]+" required autocomplete="username" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="field"><label for="account_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="8" maxlength="200" required autocomplete="new-password"></div>
+<div class="field"><label for="account_password">رمز اکانت</label><input id="account_password" name="account_password" type="password" minlength="4" maxlength="12" required autocomplete="new-password"></div>
 </div>
 <?php endif; ?>
 <?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
