@@ -911,3 +911,10 @@ The following UI-only changes have been committed to `main`:
 - Installer locale resolution now accepts the shared language cookie after an explicit POST/`?lang` choice and before the session fallback. The installer writes its server-rendered locale into the shared and legacy localStorage keys plus the language cookie before the shared preference script initializes.
 - Shared preference controls now mount in the installer's existing top header row rather than falling back to the end of the page.
 - Installer validation, database connection testing, schema installation, admin creation, and configuration-file writing are unchanged. Source review only; installer/browser visual QA remains pending.
+
+
+### UI implementation note — email template and delivery settings English localization (2026-11-03)
+
+- Added English labels and guidance for email-template event selection, subject/HTML/plain-text fields, variable help, save/preview actions, and preview frame title. Email event names use explicit event keys for translation.
+- Added English copy for sender address/name, mail() delivery explanation, test-email destination, save/test actions, and template-management navigation.
+- Actual email template bodies, subjects, text versions, event definitions, sender settings, mail transport, and delivery behavior are unchanged. Source review only; browser preview and test-email flow have not been exercised.
