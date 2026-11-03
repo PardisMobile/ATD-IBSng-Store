@@ -775,3 +775,10 @@ The following UI-only changes have been committed to `main`:
 - Applied the same live-region semantics to success and error notices in `admin/orders.php`, `admin/provisioning.php`, and `admin/ibsng-groups.php`.
 - Success messages are announced politely (`role=status`); errors are exposed as alerts (`role=alert`, assertive live region), matching the email administration pages.
 - Only feedback markup changed; payment transaction resolution, provisioning execution/manual resolution, group mapping actions, validation, and CSRF handling are unchanged. Source review only; browser and assistive-technology QA remains pending.
+
+
+## 20. IBSng and product admin feedback accessibility (implemented)
+
+- Extended consistent status/alert semantics to dynamic success and error feedback in `admin/ibsng-servers.php`, `admin/products.php`, and `admin/ibsng-users.php`.
+- Dynamic success feedback uses a polite status region; dynamic errors use an assertive alert. Static prerequisite/help notices remain unchanged.
+- No server configuration, product, IBSng account/renewal, validation, or CSRF behavior changed. Source review only; browser and assistive-technology QA remains pending.
