@@ -18,6 +18,27 @@
   const set = (k,v) => { try { localStorage.setItem(k,v); } catch (_) {} };
   const schemeNames = { blue:{fa:'آبی',en:'Blue'}, violet:{fa:'بنفش',en:'Violet'}, teal:{fa:'فیروزه‌ای',en:'Teal'}, rose:{fa:'صورتی',en:'Rose'}, amber:{fa:'کهربایی',en:'Amber'} };
   const pageCopy = {
+    checkout: {
+      checkout_back_store: 'Back to store',
+      checkout_heading: 'Place your order',
+      checkout_success_title: 'Order request received',
+      checkout_tracking_code: 'Tracking code:',
+      checkout_track_order: 'Track order status',
+      checkout_back: 'Back',
+      checkout_duration: 'Duration',
+      checkout_buyer_name: 'Buyer name',
+      checkout_phone: 'Phone number',
+      checkout_email_optional: 'Email (optional)',
+      checkout_email_help: 'If you provide an email, your order details will be sent after successful payment. Without an email, recovery by email is unavailable; keep your order tracking code.',
+      checkout_credentials_method: 'Account credential method',
+      checkout_custom_credentials: 'Choose my username and password',
+      checkout_auto_credentials: 'Generate username and password automatically',
+      checkout_username: 'Username',
+      checkout_password: 'Account password',
+      checkout_auto_note: 'Your username and account password are generated securely and shown in the order details after successful payment.',
+      checkout_password_storage: 'Password information is stored encrypted in the database.',
+      checkout_submit: 'Place order'
+    },
     catalog: {
       customer_account: 'Customer account',
       order_tracking: 'Track & recover orders',
@@ -43,13 +64,13 @@
     const language = root.lang === 'en' ? 'en' : 'fa';
     document.querySelectorAll('[data-ui-text]').forEach((element) => {
       const key = element.dataset.uiText;
-      const translated = pageCopy.catalog[key];
+      const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
       element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
     });
     document.querySelectorAll('[data-ui-aria]').forEach((element) => {
       const key = element.dataset.uiAria;
-      const translated = pageCopy.catalog[key];
+      const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalAria === undefined) element.dataset.uiOriginalAria = element.getAttribute('aria-label') || '';
       element.setAttribute('aria-label', language === 'en' && translated ? translated : element.dataset.uiOriginalAria);
     });
