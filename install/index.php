@@ -18,7 +18,7 @@ $rtl = $locale === 'fa';
 
 $copy = [
  'fa' => [
-  'title'=>'راه‌اندازی ATD IBSng Store','tag'=>'راه‌اندازی ساده و امن','intro'=>'فروشگاهتان را در چند مرحله آماده کنید.',
+  'title'=>'ATD IBSng Store Script','tag'=>'راه‌اندازی ساده و امن','intro'=>'فروشگاهتان را در چند مرحله آماده کنید.',
   'lang'=>'English','site'=>'عنوان فروشگاه','db'=>'اتصال پایگاه داده','host'=>'میزبان','name'=>'نام دیتابیس','dbuser'=>'کاربر دیتابیس','dbpass'=>'رمز دیتابیس',
   'admin'=>'حساب مدیر','username'=>'نام کاربری','display'=>'نام نمایشی','email'=>'ایمیل بازیابی مدیر','password'=>'رمز عبور (حداقل ۸ کاراکتر)','confirm'=>'تکرار رمز عبور',
   'test'=>'آزمایش اتصال','install'=>'نصب فروشگاه','done'=>'نصب با موفقیت انجام شد.','locked'=>'این فروشگاه قبلاً نصب شده است؛ نصب‌کننده قفل است.',
@@ -29,7 +29,7 @@ $copy = [
   'success'=>'آماده‌اید!','sign'=>'ورود به پنل مدیریت','store'=>'مشاهده فروشگاه','step'=>'نصب مرحله‌ای','note'=>'تنظیمات دیگر را پس از نصب از پنل مدیریت تغییر می‌دهید.',
  ],
  'en' => [
-  'title'=>'ATD IBSng Store Setup','tag'=>'Simple & secure setup','intro'=>'Get your store ready in a few clear steps.',
+  'title'=>'ATD IBSng Store Script','tag'=>'Simple & secure setup','intro'=>'Get your store ready in a few clear steps.',
   'lang'=>'فارسی','site'=>'Store title','db'=>'Database connection','host'=>'Database host','name'=>'Database name','dbuser'=>'Database user','dbpass'=>'Database password',
   'admin'=>'Administrator account','username'=>'Username','display'=>'Display name','email'=>'Administrator recovery email','password'=>'Password (at least 8 characters)','confirm'=>'Confirm password',
   'test'=>'Test connection','install'=>'Install store','done'=>'Installation completed successfully.','locked'=>'This store is already installed. The installer is locked.',
@@ -179,8 +179,8 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
 </head>
 <body>
 <main class="setup panel">
- <div class="top"><div class="brand"><div class="mark">ATD</div><div><div class="eyebrow"><?= install_e(it('tag')) ?></div><strong>IBSng Store</strong></div></div>
- <a class="pill" href="?lang=<?= $locale==='fa'?'en':'fa' ?>"><?= install_e(it('lang')) ?></a></div>
+ <div class="top"><div class="brand"><div class="mark">ATD</div><div><div class="eyebrow"><?= install_e(it('tag')) ?></div><strong>ATD IBSng Store</strong></div></div>
+</div>
  <div class="progress" aria-hidden="true"><span></span><span></span><span></span></div>
  <div class="eyebrow"><?= install_e(it('step')) ?></div><h1><?= install_e(it('title')) ?></h1><p class="muted"><?= install_e(it('intro')) ?></p>
  <?php foreach($errors as $error): ?><div class="notice err"><?= install_e($error) ?></div><?php endforeach; ?>
