@@ -90,8 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <div class="eyebrow">ارتباط با مشتری</div><h1>تنظیمات ارسال ایمیل</h1>
 <p class="hint">ارسال با mail() سرویس ایمیل هاست انجام می‌شود؛ تنظیم SMTP جداگانه لازم نیست. برای تحویل بهتر، دامنه و فرستنده باید در هاست مجاز و دارای تنظیمات DNS ایمیل مناسب باشند. این صفحه ایمیل تست می‌فرستد و تحویل نهایی را تضمین نمی‌کند.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field"><label for="from_address">ایمیل فرستنده</label><input id="from_address" type="email" name="from_address" required maxlength="190" value="<?= e($settings['email_from_address']) ?>" placeholder="noreply@example.com"></div>
