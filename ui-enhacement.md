@@ -739,3 +739,10 @@ The following UI-only changes have been committed to `main`:
 - Added consistent keyboard focus visibility to the account lookup submit, password reveal, and top navigation controls.
 - Improved wrapping of customer navigation on narrow screens and kept password reveal controls usable when account identifiers are long.
 - Applied tabular numerals to account detail values. CSS-only; CAPTCHA, IBSng account lookup, password matching, and displayed account data are unchanged. Source review only; browser/device visual QA remains pending.
+
+
+### Admin login RTL form and feedback refinement (2026-11-03)
+
+- Set administrator username/password fields to explicit LTR isolated rendering for predictable entry in the Persian interface.
+- Harmonized login error notices with shared theme danger/surface tokens and improved wrapping, keyboard focus visibility, and small-screen card sizing.
+- CSS-only: authentication, CSRF, login throttling, and password recovery routing are unchanged. Source review only; browser/device visual QA remains pending.
