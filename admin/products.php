@@ -198,7 +198,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><nav><a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>" data-ui-text="products_nav_mapping">نگاشت پلن/گروه</a><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>" data-ui-text="products_nav_servers">سرورهای IBSng</a></nav></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1 data-ui-text="products_title">مدیریت محصولات و پلن‌ها</h1>
 <p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت بر حسب ثانیه، قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت ثبت می‌شود.</p>
