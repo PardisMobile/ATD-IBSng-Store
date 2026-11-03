@@ -488,6 +488,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   try { initial = localStorage.getItem('atd-ibsng-language') || 'en'; } catch (e) {}
   if (toggle) toggle.addEventListener('click', () => setLanguage(root.lang === 'fa' ? 'en' : 'fa'));
   setLanguage(initial);
+  document.addEventListener('atd:language-change', event => setLanguage(event.detail?.language === 'en' ? 'en' : 'fa'));
 })();
 </script>
 
