@@ -662,3 +662,10 @@ The following UI-only changes have been committed to `main`:
 - Refined order-history cards with a clearer surface/hover treatment, improved wrapping and line-height for purchase facts, and more consistent touch-sized detail actions.
 - Lookup inputs and action buttons now stay width-safe inside their card; small-screen spacing and reduced-motion behavior are accounted for.
 - Presentation CSS only: email challenge, session verification, CSRF, order queries, tracking links, and logout behavior were not modified. Source-level review only; browser/device QA remains pending.
+
+
+### UI note — checkout form and pricing presentation (2026-11-03)
+
+- Aligned checkout fields, product price, notices, and primary action with the shared theme tokens, including responsive sizing, focus visibility, and safe text wrapping.
+- Styled the existing credential-method radio choices as consistent selectable rows and improved small-screen card spacing and submit-button sizing.
+- CSS-only presentation refinement. Checkout POST behavior, field names, CSRF/idempotency, credential generation, pricing, order persistence, and payment initiation were not changed. Source-level review only; browser/device QA remains pending.
