@@ -761,3 +761,10 @@ The following UI-only changes have been committed to `main`:
 - Added a theme-aware foreground token for primary actions: bright accent swatches in dark mode now use a dark foreground, while the deeper light-mode accent shades retain white text.
 - Applied the token to shared primary button variants to prevent low-contrast text with violet, teal, rose, blue, and amber accents.
 - Shared stylesheet-only change; no page markup, action handlers, payment behavior, or form logic changed. Source inspection only; contrast was reasoned from configured palette values, not browser-tested.
+
+
+## 18. Email administration feedback accessibility (implemented)
+
+- `admin/email-settings.php`: expose saved/test-send feedback as a polite status and validation/send failures as assertive alerts for assistive technology.
+- `admin/email-templates.php`: use the same status/alert semantics for save and validation feedback.
+- Scope is limited to feedback semantics; PHP processing, form submission, email delivery, and template behavior are unchanged.
