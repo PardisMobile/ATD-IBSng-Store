@@ -440,3 +440,9 @@ The following UI-only changes have been committed to `main`:
 - Corrected an escaped newline accidentally introduced between the shared root/document language-change dispatches in `assets/js/ui-preferences.js`; it is now a real line break so the script source remains valid JavaScript.
 - The language control now initializes its accessible name according to the currently selected language, matching the name it receives after a language switch.
 - This was a UI-layer correction only. It does not change store, payment, IBSng, or database behavior. Browser-based rendering and functional QA remain outstanding.
+
+
+### Admin renewal-migration page preference coverage (2026-11-03)
+
+- Added the shared `assets/js/ui-preferences.js` include to `admin/ibsng-renewal-migrate.php`, so the appearance, accent, and language controls are available on this admin utility page as well.
+- Kept the migration form, CSRF handling, and database migration behavior unchanged; this is presentation-only integration.
