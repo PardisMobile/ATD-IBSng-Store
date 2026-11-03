@@ -37,18 +37,20 @@
     const controls = document.createElement('div');
     controls.className = 'atd-preferences';
     controls.setAttribute('aria-label',get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'ظاهر و زبان':'Appearance and language');
+    const initialLanguage=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
+    const initialMode=get(storage.mode,'dark')==='light'?'light':'dark';
     controls.innerHTML =
-      '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" aria-pressed="'+(get(storage.mode,'dark')==='light')+'" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
-      '<button type="button" class="atd-pref-palette" aria-label="Choose color scheme" title="Color scheme">'+svg('palette')+'</button>'+
-      '<button type="button" class="atd-pref-language" aria-label="'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'EN':'فا')+'</span></button>';
+      '<button type="button" class="atd-pref-mode" aria-label="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'" aria-pressed="'+(initialMode==='light')+'" title="'+(initialLanguage==='fa'?(initialMode==='dark'?'حالت تاریک':'حالت روشن'):(initialMode==='dark'?'Dark mode':'Light mode'))+'">'+svg(initialMode==='dark'?'sun':'moon')+'</button>'+
+      '<button type="button" class="atd-pref-palette" aria-label="'+(initialLanguage==='fa'?'انتخاب طرح رنگ':'Choose color scheme')+'" title="'+(initialLanguage==='fa'?'طرح رنگ':'Color scheme')+'">'+svg('palette')+'</button>'+
+      '<button type="button" class="atd-pref-language" aria-label="'+(initialLanguage==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="'+(initialLanguage==='fa'?'زبان':'Language')+'">'+svg('globe')+'<span>'+(initialLanguage==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
     palette.className='atd-palette-popover'; palette.hidden=true;
     palette.id='atd-accent-palette';
-    palette.setAttribute('role','group'); palette.setAttribute('aria-label','Color scheme');
+    palette.setAttribute('role','group'); palette.setAttribute('aria-label',initialLanguage==='fa'?'طرح رنگ':'Color scheme');
     Object.entries(accents).forEach(([name,colors])=>{
       const b=document.createElement('button'); b.type='button'; b.className='atd-swatch'; b.dataset.accent=name;
       b.style.setProperty('--swatch',colors[0]);
-      const currentLanguage=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
+      const currentLanguage=initialLanguage;
       b.setAttribute('aria-label',(currentLanguage==='fa'?'طرح رنگ ':'')+schemeNames[name][currentLanguage]); b.title=schemeNames[name][currentLanguage];
       b.innerHTML='<span></span>'; b.addEventListener('click',()=>{set(storage.accent,name);apply();palette.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));});
       b.setAttribute('aria-pressed',String(get(storage.accent,'blue')===name)); palette.appendChild(b);
@@ -71,6 +73,7 @@
       const next=(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'en':'fa');set(storage.lang,next);set(storage.legacyLang,next);apply();
       controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
       controls.setAttribute('aria-label',next==='fa'?'ظاهر و زبان':'Appearance and language');
+      palette.setAttribute('aria-label',next==='fa'?'طرح رنگ':'Color scheme');
       controls.querySelector('.atd-pref-language').setAttribute('aria-label',next==='fa'?'Switch language to English':'تغییر زبان به فارسی');
       controls.querySelector('.atd-pref-language').title=next==='fa'?'زبان':'Language';
       controls.querySelector('.atd-pref-mode').setAttribute('aria-label',next==='fa'?(get(storage.mode,'dark')==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(get(storage.mode,'dark')==='dark'?'Switch to light mode':'Switch to dark mode'));
