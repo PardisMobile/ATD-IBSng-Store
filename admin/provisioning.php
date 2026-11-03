@@ -75,6 +75,15 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 .provisioning-page input[name="remote_user_id"]{direction:ltr;text-align:left;unicode-bidi:isolate}
 .provisioning-page .provisioning-table th{white-space:nowrap}
 .provisioning-page .provisioning-table td{vertical-align:top}
+.provisioning-page .provisioning-table td:last-child{min-width:220px;white-space:normal}
+.provisioning-page .provisioning-table td:last-child form{display:grid;gap:10px;min-width:0}
+.provisioning-page .provisioning-table td:last-child .field{margin:0;min-width:0}
+.provisioning-page .provisioning-table td:last-child input,
+.provisioning-page .provisioning-table td:last-child select{width:100%;min-width:0;box-sizing:border-box}
+.provisioning-page .provisioning-table td:last-child .button{min-height:40px;max-width:100%;white-space:normal;line-height:1.5}
+.provisioning-page .provisioning-table td:nth-child(7){white-space:normal;min-width:180px;max-width:360px;overflow-wrap:anywhere;line-height:1.7}
+.provisioning-page .provisioning-table tbody tr:hover{background:color-mix(in srgb,var(--surface) 72%,transparent)}
+.provisioning-page .provisioning-table th{background:var(--surface);color:var(--text)}
 @media(max-width:760px){.provisioning-page .panel{padding:16px}.provisioning-page .table-wrap{border-radius:12px}}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
