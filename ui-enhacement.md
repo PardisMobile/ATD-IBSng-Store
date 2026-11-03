@@ -655,3 +655,10 @@ The following UI-only changes have been committed to `main`:
 - Added theme-aware outlined surfaces and restrained hover feedback to saved product cards, with improved title/metadata wrapping and touch-friendly action controls.
 - Grouped each product’s server/group mapping row in an inset surface; selects now wrap safely, and the editor grid becomes a single column on narrow screens. Product actions adapt to a compact responsive grid.
 - This is a CSS-only presentation change. Product CRUD, mapping fields, duplicate-server checks, CSRF, confirmation prompts, validation, and database behavior remain unchanged. Source-level only; browser/viewport QA remains pending.
+
+
+### UI note — customer order recovery cards and lookup actions (2026-11-03)
+
+- Refined order-history cards with a clearer surface/hover treatment, improved wrapping and line-height for purchase facts, and more consistent touch-sized detail actions.
+- Lookup inputs and action buttons now stay width-safe inside their card; small-screen spacing and reduced-motion behavior are accounted for.
+- Presentation CSS only: email challenge, session verification, CSRF, order queries, tracking links, and logout behavior were not modified. Source-level review only; browser/device QA remains pending.
