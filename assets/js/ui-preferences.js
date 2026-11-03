@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const root = document.documentElement;
-  const storage = { mode: 'atd-ui-mode', accent: 'atd-ui-accent', lang: 'atd-ui-language' };
+  const storage = { mode: 'atd-ui-mode', accent: 'atd-ui-accent', lang: 'atd-ui-language', legacyLang: 'atd-ibsng-language' };
   const accents = {
     blue: ['#2563eb','#7aa7ff'], violet: ['#7c3aed','#b69aff'],
     teal: ['#0d9488','#42d6b0'], rose: ['#e11d48','#fb8aa4'],
@@ -20,7 +20,7 @@
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
     root.dataset.mode = root.dataset.theme;
-    const language = get(storage.lang, root.lang || 'fa');
+    const language = get(storage.lang, get(storage.legacyLang, root.lang || 'fa'));
     root.lang = language === 'en' ? 'en' : 'fa';
     root.dir = language === 'en' ? 'ltr' : 'rtl';
     root.dataset.language = root.lang;
@@ -39,7 +39,7 @@
     controls.innerHTML =
       '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" aria-pressed="'+(get(storage.mode,'dark')==='light')+'" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="Choose color scheme" title="Color scheme">'+svg('palette')+'</button>'+
-      '<button type="button" class="atd-pref-language" aria-label="Switch language" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,root.lang||'fa')==='fa'?'EN':'فا')+'</span></button>';
+      '<button type="button" class="atd-pref-language" aria-label="Switch language" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
     palette.className='atd-palette-popover'; palette.hidden=true;
     palette.setAttribute('role','group'); palette.setAttribute('aria-label','Color scheme');
@@ -58,10 +58,10 @@
     });
     controls.querySelector('.atd-pref-palette').addEventListener('click',()=>{palette.hidden=!palette.hidden;});
     controls.querySelector('.atd-pref-language').addEventListener('click',()=>{
-      const next=(get(storage.lang,root.lang||'fa')==='fa'?'en':'fa');set(storage.lang,next);apply();
+      const next=(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'en':'fa');set(storage.lang,next);set(storage.legacyLang,next);apply();
       controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
       controls.querySelector('.atd-pref-language').setAttribute('aria-label',next==='fa'?'Switch language to English':'تغییر زبان به فارسی');
-      root.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
+      root.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));\n      document.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
     });
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
     host.appendChild(controls);
