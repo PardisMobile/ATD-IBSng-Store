@@ -808,3 +808,14 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
     padding:10px;
   }
 }
+
+
+/* Shared keyboard focus treatment: visual-only and safe for all existing forms. */
+:where(input,select,textarea,button,[role="button"],a):focus-visible {
+  outline: 2px solid var(--accent, var(--blue));
+  outline-offset: 3px;
+}
+:where(input,select,textarea):focus-visible {
+  border-color: var(--accent, var(--blue)) !important;
+  box-shadow: 0 0 0 3px var(--ui-focus-ring, color-mix(in srgb,var(--accent, var(--blue)) 16%,transparent));
+}
