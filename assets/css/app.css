@@ -1632,7 +1632,9 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   color:var(--accent);
   background:var(--atd-button-active-bg,var(--surface-2));
 }
-.atd-store-nav .atd-store-nav-link svg { width:18px;height:18px;flex:0 0 18px; }
+.atd-store-nav .atd-store-nav-link svg,
+.atd-admin-nav .atd-admin-nav-link svg { width:18px;height:18px;flex:0 0 18px;display:block; }
+.atd-admin-nav .atd-admin-nav-link { display:inline-flex;align-items:center;justify-content:center;gap:9px; }
 .atd-admin-nav .atd-admin-logout { display:inline-flex;flex:1 1 145px;margin:0; }
 .atd-admin-nav .atd-admin-logout .atd-admin-nav-link { width:100%; }
 .atd-admin-header-top .atd-admin-preferences-slot { display:flex;align-items:center;justify-content:flex-end; }
