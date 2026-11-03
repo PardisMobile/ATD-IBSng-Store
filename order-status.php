@@ -149,28 +149,28 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </head>
 <body>
 <main class="status-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><nav class="hero-actions" aria-label="ناوبری سفارش"><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></nav></header>
+<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><nav class="hero-actions" aria-label="ناوبری سفارش" data-ui-aria="status_nav_recovery"><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="status_nav_recovery">پیگیری و بازیابی خریدها</a><a class="button" href="<?= e(app_url()) ?>" data-ui-text="status_nav_store">بازگشت به فروشگاه</a></nav></header>
 <section class="status-card panel">
-<div class="eyebrow">پیگیری سفارش</div>
+<div class="eyebrow" data-ui-text="status_page_heading">پیگیری سفارش</div>
 <?php if ($notFound || !$order): ?>
-<h1>سفارش پیدا نشد</h1>
-<p class="muted">شناسه پیگیری معتبر نیست یا سفارش در دسترس نیست. لینک پیگیری را از صفحه نتیجه پرداخت باز کنید.</p>
+<h1 data-ui-text="status_not_found">سفارش پیدا نشد</h1>
+<p class="muted" data-ui-text="status_not_found_help">شناسه پیگیری معتبر نیست یا سفارش در دسترس نیست. لینک پیگیری را از صفحه نتیجه پرداخت باز کنید.</p>
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
 <div class="purchase-summary">
-<div class="purchase-fact"><span>شناسه پیگیری</span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
-<div class="purchase-fact"><span>وضعیت سفارش</span><strong><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
-<div class="purchase-fact"><span>مبلغ پرداخت‌شده</span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
-<div class="purchase-fact"><span>تاریخ خرید</span><strong><?= e((string)$order['created_at']) ?></strong></div>
-<div class="purchase-fact"><span>وضعیت پرداخت</span><strong><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong></div>
-<div class="purchase-fact"><span>محصول</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_tracking_id">شناسه پیگیری</span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_order_state">وضعیت سفارش</span><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_paid_amount">مبلغ پرداخت‌شده</span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_purchase_date">تاریخ خرید</span><strong><?= e((string)$order['created_at']) ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_payment_state">وضعیت پرداخت</span><strong data-ui-status="<?= e((string)$order['payment_status']) ?>"><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_product">محصول</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
 </div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
-<p class="muted">پرداخت این سفارش هنوز تأیید نشده است؛ تا پیش از تأیید پرداخت، حسابی در IBSng ایجاد نمی‌شود.</p>
+<p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است؛ تا پیش از تأیید پرداخت، حسابی در IBSng ایجاد نمی‌شود.</p>
 <?php elseif (!$attempts): ?>
-<p class="muted">پرداخت ثبت شده است، اما هنوز نتیجه‌ای برای مقصدهای فعال‌سازی در دسترس نیست. لطفاً کمی بعد دوباره بررسی کنید.</p>
+<p class="muted" data-ui-text="status_waiting_provision">پرداخت ثبت شده است، اما هنوز نتیجه‌ای برای مقصدهای فعال‌سازی در دسترس نیست. لطفاً کمی بعد دوباره بررسی کنید.</p>
 <?php else: ?>
-<h2>مشخصات اکانت</h2>
+<h2 data-ui-text="status_account_heading">مشخصات اکانت</h2>
 <div class="target-list">
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
@@ -179,22 +179,22 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php $details = $accountDetails[(int)$attempt['server_id']] ?? null; ?>
 <div class="account-details credential-panel">
 <div class="account-specs">
-<div class="account-spec"><span>نام کاربری</span><strong><?= e((string)$order['username']) ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_username">نام کاربری</span><strong><?= e((string)$order['username']) ?></strong></div>
 <?php if (is_array($details)): ?>
-<div class="account-spec"><span>پلن</span><strong><?= e((string)$details['plan']) ?></strong></div>
-<div class="account-spec"><span>سرور</span><strong><?= e((string)$details['server']) ?></strong></div>
-<div class="account-spec"><span>مدت اعتبار</span><strong><?= e((string)$details['validity']) ?> روز</strong></div>
-<div class="account-spec"><span>محدودیت حجم</span><strong><?= $details['quota_bytes'] === null ? 'نامحدود' : e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) . ' گیگابایت' ?></strong></div>
-<div class="account-spec"><span>تاریخ انقضا</span><strong><?= e((string)$details['expiry'] ?: 'نامشخص') ?></strong></div>
-<div class="account-spec"><span>وضعیت اعتبار</span><strong><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_plan">پلن</span><strong><?= e((string)$details['plan']) ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_server">سرور</span><strong><?= e((string)$details['server']) ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_validity">مدت اعتبار</span><strong><?= e((string)$details['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div>
+<div class="account-spec"><span data-ui-text="status_quota">محدودیت حجم</span><strong><?php if ($details['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php else: ?><?= e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_expiry">تاریخ انقضا</span><strong><?= e((string)$details['expiry'] ?: 'نامشخص') ?></strong></div>
+<div class="account-spec"><span data-ui-text="status_validity_state">وضعیت اعتبار</span><strong data-ui-status="<?= $details['expired'] ? 'expired' : 'active' ?>"><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
 <?php else: ?>
-<div class="account-spec"><span>مشخصات سرویس</span><strong>در حال حاضر قابل دریافت نیست</strong></div>
+<div class="account-spec"><span data-ui-text="status_service_details">مشخصات سرویس</span><strong data-ui-text="status_unavailable">در حال حاضر قابل دریافت نیست</strong></div>
 <?php endif; ?>
 </div>
 <?php if (is_string($accountPassword)): ?>
-<div class="credential-row"><span>رمز عبور</span><details><summary>نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
+<div class="credential-row"><span data-ui-text="status_password">رمز عبور</span><details><summary data-ui-text="status_show_password">نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
 <?php else: ?>
-<div class="credential-row"><span>رمز عبور</span><span>در حال حاضر قابل نمایش نیست</span></div>
+<div class="credential-row"><span data-ui-text="status_password">رمز عبور</span><span data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</span></div>
 <?php endif; ?>
 </div>
 <?php endif; ?>
@@ -203,9 +203,9 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <?php endforeach; ?>
 </div>
-<p class="muted">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
+<p class="muted" data-ui-text="status_support_review">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
 <?php endif; ?>
-<p class="muted">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
+<p class="muted" data-ui-text="status_keep_tracking_private">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
 <?php endif; ?>
 </section>
 </main>
