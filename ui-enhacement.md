@@ -847,3 +847,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for customer account navigation, lookup labels/instructions, CAPTCHA label/placeholder, account result headings, service/plan/validity fields, expiration, remaining-day units, and password reveal controls.
 - The password reveal control now keeps its visible/hidden action label synchronized with the active locale. Generic lookup validation and unavailable/not-found messages use the bilingual message catalog.
 - This is UI/localization work only. CAPTCHA, session, IBSng lookup, credential matching, and account result behavior are unchanged. Source inspection only; browser and device QA remains pending.
+
+
+### UI implementation note — administration dashboard English localization (2026-11-03)
+
+- Added English copy for the dashboard navigation, support link, dashboard welcome/introduction, database-statistics error, metric labels, catalog-management summary, and storefront return link.
+- Dashboard navigation and statistics regions now expose localized accessible names as well as visible copy. Existing destinations, logout POST/CSRF form, database statistics, and administration operations remain unchanged.
+- Source review only; browser and responsive visual QA remains pending.
