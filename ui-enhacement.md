@@ -732,3 +732,10 @@ The following UI-only changes have been committed to `main`:
 - Added a consistent visible keyboard-focus treatment to catalog purchase buttons, using existing accent/focus tokens.
 - Applied tabular numeral styling to product prices and key plan values for steadier alignment; allowed the customer navigation links to wrap cleanly on narrow screens.
 - Presentation-only changes in `index.php`; catalog queries, price eligibility, product values, and checkout destinations remain unchanged. Source review only; browser/device visual QA remains pending.
+
+
+### Customer account responsive controls and focus pass (2026-11-03)
+
+- Added consistent keyboard focus visibility to the account lookup submit, password reveal, and top navigation controls.
+- Improved wrapping of customer navigation on narrow screens and kept password reveal controls usable when account identifiers are long.
+- Applied tabular numerals to account detail values. CSS-only; CAPTCHA, IBSng account lookup, password matching, and displayed account data are unchanged. Source review only; browser/device visual QA remains pending.
