@@ -57,7 +57,7 @@ function store_duration_label(int $seconds): string
 
 function store_bytes_label(?string $bytes): string
 {
-    if ($bytes === null || $bytes === '') return 'طبق تنظیمات سرویس';
+    if ($bytes === null || $bytes === '') return 'Unlimited';
     $value = (float)$bytes;
     if ($value >= 1099511627776) return number_format($value / 1099511627776, 2) . ' TiB';
     if ($value >= 1073741824) return number_format($value / 1073741824, 2) . ' GiB';
