@@ -195,7 +195,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سرورهای IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_admin_ibsng_servers">سرورهای IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;flex-wrap:wrap}.admin-top form{margin:0}.admin-top button{border:1px solid var(--border);background:var(--surface-2);color:var(--text);font:inherit;cursor:pointer}
@@ -215,36 +215,36 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <nav><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>">نگاشت پلن/گروه</a><button class="button lang-toggle" id="langToggle" type="button" aria-label="Switch language">English</button></nav>
 </header>
 <section class="panel panel-card">
-<div class="eyebrow">IBSng</div><h1 style="font-size:2rem">سرورهای IBSng</h1>
-<p class="muted">در این مرحله، تست اتصال با ورود واقعی به Web Panel انجام می‌شود. رمز عبور در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</p>
+<div class="eyebrow">IBSng</div><h1 style="font-size:2rem" data-ui-text="server_title">سرورهای IBSng</h1>
+<p class="muted" data-ui-text="server_intro">در این مرحله، تست اتصال با ورود واقعی به Web Panel انجام می‌شود. رمز عبور در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 </section>
 <section class="panel panel-card" style="margin-top:20px">
-<h2>افزودن سرور</h2>
+<h2 data-ui-text="server_add_heading">افزودن سرور</h2>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="add">
 <div class="grid">
 <div class="field"><label for="name">نام سرور (داخلی)</label><input id="name" name="name" required maxlength="120"></div>
 <div class="field"><label for="service_name">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن"></div>
-<div class="field"><label for="host">Host یا IP (بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
-<div class="field"><label for="port">پورت Web Panel</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
+<div class="field"><label for="host" data-ui-text="server_host_label">Host یا IP (بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
+<div class="field"><label for="port" data-ui-text="server_web_panel_port">پورت Web Panel</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
 <div class="field"><label for="isp_name">ISP name</label><input id="isp_name" name="isp_name" value="Main" required></div>
-<div class="field"><label for="username">نام کاربری مدیر IBSng</label><input id="username" name="username" required autocomplete="off"></div>
-<div class="field"><label for="password">رمز عبور مدیر IBSng</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
+<div class="field"><label for="username" data-ui-text="server_admin_username">نام کاربری مدیر IBSng</label><input id="username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="password" data-ui-text="server_admin_password">رمز عبور مدیر IBSng</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
 </div>
-<button class="button primary" type="submit">تست اتصال و ذخیره سرور</button>
+<button class="button primary" type="submit" data-ui-text="server_save_test">تست اتصال و ذخیره سرور</button>
 </form>
 </section>
 <section class="panel panel-card" style="margin-top:20px">
-<h2>سرورهای ثبت‌شده</h2>
-<?php if (!$servers): ?><div class="empty">هنوز سروری اضافه نشده است.</div><?php endif; ?>
+<h2 data-ui-text="server_saved_heading">سرورهای ثبت‌شده</h2>
+<?php if (!$servers): ?><div class="empty" data-ui-text="server_empty">هنوز سروری اضافه نشده است.</div><?php endif; ?>
 <?php foreach ($servers as $server): ?>
 <article class="server panel">
-<div class="server-head"><h3><?= e((string)$server['name']) ?> <?= (int)$server['is_default'] === 1 ? '· پیش‌فرض' : '' ?></h3><span class="status-chip"><?= (int)$server['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
+<div class="server-head"><h3><?= e((string)$server['name']) ?> <?= (int)$server['is_default'] === 1 ? '<span data-ui-text="server_default_label">· پیش‌فرض</span>' : '' ?></h3><span class="status-chip"><?= (int)$server['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
 <div class="meta" dir="ltr"><?= e((string)$server['host']) ?>:<?= (int)$server['port'] ?></div>
-<div class="meta">ISP name: <?= e((string)$server['isp_name']) ?> · نام کاربری: <?= e((string)$server['username']) ?></div>
-<div class="meta">آخرین تست: <?= e((string)($server['last_test_at'] ?? 'تست نشده')) ?><?= !empty($server['last_error']) ? ' · خطا: ' . e((string)$server['last_error']) : '' ?></div>
+<div class="meta">ISP name: <?= e((string)$server['isp_name']) ?> <span data-ui-text="server_username_label">· نام کاربری:</span> <?= e((string)$server['username']) ?></div>
+<div class="meta"><span data-ui-text="server_last_test_label">آخرین تست:</span> <?php if (($server['last_test_at'] ?? null) === null): ?><span data-ui-text="server_not_tested">تست نشده</span><?php else: ?><?= e((string)$server['last_test_at']) ?><?php endif; ?><?php if (!empty($server['last_error'])): ?> <span data-ui-text="server_error_label">· خطا:</span> <?= e((string)$server['last_error']) ?><?php endif; ?></div>
 <details style="margin-top:12px"><summary class="button">ویرایش تنظیمات</summary>
 <form method="post" style="margin-top:14px">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>">
@@ -262,7 +262,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="test"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit">Test Connection</button></form>
 <form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="default"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit">انتخاب به‌عنوان پیش‌فرض</button></form>
 <form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit"><?= (int)$server['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?></button></form>
-<form method="post" onsubmit="return confirm('سرور حذف شود؟ حذف فقط در صورت نداشتن داده وابسته مجاز است.');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button danger" type="submit">حذف</button></form>
+<form method="post" onsubmit="return confirm(document.documentElement.lang==='en'?'Delete this server? Deletion is allowed only when no dependent data exists.':'سرور حذف شود؟ حذف فقط در صورت نداشتن داده وابسته مجاز است.');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button danger" type="submit">حذف</button></form>
 </div>
 </article>
 <?php endforeach; ?>
