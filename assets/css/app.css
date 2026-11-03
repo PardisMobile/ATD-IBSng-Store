@@ -322,3 +322,103 @@ table { min-width:560px; }
  .order-actions .button { width:100%; }
 }
 @media(max-width:360px) { .order-facts { grid-template-columns:minmax(0,1fr); } }
+
+
+/* UI refresh — shared foundation for public storefront and administration.
+   Deliberately presentation-only: no selectors alter form submission or application state. */
+:root {
+  --bg: #080d18;
+  --surface: rgba(17, 25, 42, .94);
+  --surface-2: #141f33;
+  --text: #f2f5fc;
+  --muted: #a5b1c8;
+  --blue: #6aa4ff;
+  --purple: #a58aff;
+  --green: #54dfb0;
+  --amber: #ffd083;
+  --border: rgba(157, 180, 222, .17);
+  --border-strong: rgba(157, 180, 222, .29);
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --shadow-card: 0 18px 48px rgba(0, 0, 0, .24);
+}
+html { scroll-behavior: smooth; }
+body {
+  color: var(--text);
+  line-height: 1.75;
+  background:
+    radial-gradient(ellipse at 8% -8%, rgba(86, 145, 255, .15), transparent 36%),
+    radial-gradient(ellipse at 96% 12%, rgba(154, 119, 255, .11), transparent 31%),
+    #080d18;
+}
+::selection { color: #fff; background: rgba(106, 164, 255, .35); }
+:where(h1,h2,h3,h4) { letter-spacing: -.018em; line-height: 1.45; }
+:where(p,li) { overflow-wrap: anywhere; }
+:where(.panel,.panel-card,.server,.group-row,.result,.stat,.report,.plan-card,.orders-card,.status-card) {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.panel { border-radius: var(--radius-lg); }
+:where(.panel-card,.server,.group-row,.result,.stat,.report,.plan-card) {
+  border-radius: var(--radius-md);
+}
+:where(input,select,textarea,button,a) { font: inherit; }
+:where(input,select,textarea) { min-width: 0; }
+:where(.field label,label) { color: var(--muted); font-weight: 600; }
+:where(.field input,.field select,.field textarea,input,select,textarea) {
+  accent-color: var(--blue);
+}
+:where(.field input,.field select,.field textarea) {
+  padding: 11px 14px;
+  line-height: 1.6;
+}
+:where(.field textarea) { min-height: 112px; resize: vertical; }
+:where(.button,button.button,summary.button) {
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  line-height: 1.45;
+}
+:where(.button.primary,button.button.primary) {
+  background: linear-gradient(115deg, #4e8df5, #8d6cf0);
+  box-shadow: 0 8px 22px rgba(85, 133, 245, .2);
+}
+:where(.button.danger,button.button.danger) {
+  background: rgba(255, 104, 125, .08);
+  border-color: rgba(255, 104, 125, .22);
+}
+:where(.notice,.ok,.err,.alert,.success,.warning) {
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+:where(.notice,.ok,.err) { padding: 13px 16px; }
+:where(.table-wrap) { border: 1px solid var(--border); border-radius: var(--radius-md); }
+:where(table) { border-collapse: separate; border-spacing: 0; }
+:where(th) { color: var(--muted); font-weight: 700; }
+:where(td,th) { padding: 12px 14px; vertical-align: middle; }
+:where(code,pre) { overflow-wrap: anywhere; }
+:where(.eyebrow,.muted) { letter-spacing: .005em; }
+:where(.status-chip,.state) { font-weight: 700; }
+:where(.hero-actions,.actions,.order-actions) { align-items: center; }
+:where(.plan-card) { padding: clamp(18px, 3vw, 28px); }
+:where(.plan-card h2,.plan-card h3) { line-height: 1.55; }
+:where(.plan-card .button) { width: 100%; margin-top: 10px; }
+:where(.empty-state) { border: 1px dashed var(--border-strong); border-radius: var(--radius-md); }
+:where(.topbar,.admin-top) { padding-block: 18px; }
+:where(.brand) { letter-spacing: -.02em; }
+.brand::after { inset: 0; border-radius: 5px; }
+@media (max-width: 760px) {
+  :where(.section-heading) { align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  :where(.hero) { padding: clamp(22px, 5vw, 36px); }
+  :where(.panel-card,.server,.group-row,.report,.stat) { border-radius: 16px; }
+}
+@media (max-width: 460px) {
+  :where(.button,button.button,summary.button) { padding-inline: 14px; }
+  :where(.orders-shell,.status-shell) { width: calc(100% - 20px); }
+  :where(.orders-card,.status-card) { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
