@@ -122,7 +122,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 .muted{color:var(--muted);line-height:1.8}
 .form-field{display:block;width:100%;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:8px 0 16px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}
 .form-field:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
-.form-field[dir="ltr"]{text-align:left;unicode-bidi:plaintext}
+.form-field[dir="ltr"]{text-align:left;unicode-bidi:plaintext}\n#code.form-field{max-width:280px;text-align:center;letter-spacing:.22em;font-variant-numeric:tabular-nums;font-weight:700}
 .notice{padding:14px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:14px 0;background:var(--surface-2);color:var(--text);line-height:1.8}
 .history-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
 .history-facts>span{padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface)}
@@ -140,7 +140,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <p class="muted">برای مشاهده سفارش‌های مرتبط با ایمیل خرید، کد تأیید ایمیل را وارد کنید. همچنین می‌توانید هر سفارش را با شناسه پیگیری در صفحه پیگیری سفارش مشاهده کنید.</p>
 <?php if ($notice !== ''): ?><div class="notice" role="status"><?= e($notice) ?></div><?php endif; ?>
 <?php if ($stage === 'verify'): ?>
-<form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="verify"><label for="code">کد ۶ رقمی ارسال‌شده</label><input class="form-field" id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code"><button class="button button-primary" type="submit">تأیید و مشاهده سفارش‌ها</button></form>
+<form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="verify"><label for="code">کد ۶ رقمی ارسال‌شده</label><input class="form-field" id="code" name="code" dir="ltr" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code"><button class="button button-primary" type="submit">تأیید و مشاهده سفارش‌ها</button></form>
 <?php elseif ($stage === 'orders'): ?>
 <p class="muted">ایمیل تأییدشده: <?= e($email) ?></p>
 <form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="logout"><button class="button" type="submit">خروج از فهرست سفارش‌ها</button></form>
