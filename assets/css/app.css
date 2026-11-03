@@ -74,7 +74,7 @@ body {
   border-color: rgba(87,149,255,.28);
 }
 .field input, .field select, .field textarea {
-  background: rgba(10, 17, 32, .78) !important;
+  background: var(--control-bg, rgba(10, 17, 32, .78)) !important;
   border: 1px solid var(--border) !important;
   color: var(--text) !important;
   border-radius: 13px !important;
@@ -83,8 +83,8 @@ body {
 }
 .field input:focus, .field select:focus, .field textarea:focus {
   outline: none;
-  border-color: var(--blue) !important;
-  box-shadow: 0 0 0 3px rgba(87,149,255,.13);
+  border-color: var(--accent, var(--blue)) !important;
+  box-shadow: 0 0 0 3px var(--ui-focus-ring, rgba(87,149,255,.13));
 }
 .button, button.button, summary.button {
   border: 1px solid var(--border);
