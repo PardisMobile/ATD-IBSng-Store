@@ -681,7 +681,19 @@
       if (main) main.insertBefore(nav, main.firstChild);
       else document.body.insertBefore(nav, document.body.firstChild);
     }
-    const host=document.querySelector('.atd-admin-preferences-slot')||document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
+    // Admin preferences belong in the shared header row, never at the end of page content.
+    let adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
+    const adminHeader = document.querySelector('.atd-admin-header');
+    if (adminHeader && !adminPreferenceSlot) {
+      const headerTop = adminHeader.querySelector('.atd-admin-header-top') || adminHeader;
+      adminPreferenceSlot = document.createElement('div');
+      adminPreferenceSlot.className = 'atd-admin-preferences-slot';
+      adminPreferenceSlot.setAttribute('aria-label', root.lang === 'fa' ? 'ظاهر و زبان' : 'Appearance and language');
+      headerTop.appendChild(adminPreferenceSlot);
+    }
+    const host = adminPreferenceSlot ||
+      document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top') ||
+      document.querySelector('main') || document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();
