@@ -82,7 +82,7 @@ $GLOBALS['app_message_catalog'] = $catalog;
  * fallback. Unknown keys never expose arbitrary exception text.
  */
 if (!function_exists('app_message')) {
-    function app_message(string $key, string $locale = 'fa'): string
+    function app_message(string $key, ?string $locale = null): string
     {
         static $catalog = null;
         if ($catalog === null) {
@@ -90,6 +90,10 @@ if (!function_exists('app_message')) {
             $catalog = is_array($loaded) ? $loaded : [];
         }
 
+        if ($locale === null) {
+            $preferredLocale = (string)($_COOKIE['atd-ui-language'] ?? 'fa');
+            $locale = in_array($preferredLocale, ['fa', 'en'], true) ? $preferredLocale : 'fa';
+        }
         $locale = isset($catalog[$locale]) ? $locale : 'fa';
         return (string)($catalog[$locale][$key] ?? $catalog['fa']['generic_error'] ?? 'انجام عملیات ممکن نشد.');
     }
