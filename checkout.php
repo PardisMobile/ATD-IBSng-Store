@@ -26,7 +26,7 @@ foreach ($credentialSettingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) {
 $credentialPolicy = $credentialSettings['credential_mode'] ?? 'customer';
 $credentialPrefix = $credentialSettings['username_prefix'] ?? 'atd';
 $credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 6)));
-$generatedPasswordLength = max(8, min(64, (int)($credentialSettings['password_length'] ?? 12)));
+$generatedPasswordLength = max(4, min(12, (int)($credentialSettings['password_length'] ?? 12)));
 $generatedPasswordCharset = ($credentialSettings['password_charset'] ?? 'mixed') === 'alphanumeric'
     ? 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
     : 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*-_';
@@ -253,7 +253,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <div class="field"><label for="buyer_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_email">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
 <?php if ($credentialPolicy === 'choice'): ?>
-<div class="field"><label>روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> تولید خودکار توسط فروشگاه</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? '') === 'customer') ? ' checked' : '' ?>> انتخاب نام کاربری و رمز توسط من</label></div>
+<div class="field"><label>روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> نام کاربری و رمز عبور دلخواه</label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> نام کاربری و رمز عبور اتوماتیک</label></div>
 <?php endif; ?>
 <?php if ($credentialPolicy !== 'automatic'): ?>
 <div id="manual-credentials" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? 'display:none' : '' ?>">
