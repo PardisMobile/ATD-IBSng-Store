@@ -868,3 +868,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for support-contact fields, price display units, gateway selection and currency mode, crypto-price visibility guidance, credential-generation policy, renewal gift settings, and save/store actions.
 - The IRCrypto Webhook helper text is now localization-keyed without changing its generated endpoint or its description of signature, status, amount, and currency validation. Provider-defined gateway field labels remain sourced from their registered module metadata.
 - Settings values, gateway/provider selection, CSRF, validation, webhook routing, payment behavior, and renewal configuration are unchanged. Source review only; browser and gateway-settings visual QA remain pending.
+
+
+### UI implementation note — localized browser document titles and translation-key integrity (2026-11-03)
+
+- Browser-tab titles for checkout, order history, order status, customer account, admin dashboard, product management, and support settings now switch to English while preserving the configured store name; Persian titles are restored when switching back.
+- Source-level consistency check: reviewed the eight modified UI pages plus the shared preference script and confirmed every literal `data-ui-text`, `data-ui-aria`, `data-ui-placeholder`, and `data-ui-title-key` used by those pages has a corresponding shared dictionary key. This is a source-key check, not a browser test.
+- GitHub combined status for the latest settings/title change returned no status entries; no automated test result is inferred from an empty status response.
