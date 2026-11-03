@@ -680,14 +680,12 @@
       });
       const header = document.querySelector('main > header.topbar, main > .topbar, .store-shell > .topbar, .account-shell > .topbar, .orders-shell > .topbar, .topbar');
       if (header) {
-        let row = header.querySelector(':scope > .atd-store-header-row');
+        let row = header.querySelector(':scope > .atd-shared-header-top') || header.querySelector(':scope > .atd-store-header-row');
         if (!row) {
           row = document.createElement('div');
           row.className = 'atd-store-header-row';
           const brand = header.querySelector(':scope > .brand');
           if (brand) row.appendChild(brand);
-          // Remove page-specific header navigation and back links; the shared
-          // storefront menu below is the single navigation source.
           Array.from(header.children).forEach((child) => {
             if (child !== row && child !== brand && child !== nav) child.remove();
           });
