@@ -15,16 +15,16 @@ if ($tokenHash !== '') {
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
-        $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+        $error = app_message('admin_reset_invalid_request');
     } elseif ($adminId < 1) {
-        $error = 'لینک بازیابی نامعتبر یا منقضی شده است. دوباره درخواست دهید.';
+        $error = app_message('admin_reset_token_invalid');
     } else {
         $password = (string)($_POST['password'] ?? '');
         $confirm = (string)($_POST['password_confirm'] ?? '');
         if (strlen($password) < 12 || strlen($password) > 200) {
-            $error = 'رمز جدید باید بین ۱۲ تا ۲۰۰ کاراکتر باشد.';
+            $error = app_message('admin_reset_password_length');
         } elseif (!hash_equals($password, $confirm)) {
-            $error = 'تکرار رمز با رمز جدید یکسان نیست.';
+            $error = app_message('admin_reset_password_mismatch');
         } else {
             try {
                 $pdo->beginTransaction();
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
                 error_log('Admin password reset failed: ' . $e->getMessage());
-                $error = 'ذخیره رمز جدید انجام نشد. دوباره تلاش کنید.';
+                $error = app_message('admin_reset_save_failed');
             }
         }
     }
