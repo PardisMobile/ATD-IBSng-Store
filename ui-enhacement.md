@@ -473,3 +473,10 @@ The following UI-only changes have been committed to `main`:
 - Improved accessible names and tooltips for the theme toggle, palette control, and accent swatches; color names are localized for Persian and English.
 - The preference toolbar's accessible name and control labels update when the language preference changes, instead of retaining the initial-language labels.
 - This is a JavaScript accessibility improvement only; theme, accent, and language persistence remain unchanged. Browser and screen-reader QA remains outstanding.
+
+## 12. Shared appearance controls — initial accessibility state
+
+- Initialize the theme control's accessible action label, pressed state, and tooltip from the active theme and language; avoid a generic “Toggle theme” label on first render.
+- Initialize the palette and language controls with the active locale's accessible names and tooltips, and localize the palette group name before the user changes language.
+- Keep these labels synchronized when the language changes. This is a presentation/accessibility refinement only; theme, accent, and locale persistence behavior is unchanged.
+- Validation note: source-level inspection only; no browser or screen-reader test is claimed.
