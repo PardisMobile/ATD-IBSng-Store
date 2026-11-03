@@ -557,3 +557,7 @@ The following UI-only changes have been committed to `main`:
 
 ### UI implementation note — email verification code field
 - `my-orders.php`: render the six-digit email verification code as an explicitly LTR, centered numeric field with tabular digits and deliberate spacing, while retaining its existing one-time-code autocomplete, six-digit pattern, and form submission behavior. This is a presentation/accessibility refinement only; verification logic is unchanged.
+
+
+### UI implementation note — customer account technical values
+- `customer-account.php`: force usernames, passwords, and the four-digit anti-bot code into a predictable LTR presentation; center and space the code and keep account values readable in RTL cards. Lookup/authentication behavior and password visibility interaction remain unchanged.
