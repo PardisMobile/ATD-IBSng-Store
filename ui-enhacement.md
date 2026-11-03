@@ -627,3 +627,10 @@ The following UI-only changes have been committed to `main`:
 - Added a consistent frame and rounded edges to the horizontally scrollable table, plus clearer column headers and subtle row hover feedback.
 - Text areas now use theme-aware colors, shared corner sizing, vertical resizing, and visible keyboard focus.
 - Presentation-only update; order processing and form actions remain as before. Visual browser QA is pending.
+
+
+### UI note — IBSng server cards and action controls (2026-11-03)
+
+- Server cards now have a defined theme-aware outline, consistent rounded corners, and restrained hover feedback.
+- Card action buttons share a minimum touch height, padding, radius, and clear keyboard-focus treatment; action forms wrap more safely in narrow layouts.
+- Server management actions, connection testing, default selection, activation, deletion, and credential handling were not changed. Visual browser QA is pending.
