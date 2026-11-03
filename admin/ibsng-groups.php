@@ -123,8 +123,8 @@ if ($selectedServerId > 0) {
 <div class="eyebrow">IBSng · Group / Plan Mapping</div>
 <h1 style="font-size:2rem">نگاشت پلن فروشگاه به گروه IBSng</h1>
 <p class="muted">نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش نگاشت به‌صورت دستی تعریف می‌شود؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="empty">ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.</div><?php else: ?>
 <form method="get">
 <div class="field"><label for="server_id">سرور IBSng</label><select id="server_id" name="server_id" onchange="this.form.submit()">
