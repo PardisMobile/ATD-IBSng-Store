@@ -155,16 +155,15 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 <link rel="stylesheet" href="../assets/css/app.css">
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 <style>
-:root{color-scheme:dark}
 body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,transparent 34%),radial-gradient(ellipse at 88% 90%,#20c9971c,transparent 30%),var(--bg)}
-.setup{width:min(920px,calc(100% - 28px));margin:clamp(22px,6vh,64px) auto;padding:clamp(22px,5vw,48px);border:1px solid var(--border);border-radius:26px;background:linear-gradient(145deg,#171f35f5,#101827f5);box-shadow:0 28px 90px #0005}
-.top{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.brand{display:flex;gap:12px;align-items:center}.mark{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#6c7cff,#9a66f7);font-weight:800;color:white;font-size:1.15rem}
-.pill{border:1px solid var(--border);border-radius:999px;padding:9px 14px;text-decoration:none;color:var(--text)}.eyebrow{color:#9baaff;font-size:.82rem;letter-spacing:.08em}.setup h1{font-size:clamp(1.65rem,4vw,2.4rem);margin:10px 0}.muted{color:var(--muted);line-height:1.8}
-.progress{display:flex;gap:8px;margin:26px 0}.progress span{height:5px;flex:1;border-radius:9px;background:linear-gradient(90deg,#667aff,#8f63e8)}
-fieldset{border:1px solid var(--border);border-radius:18px;padding:20px;margin:18px 0}legend{padding:0 9px;color:#a9b6ff;font-weight:700}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.field{display:grid;gap:8px;margin:12px 0}.field label{font-size:.9rem;color:var(--muted)}.field input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:#0b1221;color:var(--text);font:inherit;outline:none}.field input:focus{border-color:#788aff;box-shadow:0 0 0 3px #788aff20}
+.setup{width:min(920px,calc(100% - 28px));margin:clamp(22px,6vh,64px) auto;padding:clamp(22px,5vw,48px);border:1px solid var(--border);border-radius:26px;background:linear-gradient(145deg,var(--surface),var(--surface-2));box-shadow:0 28px 90px #0005}
+.top{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.brand{display:flex;gap:12px;align-items:center}.mark{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent-light),var(--accent-dark));font-weight:800;color:white;font-size:1.15rem}
+.pill{border:1px solid var(--border);border-radius:999px;padding:9px 14px;text-decoration:none;color:var(--text)}.eyebrow{color:var(--accent);font-size:.82rem;letter-spacing:.08em}.setup h1{font-size:clamp(1.65rem,4vw,2.4rem);margin:10px 0}.muted{color:var(--muted);line-height:1.8}
+.progress{display:flex;gap:8px;margin:26px 0}.progress span{height:5px;flex:1;border-radius:9px;background:linear-gradient(90deg,var(--accent-light),var(--accent-dark))}
+fieldset{border:1px solid var(--border);border-radius:18px;padding:20px;margin:18px 0}legend{padding:0 9px;color:var(--accent);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.field{display:grid;gap:8px;margin:12px 0}.field label{font-size:.9rem;color:var(--muted)}.field input{width:100%;box-sizing:border-box;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit;outline:none}.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ui-focus-ring)}
 .notice{padding:14px;border-radius:13px;margin:12px 0;line-height:1.75}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.actions button{font:inherit;cursor:pointer}.actions .secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
-@media(max-width:620px){.grid{grid-template-columns:1fr}.setup{padding:22px}.actions>*{width:100%}}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.setup{padding:22px;border-radius:20px}.actions>*{width:100%}.top{align-items:flex-start}.progress{margin:20px 0}.field input{min-height:46px}}
 </style>
 </head>
 <body>
