@@ -42,6 +42,7 @@
       '<button type="button" class="atd-pref-language" aria-label="'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
     palette.className='atd-palette-popover'; palette.hidden=true;
+    palette.id='atd-accent-palette';
     palette.setAttribute('role','group'); palette.setAttribute('aria-label','Color scheme');
     Object.entries(accents).forEach(([name,colors])=>{
       const b=document.createElement('button'); b.type='button'; b.className='atd-swatch'; b.dataset.accent=name;
@@ -56,7 +57,11 @@
       modeButton.innerHTML=svg(next==='dark'?'sun':'moon');
       modeButton.setAttribute('aria-pressed',String(next==='light'));
     });
-    controls.querySelector('.atd-pref-palette').addEventListener('click',()=>{palette.hidden=!palette.hidden;});
+    const paletteButton=controls.querySelector('.atd-pref-palette');
+    paletteButton.setAttribute('aria-controls',palette.id);
+    paletteButton.setAttribute('aria-expanded','false');
+    const closePalette=()=>{palette.hidden=true;paletteButton.setAttribute('aria-expanded','false');};
+    paletteButton.addEventListener('click',()=>{palette.hidden=!palette.hidden;paletteButton.setAttribute('aria-expanded',String(!palette.hidden));});
     controls.querySelector('.atd-pref-language').addEventListener('click',()=>{
       const next=(get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'en':'fa');set(storage.lang,next);set(storage.legacyLang,next);apply();
       controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
@@ -67,10 +72,10 @@
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
-      if(!controls.contains(event.target)) palette.hidden=true;
+      if(!controls.contains(event.target)) closePalette();
     });
     document.addEventListener('keydown',(event)=>{
-      if(event.key==='Escape') palette.hidden=true;
+      if(event.key==='Escape') closePalette();
     });
   }
   apply();
