@@ -691,6 +691,27 @@
         else document.body.insertBefore(nav, document.body.firstChild);
       }
     }
+    // Ensure public pages use the same footer frame without duplicating one
+    // authored by the page. Keep all copy in the presentation layer.
+    if (publicPage) {
+      const pageShell = document.querySelector('main.store-shell,main.account-shell,main.orders-shell,main.checkout-shell,main.status-shell,main');
+      if (pageShell && !Array.from(pageShell.children).some((child) => child.tagName === 'FOOTER')) {
+        const footer = document.createElement('footer');
+        footer.className = 'atd-page-footer';
+        const copy = document.createElement('span');
+        copy.textContent = '© ' + new Date().getFullYear() + ' ';
+        const brand = document.createElement('span');
+        brand.textContent = document.querySelector('.topbar .brand')?.textContent?.trim() || 'ATD IBSng Store';
+        const separator = document.createTextNode(' · ');
+        const adminLink = document.createElement('a');
+        adminLink.className = 'admin-link';
+        adminLink.href = rootUrl + 'admin/login.php';
+        adminLink.dataset.uiText = 'admin_login';
+        adminLink.textContent = root.lang === 'en' ? 'Admin login' : 'ورود مدیریت';
+        footer.append(copy, brand, separator, adminLink);
+        pageShell.appendChild(footer);
+      }
+    }
     // Admin preferences belong in the shared header row, never at the end of page content.
     let adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
     const adminHeader = document.querySelector('.atd-admin-header');
