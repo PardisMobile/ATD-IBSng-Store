@@ -68,8 +68,8 @@ $config = app_config();
 <section class="panel panel-card">
 <div class="eyebrow">ارتباط با مشتری</div><h1>مدیریت قالب‌های ایمیل</h1>
 <p class="hint">قالب‌ها مستقل از روش ارسال هستند. متغیرهای قابل استفاده در قالب: {{site_name}}، {{customer_name}}، {{order_id}}، {{order_url}}، {{verification_code}}، {{expires_in}}، {{verification_url}}، {{expiration_date}} و {{service_url}}. متغیرهای نامرتبط با یک رویداد در آن رویداد مقدار ندارند.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="get" class="field"><label for="event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select></form>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="event" value="<?= e($event) ?>">
