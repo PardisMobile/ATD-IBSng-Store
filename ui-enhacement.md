@@ -519,3 +519,10 @@ The following UI-only changes have been committed to `main`:
 - Found an important language-scope limitation: the shared language switch updates the document `lang`/`dir` and the toolbar's own labels, but it does not translate page copy by itself. Only the IBSng server/group/user admin pages currently subscribe to the `atd:language-change` event in the sampled pages; other static pages do not.
 - Logged this as an integration gap rather than making a broad, unsafe text rewrite. A complete bilingual pass needs page-specific translation keys and coverage checks, while preserving existing form names, validation, and payment/IBSng behavior.
 - Review is source-based; browser-level RTL/LTR layout, keyboard, and screen-reader QA is still pending.
+
+
+### Order tracking and purchase recovery visual alignment (2026-11-03)
+
+- Refined `my-orders.php` recovery/list cards and form controls to use the shared radius, surface, accent-focus, and control-height tokens. Long product names and tracking values wrap safely; order actions stack to full width on narrow screens.
+- Refined `order-status.php` purchase summary, per-server activation cards, account specification tiles, credential panel, and status chip to follow the shared theme tokens. Removed hard-coded dark gradient surfaces from notices/details so light mode is respected.
+- Kept all PHP lookup/recovery logic, CSRF fields, POST action names, order identifiers, payment states, IBSng queries, and credential visibility rules unchanged. This is a source-level UI pass; responsive browser QA and RTL/LTR rendering verification are pending.
