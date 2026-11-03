@@ -883,3 +883,10 @@ The following UI-only changes have been committed to `main`:
 - Page-level language toggles now write both preference keys and emit the shared language-change event. The shared toolbar listens for that event and updates its own visible/accessible language state and the persisted locale cookie.
 - This keeps the toolbar, legacy page copy, document language/direction, and server-rendered message locale aligned after either language control is used. Only UI preference synchronization changed; IBSng server/account/group operations are unchanged.
 - Source review verified the shared preference read, dual-key write, and event wiring across all three pages. Browser interaction/reload testing remains pending.
+
+
+### UI implementation note — sales reporting and ambiguous-payment review English localization (2026-11-03)
+
+- Added English copy for the sales report explanation, paid/pending metrics, report columns, empty states, ambiguous-payment review guidance, transaction table, review-note field, and release-for-retry action.
+- The gateway confirmation prompt and review-note placeholder now follow the selected locale. Existing transaction/order identifiers and customer data remain unchanged.
+- Payment review decision logic, CSRF, required review note, transaction resolution, and order retry release behavior were not changed. Dynamic server feedback is not yet comprehensively localized; source review only, with browser/functional QA still pending.
