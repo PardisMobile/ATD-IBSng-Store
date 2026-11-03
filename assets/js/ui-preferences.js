@@ -73,7 +73,8 @@
       title_admin_settings: 'Support settings',
       title_admin_orders: 'Sales report',
       title_admin_ibsng_groups: 'IBSng plan and group mapping',
-      title_admin_ibsng_servers: 'IBSng servers'
+      title_admin_ibsng_servers: 'IBSng servers',
+      title_admin_ibsng_users: 'IBSng account management'
     },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
@@ -97,6 +98,17 @@
     admin_ibsng_groups: {
       groups_add_mapping: 'Add mapping'
     },
+    admin_ibsng_users: {
+      users_select_plan: 'Select plan',
+      users_days_unit: 'days',
+      users_change_group_title: 'Change an existing user group',
+      users_change_group_intro: 'The user must already exist in IBSng. The destination group must be an active manual mapping for this server; use the Edit User form to change it.',
+      users_change_group_empty: 'No active manual group mapping is available for this server.',
+      users_existing_username: 'Existing user username',
+      users_destination_group: 'Destination group',
+      users_change_group_submit: 'Change group in IBSng'
+    },
+
     admin_orders: {
       orders_dashboard: 'Dashboard',
       orders_reports_eyebrow: 'Reports',
