@@ -67,7 +67,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </style>
 </head>
 <body><main class="admin-shell">
-<header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="orders_dashboard">داشبورد</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارشات</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش بر اساس سفارش‌هایی محاسبه می‌شود که وضعیت پرداخت آن‌ها «پرداخت‌شده» است. سفارش‌های در انتظار پرداخت در فروش لحاظ نمی‌شوند. مقادیر از snapshot سفارش خوانده می‌شوند تا تغییر نام یا قیمت محصول گزارش تاریخی را تغییر ندهد.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
