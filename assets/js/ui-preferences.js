@@ -75,6 +75,8 @@
     root.lang = language === 'en' ? 'en' : 'fa';
     root.dir = language === 'en' ? 'ltr' : 'rtl';
     root.dataset.language = root.lang;
+    const languageCookie = 'atd-ui-language=' + encodeURIComponent(root.lang) + '; path=/; max-age=31536000; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
+    document.cookie = languageCookie;
     root.dataset.accent = accents[accent] ? accent : 'blue';
     root.style.colorScheme = root.dataset.theme;
     const colors = accents[root.dataset.accent];
