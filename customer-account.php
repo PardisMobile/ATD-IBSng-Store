@@ -21,15 +21,15 @@ $accountPassword = (string)($_POST['account_password'] ?? '');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $provided = trim((string)($_POST['captcha'] ?? ''));
     if (!hash_equals($captcha, $provided)) {
-        $error = 'کد چهاررقمی صحیح نیست؛ دوباره تلاش کنید.';
+        $error = app_message('customer_account_captcha_invalid');
     } elseif ($username === '' || strlen($username) > 128 || $accountPassword === '') {
-        $error = 'نام کاربری و رمز عبور خود را وارد کنید.';
+        $error = app_message('customer_account_credentials_required');
     } else {
         try {
             $pdo = Database::connection();
             $stmt = $pdo->query("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id DESC");
             $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if (!$servers) throw new RuntimeException('در حال حاضر امکان بررسی حساب وجود ندارد.');
+            if (!$servers) throw new RuntimeException(app_message('customer_account_servers_unavailable'));
             $matched = [];
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $e;
                 }
             }
-            if (!$matched) throw new RuntimeException('نام کاربری یا رمز عبور صحیح نیست، یا حساب پیدا نشد.');
+            if (!$matched) throw new RuntimeException(app_message('customer_account_not_found'));
             $account = $matched;
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
         } catch (Throwable $e) {
