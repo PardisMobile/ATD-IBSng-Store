@@ -346,3 +346,48 @@ These are initial design values; tune contrast and component states during imple
 - [ ] Language selection remains independent and correctly switches Persian/RTL and English/LTR.
 - [ ] Semantic status colors remain meaningful and readable in all themes.
 - [ ] Theme controls and all palette states are included in responsive and accessibility QA.
+
+
+## 19. Unified SVG iconography, reusable commercial components, and responsive design
+
+These are required design-system deliverables for the storefront and administration experience.
+
+### SVG icon system
+
+- Use a consistent family of clean, subtle SVG icons throughout the UI.
+- Standardize icon dimensions, stroke width, line caps/joins, alignment, and default/active/disabled colors.
+- Prefer reusable inline SVG components or a shared icon set; avoid a random mixture of emoji, unrelated icon fonts, and inconsistent icon libraries.
+- Icons must support the active theme and accent scheme through shared color tokens, remain legible at common UI sizes, and include accessible labels when they convey meaning without adjacent text.
+- Keep decorative icons hidden from assistive technology where appropriate; do not use iconography as the only indication of critical status or action.
+
+### Commercial-grade reusable components
+
+Establish a coherent shared visual language and reusable styling/patterns for at least:
+
+- Product/plan cards, price display, validity and quota specifications, and purchase/renewal CTAs.
+- Form fields, labels, helper text, validation feedback, select controls, and grouped/conditional fields.
+- Primary, secondary, subtle, and destructive buttons, including hover, focus, loading, and disabled states.
+- Order/payment/service status indicators and progress stages, with semantic color meaning.
+- Success, error, warning, information, empty, and processing messages.
+- Data tables, responsive order lists/cards, summary metrics, and pagination where present.
+- Admin navigation/shell, page headers, section cards, mapping rows, and action groups.
+- Confirmation and feedback patterns, without changing the underlying operation or business logic.
+
+Shared components must look and behave consistently across public storefront, checkout, order tracking/recovery, customer account, and admin pages. Avoid duplicating page-specific styles where a shared component is appropriate.
+
+### Responsive design — mobile, tablet, desktop
+
+- Design and verify intentional layouts for mobile, tablet, and desktop breakpoints; do not merely shrink desktop columns and controls.
+- Recompose page hierarchy and navigation for narrow screens; prioritize the information and actions most relevant to the current task.
+- Product cards, checkout summaries, forms, order details, admin cards, and action groups must adapt their structure and spacing for each viewport.
+- Tables must use a deliberate mobile presentation (such as prioritized row cards or controlled horizontal scrolling for genuinely tabular data), avoiding clipped content and accidental page-wide overflow.
+- Ensure touch targets, control spacing, readable text, and keyboard/focus behavior are suitable across devices.
+- Test long product names, identifiers, usernames, emails, hostnames, and translated text at all target widths.
+
+### Acceptance criteria
+
+- [ ] SVG iconography follows one consistent visual system and adapts to theme/color selection.
+- [ ] Core commercial UI elements use shared, consistent component patterns.
+- [ ] Mobile, tablet, and desktop layouts are deliberately composed and checked separately.
+- [ ] No accidental horizontal page overflow, clipped primary actions, or unusable touch targets remain in tested views.
+- [ ] UI-only work preserves all existing business logic and server-side behavior.
