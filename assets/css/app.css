@@ -734,3 +734,10 @@ tr:hover td { background:var(--hover-surface); }
    Disable the wrapper-wide shine to prevent a rectangular highlight artifact.
    A future dedicated logo-mark element can opt into this effect explicitly. */
 .brand::after { content: none; animation: none; }
+
+/* Accessible foreground for the bright accent swatches in dark mode.
+   Light mode keeps the existing dark accent shades and white foreground. */
+:root[data-theme="dark"] { --accent-foreground:#10182a; }
+:root[data-theme="light"] { --accent-foreground:#ffffff; }
+.button.primary,button.button.primary,summary.button.primary,
+input[type="submit"].primary { color:var(--accent-foreground,#fff); }
