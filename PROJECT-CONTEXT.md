@@ -1111,3 +1111,10 @@
 - The resulting generated username/password enter the same existing order snapshot path; password encryption and the paid-before-provisioning boundary remain unchanged. Settings changes apply to new checkouts; existing orders retain their stored credentials.
 - This pass uses a store-wide policy because the current product schema has no credential-mode field. Per-product mode policy would require a dedicated schema migration and admin product UI; it is not claimed as implemented.
 - **Verification boundary:** source updates were committed on `main`; no PHP runtime lint, automated tests, DB/admin browser validation, or real IBSng checkout was run in this environment. Collision under concurrent requests remains subject to the final availability check immediately before order creation.
+
+
+### 2026-11-03 — Credential length and storefront wording adjustment
+
+- Generated username random suffix length and generated password length are both configured within 4–12 characters; the previous generated-password bounds of 8–64 were tightened to 4–12.
+- Checkout method labels are now exactly: `نام کاربری و رمز عبور دلخواه` and `نام کاربری و رمز عبور اتوماتیک`.
+- These length settings apply to generated credentials. Customer-entered/manual password validation remains separate (currently 8–200 characters) unless a later requirement explicitly changes it.
