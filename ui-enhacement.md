@@ -511,3 +511,11 @@ The following UI-only changes have been committed to `main`:
 - Continued maintaining the shared `assets/js/ui-preferences.js` preference toolbar rather than introducing a second page-specific control implementation.
 - Fixed a language-switch mismatch: the theme control's accessible action name, tooltip, and pressed state now update together in the newly selected language while reflecting the currently active light/dark mode.
 - This is a client-side accessibility/localization fix only; persisted preference keys, theme application, language direction, and business workflows are unchanged. Browser and screen-reader validation remain outstanding.
+
+
+### Shared preference integration coverage review (2026-11-03)
+
+- Verified that the shared `assets/js/ui-preferences.js` and `assets/css/app.css` are included on the primary storefront, checkout, order tracking/recovery, customer account, guide, and sampled admin pages; no duplicate preference script was found in those page sources.
+- Found an important language-scope limitation: the shared language switch updates the document `lang`/`dir` and the toolbar's own labels, but it does not translate page copy by itself. Only the IBSng server/group/user admin pages currently subscribe to the `atd:language-change` event in the sampled pages; other static pages do not.
+- Logged this as an integration gap rather than making a broad, unsafe text rewrite. A complete bilingual pass needs page-specific translation keys and coverage checks, while preserving existing form names, validation, and payment/IBSng behavior.
+- Review is source-based; browser-level RTL/LTR layout, keyboard, and screen-reader QA is still pending.
