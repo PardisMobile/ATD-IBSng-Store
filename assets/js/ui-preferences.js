@@ -705,7 +705,7 @@
         const separator = document.createTextNode(' · ');
         const adminLink = document.createElement('a');
         adminLink.className = 'admin-link';
-        adminLink.href = rootUrl + 'admin/login.php';
+        adminLink.href = new URL('admin/login.php', document.querySelector('base')?.href || location.href).href;
         adminLink.dataset.uiText = 'admin_login';
         adminLink.textContent = root.lang === 'en' ? 'Admin login' : 'ورود مدیریت';
         footer.append(copy, brand, separator, adminLink);
