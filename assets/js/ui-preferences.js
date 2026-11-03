@@ -19,9 +19,11 @@
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
+    root.dataset.mode = root.dataset.theme;
     const language = get(storage.lang, root.lang || 'fa');
     root.lang = language === 'en' ? 'en' : 'fa';
     root.dir = language === 'en' ? 'ltr' : 'rtl';
+    root.dataset.language = root.lang;
     root.dataset.accent = accents[accent] ? accent : 'blue';
     root.style.colorScheme = root.dataset.theme;
     const colors = accents[root.dataset.accent];
@@ -35,7 +37,7 @@
     controls.className = 'atd-preferences';
     controls.setAttribute('aria-label','Appearance and language');
     controls.innerHTML =
-      '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
+      '<button type="button" class="atd-pref-mode" aria-label="Toggle theme" aria-pressed="'+(get(storage.mode,'dark')==='light')+'" title="Light / dark">'+svg(get(storage.mode,'dark')==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="Choose color scheme" title="Color scheme">'+svg('palette')+'</button>'+
       '<button type="button" class="atd-pref-language" aria-label="Switch language" title="Language">'+svg('globe')+'<span>'+(get(storage.lang,root.lang||'fa')==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
@@ -50,15 +52,25 @@
     controls.appendChild(palette);
     controls.querySelector('.atd-pref-mode').addEventListener('click',()=>{
       const next=get(storage.mode,'dark')==='dark'?'light':'dark';set(storage.mode,next);apply();
-      controls.querySelector('.atd-pref-mode').innerHTML=svg(next==='dark'?'sun':'moon');
+      const modeButton=controls.querySelector('.atd-pref-mode');
+      modeButton.innerHTML=svg(next==='dark'?'sun':'moon');
+      modeButton.setAttribute('aria-pressed',String(next==='light'));
     });
     controls.querySelector('.atd-pref-palette').addEventListener('click',()=>{palette.hidden=!palette.hidden;});
     controls.querySelector('.atd-pref-language').addEventListener('click',()=>{
-      const next=(get(storage.lang,root.lang||'fa')==='fa'?'en':'fa');set(storage.lang,next); root.lang=next; root.dir=next==='en'?'ltr':'rtl';
+      const next=(get(storage.lang,root.lang||'fa')==='fa'?'en':'fa');set(storage.lang,next);apply();
       controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
+      controls.querySelector('.atd-pref-language').setAttribute('aria-label',next==='fa'?'Switch language to English':'تغییر زبان به فارسی');
+      root.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
     });
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
     host.appendChild(controls);
+    document.addEventListener('pointerdown',(event)=>{
+      if(!controls.contains(event.target)) palette.hidden=true;
+    });
+    document.addEventListener('keydown',(event)=>{
+      if(event.key==='Escape') palette.hidden=true;
+    });
   }
   apply();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
