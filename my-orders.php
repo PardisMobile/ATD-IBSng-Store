@@ -131,6 +131,18 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 .history-facts .history-amount{color:var(--success,var(--green))}
 .order-row form{min-width:0}
 @media(max-width:600px){.orders-shell{width:calc(100% - 24px)}.order-row{grid-template-columns:minmax(0,1fr);align-items:stretch}.order-row .button{width:100%}.history-facts{grid-template-columns:1fr}}
+/* Order recovery: reinforce card hierarchy and make lookup actions easier to scan. */
+.order-row{box-shadow:0 1px 0 color-mix(in srgb,var(--border) 55%,transparent);transition:border-color .18s ease,background-color .18s ease}
+.order-row:hover{border-color:color-mix(in srgb,var(--accent) 38%,var(--border))}
+.order-row .button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding-inline:16px;white-space:normal;text-align:center}
+.order-row form .form-field{max-width:100%;box-sizing:border-box}
+.order-row form button{margin-top:2px}
+.history-facts>span{min-width:0;line-height:1.7}
+.history-facts strong{line-height:1.65}
+.orders-card>form button{min-height:44px}
+.orders-card h1{line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:600px){.order-row .button{width:100%}.orders-list{gap:12px}}
+@media(prefers-reduced-motion:reduce){.order-row{transition:none}}
 </style>
 </head>
 <body><main class="orders-shell">
