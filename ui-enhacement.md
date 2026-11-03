@@ -802,3 +802,10 @@ The following UI-only changes have been committed to `main`:
 
 - The dashboard's conditional database-statistics failure notice now uses an assertive alert live region so the error is announced when present.
 - The notice text, dashboard queries, statistics, and database handling remain unchanged. Source review only; browser and assistive-technology QA remains pending.
+
+
+### UI implementation note — shared accent-scheme propagation (2026-11-03)
+
+- Replaced the shared stylesheet's fixed blue/violet glow, hover-border, and decorative highlight colors with `color-mix(in srgb, var(--accent) …, transparent)`, so these surfaces follow the selected accent scheme rather than remaining blue when the user chooses violet, teal, rose, or amber.
+- The update is limited to shared CSS presentation tokens/effects. Theme persistence, language preference, page markup, form handlers, and all server-side behavior remain unchanged.
+- Source-level verification: reviewed the shared stylesheet for remaining fixed blue/violet highlight references; only the original base palette variable definitions remain. Browser-based contrast and viewport QA is still pending.
