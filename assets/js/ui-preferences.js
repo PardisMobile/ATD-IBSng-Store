@@ -44,16 +44,18 @@
     document.querySelectorAll('[data-ui-text]').forEach((element) => {
       const key = element.dataset.uiText;
       const translated = pageCopy.catalog[key];
-      if (language === 'en' && translated) element.textContent = translated;
+      if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
+      element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
     });
     document.querySelectorAll('[data-ui-aria]').forEach((element) => {
       const key = element.dataset.uiAria;
       const translated = pageCopy.catalog[key];
-      if (language === 'en' && translated) element.setAttribute('aria-label', translated);
+      if (element.dataset.uiOriginalAria === undefined) element.dataset.uiOriginalAria = element.getAttribute('aria-label') || '';
+      element.setAttribute('aria-label', language === 'en' && translated ? translated : element.dataset.uiOriginalAria);
     });
     document.querySelectorAll('[data-ui-duration]').forEach((element) => {
       if (language !== 'en') {
-        element.textContent = element.dataset.uiDurationFa || element.textContent;
+        element.textContent = element.dataset.uiDurationFa || element.dataset.uiOriginalText || element.textContent;
         return;
       }
       const seconds = Number(element.dataset.uiDuration);
