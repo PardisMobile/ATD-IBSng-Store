@@ -875,3 +875,11 @@ The following UI-only changes have been committed to `main`:
 - Browser-tab titles for checkout, order history, order status, customer account, admin dashboard, product management, and support settings now switch to English while preserving the configured store name; Persian titles are restored when switching back.
 - Source-level consistency check: reviewed the eight modified UI pages plus the shared preference script and confirmed every literal `data-ui-text`, `data-ui-aria`, `data-ui-placeholder`, and `data-ui-title-key` used by those pages has a corresponding shared dictionary key. This is a source-key check, not a browser test.
 - GitHub combined status for the latest settings/title change returned no status entries; no automated test result is inferred from an empty status response.
+
+
+### UI implementation note — unified language preference across legacy IBSng admin pages (2026-11-03)
+
+- Fixed a real preference synchronization gap in the legacy IBSng server, group-mapping, and account-management translation controls: their initial locale now prioritizes the shared `atd-ui-language` preference, then falls back to the legacy key.
+- Page-level language toggles now write both preference keys and emit the shared language-change event. The shared toolbar listens for that event and updates its own visible/accessible language state and the persisted locale cookie.
+- This keeps the toolbar, legacy page copy, document language/direction, and server-rendered message locale aligned after either language control is used. Only UI preference synchronization changed; IBSng server/account/group operations are unchanged.
+- Source review verified the shared preference read, dual-key write, and event wiring across all three pages. Browser interaction/reload testing remains pending.
