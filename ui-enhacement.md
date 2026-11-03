@@ -648,3 +648,10 @@ The following UI-only changes have been committed to `main`:
 - Refined saved mapping cards with theme-aware borders, subtle accent hover, and a distinct inset treatment for the exact IBSng group name, improving the hierarchy between Store plan labels and the remote group identifier.
 - Styled the existing edit disclosure as a consistent expandable section, including an open/closed indicator and keyboard focus treatment. Action forms/buttons now have consistent minimum height and padding, and stack cleanly on narrow screens.
 - No mapping CRUD logic, form field names, CSRF, confirmation behavior, or database operations changed. Source-level only; browser/device QA remains outstanding.
+
+
+### UI note — admin product cards and IBSng mapping editor (2026-11-03)
+
+- Added theme-aware outlined surfaces and restrained hover feedback to saved product cards, with improved title/metadata wrapping and touch-friendly action controls.
+- Grouped each product’s server/group mapping row in an inset surface; selects now wrap safely, and the editor grid becomes a single column on narrow screens. Product actions adapt to a compact responsive grid.
+- This is a CSS-only presentation change. Product CRUD, mapping fields, duplicate-server checks, CSRF, confirmation prompts, validation, and database behavior remain unchanged. Source-level only; browser/viewport QA remains pending.
