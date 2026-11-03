@@ -1428,3 +1428,39 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 @media(prefers-reduced-motion:reduce) {
   .atd-admin-nav-link,.atd-store-nav-link { transition:none; }
 }
+
+/* Shared interactive control foundation. Keep behavior untouched; normalize
+   visual states so buttons added by any page inherit the storefront system. */
+:where(button, input[type="submit"], input[type="button"], a.button, summary.button) {
+  font-family:inherit;
+  font-size:inherit;
+  line-height:1.4;
+  min-height:44px;
+  border-radius:13px;
+  -webkit-tap-highlight-color:transparent;
+}
+:where(button, input[type="submit"], input[type="button"], a.button, summary.button):focus-visible {
+  outline:2px solid var(--accent,var(--blue));
+  outline-offset:3px;
+}
+:where(button, input[type="submit"], input[type="button"], a.button, summary.button):disabled,
+:where(button, input[type="submit"], input[type="button"], a.button, summary.button)[aria-disabled="true"] {
+  cursor:not-allowed;
+  opacity:.58;
+  transform:none;
+  filter:none;
+}
+:where(button, input[type="submit"], input[type="button"], a.button, summary.button):active:not(:disabled) {
+  transform:translateY(0) scale(.985);
+}
+:where(input,select,textarea) {
+  max-width:100%;
+}
+:where(.field, .form-row, .form-group) {
+  min-width:0;
+}
+@media(prefers-reduced-motion:reduce) {
+  :where(button, input[type="submit"], input[type="button"], a.button, summary.button) {
+    transition:none !important;
+  }
+}
