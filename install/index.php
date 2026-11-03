@@ -190,15 +190,15 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
   <input type="hidden" name="csrf" value="<?= install_e($_SESSION['install_csrf']) ?>"><input type="hidden" name="locale" value="<?= install_e($locale) ?>">
   <fieldset><legend><?= install_e(it('site')) ?></legend><div class="field"><label for="site_title"><?= install_e(it('site')) ?></label><input id="site_title" name="site_title" required value="<?= install_e($values['site_title']) ?>"></div><p class="muted"><?= install_e(it('note')) ?></p></fieldset>
   <fieldset><legend><?= install_e(it('db')) ?></legend><div class="grid">
-   <div class="field"><label for="db_host"><?= install_e(it('host')) ?></label><input id="db_host" name="db_host" required value="<?= install_e($values['db_host']) ? dir="ltr">"></div>
-   <div class="field"><label for="db_name"><?= install_e(it('name')) ?></label><input id="db_name" name="db_name" required value="<?= install_e($values['db_name']) ? dir="ltr">"></div>
-   <div class="field"><label for="db_user"><?= install_e(it('dbuser')) ?></label><input id="db_user" name="db_user" required value="<?= install_e($values['db_user']) ? dir="ltr">"></div>
-   <div class="field"><label for="db_pass"><?= install_e(it('dbpass')) ?></label><input id="db_pass" name="db_pass" type="password" value="<?= install_e($dbPass??'') ? dir="ltr">" autocomplete="new-password"></div>
+   <div class="field"><label for="db_host"><?= install_e(it('host')) ?></label><input id="db_host" name="db_host" required value="<?= install_e($values['db_host']) ?>" dir="ltr">"></div>
+   <div class="field"><label for="db_name"><?= install_e(it('name')) ?></label><input id="db_name" name="db_name" required value="<?= install_e($values['db_name']) ?>" dir="ltr">"></div>
+   <div class="field"><label for="db_user"><?= install_e(it('dbuser')) ?></label><input id="db_user" name="db_user" required value="<?= install_e($values['db_user']) ?>" dir="ltr">"></div>
+   <div class="field"><label for="db_pass"><?= install_e(it('dbpass')) ?></label><input id="db_pass" name="db_pass" type="password" value="<?= install_e($dbPass??'') ?>" dir="ltr" autocomplete="new-password"></div>
   </div></fieldset>
   <fieldset><legend><?= install_e(it('admin')) ?></legend><div class="grid">
-   <div class="field"><label for="admin_username"><?= install_e(it('username')) ?></label><input id="admin_username" name="admin_username" required autocomplete="username" value="<?= install_e($values['admin_username']) ? dir="ltr">"></div>
+   <div class="field"><label for="admin_username"><?= install_e(it('username')) ?></label><input id="admin_username" name="admin_username" required autocomplete="username" value="<?= install_e($values['admin_username']) ?>" dir="ltr">"></div>
    <div class="field"><label for="admin_display_name"><?= install_e(it('display')) ?></label><input id="admin_display_name" name="admin_display_name" value="<?= install_e($values['admin_display_name']) ?>"></div>
-   <div class="field"><label for="admin_email"><?= install_e(it('email')) ?></label><input id="admin_email" name="admin_email" type="email" required autocomplete="email" value="<?= install_e($values['admin_email']) ? dir="ltr">"></div>
+   <div class="field"><label for="admin_email"><?= install_e(it('email')) ?></label><input id="admin_email" name="admin_email" type="email" required autocomplete="email" value="<?= install_e($values['admin_email']) ?>" dir="ltr">"></div>
    <div class="field"><label for="admin_password"><?= install_e(it('password')) ?></label><input id="admin_password" name="admin_password" type="password" required minlength="8" autocomplete="new-password" dir="ltr"></div>
    <div class="field"><label for="admin_password_confirm"><?= install_e(it('confirm')) ?></label><input id="admin_password_confirm" name="admin_password_confirm" type="password" required minlength="8" autocomplete="new-password" dir="ltr"></div>
   </div></fieldset>
