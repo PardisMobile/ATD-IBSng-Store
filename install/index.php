@@ -162,6 +162,15 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 })();
 </script>
 <script src="<?= "../assets/js/ui-preferences.js" ?>" defer></script>
+<script>
+document.addEventListener('atd:language-change',function(event){
+ const language=event.detail&&event.detail.language;
+ if(language!=='fa'&&language!=='en')return;
+ const url=new URL(window.location.href);
+ url.searchParams.set('lang',language);
+ window.location.assign(url.toString());
+});
+</script>
 <style>
 body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,transparent 34%),radial-gradient(ellipse at 88% 90%,#20c9971c,transparent 30%),var(--bg)}
 .setup{width:min(920px,calc(100% - 28px));margin:clamp(22px,6vh,64px) auto;padding:clamp(22px,5vw,48px);border:1px solid var(--border);border-radius:var(--ui-radius-xl,26px);background:linear-gradient(145deg,var(--surface),var(--surface-2));box-shadow:var(--ui-shadow,0 28px 90px #0005);min-width:0}
