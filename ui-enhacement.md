@@ -809,3 +809,11 @@ The following UI-only changes have been committed to `main`:
 - Replaced the shared stylesheet's fixed blue/violet glow, hover-border, and decorative highlight colors with `color-mix(in srgb, var(--accent) …, transparent)`, so these surfaces follow the selected accent scheme rather than remaining blue when the user chooses violet, teal, rose, or amber.
 - The update is limited to shared CSS presentation tokens/effects. Theme persistence, language preference, page markup, form handlers, and all server-side behavior remain unchanged.
 - Source-level verification: reviewed the shared stylesheet for remaining fixed blue/violet highlight references; only the original base palette variable definitions remain. Browser-based contrast and viewport QA is still pending.
+
+
+### UI implementation note — public catalog English copy (2026-11-03)
+
+- Added explicit localization keys to the storefront's static navigation, hero, section headings, catalog error/empty states, plan metadata labels, and purchase CTA. The shared preference layer now applies the English copy when English is selected and restores the original Persian copy when switching back.
+- Catalog validity durations are rendered in English units under the English locale while retaining their existing Persian rendering in Persian. Product names/descriptions and configured store title remain operator-provided content and are not machine-translated.
+- Only customer-facing text presentation and locale-aware duration labels were changed; product queries, prices, crypto visibility, checkout URLs, and order creation behavior remain untouched.
+- Source inspection completed. Browser RTL/LTR, reload persistence, and responsive visual QA remain pending.
