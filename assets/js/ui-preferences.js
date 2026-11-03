@@ -138,6 +138,7 @@
       provisioning_result_error: 'Result / error',
       provisioning_action: 'Action',
       provisioning_empty: 'No items are in the queue.',
+      provisioning_email_empty: 'No account-delivery email records have been added yet.',
       provisioning_run_once: 'Run once',
       provisioning_review_result: 'IBSng review result',
       provisioning_account_confirmed: 'Account confirmed',
