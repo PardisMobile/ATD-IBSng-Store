@@ -63,7 +63,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <title>گزارش خرید و فروش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:right;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:nowrap}.notice{padding:12px 14px;border-radius:12px;margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.section-gap{margin-top:22px}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr}}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}.notice{padding:12px 14px;border-radius:12px;margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font:inherit}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.section-gap{margin-top:22px}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr}}
 </style>
 </head>
 <body><main class="admin-shell">
@@ -93,4 +93,5 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </tr><?php endforeach; ?>
 </tbody></table></div>
 </section>
-</section><footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer></main></body></html>
+</section><footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer></main><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+</body></html>
