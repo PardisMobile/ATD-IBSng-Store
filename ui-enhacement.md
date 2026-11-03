@@ -533,3 +533,10 @@ The following UI-only changes have been committed to `main`:
 - Polished the foreground installer card, brand mark, locale switch, fieldsets, input focus states, feedback notices, and action hierarchy while retaining the approved decorative gradient/line background.
 - Improved min-width handling and narrow-screen stacking for database/admin form fields and action buttons; reused shared radius, shadow, control-height, surface, and accent tokens where applicable.
 - Installer locale selection, field names, CSRF, database connection test, install POST actions, validation, schema/config writing, and lock behavior were not modified. Visual verification is source-only; mobile/tablet/desktop browser QA remains pending.
+
+
+### Admin product and IBSng server form consistency (2026-11-03)
+
+- Standardized the product editor and IBSng server editor field sizing, theme-aware input/select backgrounds, focus rings, feedback notice colors, card padding, and responsive form/action layout using shared UI tokens.
+- Server and product cards now handle long values more safely and stack form columns/actions on narrow screens.
+- No product/server POST fields, mappings, IBSng connection/testing actions, CRUD logic, or database behavior were changed. Source review only; full viewport QA remains pending.
