@@ -71,7 +71,26 @@
       title_admin_dashboard: 'Admin dashboard',
       title_admin_products: 'Product management',
       title_admin_settings: 'Support settings',
-      title_admin_orders: 'Sales report'
+      title_admin_orders: 'Sales report',
+      title_admin_ibsng_groups: 'IBSng plan and group mapping'
+    },
+    admin_ibsng_servers: {
+      server_add: 'Add IBSng server',
+      server_management_title: 'IBSng server management',
+      server_host_label: 'Host or IP (without http or path)',
+      server_web_panel_port: 'Web Panel port',
+      server_admin_username: 'IBSng administrator username',
+      server_admin_password: 'IBSng administrator password',
+      server_save_test: 'Test connection and save server',
+      server_saved_heading: 'Saved servers',
+      server_empty: 'No servers have been added yet.',
+      server_username_label: '· Username:',
+      server_last_test_label: 'Last test:',
+      server_not_tested: 'Not tested',
+      server_error_label: '· Error:'
+    },
+    admin_ibsng_groups: {
+      groups_add_mapping: 'Add mapping'
     },
     admin_orders: {
       orders_dashboard: 'Dashboard',
