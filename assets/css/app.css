@@ -1085,3 +1085,19 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   :where(.button,button:not(.atd-preferences button),input[type="submit"],input[type="button"],summary.button):hover,
   :where(.button,button:not(.atd-preferences button),input[type="submit"],input[type="button"],summary.button):active { transform:none!important; }
 }
+
+/* Shared administration header and navigation */
+.atd-admin-header{display:grid;gap:14px;padding:22px 0 18px}
+.atd-admin-header-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.atd-admin-preferences-slot{display:flex;align-items:center;justify-content:flex-end;min-width:0}
+.atd-admin-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:12px;border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);background:var(--surface)}
+.atd-admin-nav-link{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--surface-2);color:var(--text);font:inherit;text-align:center;text-decoration:none;line-height:1.45;overflow-wrap:anywhere;cursor:pointer;transition:color .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.atd-admin-nav-link:hover:not(:disabled){border-color:color-mix(in srgb,var(--accent) 48%,var(--border));background:color-mix(in srgb,var(--surface-2) 76%,var(--accent) 24%);transform:translateY(-1px);box-shadow:0 5px 16px color-mix(in srgb,var(--accent) 10%,transparent)}
+.atd-admin-nav-link:active:not(:disabled){background:color-mix(in srgb,var(--surface-2) 64%,var(--accent) 36%);transform:scale(.985);box-shadow:none}
+.atd-admin-nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.atd-admin-nav-link[aria-current="page"]{color:var(--accent-foreground,#fff);background:var(--accent);border-color:transparent;box-shadow:0 6px 18px var(--ui-focus-ring)}
+.atd-admin-logout{display:flex;margin:0;min-width:0}
+.atd-admin-logout button{width:100%}
+@media(max-width:760px){.atd-admin-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:460px){.atd-admin-header-top{align-items:flex-start;flex-direction:column}.atd-admin-preferences-slot{width:100%;justify-content:flex-start}.atd-admin-nav{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.atd-admin-nav-link{transition:none!important}.atd-admin-nav-link:hover,.atd-admin-nav-link:active{transform:none!important}}
