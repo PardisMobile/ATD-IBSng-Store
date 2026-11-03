@@ -1021,3 +1021,67 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   :where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):hover,
   :where(.button,button.button,summary.button,input[type="submit"],input[type="button"],.atd-store-nav-link):active { transform:none!important; }
 }
+
+
+/* Canonical storefront action component: .button is the default contract for
+   every new action. Keep semantic variants additive; no page-specific styling
+   is needed for standard, hover, pressed, focus or disabled states. */
+:where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button) {
+  appearance:none;
+  box-sizing:border-box;
+  min-height:var(--atd-button-min-height,44px);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.55rem;
+  padding:10px 15px;
+  border:1px solid var(--atd-button-border,var(--border));
+  border-radius:var(--atd-button-radius,14px);
+  background:var(--atd-button-bg,var(--surface-2));
+  color:var(--atd-button-fg,var(--text));
+  font:inherit;
+  font-weight:700;
+  line-height:1.45;
+  text-decoration:none;
+  cursor:pointer;
+  transition:color .16s ease,background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+:where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):hover:not(:disabled) {
+  background:var(--atd-button-hover-bg,var(--hover-surface,var(--surface-2)));
+  color:var(--atd-button-fg,var(--text));
+  border-color:var(--atd-button-hover-border,var(--accent));
+  transform:translateY(-1px);
+  box-shadow:0 5px 16px color-mix(in srgb,var(--accent) 10%,transparent);
+}
+:where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):active:not(:disabled) {
+  background:var(--atd-button-active-bg,var(--surface-2));
+  transform:translateY(0) scale(.985);
+  box-shadow:none;
+}
+:where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+  box-shadow:0 0 0 4px var(--ui-focus-ring,color-mix(in srgb,var(--accent) 16%,transparent));
+}
+:where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):disabled,
+:where(.button,[role="button"])[aria-disabled="true"] {
+  opacity:.52;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+:root[data-theme="light"] {
+  --atd-button-bg:#fff;
+  --atd-button-fg:#27334a;
+  --atd-button-border:rgba(55,75,110,.18);
+  --atd-button-hover-bg:color-mix(in srgb,#fff 78%,var(--accent) 22%);
+  --atd-button-hover-border:color-mix(in srgb,var(--accent) 48%,#fff);
+  --atd-button-active-bg:color-mix(in srgb,#fff 65%,var(--accent) 35%);
+}
+@media(prefers-reduced-motion:reduce) {
+  :where(.button,button:not(.atd-preferences button),input[type="submit"],input[type="button"],summary.button) { transition:none!important; }
+  :where(.button,button:not(.atd-preferences button),input[type="submit"],input[type="button"],summary.button):hover,
+  :where(.button,button:not(.atd-preferences button),input[type="submit"],input[type="button"],summary.button):active { transform:none!important; }
+}
