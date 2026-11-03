@@ -66,6 +66,7 @@ $config = app_config();
 <div class="field"><label for="username">نام کاربری</label><input id="username" name="username" required autocomplete="username" value="<?= e($username) ?>"></div>
 <div class="field"><label for="password">رمز عبور</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
 <button class="button primary" type="submit">ورود به پنل</button>
+<p class="muted" style="margin-top:14px;text-align:center"><a href="<?= e(app_url('admin/forgot-password.php')) ?>">فراموشی رمز عبور؟</a></p>
 </form>
 <p class="muted" style="margin-top:22px"><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></p>
 </main>
