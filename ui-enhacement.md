@@ -817,3 +817,11 @@ The following UI-only changes have been committed to `main`:
 - Catalog validity durations are rendered in English units under the English locale while retaining their existing Persian rendering in Persian. Product names/descriptions and configured store title remain operator-provided content and are not machine-translated.
 - Only customer-facing text presentation and locale-aware duration labels were changed; product queries, prices, crypto visibility, checkout URLs, and order creation behavior remain untouched.
 - Source inspection completed. Browser RTL/LTR, reload persistence, and responsive visual QA remain pending.
+
+
+### UI implementation note — persisted locale for server-rendered customer messages (2026-11-03)
+
+- The shared preference script now mirrors the selected Persian/English locale into a one-year, same-site language cookie (with `Secure` on HTTPS), alongside the existing localStorage preference.
+- `app/messages.php` now resolves the default display locale from that validated cookie, while callers that explicitly pass a locale keep their existing behavior. This lets existing server-rendered checkout validation/status messages use the selected language without changing their keys or business decisions.
+- Checkout's static customer-facing copy now has localization keys for its heading, navigation, order confirmation, tracking action, buyer fields, credential method choices, notices, and submit action. The shared language preference applies English copy and restores Persian copy when switched back; configured product names and store title remain as entered.
+- Source review confirmed this work is limited to presentation/localization. Browser interaction, real form-submit language persistence, and responsive visual QA have not yet been run.
