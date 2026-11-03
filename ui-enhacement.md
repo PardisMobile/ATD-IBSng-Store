@@ -690,3 +690,10 @@ The following UI-only changes have been committed to `main`:
 - Reworked the usage guide's plain section separators into consistent theme-aware cards with shared surface/border/radius tokens, stronger heading hierarchy, and improved text rhythm.
 - Tuned the guide width, card padding, list spacing, and link focus treatment for mobile and keyboard use; added reduced-motion handling for the subtle card hover state.
 - Presentation CSS only. Guide copy, navigation destinations, and account/order behavior remain unchanged. Source-level review only; browser/device visual QA remains pending.
+
+ 
+### UI note — admin password recovery forms (2026-11-03)
+
+- Unified the forgot-password and reset-password screens with theme-aware field surfaces, shared radius/focus tokens, responsive card sizing, and more readable feedback notices.
+- Improved narrow-screen submit sizing, long error-message wrapping, heading scale, and keyboard-visible link focus.
+- CSS only: password recovery tokens, CSRF fields, expiry/use rules, validation, email dispatch, and password update behavior remain unchanged. Source review only; browser/device visual QA remains pending.
