@@ -243,10 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="ibsng-users-page">
 <main class="admin-shell">
-<header class="admin-top">
-<a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a>
-<nav><a class="button" href="<?= e(app_url('admin/ibsng-servers.php')) ?>" data-fa="سرورهای IBSng" data-en="IBSng Servers">سرورهای IBSng</a> <a class="button" href="<?= e(app_url('admin/ibsng-groups.php')) ?>" data-fa="نگاشت پلن/گروه" data-en="Plan / Group Mapping">نگاشت پلن/گروه</a> <button class="button lang-toggle" id="langToggle" type="button" aria-label="Switch language">English</button></nav>
-</header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
 <h1 style="font-size:2rem">مدیریت حساب‌های IBSng</h1>
