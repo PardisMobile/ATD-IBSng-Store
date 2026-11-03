@@ -742,3 +742,69 @@ tr:hover td { background:var(--hover-surface); }
 .button.primary,button.button.primary,summary.button.primary,
 input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 
+
+
+/* Admin table consistency pass: readable cell wrapping and restrained scroll surfaces. */
+.admin-shell .table-wrap,
+.admin-page .table-wrap,
+.provisioning-page .table-wrap {
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  border:1px solid var(--border);
+  border-radius:var(--ui-radius-md,14px);
+  background:var(--surface);
+  scrollbar-width:thin;
+  scrollbar-color:var(--border-strong,var(--border)) transparent;
+}
+.admin-shell .table-wrap table,
+.admin-page .table-wrap table,
+.provisioning-page .table-wrap table {
+  color:var(--text);
+  border-collapse:separate;
+  border-spacing:0;
+}
+.admin-shell .table-wrap th,
+.admin-page .table-wrap th,
+.provisioning-page .table-wrap th {
+  position:sticky;
+  inset-block-start:0;
+  z-index:1;
+  background:var(--table-head,var(--surface-2));
+  color:var(--muted);
+  font-weight:650;
+  text-align:start;
+  white-space:normal;
+  line-height:1.5;
+}
+.admin-shell .table-wrap td,
+.admin-page .table-wrap td,
+.provisioning-page .table-wrap td {
+  text-align:start;
+  vertical-align:top;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  white-space:normal;
+  line-height:1.65;
+}
+.admin-shell .table-wrap tbody tr:hover td,
+.admin-page .table-wrap tbody tr:hover td,
+.provisioning-page .table-wrap tbody tr:hover td {
+  background:var(--hover-surface);
+}
+@media(max-width:760px) {
+  .admin-shell .table-wrap,
+  .admin-page .table-wrap,
+  .provisioning-page .table-wrap {
+    border-radius:12px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .admin-shell .table-wrap th,
+  .admin-shell .table-wrap td,
+  .admin-page .table-wrap th,
+  .admin-page .table-wrap td,
+  .provisioning-page .table-wrap th,
+  .provisioning-page .table-wrap td {
+    padding:10px;
+  }
+}
