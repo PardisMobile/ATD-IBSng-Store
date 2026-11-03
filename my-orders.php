@@ -109,7 +109,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سفارش‌های من | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_orders">سفارش‌های من | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .orders-shell{width:min(900px,calc(100% - 32px));margin:0 auto}
