@@ -789,3 +789,10 @@ The following UI-only changes have been committed to `main`:
 - Exposed the dynamic account lookup error in `customer-account.php` as an assertive alert.
 - Exposed checkout validation/errors in `checkout.php` as alerts and the successful order tracking confirmation as a polite status announcement.
 - Static checkout guidance notices and order-recovery flow were left unchanged; no account lookup, order creation, credential, payment, or validation logic changed. Source review only; browser and assistive-technology QA remains pending.
+
+
+## 22. Admin settings feedback accessibility (implemented)
+
+- `admin/settings.php`: expose successful settings-save feedback through a polite status region and validation/save errors through an assertive alert.
+- This completes the same dynamic feedback semantics used across the other reviewed admin pages; static explanatory notices remain unchanged.
+- Markup-only update; payment configuration, settings persistence, validation, CSRF, and webhook behavior were not changed. Source review only; browser and assistive-technology QA remains pending.
