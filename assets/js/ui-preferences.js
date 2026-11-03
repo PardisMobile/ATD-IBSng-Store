@@ -17,6 +17,54 @@
   const get = (k, fallback) => { try { return localStorage.getItem(k) || fallback; } catch (_) { return fallback; } };
   const set = (k,v) => { try { localStorage.setItem(k,v); } catch (_) {} };
   const schemeNames = { blue:{fa:'آبی',en:'Blue'}, violet:{fa:'بنفش',en:'Violet'}, teal:{fa:'فیروزه‌ای',en:'Teal'}, rose:{fa:'صورتی',en:'Rose'}, amber:{fa:'کهربایی',en:'Amber'} };
+  const pageCopy = {
+    catalog: {
+      customer_account: 'Customer account',
+      order_tracking: 'Track & recover orders',
+      storefront_status: 'Account services',
+      catalog_hero_title: 'Choose the service you need',
+      catalog_hero_intro: 'Browse the available plans. Details are shown according to the store configuration.',
+      catalog_view_services: 'Browse services',
+      catalog_no_registration: 'No store registration required',
+      catalog_section_eyebrow: 'Services',
+      catalog_section_title: 'Available plans',
+      catalog_load_error: 'Products are temporarily unavailable. Check the database connection and schema installation.',
+      catalog_empty_title: 'No plans are available yet',
+      catalog_empty_intro: 'The store administrator can add and publish products from the administration panel.',
+      catalog_plan_eyebrow: 'Service plan',
+      catalog_crypto_price: 'Crypto price',
+      catalog_validity: 'Validity',
+      catalog_quota: 'Data allowance',
+      catalog_order: 'Place order',
+      admin_login: 'Administration'
+    }
+  };
+  function applyPageCopy() {
+    const language = root.lang === 'en' ? 'en' : 'fa';
+    document.querySelectorAll('[data-ui-text]').forEach((element) => {
+      const key = element.dataset.uiText;
+      const translated = pageCopy.catalog[key];
+      if (language === 'en' && translated) element.textContent = translated;
+    });
+    document.querySelectorAll('[data-ui-aria]').forEach((element) => {
+      const key = element.dataset.uiAria;
+      const translated = pageCopy.catalog[key];
+      if (language === 'en' && translated) element.setAttribute('aria-label', translated);
+    });
+    document.querySelectorAll('[data-ui-duration]').forEach((element) => {
+      if (language !== 'en') {
+        element.textContent = element.dataset.uiDurationFa || element.textContent;
+        return;
+      }
+      const seconds = Number(element.dataset.uiDuration);
+      if (!Number.isFinite(seconds) || seconds < 0) return;
+      const unit = seconds % 86400 === 0 ? [seconds / 86400, 'day']
+        : seconds % 3600 === 0 ? [seconds / 3600, 'hour']
+        : seconds % 60 === 0 ? [seconds / 60, 'minute']
+        : [seconds, 'second'];
+      element.textContent = new Intl.NumberFormat('en').format(unit[0]) + ' ' + unit[1] + (unit[0] === 1 ? '' : 's');
+    });
+  }
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
@@ -31,6 +79,7 @@
     root.style.setProperty('--accent-light', colors[0]);
     root.style.setProperty('--accent-dark', colors[1]);
     root.style.setProperty('--accent', mode === 'light' ? colors[0] : colors[1]);
+    applyPageCopy();
   }
   function mount() {
     if (document.querySelector('.atd-preferences')) return;
