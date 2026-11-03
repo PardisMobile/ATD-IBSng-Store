@@ -1562,3 +1562,17 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 .atd-admin-nav-link[aria-current=page]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--surface-2));color:var(--accent)}
 .atd-admin-logout{display:inline-flex;margin:0}
 @media(max-width:620px){.atd-shared-header-top,.atd-admin-header-top{align-items:flex-start;flex-direction:column}.atd-shared-header .atd-preferences,.atd-admin-preferences-slot{margin-inline-start:0}.atd-store-animated-header{height:170px}.atd-shared-header .atd-store-nav,.atd-admin-nav{gap:8px}.atd-shared-header .atd-store-nav-link,.atd-admin-nav-link{flex:1 1 auto}}
+
+/* Shared animated artwork is available on every storefront route. */
+.storefront-hero-art{position:absolute;z-index:1;inset-block:0;inset-inline-end:3%;width:min(38%,340px);min-width:230px;pointer-events:none}
+.storefront-hero-glow{position:absolute;width:190px;height:190px;inset-inline-end:55px;top:48px;border-radius:50%;background:radial-gradient(circle,var(--accent-soft,color-mix(in srgb,var(--accent) 18%,transparent)),transparent 70%);filter:blur(6px);animation:storefrontHeroPulse 5s ease-in-out infinite}
+.storefront-orbit{position:absolute;inset-inline-end:20px;top:76px;width:255px;height:128px;border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);border-radius:50%;transform:rotate(-24deg)}
+.storefront-orbit-one{animation:storefrontOrbitSpin 18s linear infinite}
+.storefront-orbit-two{inset-inline-end:42px;top:52px;width:210px;height:168px;border-style:dashed;transform:rotate(48deg);opacity:.65;animation:storefrontOrbitSpin 28s linear infinite reverse}
+.storefront-float-card{position:absolute;width:70px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));border-radius:16px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 14px 34px rgba(0,0,0,.14);backdrop-filter:blur(10px);color:var(--text);animation:storefrontFileFloat 5s ease-in-out infinite}
+.storefront-float-card svg{width:27px;height:27px;stroke:currentColor}.storefront-float-card span{font-size:9px;font-weight:800;letter-spacing:.08em}
+.storefront-card-account{inset-inline-end:42px;top:38px;animation-delay:-1.2s}.storefront-card-renew{inset-inline-end:158px;top:118px;color:var(--accent);animation-delay:-3s}.storefront-card-payment{inset-inline-end:64px;top:178px;animation-delay:-2s}
+@keyframes storefrontFileFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-11px) rotate(3deg)}}
+@keyframes storefrontOrbitSpin{from{rotate:0deg}to{rotate:360deg}}
+@keyframes storefrontHeroPulse{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+@media(prefers-reduced-motion:reduce){.storefront-hero-art,.storefront-hero-art *{animation:none!important}}
