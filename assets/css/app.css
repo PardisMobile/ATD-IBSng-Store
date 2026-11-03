@@ -918,3 +918,13 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   .admin-top nav,.topbar nav,.top nav,.admin-nav { width:100%; }
   .admin-top nav .button,.topbar nav .button,.top nav .button,.admin-nav .button { flex:1 1 auto; }
 }
+
+
+/* One consistent customer-facing navigation, shared by all storefront pages. */
+.atd-store-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 22px;padding:9px;border:1px solid var(--border);border-radius:16px;background:color-mix(in srgb,var(--surface) 88%,transparent);box-shadow:0 10px 30px rgba(0,0,0,.08);backdrop-filter:blur(16px)}
+.atd-store-nav-link{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:43px;padding:10px 15px;border:1px solid transparent;border-radius:12px;color:var(--muted);font-weight:650;line-height:1.35;transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease}
+.atd-store-nav-link svg{width:18px;height:18px;flex:0 0 18px}
+.atd-store-nav-link:hover{color:var(--text);border-color:color-mix(in srgb,var(--accent) 28%,var(--border));background:color-mix(in srgb,var(--accent) 8%,transparent);transform:translateY(-1px)}
+.atd-store-nav-link[aria-current=page]{color:#fff;background:linear-gradient(120deg,var(--blue),var(--purple));box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+@media(max-width:560px){.atd-store-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.atd-store-nav-link{padding:10px 8px;font-size:.88rem;white-space:normal;text-align:center}}
+@media(prefers-reduced-motion:reduce){.atd-store-nav-link{transition:none}.atd-store-nav-link:hover{transform:none}}
