@@ -1102,3 +1102,12 @@
 - The server must generate credentials securely, validate the final username against every configured destination server before accepting the order, and keep order credential snapshots immutable after order creation. Remote IBSng account creation remains gated behind verified payment.
 - Existing checkout currently supports manual credentials only; automatic generation and its admin settings are not implemented as of this audit. Do not report partial functionality as complete.
 - Implementation must preserve the existing encrypted order password storage, idempotent checkout, multi-server target behavior, and customer-facing terminology (do not expose IBSng internals). Verify using focused source tests and PHP lint where runtime is available.
+
+
+### 2026-11-03 — Credential creation paths: first implementation pass
+
+- Added global admin settings in `admin/settings.php`: customer-entered credentials, Store-generated credentials, or customer choice; username prefix; random suffix length (4–12); generated password length (8–64); and alphanumeric vs. mixed character set.
+- Updated `checkout.php` to apply the admin policy server-side, ignore forged mode choices when automatic-only is configured, generate candidate usernames with PHP cryptographic randomness, and check candidates against each mapped active IBSng destination before accepting checkout. Password generation also uses cryptographic randomness.
+- The resulting generated username/password enter the same existing order snapshot path; password encryption and the paid-before-provisioning boundary remain unchanged. Settings changes apply to new checkouts; existing orders retain their stored credentials.
+- This pass uses a store-wide policy because the current product schema has no credential-mode field. Per-product mode policy would require a dedicated schema migration and admin product UI; it is not claimed as implemented.
+- **Verification boundary:** source updates were committed on `main`; no PHP runtime lint, automated tests, DB/admin browser validation, or real IBSng checkout was run in this environment. Collision under concurrent requests remains subject to the final availability check immediately before order creation.
