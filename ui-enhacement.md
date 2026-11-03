@@ -620,3 +620,10 @@ The following UI-only changes have been committed to `main`:
 - Made the sign-in card width-safe on narrow screens and aligned its spacing with the shared responsive sizing conventions.
 - Username/password controls now use shared control height/radius, theme-aware backgrounds, and a visible keyboard-focus ring; inputs are border-box and cannot expand the card.
 - Login form, autocomplete attributes, CSRF protection, credential validation, and password-reset link are unchanged. Browser/viewport QA remains pending.
+
+
+### UI note — order list styling (2026-11-03)
+
+- Added a consistent frame and rounded edges to the horizontally scrollable table, plus clearer column headers and subtle row hover feedback.
+- Text areas now use theme-aware colors, shared corner sizing, vertical resizing, and visible keyboard focus.
+- Presentation-only update; order processing and form actions remain as before. Visual browser QA is pending.
