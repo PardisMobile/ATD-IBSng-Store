@@ -526,3 +526,10 @@ The following UI-only changes have been committed to `main`:
 - Refined `my-orders.php` recovery/list cards and form controls to use the shared radius, surface, accent-focus, and control-height tokens. Long product names and tracking values wrap safely; order actions stack to full width on narrow screens.
 - Refined `order-status.php` purchase summary, per-server activation cards, account specification tiles, credential panel, and status chip to follow the shared theme tokens. Removed hard-coded dark gradient surfaces from notices/details so light mode is respected.
 - Kept all PHP lookup/recovery logic, CSRF fields, POST action names, order identifiers, payment states, IBSng queries, and credential visibility rules unchanged. This is a source-level UI pass; responsive browser QA and RTL/LTR rendering verification are pending.
+
+
+### Installer visual refinement (2026-11-03)
+
+- Polished the foreground installer card, brand mark, locale switch, fieldsets, input focus states, feedback notices, and action hierarchy while retaining the approved decorative gradient/line background.
+- Improved min-width handling and narrow-screen stacking for database/admin form fields and action buttons; reused shared radius, shadow, control-height, surface, and accent tokens where applicable.
+- Installer locale selection, field names, CSRF, database connection test, install POST actions, validation, schema/config writing, and lock behavior were not modified. Visual verification is source-only; mobile/tablet/desktop browser QA remains pending.
