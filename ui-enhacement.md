@@ -453,3 +453,10 @@ The following UI-only changes have been committed to `main`:
 - The accent palette toggle now exposes `aria-controls` and synchronized `aria-expanded` state, so assistive technology can identify whether the color options are open.
 - Outside-click and Escape dismissal now reset the expanded state as well as hiding the palette. This is a focused accessibility/UI change; preference persistence and application are unchanged.
 - Browser and assistive-technology validation remains outstanding.
+
+
+### Theme-aware admin form controls (2026-11-03)
+
+- Removed fixed dark-only input/select/textarea surfaces from the shared admin form rule. Controls now use the common `--control-bg`, `--text`, `--border`, and accent focus tokens, allowing the selected light/dark theme and accent color to apply consistently.
+- This changes presentation only; form fields, submitted values, validation, and server behavior are unchanged.
+- Light-theme form rendering still requires browser-level verification across admin screens.
