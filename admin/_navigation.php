@@ -23,11 +23,11 @@ $adminNavEntries = [
   </div>
   <nav class="atd-admin-nav" aria-label="منوی مدیریت">
     <?php foreach ($adminNavEntries as [$file, $key, $fa, $en]): ?>
-      <a class="atd-admin-nav-link" href="<?= e(app_url('admin/' . $file)) ?>" data-admin-nav="<?= e($key) ?>" data-fa="<?= e($fa) ?>" data-en="<?= e($en) ?>"<?= $adminCurrentPage === $file ? ' aria-current="page"' : '' ?>><?= e($fa) ?></a>
+      <a class="atd-admin-nav-link button" href="<?= e(app_url('admin/' . $file)) ?>" data-admin-nav="<?= e($key) ?>" data-fa="<?= e($fa) ?>" data-en="<?= e($en) ?>"<?= $adminCurrentPage === $file ? ' aria-current="page"' : '' ?>><?= e($fa) ?></a>
     <?php endforeach; ?>
     <form method="post" action="<?= e(app_url('admin/logout.php')) ?>" class="atd-admin-logout">
       <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
-      <button class="atd-admin-nav-link" type="submit" data-fa="خروج" data-en="Sign out">خروج</button>
+      <button class="atd-admin-nav-link button" type="submit" data-fa="خروج" data-en="Sign out">خروج</button>
     </form>
   </nav>
 </header>
