@@ -802,3 +802,10 @@ The following UI-only changes have been committed to `main`:
 
 - The dashboard's conditional database-statistics failure notice now uses an assertive alert live region so the error is announced when present.
 - The notice text, dashboard queries, statistics, and database handling remain unchanged. Source review only; browser and assistive-technology QA remains pending.
+
+
+## 24. Storefront keyboard skip navigation (implemented)
+
+- Added a Persian “skip to main content” link before the storefront header. It becomes visible when reached by keyboard and targets the main landmark.
+- Added a shared theme-aware skip-link style with clear focus indication; the storefront main landmark now has a stable `main-content` target.
+- This reduces repeated keyboard navigation through the header for keyboard-only users and users of assistive technologies. No catalog, product, checkout, pricing, or backend behavior changed. Source review only; browser and screen-reader QA remains pending.
