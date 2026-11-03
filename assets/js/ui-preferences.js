@@ -19,6 +19,9 @@
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
+    const language = get(storage.lang, root.lang || 'fa');
+    root.lang = language === 'en' ? 'en' : 'fa';
+    root.dir = language === 'en' ? 'ltr' : 'rtl';
     root.dataset.accent = accents[accent] ? accent : 'blue';
     root.style.colorScheme = root.dataset.theme;
     const colors = accents[root.dataset.accent];
@@ -51,9 +54,8 @@
     });
     controls.querySelector('.atd-pref-palette').addEventListener('click',()=>{palette.hidden=!palette.hidden;});
     controls.querySelector('.atd-pref-language').addEventListener('click',()=>{
-      const next=(get(storage.lang,root.lang||'fa')==='fa'?'en':'fa');set(storage.lang,next);
-      const url=new URL(location.href); if(next==='en')url.searchParams.set('lang','en');else url.searchParams.delete('lang');
-      location.href=url.toString();
+      const next=(get(storage.lang,root.lang||'fa')==='fa'?'en':'fa');set(storage.lang,next); root.lang=next; root.dir=next==='en'?'ltr':'rtl';
+      controls.querySelector('.atd-pref-language span').textContent=next==='fa'?'EN':'فا';
     });
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
     host.appendChild(controls);
