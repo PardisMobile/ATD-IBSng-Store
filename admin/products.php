@@ -168,7 +168,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>مدیریت محصولات | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_admin_products">مدیریت محصولات | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;flex-wrap:wrap}.panel-card{padding:clamp(18px,3vw,26px);margin:20px 0;min-width:0}
