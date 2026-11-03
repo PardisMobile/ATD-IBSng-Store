@@ -95,6 +95,7 @@
       products_empty: 'No products have been added yet.',
       products_duration_label: 'Duration:',
       products_seconds: 'seconds · IBSng renewal:',
+      products_days: 'days',
       products_not_configured: 'Not configured',
       products_price_label: '· Price:',
       products_mappings_label: 'Servers and groups:',
