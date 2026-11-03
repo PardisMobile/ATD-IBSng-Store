@@ -53,7 +53,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>تعیین رمز جدید مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title><link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
-<style>.auth-card{max-width:480px;margin:8vh auto;padding:clamp(24px,5vw,40px)}.field{display:grid;gap:8px;margin:18px 0}.field label{color:var(--muted)}.field input{width:100%;padding:13px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit}.notice{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:16px 0}</style><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<style>
+.auth-card{width:min(480px,calc(100% - 24px));margin:clamp(24px,8vh,72px) auto;padding:clamp(22px,5vw,40px);min-width:0}
+.auth-card h1{font-size:clamp(1.5rem,4vw,2rem);line-height:1.5;overflow-wrap:anywhere}
+.auth-card>p{line-height:1.9}
+.field{display:grid;gap:8px;margin:18px 0;min-width:0}
+.field label{color:var(--muted);font-weight:600}
+.field input{width:100%;min-width:0;min-height:46px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;box-sizing:border-box;transition:border-color .16s ease,box-shadow .16s ease}
+.field input:focus-visible{outline:none;border-color:var(--accent,var(--blue));box-shadow:0 0 0 3px var(--ui-focus-ring,rgba(87,149,255,.15))}
+.field input::placeholder{color:var(--muted)}
+.notice{padding:13px 15px;border:1px solid var(--notice-border,var(--border));background:var(--notice-bg,var(--surface-2));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:16px 0;line-height:1.85;overflow-wrap:anywhere}
+.auth-card .button{min-height:46px;max-width:100%;white-space:normal}
+.auth-card a:not(.button){color:var(--accent,var(--blue));text-underline-offset:3px}
+.auth-card a:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:3px;border-radius:4px}
+@media(max-width:480px){.auth-card{border-radius:18px}.auth-card form>.button{width:100%}}
+@media(prefers-reduced-motion:reduce){.field input{transition:none}}
+</style><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head><body><main class="auth-card panel"><div class="eyebrow">پنل مدیریت</div><h1>تعیین رمز جدید</h1>
 <?php if ($success): ?><div class="notice">رمز عبور با موفقیت تغییر کرد.</div><a class="button primary" href="<?= e(app_url('admin/login.php')) ?>">ورود به پنل</a>
 <?php elseif ($error !== ''): ?><div class="notice"><?= e($error) ?></div><a href="<?= e(app_url('admin/forgot-password.php')) ?>">درخواست لینک جدید</a>
