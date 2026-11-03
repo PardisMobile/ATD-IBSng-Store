@@ -504,3 +504,10 @@ The following UI-only changes have been committed to `main`:
 - Updated the support/payment/settings page's existing input and select presentation to use the shared theme, control-surface, border, radius, and focus tokens. This removes the remaining fixed dark backgrounds from the settings form and allows its controls to follow light/dark mode and the selected accent.
 - Added consistent fieldset/legend spacing for gateway configuration groups. The existing IRCrypto Webhook help text remains in place and continues to show the installation-aware webhook URL.
 - UI-only CSS/class adjustments: no settings keys, submitted names, gateway configuration, Webhook endpoint, validation, or save behavior were changed. Browser visual QA remains outstanding.
+
+
+### Shared UI preferences JavaScript — localized theme tooltip synchronization (2026-11-03)
+
+- Continued maintaining the shared `assets/js/ui-preferences.js` preference toolbar rather than introducing a second page-specific control implementation.
+- Fixed a language-switch mismatch: the theme control's accessible action name, tooltip, and pressed state now update together in the newly selected language while reflecting the currently active light/dark mode.
+- This is a client-side accessibility/localization fix only; persisted preference keys, theme application, language direction, and business workflows are unchanged. Browser and screen-reader validation remain outstanding.
