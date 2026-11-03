@@ -108,7 +108,8 @@ function store_bytes_label(?string $bytes): string
 </style>
 </head>
 <body>
-  <main class="store-shell">
+  <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
+  <main id="main-content" class="store-shell">
     <header class="topbar">
       <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
       <nav class="hero-actions" aria-label="دسترسی مشتری"><a class="button" href="<?= e(app_url('customer-account.php')) ?>">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری و بازیابی خریدها</a><span class="status-chip">فروشگاه سرویس‌ها</span></nav>
