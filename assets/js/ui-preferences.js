@@ -83,6 +83,7 @@
       status_server: 'Server',
       status_validity: 'Validity',
       status_days: 'days',
+      status_gigabytes: 'GB',
       status_quota: 'Data limit',
       status_unlimited: 'Unlimited',
       status_expiry: 'Expiration date',
