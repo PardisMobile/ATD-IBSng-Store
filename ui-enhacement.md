@@ -754,3 +754,10 @@ The following UI-only changes have been committed to `main`:
 - Isolated URL/email/numeric and gateway configuration values as LTR technical strings; made the generated IRCrypto webhook endpoint readable and safely wrapping within RTL help text.
 - Confirmed the page already contains the requested IRCrypto webhook guidance; retained its generated URL and the existing explanation of signature, status, amount, and currency validation rather than duplicating or changing payment logic.
 - CSS-only presentation update. Settings persistence, provider/currency selection, validation, CSRF, webhook route and payment behavior were not changed. Source review only; browser/viewport QA remains pending.
+
+
+### Shared accent-button contrast correction (2026-11-03)
+
+- Added a theme-aware foreground token for primary actions: bright accent swatches in dark mode now use a dark foreground, while the deeper light-mode accent shades retain white text.
+- Applied the token to shared primary button variants to prevent low-contrast text with violet, teal, rose, blue, and amber accents.
+- Shared stylesheet-only change; no page markup, action handlers, payment behavior, or form logic changed. Source inspection only; contrast was reasoned from configured palette values, not browser-tested.
