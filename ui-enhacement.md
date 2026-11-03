@@ -460,3 +460,10 @@ The following UI-only changes have been committed to `main`:
 - Removed fixed dark-only input/select/textarea surfaces from the shared admin form rule. Controls now use the common `--control-bg`, `--text`, `--border`, and accent focus tokens, allowing the selected light/dark theme and accent color to apply consistently.
 - This changes presentation only; form fields, submitted values, validation, and server behavior are unchanged.
 - Light-theme form rendering still requires browser-level verification across admin screens.
+
+### Shared form state consistency follow-up (2026-11-03)
+
+- Added common visual treatment for disabled form controls and disabled button-like elements, including a non-lifting hover state.
+- Unified placeholder contrast and added token-based invalid-field styling for controls marked with `aria-invalid="true"` or the existing `.is-invalid` class.
+- These styles only respond to existing UI state markers; they do not add validation, alter submission, or change server-side behavior.
+- Browser/contrast verification is still required; this source change alone is not reported as visual QA.
