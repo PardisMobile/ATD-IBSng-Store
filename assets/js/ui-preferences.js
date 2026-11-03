@@ -648,13 +648,14 @@
         updateAdminNav(event.detail?.language === 'en' ? 'en' : 'fa');
       });
     }
-    // A single storefront navigation is mounted on every public page.
-    // Keep this separate from the administration navigation.
+    // One storefront header structure on every public page: brand and preferences
+    // share the first row; the same navigation is always rendered immediately below.
     const publicPage = !location.pathname.includes('/admin') && !location.pathname.includes('/install');
-    if (publicPage && !document.querySelector('.atd-store-nav')) {
-      const nav = document.createElement('nav');
+    if (publicPage) {
+      const nav = document.querySelector('.atd-store-nav') || document.createElement('nav');
       nav.className = 'atd-store-nav';
       nav.setAttribute('aria-label', root.lang === 'fa' ? 'منوی فروشگاه' : 'Store navigation');
+      nav.replaceChildren();
       const base = document.querySelector('base')?.href || location.href;
       const rootUrl = new URL('.', base).href;
       const entries = [
@@ -677,19 +678,50 @@
             (key === 'guide' && current.endsWith('/guide.php'))) a.setAttribute('aria-current','page');
         nav.appendChild(a);
       });
-      // Mount navigation inside the shared page header so every public page
-      // has the same header hierarchy and the menu never becomes a stray
-      // first element inside the page-specific body.
-      const header = document.querySelector('main > .topbar, main > header.topbar, .store-shell > .topbar, .account-shell > .topbar, .orders-shell > .topbar, .topbar');
+      const header = document.querySelector('main > header.topbar, main > .topbar, .store-shell > .topbar, .account-shell > .topbar, .orders-shell > .topbar, .topbar');
       if (header) {
-        const existingNav = header.querySelector('nav');
-        if (existingNav) existingNav.insertAdjacentElement('afterend', nav);
-        else header.appendChild(nav);
+        let row = header.querySelector(':scope > .atd-store-header-row');
+        if (!row) {
+          row = document.createElement('div');
+          row.className = 'atd-store-header-row';
+          const brand = header.querySelector(':scope > .brand');
+          if (brand) row.appendChild(brand);
+          // Remove page-specific header navigation and back links; the shared
+          // storefront menu below is the single navigation source.
+          Array.from(header.children).forEach((child) => {
+            if (child !== row && child !== brand && child !== nav) child.remove();
+          });
+          header.prepend(row);
+        }
+        row.appendChild(controls);
+        if (nav.parentElement !== header) header.appendChild(nav);
+        else if (nav.previousElementSibling !== row) row.insertAdjacentElement('afterend', nav);
       } else {
         const main = document.querySelector('main');
-        if (main) main.insertBefore(nav, main.firstChild);
-        else document.body.insertBefore(nav, document.body.firstChild);
+        const row = document.createElement('div');
+        row.className = 'atd-store-header-row';
+        const brand = document.createElement('a');
+        brand.className = 'brand';
+        brand.href = rootUrl;
+        brand.textContent = document.querySelector('title')?.textContent?.split('|')[0]?.trim() || 'ATD IBSng Store';
+        row.append(brand, controls);
+        if (main) main.prepend(nav, row);
+        else document.body.prepend(nav, row);
       }
+      const updateStoreNav = (language) => {
+        nav.setAttribute('aria-label', language === 'fa' ? 'منوی فروشگاه' : 'Store navigation');
+        nav.querySelectorAll('[data-nav-key]').forEach((link) => {
+          const labels = {
+            home: ['خانه','Home'], account: ['حساب کاربری','Account'],
+            orders: ['پیگیری و بازیابی خریدها','Track & recover'], guide: ['راهنما','Help']
+          };
+          const label = labels[link.dataset.navKey];
+          const span = link.querySelector('span');
+          if (span && label) span.textContent = language === 'fa' ? label[0] : label[1];
+        });
+      };
+      updateStoreNav(root.lang === 'en' ? 'en' : 'fa');
+      document.addEventListener('atd:language-change', (event) => updateStoreNav(event.detail?.language === 'en' ? 'en' : 'fa'));
     }
     // Keep a single translated footer across public storefront pages.
     if (publicPage) {
@@ -715,20 +747,16 @@
         pageShell.appendChild(footer);
       }
     }
-    // Admin preferences belong in the shared header row, never at the end of page content.
-    let adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
+    // Admin preferences share the exact header row with the administration brand.
+    const adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
     const adminHeader = document.querySelector('.atd-admin-header');
-    if (adminHeader && !adminPreferenceSlot) {
-      const headerTop = adminHeader.querySelector('.atd-admin-header-top') || adminHeader;
-      adminPreferenceSlot = document.createElement('div');
-      adminPreferenceSlot.className = 'atd-admin-preferences-slot';
-      adminPreferenceSlot.setAttribute('aria-label', root.lang === 'fa' ? 'ظاهر و زبان' : 'Appearance and language');
-      headerTop.appendChild(adminPreferenceSlot);
+    if (adminHeader && adminPreferenceSlot) {
+      adminPreferenceSlot.appendChild(controls);
+    } else if (!publicPage) {
+      const host = document.querySelector('.admin-top,.store-header,.admin-header,.topbar,.top') ||
+        document.querySelector('main') || document.body;
+      host.appendChild(controls);
     }
-    const host = adminPreferenceSlot ||
-      document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top') ||
-      document.querySelector('main') || document.body;
-    host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();
     });
