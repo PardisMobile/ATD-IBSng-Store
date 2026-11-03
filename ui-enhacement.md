@@ -553,3 +553,7 @@ The following UI-only changes have been committed to `main`:
 
 - Set the order/tracking identifier field in `my-orders.php` to LTR with left alignment and text-direction isolation, so Latin tracking IDs remain readable inside the Persian/RTL recovery screen. Added a text input hint without changing validation, query parameters, or lookup flow.
 - No order tracking or recovery behavior changed. Source inspection only; device/browser verification remains pending.
+
+
+### UI implementation note — email verification code field
+- `my-orders.php`: render the six-digit email verification code as an explicitly LTR, centered numeric field with tabular digits and deliberate spacing, while retaining its existing one-time-code autocomplete, six-digit pattern, and form submission behavior. This is a presentation/accessibility refinement only; verification logic is unchanged.
