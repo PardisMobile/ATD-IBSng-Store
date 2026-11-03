@@ -239,7 +239,7 @@ $config = app_config();
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>" data-ui-text="settings_admin">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="settings_back_dashboard">بازگشت به داشبورد</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow" data-ui-text="settings_title">تنظیمات فروشگاه</div><h1 data-ui-text="settings_support_title">راه‌های پشتیبانی</h1>
 <p class="hint" data-ui-text="settings_support_intro">هر راه ارتباطی اختیاری است. گزینه‌ای که خالی بماند در فروشگاه نمایش داده نمی‌شود.</p>
