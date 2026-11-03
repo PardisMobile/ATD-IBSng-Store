@@ -691,11 +691,10 @@
         else document.body.insertBefore(nav, document.body.firstChild);
       }
     }
-    // Ensure public pages use the same footer frame without duplicating one
-    // authored by the page. Keep all copy in the presentation layer.
+    // Keep a single translated footer across public storefront pages.
     if (publicPage) {
       const pageShell = document.querySelector('main.store-shell,main.account-shell,main.orders-shell,main.checkout-shell,main.status-shell,main');
-      if (pageShell && !Array.from(pageShell.children).some((child) => child.tagName === 'FOOTER')) {
+      if (pageShell && !pageShell.querySelector(':scope > .atd-page-footer, :scope > footer')) {
         const footer = document.createElement('footer');
         footer.className = 'atd-page-footer';
         const copy = document.createElement('span');
@@ -707,7 +706,11 @@
         adminLink.className = 'admin-link';
         adminLink.href = new URL('admin/login.php', document.querySelector('base')?.href || location.href).href;
         adminLink.dataset.uiText = 'admin_login';
-        adminLink.textContent = root.lang === 'en' ? 'Admin login' : 'ورود مدیریت';
+        const setFooterLanguage = (language) => {
+          adminLink.textContent = language === 'en' ? 'Admin login' : 'ورود مدیریت';
+        };
+        setFooterLanguage(root.lang === 'en' ? 'en' : 'fa');
+        document.addEventListener('atd:language-change', (event) => setFooterLanguage(event.detail?.language === 'en' ? 'en' : 'fa'));
         footer.append(copy, brand, separator, adminLink);
         pageShell.appendChild(footer);
       }
