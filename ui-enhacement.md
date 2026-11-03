@@ -569,3 +569,11 @@ The following UI-only changes have been committed to `main`:
 
 ### UI implementation note — IBSng group mapping form theme and direction
 - `admin/ibsng-groups.php`: replaced the hard-coded dark input/select surface with shared theme-aware control colors and a visible focus ring. Exact IBSng group-name fields now use LTR isolated text in create/edit forms, while plan names remain naturally RTL. Group mapping operations and submitted field names are unchanged.
+
+
+### UI implementation note — provisioning queue table direction and mobile handling (2026-11-03)
+
+- Added page-scoped presentation for the provisioning attempts and email-delivery tables. Order/attempt IDs, usernames, server labels, status codes, public order references, email addresses, attempt counts, and timestamps now use isolated LTR presentation and tabular numerals where applicable inside the RTL admin screen.
+- Set the remote IBSng user-ID input to LTR, left-aligned text, and gave the tables a deliberate minimum width within their existing horizontal-scroll containers so columns remain legible instead of collapsing unpredictably on narrow screens.
+- Kept error messages in their natural text direction and did not change table queries, action forms, CSRF, retry/resolve operations, or any provisioning/email-delivery behavior.
+- Source-level change only; browser and viewport QA has not been performed.
