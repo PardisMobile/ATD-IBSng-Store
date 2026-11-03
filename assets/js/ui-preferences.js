@@ -59,7 +59,7 @@
       const modeButton=controls.querySelector('.atd-pref-mode');
       modeButton.innerHTML=svg(next==='dark'?'sun':'moon');
       modeButton.setAttribute('aria-pressed',String(next==='light'));
-      modeButton.setAttribute('aria-label',next==='dark'?'Switch to dark mode':'روشن کردن حالت روشن');
+      modeButton.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
       modeButton.title=next==='dark'?'Dark mode':'حالت روشن';
     });
     const paletteButton=controls.querySelector('.atd-pref-palette');
