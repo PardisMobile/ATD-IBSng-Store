@@ -677,9 +677,19 @@
             (key === 'guide' && current.endsWith('/guide.php'))) a.setAttribute('aria-current','page');
         nav.appendChild(a);
       });
-      const main = document.querySelector('main');
-      if (main) main.insertBefore(nav, main.firstChild);
-      else document.body.insertBefore(nav, document.body.firstChild);
+      // Mount navigation inside the shared page header so every public page
+      // has the same header hierarchy and the menu never becomes a stray
+      // first element inside the page-specific body.
+      const header = document.querySelector('main > .topbar, main > header.topbar, .store-shell > .topbar, .account-shell > .topbar, .orders-shell > .topbar, .topbar');
+      if (header) {
+        const existingNav = header.querySelector('nav');
+        if (existingNav) existingNav.insertAdjacentElement('afterend', nav);
+        else header.appendChild(nav);
+      } else {
+        const main = document.querySelector('main');
+        if (main) main.insertBefore(nav, main.firstChild);
+        else document.body.insertBefore(nav, document.body.firstChild);
+      }
     }
     // Admin preferences belong in the shared header row, never at the end of page content.
     let adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
