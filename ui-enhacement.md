@@ -540,3 +540,10 @@ The following UI-only changes have been committed to `main`:
 - Standardized the product editor and IBSng server editor field sizing, theme-aware input/select backgrounds, focus rings, feedback notice colors, card padding, and responsive form/action layout using shared UI tokens.
 - Server and product cards now handle long values more safely and stack form columns/actions on narrow screens.
 - No product/server POST fields, mappings, IBSng connection/testing actions, CRUD logic, or database behavior were changed. Source review only; full viewport QA remains pending.
+
+
+### Catalog quota label alignment (2026-11-03)
+
+- Updated the public catalog's no-quota display to show the explicit `Unlimited` label when a product's quota is unset, matching the storefront requirement and avoiding the ambiguous “according to service settings” wording.
+- Only the customer-facing label helper in `index.php` changed. Product quota data, pricing, checkout, and IBSng behavior remain untouched.
+- Source-level verification only; browser layout and bilingual rendering checks remain pending.
