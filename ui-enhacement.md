@@ -433,3 +433,10 @@ The following UI-only changes have been committed to `main`:
 - The IBSng server management, plan/group mapping, and IBSng account management pages now subscribe to the shared `atd:language-change` event and re-run their existing translation routines when the common toolbar changes language.
 - This removes the previous split behavior where the shared control changed `lang`/`dir` but page copy could remain in its prior language until the page-specific toggle was used.
 - Existing page-specific dictionaries and translation code remain in place for now. Full dictionary consolidation, coverage testing (including dynamically rendered feedback), and browser-based checks remain open.
+
+
+### Shared preference script syntax and accessibility follow-up (2026-11-03)
+
+- Corrected an escaped newline accidentally introduced between the shared root/document language-change dispatches in `assets/js/ui-preferences.js`; it is now a real line break so the script source remains valid JavaScript.
+- The language control now initializes its accessible name according to the currently selected language, matching the name it receives after a language switch.
+- This was a UI-layer correction only. It does not change store, payment, IBSng, or database behavior. Browser-based rendering and functional QA remain outstanding.
