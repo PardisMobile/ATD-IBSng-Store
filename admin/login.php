@@ -49,7 +49,7 @@ $config = app_config();
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ورود مدیر | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<title data-ui-title-key="title_admin_login">ورود مدیر | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
 .auth-card{width:min(480px,calc(100% - 32px));margin:clamp(28px,8vh,80px) auto;padding:clamp(24px,5vw,40px);box-sizing:border-box}.field{display:grid;gap:8px;margin:18px 0}.field label{color:var(--muted)}.field input{display:block;width:100%;min-width:0;box-sizing:border-box;min-height:var(--ui-control-height);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md);background:var(--control-bg);color:var(--text);font:inherit}.field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.field input::placeholder{color:var(--muted)}.notice{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:16px 0}.auth-card button{width:100%;border:0;cursor:pointer;font:inherit}.auth-card h1{font-size:1.8rem}
@@ -63,18 +63,18 @@ $config = app_config();
 </head>
 <body>
 <main class="auth-card panel">
-<div class="eyebrow">پنل مدیریت</div>
-<h1>ورود مدیر</h1>
-<p class="muted">برای مدیریت فروشگاه وارد شوید.</p>
+<div class="eyebrow" data-ui-text="login_admin_panel">پنل مدیریت</div>
+<h1 data-ui-text="login_title">ورود مدیر</h1>
+<p class="muted" data-ui-text="login_intro">برای مدیریت فروشگاه وارد شوید.</p>
 <?php if ($error !== ''): ?><div class="notice"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
-<div class="field"><label for="username">نام کاربری</label><input id="username" name="username" required autocomplete="username" value="<?= e($username) ?>"></div>
-<div class="field"><label for="password">رمز عبور</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
-<button class="button primary" type="submit">ورود به پنل</button>
-<p class="muted" style="margin-top:14px;text-align:center"><a href="<?= e(app_url('admin/forgot-password.php')) ?>">فراموشی رمز عبور؟</a></p>
+<div class="field"><label for="username" data-ui-text="login_username">نام کاربری</label><input id="username" name="username" required autocomplete="username" value="<?= e($username) ?>"></div>
+<div class="field"><label for="password" data-ui-text="login_password">رمز عبور</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
+<button class="button primary" type="submit" data-ui-text="login_submit">ورود به پنل</button>
+<p class="muted" style="margin-top:14px;text-align:center"><a href="<?= e(app_url('admin/forgot-password.php')) ?>" data-ui-text="login_forgot">فراموشی رمز عبور؟</a></p>
 </form>
-<p class="muted" style="margin-top:22px"><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></p>
+<p class="muted" style="margin-top:22px"><a href="<?= e(app_url()) ?>" data-ui-text="login_back_store">بازگشت به فروشگاه</a></p>
 </main>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body>
