@@ -426,3 +426,10 @@ The following UI-only changes have been committed to `main`:
 - The shared preference toolbar now reads the legacy `atd-ibsng-language` key when no shared language preference has been set, and writes both keys when the user switches language. This preserves prior user-selected language across IBSng admin screens while consolidating the preference source going forward.
 - The toolbar emits the language-change event on both the root element and `document` to support existing page integrations listening at either level.
 - This is a compatibility bridge, not a claim that legacy page translation dictionaries have been fully unified. Translation coverage and actual browser behavior still require follow-up verification.
+
+
+### Shared language switch now updates legacy IBSng pages (2026-11-03)
+
+- The IBSng server management, plan/group mapping, and IBSng account management pages now subscribe to the shared `atd:language-change` event and re-run their existing translation routines when the common toolbar changes language.
+- This removes the previous split behavior where the shared control changed `lang`/`dir` but page copy could remain in its prior language until the page-specific toggle was used.
+- Existing page-specific dictionaries and translation code remain in place for now. Full dictionary consolidation, coverage testing (including dynamically rendered feedback), and browser-based checks remain open.
