@@ -782,3 +782,10 @@ The following UI-only changes have been committed to `main`:
 - Extended consistent status/alert semantics to dynamic success and error feedback in `admin/ibsng-servers.php`, `admin/products.php`, and `admin/ibsng-users.php`.
 - Dynamic success feedback uses a polite status region; dynamic errors use an assertive alert. Static prerequisite/help notices remain unchanged.
 - No server configuration, product, IBSng account/renewal, validation, or CSRF behavior changed. Source review only; browser and assistive-technology QA remains pending.
+
+
+## 21. Customer checkout/account feedback accessibility (implemented)
+
+- Exposed the dynamic account lookup error in `customer-account.php` as an assertive alert.
+- Exposed checkout validation/errors in `checkout.php` as alerts and the successful order tracking confirmation as a polite status announcement.
+- Static checkout guidance notices and order-recovery flow were left unchanged; no account lookup, order creation, credential, payment, or validation logic changed. Source review only; browser and assistive-technology QA remains pending.
