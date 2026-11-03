@@ -683,3 +683,10 @@ The following UI-only changes have been committed to `main`:
 - Refined the customer account lookup form with theme-aware control surfaces, consistent control height/radius, visible keyboard focus, and improved CAPTCHA sizing and alignment.
 - Improved result-card spacing, responsive grid behavior, technical-value direction isolation, password reveal control wrapping, and error-message contrast using shared theme tokens.
 - Presentation-only change: account lookup/authentication, CAPTCHA/session behavior, IBSng queries, field names, password reveal interaction, and returned data remain unchanged. Source-level review only; browser/device QA remains pending.
+
+
+### UI note — account guide content cards (2026-11-03)
+
+- Reworked the usage guide's plain section separators into consistent theme-aware cards with shared surface/border/radius tokens, stronger heading hierarchy, and improved text rhythm.
+- Tuned the guide width, card padding, list spacing, and link focus treatment for mobile and keyboard use; added reduced-motion handling for the subtle card hover state.
+- Presentation CSS only. Guide copy, navigation destinations, and account/order behavior remain unchanged. Source-level review only; browser/device visual QA remains pending.
