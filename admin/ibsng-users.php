@@ -251,8 +251,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="eyebrow">IBSng · User Management</div>
 <h1 style="font-size:2rem">مدیریت حساب‌های IBSng</h1>
 <p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="notice err">سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.</div><?php else: ?>
 <form method="get">
 <div class="field"><label for="server_id">سرور IBSng</label><select id="server_id" name="server_id" onchange="this.form.submit()">
