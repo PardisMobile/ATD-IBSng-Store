@@ -418,6 +418,32 @@
       root.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
       document.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));
     });
+    document.addEventListener('atd:language-change', (event) => {
+      const next = event.detail?.language === 'en' ? 'en' : event.detail?.language === 'fa' ? 'fa' : null;
+      if (!next) return;
+      set(storage.lang, next);
+      set(storage.legacyLang, next);
+      apply();
+      const languageButton = controls.querySelector('.atd-pref-language');
+      const modeButton = controls.querySelector('.atd-pref-mode');
+      const paletteControl = controls.querySelector('.atd-pref-palette');
+      const currentMode = get(storage.mode, 'dark') === 'light' ? 'light' : 'dark';
+      controls.querySelector('.atd-pref-language span').textContent = next === 'fa' ? 'EN' : 'فا';
+      controls.setAttribute('aria-label', next === 'fa' ? 'ظاهر و زبان' : 'Appearance and language');
+      languageButton.setAttribute('aria-label', next === 'fa' ? 'Switch language to English' : 'تغییر زبان به فارسی');
+      languageButton.title = next === 'fa' ? 'زبان' : 'Language';
+      modeButton.setAttribute('aria-label', next === 'fa' ? (currentMode === 'dark' ? 'روشن کردن حالت روشن' : 'روشن کردن حالت تاریک') : (currentMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'));
+      modeButton.title = next === 'fa' ? (currentMode === 'dark' ? 'حالت تاریک' : 'حالت روشن') : (currentMode === 'dark' ? 'Dark mode' : 'Light mode');
+      modeButton.setAttribute('aria-pressed', String(currentMode === 'light'));
+      paletteControl.setAttribute('aria-label', next === 'fa' ? 'انتخاب طرح رنگ' : 'Choose color scheme');
+      paletteControl.title = next === 'fa' ? 'طرح رنگ' : 'Color scheme';
+      palette.setAttribute('aria-label', next === 'fa' ? 'طرح رنگ' : 'Color scheme');
+      palette.querySelectorAll('.atd-swatch').forEach((swatch) => {
+        const key = swatch.dataset.accent;
+        swatch.setAttribute('aria-label', (next === 'fa' ? 'طرح رنگ ' : '') + schemeNames[key][next]);
+        swatch.title = schemeNames[key][next];
+      });
+    });
     const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
