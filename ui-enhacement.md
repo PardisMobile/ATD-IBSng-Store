@@ -945,3 +945,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for the administrator forgot-password and reset-password pages, including titles, email/password fields, success/invalid-link states, and navigation actions.
 - Generic recovery and reset validation feedback now uses the shared bilingual message catalog, so server-rendered notices follow the selected locale cookie.
 - Password-reset token issuance, expiry, one-time use, email transport, CSRF, password constraints, and credential updates are unchanged. No recovery email was sent and no password was reset; browser QA remains pending.
+
+
+### UI implementation note — expanded admin and installer localization coverage (2026-11-03)
+
+- Added English UI copy for the admin sign-in and password recovery pages, provisioning queue, renewal schema upgrade page, email-template editor, email delivery settings, and installer locale synchronization.
+- Source-level integrity checks were run in batches across the modified customer/admin/installer pages: all literal shared localization keys and email-event keys resolved to the shared dictionary, and the shared dictionary blocks had no duplicate keys. This does not verify visual quality or runtime translation behavior.
+- Installer's server-rendered locale now synchronizes with shared preference storage/cookie; its database/setup workflow is unchanged. Browser and device QA remains outstanding.
