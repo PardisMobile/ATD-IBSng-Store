@@ -511,7 +511,7 @@
         swatch.title = schemeNames[key][next];
       });
     });
-    const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header')||document.body;
+    const host=document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();
