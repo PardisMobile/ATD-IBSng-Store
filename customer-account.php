@@ -118,36 +118,36 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </head>
 <body>
 <main class="account-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e($title) ?></a><nav><a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>">پیگیری خریدها</a></nav></header>
+<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e($title) ?></a><nav><a class="button" href="<?= e(app_url()) ?>" data-ui-text="customer_back_store">بازگشت به فروشگاه</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="customer_track_orders">پیگیری خریدها</a></nav></header>
 <section class="panel account-card">
-<div class="eyebrow">پنل مشتری</div><h1>مشاهده مشخصات حساب</h1>
-<p class="muted-note">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
+<div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
+<p class="muted-note" data-ui-text="customer_intro">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
 <?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="account-form">
 <div style="display:grid;gap:12px">
-<div class="field"><label for="username">نام کاربری</label><input id="username" name="username" dir="ltr" value="<?= e($username) ?>" required autocomplete="username"></div>
-<div class="field"><label for="account_password">رمز عبور</label><input id="account_password" name="account_password" type="password" dir="ltr" required autocomplete="current-password"></div>
-<div class="field"><label for="captcha">کد چهاررقمی</label><div class="captcha-row"><span class="captcha-code" dir="ltr" aria-label="کد ضدربات"><?= e($captcha) ?></span><input id="captcha" name="captcha" dir="ltr" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="کد را وارد کنید" required></div></div>
-</div><button class="button primary" type="submit">نمایش مشخصات</button>
+<div class="field"><label for="username" data-ui-text="customer_username">نام کاربری</label><input id="username" name="username" dir="ltr" value="<?= e($username) ?>" required autocomplete="username"></div>
+<div class="field"><label for="account_password" data-ui-text="customer_password">رمز عبور</label><input id="account_password" name="account_password" type="password" dir="ltr" required autocomplete="current-password"></div>
+<div class="field"><label for="captcha" data-ui-text="customer_captcha">کد چهاررقمی</label><div class="captcha-row"><span class="captcha-code" dir="ltr" aria-label="کد ضدربات" data-ui-aria="customer_captcha_aria"><?= e($captcha) ?></span><input id="captcha" name="captcha" dir="ltr" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="کد را وارد کنید" data-ui-placeholder="customer_captcha_placeholder" required></div></div>
+</div><button class="button primary" type="submit" data-ui-text="customer_show_details">نمایش مشخصات</button>
 </form>
 </section>
 <?php if (is_array($account)): ?>
 <?php foreach ($account as $item): ?>
 <section class="panel account-card">
-<h2>مشخصات حساب</h2>
+<h2 data-ui-text="customer_account_details">مشخصات حساب</h2>
 <div class="account-grid">
-<div class="account-item"><small>نام کاربری</small><strong dir="ltr"><?= e($item['username']) ?></strong></div>
-<div class="account-item"><small>سرویس</small><strong><?= e($item['server']) ?></strong></div>
-<div class="account-item"><small>پلن</small><strong><?= e($item['plan']) ?></strong></div>
-<div class="account-item"><small>وضعیت اعتبار</small><strong><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
-<div class="account-item"><small>تاریخ انقضا</small><strong><?= e($item['expiry'] !== '' ? $item['expiry'] : 'بدون تاریخ انقضای قابل نمایش') ?></strong></div>
-<div class="account-item"><small>روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?></strong></div>
-<div class="account-item"><small>رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button" onclick="const n=this.previousElementSibling;const show=n.textContent==='••••••••';n.textContent=show?n.dataset.password:'••••••••';this.textContent=show?'مخفی کردن':'نمایش رمز';">نمایش رمز</button></div></div>
+<div class="account-item"><small data-ui-text="customer_username">نام کاربری</small><strong dir="ltr"><?= e($item['username']) ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_service">سرویس</small><strong><?= e($item['server']) ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_plan">پلن</small><strong><?= e($item['plan']) ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($item['expiry']) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
+<div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button" data-ui-password-toggle onclick="const n=this.previousElementSibling;const show=n.textContent==='••••••••';n.textContent=show?n.dataset.password:'••••••••';this.textContent=show?(document.documentElement.lang==='en'?'Hide password':'مخفی کردن'):(document.documentElement.lang==='en'?'Show password':'نمایش رمز');">نمایش رمز</button></div></div>
 </div>
 </section>
 <?php endforeach; ?>
 <?php endif; ?>
-<footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
+<footer><a href="<?= e(app_url()) ?>" data-ui-text="customer_back_store">بازگشت به فروشگاه</a></footer>
 </main>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </body></html>
