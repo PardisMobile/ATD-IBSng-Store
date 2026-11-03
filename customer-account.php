@@ -118,7 +118,8 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </head>
 <body>
 <main class="account-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e($title) ?></a><nav><a class="button" href="<?= e(app_url()) ?>" data-ui-text="customer_back_store">بازگشت به فروشگاه</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="customer_track_orders">پیگیری خریدها</a></nav></header>
+<?php require __DIR__ . '/app/storefront-header.php'; ?>
+<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
 <section class="panel account-card">
 <div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
 <p class="muted-note" data-ui-text="customer_intro">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
