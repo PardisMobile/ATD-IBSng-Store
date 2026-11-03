@@ -697,3 +697,10 @@ The following UI-only changes have been committed to `main`:
 - Unified the forgot-password and reset-password screens with theme-aware field surfaces, shared radius/focus tokens, responsive card sizing, and more readable feedback notices.
 - Improved narrow-screen submit sizing, long error-message wrapping, heading scale, and keyboard-visible link focus.
 - CSS only: password recovery tokens, CSRF fields, expiry/use rules, validation, email dispatch, and password update behavior remain unchanged. Source review only; browser/device visual QA remains pending.
+
+ 
+### UI note — order status and account detail panels (2026-11-03)
+
+- Refined order detail hierarchy and spacing, including subsection headings, status badges, account specification panels, and expandable password presentation.
+- Added robust wrapping for long identifiers and technical values, keyboard-visible focus on password disclosure, and reduced-motion-aware card hover feedback.
+- Styling only: order lookup, payment status, provisioning state, and credential visibility conditions were not changed. Source review only; browser/device visual QA remains pending.
