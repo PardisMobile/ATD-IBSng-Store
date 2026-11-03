@@ -71,6 +71,14 @@ $renewalValues = [
     'ibsng_gift_days_repeat' => support_setting($pdo, 'ibsng_gift_days_repeat') ?: '5',
 ];
 
+$credentialValues = [
+    'credential_mode' => support_setting($pdo, 'credential_mode') ?: 'customer',
+    'username_prefix' => support_setting($pdo, 'username_prefix') ?: 'atd',
+    'username_suffix_length' => support_setting($pdo, 'username_suffix_length') ?: '6',
+    'password_length' => support_setting($pdo, 'password_length') ?: '12',
+    'password_charset' => support_setting($pdo, 'password_charset') ?: 'mixed',
+];
+
 $values = [
     'support_telegram_id' => support_setting($pdo, 'support_telegram_id'),
     'support_whatsapp_target' => support_setting($pdo, 'support_whatsapp_target'),
@@ -129,12 +137,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'ibsng_gift_days_first' => trim((string)($_POST['ibsng_gift_days_first'] ?? '1')),
             'ibsng_gift_days_repeat' => trim((string)($_POST['ibsng_gift_days_repeat'] ?? '5')),
         ];
+        $credentialValues = [
+            'credential_mode' => trim((string)($_POST['credential_mode'] ?? 'customer')),
+            'username_prefix' => trim((string)($_POST['username_prefix'] ?? 'atd')),
+            'username_suffix_length' => trim((string)($_POST['username_suffix_length'] ?? '6')),
+            'password_length' => trim((string)($_POST['password_length'] ?? '12')),
+            'password_charset' => trim((string)($_POST['password_charset'] ?? 'mixed')),
+        ];
         $values = [
             'support_telegram_id' => trim((string)($_POST['telegram_id'] ?? '')),
             'support_whatsapp_target' => trim((string)($_POST['whatsapp_target'] ?? '')),
             'support_custom_label' => trim((string)($_POST['custom_label'] ?? '')),
             'support_custom_url' => trim((string)($_POST['custom_url'] ?? '')),
         ];
+        if (!in_array($credentialValues['credential_mode'], ['customer', 'automatic', 'choice'], true)
+            || !preg_match('/^[A-Za-z0-9_.-]{1,24}$/D', $credentialValues['username_prefix'])
+            || !ctype_digit($credentialValues['username_suffix_length'])
+            || (int)$credentialValues['username_suffix_length'] < 4 || (int)$credentialValues['username_suffix_length'] > 12
+            || !ctype_digit($credentialValues['password_length'])
+            || (int)$credentialValues['password_length'] < 8 || (int)$credentialValues['password_length'] > 64
+            || !in_array($credentialValues['password_charset'], ['alphanumeric', 'mixed'], true)) {
+            $error = 'تنظیمات تولید اطلاعات اکانت معتبر نیست.';
+        }
         foreach ($renewalValues as $giftKey => $giftValue) {
             if (!ctype_digit($giftValue) || (int)$giftValue > 3650) {
                 $error = 'روزهای هدیه باید عدد صحیح بین صفر تا ۳۶۵۰ باشند.';
@@ -155,6 +179,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$key, $value]);
             }
             foreach ($renewalValues as $key => $value) {
+                $stmt->execute([$key, $value]);
+            }
+            foreach ($credentialValues as $key => $value) {
                 $stmt->execute([$key, $value]);
             }
             $stmt->execute(['price_display_unit', $priceDisplayUnit]);
@@ -192,6 +219,9 @@ if ($error !== '') {
     }
     foreach ($renewalValues as $key => $value) {
         $renewalValues[$key] = support_setting($pdo, $key) ?: ($key === 'ibsng_gift_days_first' ? '1' : '5');
+    }
+    foreach ($credentialValues as $key => $value) {
+        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'password_length' => '12', default => 'mixed' };
     }
 }
 $config = app_config();
@@ -233,6 +263,14 @@ $config = app_config();
 <h2>نمایش قیمت کریپتو</h2>
 <p class="hint">این گزینه نمایش قیمت مستقل USDT را در فروشگاه مجاز می‌کند؛ اما قیمت فقط زمانی واقعاً نمایش داده می‌شود که درگاه فعال انتخاب‌شده در بخش «درگاه پرداخت» روی «کریپتو (USDT)» تنظیم شده باشد و از USDT پشتیبانی کند. این گزینه به‌تنهایی پرداخت کریپتویی را فعال نمی‌کند.</p>
 <div class="field"><label><input type="checkbox" name="crypto_gateway_enabled" value="1"<?= $cryptoDisplayEnabled ? ' checked' : '' ?>> نمایش قیمت USDT (این گزینه پرداخت کریپتو را فعال نمی‌کند)</label></div>
+<hr>
+<h2>روش ساخت اطلاعات اکانت</h2>
+<p class="hint">این سیاست به‌صورت سراسری برای سفارش‌های جدید اعمال می‌شود. سفارش‌های قبلی و اطلاعات ثبت‌شده در آن‌ها تغییر نمی‌کنند.</p>
+<div class="field"><label for="credential_mode">روش ورود اطلاعات</label><select id="credential_mode" name="credential_mode" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="customer"<?= $credentialValues['credential_mode'] === 'customer' ? ' selected' : '' ?>>مشتری نام کاربری و رمز را وارد کند</option><option value="automatic"<?= $credentialValues['credential_mode'] === 'automatic' ? ' selected' : '' ?>>تولید خودکار توسط فروشگاه</option><option value="choice"<?= $credentialValues['credential_mode'] === 'choice' ? ' selected' : '' ?>>مشتری بین خودکار و دستی انتخاب کند</option></select></div>
+<div class="field"><label for="username_prefix">پیشوند نام کاربری</label><input id="username_prefix" name="username_prefix" maxlength="24" pattern="[A-Za-z0-9_.-]+" required value="<?= e($credentialValues['username_prefix']) ?>"><div class="hint">فقط حروف لاتین، عدد و . _ -؛ برای مثال atd</div></div>
+<div class="field"><label for="username_suffix_length">طول بخش تصادفی نام کاربری</label><input id="username_suffix_length" name="username_suffix_length" type="number" min="4" max="12" required value="<?= e($credentialValues['username_suffix_length']) ?>"></div>
+<div class="field"><label for="password_length">طول رمز تولیدشده</label><input id="password_length" name="password_length" type="number" min="8" max="64" required value="<?= e($credentialValues['password_length']) ?>"></div>
+<div class="field"><label for="password_charset">ترکیب کاراکتر رمز</label><select id="password_charset" name="password_charset" style="width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:#0d1426;color:var(--text);font:inherit"><option value="alphanumeric"<?= $credentialValues['password_charset'] === 'alphanumeric' ? ' selected' : '' ?>>حروف لاتین و عدد</option><option value="mixed"<?= $credentialValues['password_charset'] === 'mixed' ? ' selected' : '' ?>>حروف لاتین، عدد و نشانه‌های امن</option></select></div>
 <hr>
 <h2>سیاست هدیهٔ تمدید IBSng</h2>
 <p class="hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
