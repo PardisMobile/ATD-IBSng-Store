@@ -80,6 +80,7 @@
       customer_plan: 'Plan',
       customer_validity: 'Validity status',
       customer_expiry: 'Expiration date',
+      customer_expiry_unknown: 'No expiration date available',
       customer_remaining: 'Days remaining',
       customer_days: 'days',
       customer_password_label: 'Password',
@@ -172,6 +173,13 @@
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalAria === undefined) element.dataset.uiOriginalAria = element.getAttribute('aria-label') || '';
       element.setAttribute('aria-label', language === 'en' && translated ? translated : element.dataset.uiOriginalAria);
+    });
+    document.querySelectorAll('[data-ui-password-toggle]').forEach((button) => {
+      const value = button.previousElementSibling;
+      const shown = value && value.textContent !== '••••••••';
+      button.textContent = language === 'en'
+        ? (shown ? pageCopy.customer_account_page.customer_hide_password : pageCopy.customer_account_page.customer_show_password)
+        : (shown ? 'مخفی کردن' : 'نمایش رمز');
     });
     document.querySelectorAll('[data-ui-status]').forEach((element) => {
       const key = element.dataset.uiStatus;
