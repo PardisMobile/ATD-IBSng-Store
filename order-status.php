@@ -111,34 +111,39 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 .status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}
 .status-card{padding:clamp(18px,4vw,30px);margin:22px 0 36px;min-width:0}
 .status-card h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.5;margin:8px 0 14px;overflow-wrap:anywhere}
-.notice{padding:16px;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);margin:14px 0;line-height:1.95;background:var(--surface-2);color:var(--text)}
+.status-card h2{font-size:clamp(1.1rem,3vw,1.35rem);line-height:1.6;margin:24px 0 12px}
+.notice{padding:16px;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);margin:14px 0;line-height:1.95;background:var(--surface-2);color:var(--text);overflow-wrap:anywhere}
 .muted{color:var(--muted);line-height:1.8}
 .target-list{display:grid;gap:12px;margin:18px 0}
-.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:clamp(14px,3vw,20px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);min-width:0}
+.target{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:clamp(14px,3vw,20px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);min-width:0;transition:border-color .18s ease}
+.target:hover{border-color:color-mix(in srgb,var(--accent,var(--blue)) 30%,var(--border))}
 .target strong{display:block;overflow-wrap:anywhere}
 .target small{display:block;color:var(--muted);margin-top:4px}
-.account-details{display:grid;gap:8px;margin-top:10px}
+.account-details{display:grid;gap:8px;margin-top:10px;min-width:0}
 .account-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .account-spec{padding:13px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface);min-width:0}
 .account-spec span{display:block;color:var(--muted);font-size:.85rem}
 .account-spec strong{display:block;margin-top:6px;overflow-wrap:anywhere;line-height:1.7}
 .account-specs .full{grid-column:1/-1}
-.account-details code{overflow-wrap:anywhere}
-.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-sm,10px);background:var(--surface)}
-.state{white-space:nowrap;font-weight:700;padding:7px 12px;border-radius:999px;background:color-mix(in srgb,var(--success,var(--green)) 12%,transparent);color:var(--success,var(--green));border:1px solid color-mix(in srgb,var(--success,var(--green)) 28%,transparent)}
+.account-details code{overflow-wrap:anywhere;word-break:break-word}
+.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-sm,10px);background:var(--surface);min-width:0}
+.account-details summary{cursor:pointer;line-height:1.7}
+.account-details summary:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:3px;border-radius:4px}
+.state{white-space:nowrap;font-weight:700;padding:7px 12px;border-radius:999px;background:color-mix(in srgb,var(--success,var(--green)) 12%,transparent);color:var(--success,var(--green));border:1px solid color-mix(in srgb,var(--success,var(--green)) 28%,transparent);flex:0 0 auto}
 .purchase-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
 .purchase-fact{padding:15px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,16px);background:var(--surface-2);min-width:0}
 .purchase-fact span{display:block;color:var(--muted);font-size:.85rem}
-.purchase-fact strong{display:block;margin-top:7px;overflow-wrap:anywhere;line-height:1.7}
+.purchase-fact strong{display:block;margin-top:7px;overflow-wrap:anywhere;word-break:break-word;line-height:1.7}
 .purchase-fact .paid-amount{color:var(--success,var(--green))}
-.credential-panel{padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,16px);background:var(--surface)}
-.credential-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 0}
+.credential-panel{padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,16px);background:var(--surface);min-width:0}
+.credential-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:8px 0;min-width:0}
 .credential-row+.credential-row{border-top:1px solid var(--border)}
 .credential-row>span{color:var(--muted)}
-.credential-row code{overflow-wrap:anywhere;text-align:start}
-.credential-row details{max-width:100%}
+.credential-row code{overflow-wrap:anywhere;word-break:break-word;text-align:start}
+.credential-row details{max-width:100%;min-width:0}
 .target>div:first-child{min-width:0;overflow-wrap:anywhere}
 @media(max-width:560px){.status-shell{width:calc(100% - 24px)}.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}.purchase-summary,.account-specs{grid-template-columns:1fr}.credential-row{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.target{transition:none}}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
