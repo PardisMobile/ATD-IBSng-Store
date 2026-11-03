@@ -641,3 +641,10 @@ The following UI-only changes have been committed to `main`:
 - Made the provisioning attempts and email-delivery action column more usable by giving its inline forms a stable grid, consistent spacing, and full-width bounded controls. Action buttons retain a minimum touch height and wrap labels rather than forcing the table wider.
 - Error/result text now has a readable wrapping width, and table headers/row hover use the shared theme surface tokens for clearer scanning in the admin view.
 - No queries, POST fields, CSRF handling, retry/resolve behavior, or email/provisioning operations were changed. This is source-level UI work; browser and viewport QA remains pending.
+
+
+### UI note — IBSng group mapping cards and controls (2026-11-03)
+
+- Refined saved mapping cards with theme-aware borders, subtle accent hover, and a distinct inset treatment for the exact IBSng group name, improving the hierarchy between Store plan labels and the remote group identifier.
+- Styled the existing edit disclosure as a consistent expandable section, including an open/closed indicator and keyboard focus treatment. Action forms/buttons now have consistent minimum height and padding, and stack cleanly on narrow screens.
+- No mapping CRUD logic, form field names, CSRF, confirmation behavior, or database operations changed. Source-level only; browser/device QA remains outstanding.
