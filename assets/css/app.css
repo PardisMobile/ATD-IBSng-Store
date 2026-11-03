@@ -1532,3 +1532,33 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   .atd-store-header-row > .atd-preferences,
   .atd-admin-preferences-slot > .atd-preferences { gap:5px; }
 }
+
+
+/* Shared bilingual shell: inline-start/end follow the active document direction. */
+.atd-shared-header{display:block;position:relative;margin:26px 0 0;padding:clamp(18px,2.5vw,28px);border:1px solid var(--border);border-radius:28px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 18px 55px rgba(0,0,0,.16);backdrop-filter:blur(18px)}
+.atd-shared-header-top{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0}
+.atd-shared-header .brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
+.atd-shared-header .atd-preferences{margin-inline-start:auto}
+.atd-shared-header .atd-store-nav{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px;border-top:1px solid var(--border);margin-top:22px;padding-top:18px}
+.atd-shared-header .atd-store-nav-link{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:44px;padding:9px 17px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text);font-weight:700;transition:background-color .18s,border-color .18s,color .18s,transform .18s}
+.atd-shared-header .atd-store-nav-link svg{width:18px;height:18px;flex:0 0 18px}
+.atd-shared-header .atd-store-nav-link:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface-2));transform:translateY(-1px)}
+.atd-shared-header .atd-store-nav-link[aria-current=page]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--surface-2));color:var(--accent)}
+.atd-store-animated-header{position:relative;isolation:isolate;overflow:hidden;height:190px;margin:18px 0 26px;border:1px solid var(--border);border-radius:24px;background:linear-gradient(135deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--accent) 8%,var(--surface))); }
+.atd-store-animated-header .storefront-hero-art{position:absolute;inset:0;width:100%;min-width:0;opacity:1}
+.atd-store-animated-header .storefront-hero-glow{inset-inline-end:calc(50% - 95px);top:0}
+.atd-store-animated-header .storefront-orbit-one{inset-inline-end:calc(50% - 128px);top:25px}
+.atd-store-animated-header .storefront-orbit-two{inset-inline-end:calc(50% - 105px);top:8px}
+.atd-store-animated-header .storefront-card-account{inset-inline-end:calc(50% - 35px);top:14px}
+.atd-store-animated-header .storefront-card-renew{inset-inline-end:calc(50% + 80px);top:72px}
+.atd-store-animated-header .storefront-card-payment{inset-inline-end:calc(50% - 95px);top:95px}
+.atd-admin-header{display:block;margin:24px 0 26px;padding:clamp(18px,2.5vw,26px);border:1px solid var(--border);border-radius:26px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 18px 55px rgba(0,0,0,.16);backdrop-filter:blur(18px)}
+.atd-admin-header-top{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.atd-admin-header-top .brand{min-width:0}
+.atd-admin-preferences-slot{display:flex;justify-content:flex-end;align-items:center;margin-inline-start:auto}
+.atd-admin-nav{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px;padding-top:18px}
+.atd-admin-nav-link{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 16px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--text);font:inherit;font-weight:700;cursor:pointer;transition:background-color .18s,border-color .18s,color .18s,transform .18s}
+.atd-admin-nav-link:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface-2));transform:translateY(-1px)}
+.atd-admin-nav-link[aria-current=page]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 17%,var(--surface-2));color:var(--accent)}
+.atd-admin-logout{display:inline-flex;margin:0}
+@media(max-width:620px){.atd-shared-header-top,.atd-admin-header-top{align-items:flex-start;flex-direction:column}.atd-shared-header .atd-preferences,.atd-admin-preferences-slot{margin-inline-start:0}.atd-store-animated-header{height:170px}.atd-shared-header .atd-store-nav,.atd-admin-nav{gap:8px}.atd-shared-header .atd-store-nav-link,.atd-admin-nav-link{flex:1 1 auto}}
