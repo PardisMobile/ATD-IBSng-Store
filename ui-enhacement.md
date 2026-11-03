@@ -768,3 +768,10 @@ The following UI-only changes have been committed to `main`:
 - `admin/email-settings.php`: expose saved/test-send feedback as a polite status and validation/send failures as assertive alerts for assistive technology.
 - `admin/email-templates.php`: use the same status/alert semantics for save and validation feedback.
 - Scope is limited to feedback semantics; PHP processing, form submission, email delivery, and template behavior are unchanged.
+
+
+## 19. Admin operation feedback accessibility consistency (implemented)
+
+- Applied the same live-region semantics to success and error notices in `admin/orders.php`, `admin/provisioning.php`, and `admin/ibsng-groups.php`.
+- Success messages are announced politely (`role=status`); errors are exposed as alerts (`role=alert`, assertive live region), matching the email administration pages.
+- Only feedback markup changed; payment transaction resolution, provisioning execution/manual resolution, group mapping actions, validation, and CSRF handling are unchanged. Source review only; browser and assistive-technology QA remains pending.
