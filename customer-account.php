@@ -106,6 +106,11 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .account-error{padding:13px 15px;border:1px solid color-mix(in srgb,var(--danger,var(--red)) 35%,var(--border));background:color-mix(in srgb,var(--danger,var(--red)) 9%,var(--surface));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:15px 0;line-height:1.8;overflow-wrap:anywhere}
 .password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .password-line button{font:inherit;cursor:pointer;min-height:40px}
+.password-line button:focus-visible,.account-form>.button:focus-visible,.account-shell .topbar nav .button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.account-shell .topbar nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
+.account-shell .topbar nav .button{white-space:normal;text-align:center}
+.account-item strong{font-variant-numeric:tabular-nums}
+@media(max-width:560px){.account-shell .topbar nav{width:100%}.account-shell .topbar nav .button{flex:1 1 auto}.password-line{align-items:flex-start}.password-line button{flex:0 0 auto}}
 .muted-note{color:var(--muted);line-height:1.85}
 @media(max-width:560px){.account-form{grid-template-columns:minmax(0,1fr)}.captcha-row{gap:8px}.account-form>.button{width:100%}}
 @media(prefers-reduced-motion:reduce){.field input,.account-item{transition:none}}
