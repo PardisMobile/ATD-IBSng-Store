@@ -95,7 +95,7 @@ $config = app_config();
 </head>
 <body>
 <main class="admin-shell">
-<header class="admin-top"><a class="brand" href="<?= e(app_url('admin/')) ?>">ATD IBSng Store · مدیریت</a><a class="button" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="renewal_migration_back_products">بازگشت به محصولات</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Database · Renewal Upgrade</div>
 <h1 data-ui-text="renewal_migration_title">ارتقای ساختار تمدید IBSng</h1>
