@@ -704,3 +704,10 @@ The following UI-only changes have been committed to `main`:
 - Refined order detail hierarchy and spacing, including subsection headings, status badges, account specification panels, and expandable password presentation.
 - Added robust wrapping for long identifiers and technical values, keyboard-visible focus on password disclosure, and reduced-motion-aware card hover feedback.
 - Styling only: order lookup, payment status, provisioning state, and credential visibility conditions were not changed. Source review only; browser/device visual QA remains pending.
+
+
+### Order recovery form micro-consistency pass (2026-11-03)
+
+- Fixed a literal escaped newline accidentally left between two page-scoped CSS rules in `my-orders.php`, restoring clean separation of the LTR field rule and six-digit code styling.
+- Standardized the visible labels in the order recovery forms and isolated tracking references as LTR, wrapping-safe technical values with tabular numerals.
+- Presentation-only: recovery request/verification, CSRF, query parameters, and order lookup logic were not changed. Source review only; browser/device visual QA remains pending.
