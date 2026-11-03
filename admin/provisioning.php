@@ -70,6 +70,7 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 <style>
 .shell{width:min(1200px,calc(100% - 32px));margin:0 auto;padding-bottom:30px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:24px 0}.panel{padding:22px;margin:16px 0}.hint{color:var(--muted);line-height:1.8}.notice{padding:12px 14px;border-radius:12px;margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}.run{border:0;cursor:pointer;font:inherit}
 </style>
+<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body><main class="shell">
 <header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>">داشبورد</a></header>
