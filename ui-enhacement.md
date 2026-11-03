@@ -264,3 +264,34 @@ The following are the principal audit dimensions, not merely a list of cosmetic 
 - Use deliberate confirmation and feedback UI for delete, status changes, payment review/confirmation, and sensitive settings changes, without changing their underlying behavior.
 - Validate mobile layouts and touch targets across public and admin pages; avoid clipped content and accidental horizontal overflow.
 - Treat these as audit criteria and document functional defects separately; this UI backlog does not authorize core logic changes.
+
+
+## 17. Detailed UI audit table transcribed from the supplied screenshots
+
+This section preserves the screenshot-specific audit table as concrete, page-by-page items. These are separate from the broader audit axes above and must be checked individually during implementation.
+
+| بخش | ایراد قابل مشاهده در سورس | اصلاح پیشنهادی |
+|---|---|---|
+| فروشگاه عمومی | استایل اختصاصی کارت پلن‌ها در خود صفحه | ساخت کامپوننت یکپارچه برای کارت محصول، قیمت، مشخصات و CTA |
+| Checkout | استایل مستقل فیلدها و پیام‌ها؛ نمایش شرطی با inline style | فرم چندبخشی با خلاصه سفارش، فیلدهای منظم و وضعیت‌های مشخص |
+| پیگیری سفارش | دو روش پیگیری در یک صفحه، اما بدون معماری بصری کاملاً روشن | یک بخش واحد با انتخاب روش پیگیری و اولویت‌بندی واضح |
+| وضعیت سفارش | ترکیب وضعیت سفارش، تلاش پرداخت و اطلاعات اکانت | تفکیک مرحله‌ای سفارش، وضعیت پرداخت و اطلاعات سرویس |
+| مشاهده حساب | مشخصات و رمز اکانت در یک شبکه ساده | طراحی کارت مشخصات با گروه‌بندی و کنترل‌های واضح |
+| محصولات مدیریت | فرم طولانی با فیلدهای متعدد و نگاشت‌های سرور | فرم بخش‌بندی‌شده و قابل اسکن، همراه خلاصه نگاشت |
+| گزارش سفارش‌ها | جدول با ستون‌های متعدد و اسکرول افقی در موبایل | نمایش اطلاعات مهم به صورت خلاصه و ارائه جزئیات در سطح مناسب |
+| تنظیمات | تعداد زیاد تنظیمات در یک صفحه و کنترل‌های با ظاهر متفاوت | گروه‌بندی تنظیمات بر اساس موضوع، توضیح کوتاه و چیدمان ثابت |
+| سرورها و گروه‌ها | فرم‌ها و کارت‌های مدیریتی با قواعد CSS مشابه اما تکرارشده | کامپوننت‌های مشترک برای سرور، گروه، وضعیت اتصال و عملیات |
+| Installer | ساختار و چیدمان ابتدایی با وجود پس‌زمینه زیبا | حفظ پس‌زمینه، بازطراحی کامل ترکیب‌بندی و محتوای صفحه |
+
+### مواردی که به‌طور خاص نباید از قلم بیفتند
+
+- **پیام‌های سیستمی:** موفقیت، خطا، هشدار، خطای اتصال، نبود محصول، نبود سفارش و وضعیت‌های در حال پردازش.
+- **متن‌های محصول:** عنوان، توضیحات، مدت اعتبار، حجم، قیمت، محدودیت‌ها و CTAها.
+- **تاریخ‌ها و اعداد:** نمایش تاریخ شمسی و میلادی، ارز، قیمت USDT و مقدار نامحدود.
+- **فرم‌های پیچیده:** نگاشت سرور/گروه، فیلدهای شرطی درگاه، انتخاب روش پرداخت و تنظیمات اعتبار.
+- **تأیید عملیات:** حذف، تغییر وضعیت، بررسی پرداخت مهم و ذخیره تنظیمات.
+- **موبایل:** ترتیب عناصر، عرض دکمه‌ها، جداول، کارت‌های چندستونه و ورودی‌هایی که متن طولانی دارند.
+- **زبان:** متن‌های فارسی و انگلیسی، پیام‌های پویا و عناصر رابط؛ جهت RTL/LTR باید با زبان هماهنگ باشد.
+- **انیمیشن:** به‌ویژه انیمیشن لوگو؛ محدوده اجرای آن باید خود لوگو باشد و روی wrapper یا سطح مستطیلی اطراف پخش نشود.
+
+The table and checklist above are the specific screenshot-derived items requested by the project owner. Keep them intact as a traceable checklist; do not replace them with a high-level summary.
