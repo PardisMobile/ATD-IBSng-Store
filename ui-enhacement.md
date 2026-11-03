@@ -718,3 +718,10 @@ The following UI-only changes have been committed to `main`:
 - Set database host/name/user/password and administrator username/email/password fields to explicit LTR isolated presentation, with left alignment and tabular numerals for technical values. This prevents RTL locale direction from visually reordering hostnames, identifiers, email addresses, and credentials.
 - Added a page-scoped CSS rule for those explicit LTR fields; ordinary site-title/display-name fields continue to follow the selected locale naturally.
 - Installer field names, locale selection, CSRF, connection test/install actions, validation, and configuration/schema writing are unchanged. Source inspection only; browser RTL/LTR visual QA remains pending.
+
+
+### Checkout technical input direction and keyboard focus pass (2026-11-03)
+
+- Isolated email, phone, username, account-password, and displayed order tracking-code values in LTR direction so their technical strings remain readable inside the Persian checkout layout.
+- Added a clear keyboard focus treatment for the credential-method radio controls and tightened their field spacing using existing theme tokens.
+- CSS-only: form submission, credential policy, order creation, payment initiation, and validation remain unchanged. Source inspection only; visual browser/mobile QA remains pending.
