@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 ?>
 <section class="atd-store-animated-header" aria-label="ATD IBSng Store">
   <div class="storefront-hero-art" aria-hidden="true">
