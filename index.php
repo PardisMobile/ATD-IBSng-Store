@@ -74,6 +74,25 @@ function store_bytes_label(?string $bytes): string
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
   <style>
+/* ATD Files Portal-inspired hero motion; storefront palette remains inherited. */
+.storefront-hero{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;align-items:center}
+.storefront-hero-content{position:relative;z-index:2;max-width:min(66%,680px)}
+.storefront-hero-art{position:absolute;z-index:1;inset-block:0;inset-inline-end:3%;width:min(38%,340px);min-width:230px;pointer-events:none}
+.storefront-hero-glow{position:absolute;width:190px;height:190px;inset-inline-end:55px;top:48px;border-radius:50%;background:radial-gradient(circle,var(--accent-soft, color-mix(in srgb,var(--accent) 18%,transparent)),transparent 70%);filter:blur(6px);animation:storefrontHeroPulse 5s ease-in-out infinite}
+.storefront-orbit{position:absolute;inset-inline-end:20px;top:76px;width:255px;height:128px;border:1px solid color-mix(in srgb,var(--accent) 34%,transparent);border-radius:50%;transform:rotate(-24deg)}
+.storefront-orbit-one{animation:storefrontOrbitSpin 18s linear infinite}
+.storefront-orbit-two{inset-inline-end:42px;top:52px;width:210px;height:168px;border-style:dashed;transform:rotate(48deg);opacity:.65;animation:storefrontOrbitSpin 28s linear infinite reverse}
+.storefront-float-card{position:absolute;width:70px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));border-radius:16px;background:color-mix(in srgb,var(--surface) 82%,transparent);box-shadow:0 14px 34px rgba(0,0,0,.14);backdrop-filter:blur(10px);color:var(--text);animation:storefrontFileFloat 5s ease-in-out infinite}
+.storefront-float-card svg{width:27px;height:27px;stroke:currentColor}
+.storefront-float-card span{font-size:9px;font-weight:800;letter-spacing:.08em}
+.storefront-card-account{inset-inline-end:42px;top:38px;animation-delay:-1.2s}
+.storefront-card-renew{inset-inline-end:158px;top:118px;color:var(--accent);animation-delay:-3s}
+.storefront-card-payment{inset-inline-end:64px;top:178px;animation-delay:-2s}
+@keyframes storefrontFileFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-11px) rotate(3deg)}}
+@keyframes storefrontOrbitSpin{from{rotate:0deg}to{rotate:360deg}}
+@keyframes storefrontHeroPulse{0%,100%{opacity:.5;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+@media(max-width:760px){.storefront-hero{min-height:280px}.storefront-hero-content{max-width:100%;padding-inline-end:0}.storefront-hero-art{inset-inline-end:-75px;top:0;width:250px;height:210px;min-width:0;opacity:.24}.storefront-card-account{inset-inline-end:55px;top:15px}.storefront-card-renew{inset-inline-end:125px;top:95px}.storefront-card-payment{inset-inline-end:25px;top:125px}.storefront-hero-content{z-index:2}}
+@media(prefers-reduced-motion:reduce){.storefront-hero-art,.storefront-hero-art *{animation:none!important}}
 .catalog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:clamp(14px,2.4vw,20px);align-items:stretch}
 .plan-card{padding:clamp(18px,3vw,26px);display:flex;flex-direction:column;gap:13px;min-width:0;position:relative;overflow:hidden;transition:transform var(--ui-transition,180ms ease),border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}
 .plan-card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--accent);opacity:.72}
@@ -113,13 +132,32 @@ function store_bytes_label(?string $bytes): string
       <a class="brand" href="<?= e(app_url()) ?>"><?= e($pageTitle) ?></a>
       <nav class="hero-actions" aria-label="دسترسی مشتری" data-ui-aria="customer_account"><a class="button" href="<?= e(app_url('customer-account.php')) ?>" data-ui-text="customer_account">حساب کاربری</a><a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="order_tracking">پیگیری و بازیابی خریدها</a><span class="status-chip" data-ui-text="storefront_status">فروشگاه سرویس‌ها</span></nav>
     </header>
-    <section class="hero panel">
-      <div class="eyebrow">ATD • IBSng</div>
-      <h1 data-ui-text="catalog_hero_title">سرویس موردنیازت رو ساده انتخاب کن</h1>
-      <p data-ui-text="catalog_hero_intro">پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
-      <div class="hero-actions">
-        <a class="button primary" href="#services" data-ui-text="catalog_view_services">مشاهده سرویس‌ها</a>
-        <span class="muted" data-ui-text="catalog_no_registration">بدون نیاز به ثبت‌نام فروشگاهی</span>
+    <section class="hero panel storefront-hero">
+      <div class="storefront-hero-art" aria-hidden="true">
+        <span class="storefront-orbit storefront-orbit-one"></span>
+        <span class="storefront-orbit storefront-orbit-two"></span>
+        <span class="storefront-hero-glow"></span>
+        <div class="storefront-float-card storefront-card-account">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18 4.5h2.5M19.25 3.25v2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>ACCOUNT</span>
+        </div>
+        <div class="storefront-float-card storefront-card-renew">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>RENEW</span>
+        </div>
+        <div class="storefront-float-card storefront-card-payment">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M7 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>PAYMENT</span>
+        </div>
+      </div>
+      <div class="storefront-hero-content">
+        <div class="eyebrow">ATD • IBSng</div>
+        <h1 data-ui-text="catalog_hero_title">سرویس موردنیازت رو ساده انتخاب کن</h1>
+        <p data-ui-text="catalog_hero_intro">پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#services" data-ui-text="catalog_view_services">مشاهده سرویس‌ها</a>
+          <span class="muted" data-ui-text="catalog_no_registration">بدون نیاز به ثبت‌نام فروشگاهی</span>
+        </div>
       </div>
     </section>
     <section id="services" class="section">
