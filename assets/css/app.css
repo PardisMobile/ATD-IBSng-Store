@@ -662,3 +662,34 @@ tr:hover td { background:var(--hover-surface); }
   .hero { padding:clamp(20px,6vw,30px); }
   .plan-card .plan-price { font-size:clamp(1.45rem,7vw,1.8rem); }
 }
+
+/* Consistent disabled, placeholder and invalid-field states across public/admin forms. */
+:where(button, input[type="button], input[type="submit"], input[type="reset"], select, textarea, input):disabled,
+:where(.button,[role="button"])[aria-disabled="true"] {
+  opacity:.58;
+  cursor:not-allowed;
+  box-shadow:none!important;
+  filter:saturate(.55);
+}
+:where(button,a.button,input[type=submit]):disabled:hover,
+:where(.button,[role="button"])[aria-disabled="true"]:hover {
+  transform:none!important;
+  filter:saturate(.55);
+}
+:where(input,select,textarea)::placeholder {
+  color:var(--muted);
+  opacity:.72;
+}
+:where(input,select,textarea)[aria-invalid="true"],
+:where(.field input,.field select,.field textarea).is-invalid {
+  border-color:var(--danger,#dc2626)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--danger,#dc2626) 16%,transparent);
+}
+:where(input,select,textarea)[aria-invalid="true"]:focus-visible,
+:where(.field input,.field select,.field textarea).is-invalid:focus-visible {
+  outline:2px solid var(--danger,#dc2626);
+  outline-offset:2px;
+}
+@media(prefers-reduced-motion:reduce) {
+  :where(button,input[type=button],input[type=submit],input[type=reset],.button) { transition:none!important; }
+}
