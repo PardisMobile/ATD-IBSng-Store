@@ -261,7 +261,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 </head>
 <body>
 <main class="checkout-shell">
-<header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><a class="button" href="<?= e(app_url()) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a></header>
+<?php require __DIR__ . '/app/storefront-header.php'; ?>
+<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
 <section class="checkout-card panel">
 <div class="eyebrow" data-ui-text="checkout_heading">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
