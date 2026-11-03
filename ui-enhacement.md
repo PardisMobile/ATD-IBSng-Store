@@ -606,3 +606,10 @@ The following UI-only changes have been committed to `main`:
 - Replaced the sender/test email fields' fixed dark background with shared theme-aware control tokens, consistent control height/radius, and the shared visible keyboard-focus ring.
 - Email addresses now render explicitly LTR and isolated within the RTL settings page, improving address readability and editing.
 - The change is limited to presentation CSS; form names, validation, CSRF, save/test actions, and mail delivery behavior are unchanged. Browser/viewport QA remains pending.
+
+
+### UI implementation note — email template editor and preview (2026-11-03)
+
+- Updated subject, event selector, and template editor controls to use shared theme-aware control colors, consistent radius/height, and visible keyboard focus styling instead of fixed dark surfaces.
+- Kept HTML/plain-text editors LTR and monospaced, enabled deliberate vertical resizing, and constrained editor sizing to prevent narrow-screen overflow.
+- Made the preview frame width-safe with a viewport-aware height range. Template event selection, save/preview POST behavior, escaping, and email rendering remain unchanged. Browser/viewport QA remains pending.
