@@ -78,6 +78,8 @@
       title_admin_email_templates: 'Email templates',
       title_admin_email_settings: 'Email settings',
       title_admin_login: 'Administrator sign in',
+      title_admin_forgot_password: 'Forgot administrator password',
+      title_admin_reset_password: 'Set a new administrator password',
       title_admin_provisioning: 'Provisioning queue',
       title_admin_renewal_migration: 'IBSng renewal upgrade'
     },
@@ -167,6 +169,25 @@
       provisioning_last_error: 'Last error',
       provisioning_updated: 'Updated',
       provisioning_retry_email: 'Retry delivery'
+    },
+    admin_forgot_password: {
+      forgot_panel: 'Administrator panel',
+      forgot_title: 'Forgot password',
+      forgot_intro: 'Enter the email address registered for the administrator.',
+      forgot_email: 'Administrator email',
+      forgot_submit: 'Send recovery link',
+      forgot_back_login: 'Back to sign in'
+    },
+    admin_reset_password: {
+      reset_panel: 'Administrator panel',
+      reset_title: 'Set a new password',
+      reset_success: 'Password changed successfully.',
+      reset_login: 'Sign in to admin panel',
+      reset_request_new: 'Request a new link',
+      reset_password: 'New password (at least 12 characters)',
+      reset_confirm: 'Confirm new password',
+      reset_submit: 'Save new password',
+      reset_invalid_link: 'The recovery link is invalid or expired.'
     },
     admin_login: {
       login_admin_panel: 'Administrator panel',
