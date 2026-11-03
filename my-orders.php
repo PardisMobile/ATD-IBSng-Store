@@ -111,7 +111,26 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>سفارش‌های من | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
-<style>.orders-shell{width:min(900px,calc(100% - 32px));margin:0 auto}.orders-card{padding:clamp(20px,4vw,34px);margin:24px 0}.orders-list{display:grid;gap:12px;margin-top:20px}.order-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:20px;border:1px solid var(--border);border-radius:20px;background:var(--surface)}.order-row strong{display:block;font-size:1.08rem;line-height:1.65}.order-row .muted{margin:7px 0 0;line-height:1.9}.order-row .button{white-space:nowrap}.muted{color:var(--muted);line-height:1.8}.form-field{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;margin:8px 0 16px;background:var(--surface);color:inherit}.notice{padding:12px;border:1px solid var(--border);border-radius:12px;margin:14px 0}@media(max-width:560px){.order-row{grid-template-columns:minmax(0,1fr);align-items:stretch;padding:16px}.order-row .button{width:100%}}.history-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.history-facts>span{padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}.history-facts small{display:block;color:var(--muted);font-size:.82rem}.history-facts strong{display:block;margin-top:6px;overflow-wrap:anywhere}.history-facts .history-amount{color:var(--green)}@media(max-width:560px){.history-facts{grid-template-columns:1fr}}</style>
+<style>
+.orders-shell{width:min(900px,calc(100% - 32px));margin:0 auto}
+.orders-card{padding:clamp(20px,4vw,34px);margin:24px 0}
+.orders-list{display:grid;gap:14px;margin-top:20px}
+.order-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:clamp(16px,3vw,22px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,20px);background:var(--surface-2);min-width:0}
+.order-row strong{display:block;font-size:1.08rem;line-height:1.65;overflow-wrap:anywhere}
+.order-row .muted{margin:7px 0 0;line-height:1.9}
+.order-row .button{white-space:nowrap;align-self:center}
+.muted{color:var(--muted);line-height:1.8}
+.form-field{display:block;width:100%;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:8px 0 16px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}
+.form-field:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.notice{padding:14px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:14px 0;background:var(--surface-2);color:var(--text);line-height:1.8}
+.history-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.history-facts>span{padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface)}
+.history-facts small{display:block;color:var(--muted);font-size:.82rem}
+.history-facts strong{display:block;margin-top:6px;overflow-wrap:anywhere}
+.history-facts .history-amount{color:var(--success,var(--green))}
+.order-row form{min-width:0}
+@media(max-width:600px){.orders-shell{width:calc(100% - 24px)}.order-row{grid-template-columns:minmax(0,1fr);align-items:stretch}.order-row .button{width:100%}.history-facts{grid-template-columns:1fr}}
+</style>
 </head>
 <body><main class="orders-shell">
 <header class="topbar"><a class="brand" href="<?= e(app_url()) ?>"><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></a><a class="button" href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></header>
