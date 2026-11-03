@@ -890,3 +890,10 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for the sales report explanation, paid/pending metrics, report columns, empty states, ambiguous-payment review guidance, transaction table, review-note field, and release-for-retry action.
 - The gateway confirmation prompt and review-note placeholder now follow the selected locale. Existing transaction/order identifiers and customer data remain unchanged.
 - Payment review decision logic, CSRF, required review note, transaction resolution, and order retry release behavior were not changed. Dynamic server feedback is not yet comprehensively localized; source review only, with browser/functional QA still pending.
+
+
+### UI implementation note — IBSng server and group-mapping page translation coverage (2026-11-03)
+
+- Added localization keys for remaining IBSng server-page headings, introduction, host/port/admin credential labels, save-and-test action, empty state, and dynamic last-test/default/error labels. Server deletion confirmation now follows the active language.
+- Added the missing group-mapping page title and “Add mapping” heading translation. Existing legacy dictionaries continue to handle their previously mapped copy and validation messages.
+- Shared translation-key source check passed for the newly added server/group keys. IBSng server creation/edit/test, manual group mapping, validation, default selection, deletion constraints, and data remain unchanged. Browser QA remains pending.
