@@ -93,7 +93,23 @@ if ($selectedServerId > 0) {
 <title>نگاشت پلن و گروه IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.panel-card{padding:24px;margin-top:20px}.field{display:grid;gap:8px;margin:14px 0}.field label{color:var(--muted);font-size:.9rem}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.field input:focus-visible,.field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}.field input[name="group_name"]{direction:ltr;text-align:left;unicode-bidi:plaintext}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.group-row{padding:18px;margin:14px 0}.group-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.muted{overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text)}.empty{padding:25px;text-align:center;color:var(--muted)}@media(max-width:600px){.grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.panel-card{padding:24px;margin-top:20px}.field{display:grid;gap:8px;margin:14px 0}.field label{color:var(--muted);font-size:.9rem}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.field input:focus-visible,.field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}.field input[name="group_name"]{direction:ltr;text-align:left;unicode-bidi:plaintext}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.group-row{padding:18px;margin:14px 0}.group-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.muted{overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text)}.empty{padding:25px;text-align:center;color:var(--muted)}
+.group-row{border:1px solid var(--border);border-radius:16px;background:var(--surface);transition:border-color .18s ease,background-color .18s ease}
+.group-row:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:color-mix(in srgb,var(--surface) 94%,var(--accent))}
+.group-head{align-items:center}
+.group-head strong{min-width:0;overflow-wrap:anywhere}
+.group-row>.muted{display:block;margin-top:8px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.group-row details{border-top:1px solid var(--border);padding-top:12px}
+.group-row summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;min-height:40px;box-sizing:border-box}
+.group-row summary::-webkit-details-marker{display:none}
+.group-row summary::after{content:'＋';font-size:1rem;line-height:1;opacity:.8}
+.group-row details[open] summary::after{content:'−'}
+.group-row summary:focus-visible,.actions button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.group-row details form{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+.actions{align-items:stretch}
+.actions form{display:flex;flex:0 1 auto;min-width:0}
+.actions button{min-height:40px;padding:8px 14px;border-radius:10px;white-space:normal;line-height:1.5}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.panel-card{padding:16px}.group-row{padding:14px}.actions form,.actions button{flex:1 1 100%;width:100%;box-sizing:border-box}.group-row details form{padding:10px}}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
