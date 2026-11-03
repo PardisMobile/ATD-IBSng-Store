@@ -52,7 +52,7 @@ try {
 <div class="eyebrow">داشبورد</div>
 <h1>سلام، <?= e((string)($_SESSION['admin_display_name'] ?? $_SESSION['admin_username'] ?? 'مدیر')) ?></h1>
 <p class="muted">ورود مدیر و آمار پایه فعال‌اند. مدیریت سرورهای IBSng از بخش اختصاصی انجام می‌شود؛ قابلیت‌های بعدی پس از بررسی مرجع و آزمون اضافه خواهند شد.</p>
-<?php if ($dbError): ?><div class="notice">خواندن آمار دیتابیس با خطا مواجه شد. اتصال و نصب schema را بررسی کنید.</div><?php endif; ?>
+<?php if ($dbError): ?><div class="notice" role="alert" aria-live="assertive">خواندن آمار دیتابیس با خطا مواجه شد. اتصال و نصب schema را بررسی کنید.</div><?php endif; ?>
 </section>
 <section class="admin-grid" aria-label="آمار">
 <div class="stat panel"><span>سرورهای IBSng</span><strong><?= $stats['servers'] ?></strong></div>
