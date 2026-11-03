@@ -482,11 +482,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ? 'Vazirmatn, Tahoma, sans-serif'
       : '"Segoe UI", Arial, sans-serif';
     if (toggle) toggle.textContent = lang === 'en' ? 'فارسی' : 'English';
-    try { localStorage.setItem('atd-ibsng-language', lang); } catch (e) {}
+    try { localStorage.setItem('atd-ibsng-language', lang); localStorage.setItem('atd-ui-language', lang); } catch (e) {}
   }
   let initial = 'en';
   try { initial = localStorage.getItem('atd-ibsng-language') || 'en'; } catch (e) {}
-  if (toggle) toggle.addEventListener('click', () => setLanguage(root.lang === 'fa' ? 'en' : 'fa'));
+  if (toggle) toggle.addEventListener('click', () => { const next = root.lang === 'fa' ? 'en' : 'fa'; setLanguage(next); document.dispatchEvent(new CustomEvent('atd:language-change', { detail: { language: next, direction: root.dir } })); });
   setLanguage(initial);
   document.addEventListener('atd:language-change', event => setLanguage(event.detail?.language === 'en' ? 'en' : 'fa'));
 })();
