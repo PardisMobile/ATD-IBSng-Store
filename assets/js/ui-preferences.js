@@ -76,7 +76,8 @@
       title_admin_ibsng_servers: 'IBSng servers',
       title_admin_ibsng_users: 'IBSng account management',
       title_admin_email_templates: 'Email templates',
-      title_admin_email_settings: 'Email settings'
+      title_admin_email_settings: 'Email settings',
+      title_admin_login: 'Administrator sign in'
     },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
@@ -120,6 +121,16 @@
       email_event_order_recovery: 'Order recovery / purchase details',
       email_event_email_verification: 'Email verification',
       email_event_expiration_reminder: 'Expiration reminder'
+    },
+    admin_login: {
+      login_admin_panel: 'Administrator panel',
+      login_title: 'Administrator sign in',
+      login_intro: 'Sign in to manage the store.',
+      login_username: 'Username',
+      login_password: 'Password',
+      login_submit: 'Sign in',
+      login_forgot: 'Forgot password?',
+      login_back_store: 'Back to store'
     },
     admin_email_settings: {
       email_settings_admin: 'Store administration',
