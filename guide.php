@@ -30,13 +30,8 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </head>
 <body>
 <main class="store-shell">
-<header class="topbar">
-  <a class="brand storefront-brand" href="<?= e(app_url()) ?>"><?= e($siteTitle) ?></a>
-  <nav class="hero-actions" aria-label="دسترسی مشتری" data-ui-aria="customer_account">
-    <a class="button" href="<?= e(app_url('customer-account.php')) ?>" data-ui-text="customer_account">حساب کاربری</a>
-    <a class="button" href="<?= e(app_url('my-orders.php')) ?>" data-ui-text="order_tracking">پیگیری و بازیابی خریدها</a>
-  </nav>
-</header>
+<?php require __DIR__ . '/app/storefront-header.php'; ?>
+<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
 <main class="guide panel">
 <p class="muted"><?= e($siteTitle) ?></p>
 <h1>راهنمای استفاده از اکانت</h1>
