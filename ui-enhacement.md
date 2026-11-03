@@ -585,3 +585,10 @@ The following UI-only changes have been committed to `main`:
 - Username, password, remote-user-ID (where present), and credit inputs render LTR with isolated direction and tabular numerals to avoid bidirectional text confusion in the RTL admin workflow.
 - Refined narrow-screen card padding while retaining the existing single-column form layout.
 - Only markup class and inline presentation styles changed. IBSng calls, renewal flow, form names/values, validation, POST behavior, and confirmation prompts are unchanged. Browser and viewport QA remains pending.
+
+
+### UI implementation note — IBSng account result values (2026-11-03)
+
+- Isolated returned IBSng username, user ID, group name, and password in the admin result panel with explicit LTR direction, numeric alignment, and safe wrapping for long values.
+- Password/code output can wrap within the panel instead of pushing the page width, while retaining the existing escaped output and visibility behavior.
+- Only result presentation CSS/markup changed. No IBSng request, credential handling, result fields, or operation logic was modified. Browser viewport verification remains pending.
