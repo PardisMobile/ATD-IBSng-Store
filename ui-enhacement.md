@@ -547,3 +547,9 @@ The following UI-only changes have been committed to `main`:
 - Updated the public catalog's no-quota display to show the explicit `Unlimited` label when a product's quota is unset, matching the storefront requirement and avoiding the ambiguous “according to service settings” wording.
 - Only the customer-facing label helper in `index.php` changed. Product quota data, pricing, checkout, and IBSng behavior remain untouched.
 - Source-level verification only; browser layout and bilingual rendering checks remain pending.
+
+
+### Order tracking identifier input direction (2026-11-03)
+
+- Set the order/tracking identifier field in `my-orders.php` to LTR with left alignment and text-direction isolation, so Latin tracking IDs remain readable inside the Persian/RTL recovery screen. Added a text input hint without changing validation, query parameters, or lookup flow.
+- No order tracking or recovery behavior changed. Source inspection only; device/browser verification remains pending.
