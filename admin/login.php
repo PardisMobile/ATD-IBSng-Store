@@ -52,7 +52,7 @@ $config = app_config();
 <title>ورود مدیر | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
 <style>
-.auth-card{max-width:480px;margin:8vh auto;padding:clamp(24px,5vw,40px)}.field{display:grid;gap:8px;margin:18px 0}.field label{color:var(--muted)}.field input{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit}.notice{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:16px 0}.auth-card button{width:100%;border:0;cursor:pointer;font:inherit}.auth-card h1{font-size:1.8rem}
+.auth-card{width:min(480px,calc(100% - 32px));margin:clamp(28px,8vh,80px) auto;padding:clamp(24px,5vw,40px);box-sizing:border-box}.field{display:grid;gap:8px;margin:18px 0}.field label{color:var(--muted)}.field input{display:block;width:100%;min-width:0;box-sizing:border-box;min-height:var(--ui-control-height);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md);background:var(--control-bg);color:var(--text);font:inherit}.field input:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.field input::placeholder{color:var(--muted)}.notice{padding:13px;border:1px solid #ff718044;background:#ff718018;border-radius:12px;margin:16px 0}.auth-card button{width:100%;border:0;cursor:pointer;font:inherit}.auth-card h1{font-size:1.8rem}
 </style>
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
