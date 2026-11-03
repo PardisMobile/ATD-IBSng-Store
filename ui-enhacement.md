@@ -711,3 +711,10 @@ The following UI-only changes have been committed to `main`:
 - Fixed a literal escaped newline accidentally left between two page-scoped CSS rules in `my-orders.php`, restoring clean separation of the LTR field rule and six-digit code styling.
 - Standardized the visible labels in the order recovery forms and isolated tracking references as LTR, wrapping-safe technical values with tabular numerals.
 - Presentation-only: recovery request/verification, CSRF, query parameters, and order lookup logic were not changed. Source review only; browser/device visual QA remains pending.
+
+
+### Installer technical-field direction alignment (2026-11-03)
+
+- Set database host/name/user/password and administrator username/email/password fields to explicit LTR isolated presentation, with left alignment and tabular numerals for technical values. This prevents RTL locale direction from visually reordering hostnames, identifiers, email addresses, and credentials.
+- Added a page-scoped CSS rule for those explicit LTR fields; ordinary site-title/display-name fields continue to follow the selected locale naturally.
+- Installer field names, locale selection, CSRF, connection test/install actions, validation, and configuration/schema writing are unchanged. Source inspection only; browser RTL/LTR visual QA remains pending.
