@@ -676,3 +676,10 @@ The following UI-only changes have been committed to `main`:
 - Refined product cards with theme-token accent edging, restrained hover elevation, clearer price hierarchy, and more consistent metadata alignment/wrapping.
 - Tuned the catalog grid and card spacing for responsive widths, made the primary purchase action fill the card consistently, and improved empty/error catalog surfaces.
 - CSS-only storefront presentation. Product queries, display-price calculations, crypto visibility conditions, product links, and checkout behavior remain unchanged. Source-level review only; browser/device QA remains pending.
+
+
+### UI note — customer account lookup and result cards (2026-11-03)
+
+- Refined the customer account lookup form with theme-aware control surfaces, consistent control height/radius, visible keyboard focus, and improved CAPTCHA sizing and alignment.
+- Improved result-card spacing, responsive grid behavior, technical-value direction isolation, password reveal control wrapping, and error-message contrast using shared theme tokens.
+- Presentation-only change: account lookup/authentication, CAPTCHA/session behavior, IBSng queries, field names, password reveal interaction, and returned data remain unchanged. Source-level review only; browser/device QA remains pending.
