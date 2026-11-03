@@ -89,7 +89,7 @@ $emailRows = $pdo->query("SELECT d.order_id,d.status,d.attempts,d.last_error,d.u
 <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
 </head>
 <body><main class="shell provisioning-page">
-<header class="top"><a class="brand" href="<?= e(app_url('admin/')) ?>" data-ui-text="provisioning_admin">مدیریت فروشگاه</a><a class="button" href="<?= e(app_url('admin/')) ?>" data-ui-text="provisioning_dashboard">داشبورد</a></header>
+<?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel"><div class="eyebrow" data-ui-text="provisioning_ibsng_ops">عملیات IBSng</div><h1 data-ui-text="provisioning_title">صف Provisioning</h1>
 <p class="hint" data-ui-text="provisioning_intro">بعد از تأیید پرداخت، اجرای اولیهٔ صف به‌صورت best-effort انجام می‌شود. این صفحه برای اجرای مجدد موردهای queued باقی‌مانده و تعیین تکلیف موارد مبهم است. خطا یا پاسخ مبهم در «نیازمند بررسی» می‌ماند؛ running مانده هم retry خودکار نمی‌شود. برای needs_review یا running، مدیر پس از بررسی مستقیم IBSng می‌تواند فقط نتیجه را دستی ثبت کند؛ این کار هیچ درخواست remote جدیدی ارسال نمی‌کند.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
