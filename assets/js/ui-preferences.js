@@ -39,6 +39,41 @@
       checkout_password_storage: 'Password information is stored encrypted in the database.',
       checkout_submit: 'Place order'
     },
+    orders: {
+      orders_back_store: 'Back to store',
+      orders_tracking_recovery: 'Track and recover purchases',
+      orders_title: 'My orders',
+      orders_intro: 'Enter the email verification code to view orders associated with your purchase email. You can also open any order using its tracking ID.',
+      orders_verification_code: '6-digit code sent to your email',
+      orders_verify_submit: 'Verify and view orders',
+      orders_verified_email: 'Verified email:',
+      orders_logout: 'Sign out of order history',
+      orders_none_for_email: 'No orders were found for this email.',
+      orders_tracking_id: 'Tracking ID:',
+      orders_purchase_date: 'Purchase date:',
+      orders_paid_amount: 'Amount paid',
+      orders_status: 'Order status',
+      orders_details: 'Order details',
+      orders_lookup_heading: 'Track using an order ID',
+      orders_lookup_help: 'Enter the tracking ID shown on your purchase receipt.',
+      orders_order_id: 'Order ID',
+      orders_track_submit: 'Track order',
+      orders_email_recovery_heading: 'Or recover all purchases by email',
+      orders_email_at_purchase: 'Email used at checkout',
+      orders_send_code: 'Send verification code'
+    },
+    status: {
+      pending_payment: 'Awaiting payment',
+      paid: 'Payment confirmed',
+      provisioning: 'Activating',
+      active: 'Active',
+      partial: 'Partially activated',
+      failed: 'Failed',
+      expired: 'Expired',
+      succeeded: 'Succeeded',
+      pending: 'Pending',
+      cancelled: 'Cancelled'
+    },
     catalog: {
       customer_account: 'Customer account',
       order_tracking: 'Track & recover orders',
@@ -73,6 +108,12 @@
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
       if (element.dataset.uiOriginalAria === undefined) element.dataset.uiOriginalAria = element.getAttribute('aria-label') || '';
       element.setAttribute('aria-label', language === 'en' && translated ? translated : element.dataset.uiOriginalAria);
+    });
+    document.querySelectorAll('[data-ui-status]').forEach((element) => {
+      const key = element.dataset.uiStatus;
+      const translated = pageCopy.status[key];
+      if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
+      element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
     });
     document.querySelectorAll('[data-ui-duration]').forEach((element) => {
       if (language !== 'en') {
