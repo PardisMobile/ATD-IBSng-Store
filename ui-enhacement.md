@@ -565,3 +565,7 @@ The following UI-only changes have been committed to `main`:
 
 ### UI implementation note — admin payment report identifiers and values
 - `admin/orders.php`: display transaction/order references, phone numbers, amount+currency, and timestamps with isolated LTR direction and tabular numerals to prevent bidi reordering in the RTL review table. Existing table data, review confirmation, POST fields, and transaction resolution behavior remain unchanged.
+
+
+### UI implementation note — IBSng group mapping form theme and direction
+- `admin/ibsng-groups.php`: replaced the hard-coded dark input/select surface with shared theme-aware control colors and a visible focus ring. Exact IBSng group-name fields now use LTR isolated text in create/edit forms, while plan names remain naturally RTL. Group mapping operations and submitted field names are unchanged.
