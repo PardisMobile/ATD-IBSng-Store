@@ -932,3 +932,9 @@ The following UI-only changes have been committed to `main`:
 - Added English copy for the provisioning queue explanation, attempt table, empty state, manual IBSng resolution controls, email-delivery status table, retry action, and browser title. Known provisioning states and result options use explicit status keys.
 - The warning that manual resolution sends no remote request and the email retry warning are retained in the translated guidance.
 - Queue execution, needs_review/running resolution, remote-user-ID recording, email retry, CSRF, and provisioning state transitions are unchanged. Source review only; no real IBSng action or email retry was executed, and browser QA remains pending.
+
+
+### UI implementation note — renewal schema upgrade page English localization (2026-11-03)
+
+- Added English copy for the renewal schema upgrade explanation, ready/not-ready states, product-duration follow-up link, database upgrade action, confirmation prompt, and browser title.
+- The migration itself, idempotency, schema checks, renewal ledger, default gift settings, and product-duration values are unchanged. Source review only; no migration was run and browser QA remains pending.
