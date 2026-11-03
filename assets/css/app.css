@@ -810,6 +810,50 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 }
 
 
+/* Shared commercial UI aliases: normalize legacy page class names without
+   changing page behavior or duplicating per-page component declarations. */
+:where(.button.primary,.button-primary,button.button-primary,input.button-primary[type="submit"]) {
+  background:var(--accent);
+  color:var(--accent-foreground,#fff);
+  border-color:transparent;
+  box-shadow:0 7px 20px var(--ui-focus-ring);
+}
+:where(.button.primary,.button-primary,button.button-primary,input.button-primary[type="submit"]):hover {
+  filter:brightness(1.06);
+}
+:where(.field input,.field select,.field textarea,.form-field) {
+  color:var(--text);
+  background:var(--control-bg,var(--surface-2));
+  border:1px solid var(--border);
+  border-radius:var(--ui-radius-md,14px);
+  font:inherit;
+}
+:where(.field input,.field select,.field textarea,.form-field):focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--ui-focus-ring);
+}
+:where(.notice,.notice.error,.notice.success,.notice.err,.notice.ok) {
+  border:1px solid var(--border);
+  border-radius:var(--ui-radius-md,14px);
+  background:var(--surface-2);
+  color:var(--text);
+  line-height:1.8;
+  overflow-wrap:anywhere;
+}
+:where(.notice.error,.notice.err) {
+  border-color:color-mix(in srgb,var(--danger,#dc2626) 35%,transparent);
+  background:color-mix(in srgb,var(--danger,#dc2626) 7%,transparent);
+}
+:where(.notice.success,.notice.ok) {
+  border-color:color-mix(in srgb,var(--success,#16a34a) 35%,transparent);
+  background:color-mix(in srgb,var(--success,#16a34a) 7%,transparent);
+}
+:where(.checkout-card,.orders-card,.panel-card,.report,.stat) {
+  min-width:0;
+}
+
 /* Shared keyboard focus treatment: visual-only and safe for all existing forms. */
 :where(input,select,textarea,button,[role="button"],a):focus-visible {
   outline: 2px solid var(--accent, var(--blue));
