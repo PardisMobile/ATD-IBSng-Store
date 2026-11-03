@@ -428,6 +428,12 @@
         ? (shown ? pageCopy.customer_account_page.customer_hide_password : pageCopy.customer_account_page.customer_show_password)
         : (shown ? 'مخفی کردن' : 'نمایش رمز');
     });
+    document.querySelectorAll('[data-ui-event]').forEach((element) => {
+      const key = 'email_event_' + element.dataset.uiEvent;
+      const translated = pageCopy.admin_email_templates[key];
+      if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
+      element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
+    });
     document.querySelectorAll('[data-ui-status]').forEach((element) => {
       const key = element.dataset.uiStatus;
       const translated = pageCopy.status[key];
