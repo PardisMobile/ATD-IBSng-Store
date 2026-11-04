@@ -74,7 +74,7 @@ final class CustomerAccountDelivery
             $siteStmt->execute();
             $siteName = (string)($siteStmt->fetchColumn() ?: 'ATD IBSng Store');
             $orderUrl = app_url('order-status.php?order=' . rawurlencode((string)$order['public_id']));
-            $guideUrl = app_url('guide.php');
+            $guideUrl = app_url('userguide.php');
             $destinations = '';
             $destinationsText = '';
             foreach ($successful as $destination) {
