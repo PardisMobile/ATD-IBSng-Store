@@ -209,6 +209,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <body>
 <?php storefront_header($title, 'account'); ?>
 <main class="account-shell">
+<?php if ($success !== ''): ?><div class="account-success" role="status" aria-live="polite"><?= e($success) ?></div><?php endif; ?>
 <?php if (!$isLoggedIn): ?>
 <section class="panel account-card">
 <div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
@@ -224,7 +225,6 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </section>
 <?php else: ?>
 <?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<?php if ($success !== ''): ?><div class="account-success" role="status" aria-live="polite"><?= e($success) ?></div><?php endif; ?>
 <?php endif; ?>
 <?php if (is_array($account)): ?>
 <?php foreach ($account as $item): ?>
