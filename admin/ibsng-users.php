@@ -269,122 +269,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 <?php if (is_array($userResult)): ?>
 <?php
+
 $accountHtml = (string)($userResult['html'] ?? '');
 $cleanAccountText = static function (string $value): string {
     return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
 };
-/*
- * These two DOM readers intentionally mirror the tested standalone
- * atd-ibsng-fields-test.php diagnostic. Keep its A1.24 traversal unchanged.
- */
-$readAccountAttribute = static function (array $attributeNames) use ($accountHtml, $cleanAccountText): ?string {
-    if ($accountHtml === '' || !class_exists('DOMDocument')) return null;
-    $previous = libxml_use_internal_errors(true);
-    try {
-        $dom = new DOMDocument();
-        $dom->loadHTML('<?xml encoding="UTF-8">' . $accountHtml);
-        $xpath = new DOMXPath($dom);
-        $checkboxes = $xpath->query('//input[starts-with(@name, "attr_edit_checkbox_")]');
-        if (!$checkboxes) return null;
-        foreach ($checkboxes as $checkbox) {
-            if (!$checkbox instanceof DOMElement) continue;
-            if (!in_array(trim($checkbox->getAttribute('value')), $attributeNames, true)) continue;
-            $rows = $xpath->query('ancestor::tr', $checkbox);
-            if (!$rows || !$rows->length) continue;
-            $valueCell = null; $bestScore = -1;
-            foreach ($rows as $row) {
-                $cells = $xpath->query('./td', $row);
-                if (!$cells || $cells->length < 2) continue;
-                $checkboxCellIndex = -1; $labelCell = null;
-                foreach ($cells as $index => $cell) {
-                    $matches = $xpath->query('.//input[@name="' . $checkbox->getAttribute('name') . '"]', $cell);
-                    if ($matches && $matches->length) {
-                        $checkboxCellIndex = (int)$index; $labelCell = $cell; break;
+/* Pure-PHP IBSng A1.24 HTML parser, transferred from the supplied working test file. */
+$ibsngHtmlAttrs = static function (string $tag): array {
+    $attrs = [];
+    if (preg_match_all('/([a-zA-Z_:][a-zA-Z0-9_:.-]*)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))/s', $tag, $m, PREG_SET_ORDER)) {
+        foreach ($m as $a) {
+            $attrs[strtolower($a[1])] = html_entity_decode($a[2] !== '' ? $a[2] : ($a[3] !== '' ? $a[3] : ($a[4] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+    }
+    return $attrs;
+};
+$ibsngTagTokens = static function (string $html): array {
+    preg_match_all('/<!--.*?-->|<![^>]*>|<\?[^>]*\?>|<\/?[a-zA-Z][^>]*>/s', $html, $m, PREG_OFFSET_CAPTURE);
+    return $m[0] ?? [];
+};
+$ibsngElementBlocks = static function (string $html, string $wantedTag) use (&$ibsngElementBlocks, $ibsngTagTokens, $ibsngHtmlAttrs): array {
+    $tokens = $ibsngTagTokens($html); $stack = []; $blocks = [];
+    foreach ($tokens as [$token, $offset]) {
+        if (!preg_match('/^<\s*(\/?)\s*([a-zA-Z0-9]+)/', $token, $m)) continue;
+        $closing = $m[1] === '/'; $tag = strtolower($m[2]);
+        if ($closing) {
+            for ($i = count($stack) - 1; $i >= 0; $i--) {
+                if ($stack[$i]['tag'] === $tag) {
+                    $opened = $stack[$i];
+                    if ($tag === strtolower($wantedTag)) {
+                        $blocks[] = ['attrs'=>$opened['attrs'],'inner'=>substr($html,$opened['inner_start'],$offset-$opened['inner_start']),
+                            'outer'=>substr($html,$opened['start'],($offset+strlen($token))-$opened['start'])];
+                    }
+                    $stack = array_slice($stack, 0, $i); break;
+                }
+            }
+            continue;
+        }
+        $attrs = $ibsngHtmlAttrs($token);
+        $void = preg_match('/\/\s*>$/', $token) || in_array($tag, ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'], true);
+        if (!$void) $stack[] = ['tag'=>$tag,'attrs'=>$attrs,'start'=>$offset,'inner_start'=>$offset+strlen($token)];
+    }
+    return $blocks;
+};
+$ibsngDirectCells = static function (string $rowHtml) use ($ibsngTagTokens, $ibsngHtmlAttrs): array {
+    $tokens = $ibsngTagTokens($rowHtml); $stack = []; $cells = [];
+    foreach ($tokens as [$token, $offset]) {
+        if (!preg_match('/^<\s*(\/?)\s*([a-zA-Z0-9]+)/', $token, $m)) continue;
+        $closing = $m[1] === '/'; $tag = strtolower($m[2]);
+        if ($closing) {
+            for ($i=count($stack)-1; $i>=0; $i--) {
+                if ($stack[$i]['tag'] === $tag) {
+                    $opened=$stack[$i];
+                    if ($tag === 'td' && $opened['direct']) {
+                        $cells[]=['attrs'=>$opened['attrs'],'html'=>substr($rowHtml,$opened['inner_start'],$offset-$opened['inner_start'])];
+                    }
+                    $stack=array_slice($stack,0,$i); break;
+                }
+            }
+            continue;
+        }
+        $attrs=$ibsngHtmlAttrs($token); $nearestTr=null;
+        foreach (array_reverse($stack) as $ancestor) if ($ancestor['tag']==='tr') { $nearestTr=$ancestor; break; }
+        $direct=$tag==='td' && $nearestTr!==null && (($nearestTr['depth']??0)+1)===count($stack);
+        $void=preg_match('/\/\s*>$/',$token)||in_array($tag,['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'],true);
+        if (!$void) $stack[]=['tag'=>$tag,'attrs'=>$attrs,'inner_start'=>$offset+strlen($token),'direct'=>$direct,'depth'=>count($stack)];
+    }
+    return $cells;
+};
+$ibsngExtractControl = static function (string $cellHtml) use ($cleanAccountText, $ibsngHtmlAttrs): ?string {
+    if (preg_match('/<textarea\b[^>]*>(.*?)<\/textarea\s*>/is',$cellHtml,$m)) return $cleanAccountText($m[1]);
+    if (preg_match('/<select\b[^>]*>(.*?)<\/select\s*>/is',$cellHtml,$m)) {
+        if (preg_match('/<option\b[^>]*\bselected\b[^>]*>(.*?)<\/option\s*>/is',$m[1],$o)) return $cleanAccountText($o[1]);
+        if (preg_match('/<option\b[^>]*>(.*?)<\/option\s*>/is',$m[1],$o)) return $cleanAccountText($o[1]);
+        return $cleanAccountText($m[1]);
+    }
+    if (preg_match('/<input\b(?![^>]*\btype\s*=\s*["\']?(?:checkbox|hidden))[^>]*>/is',$cellHtml,$m)) {
+        $a=$ibsngHtmlAttrs($m[0]); return isset($a['value']) ? trim($a['value']) : '';
+    }
+    return $cleanAccountText($cellHtml);
+};
+$ibsngDisplayedValue = static function (string $html, array $labels) use ($ibsngElementBlocks, $ibsngDirectCells, $cleanAccountText, $ibsngExtractControl): ?string {
+    foreach ($ibsngElementBlocks($html,'tr') as $row) {
+        $cells=$ibsngDirectCells($row['outer']);
+        for ($i=0;$i<count($cells);$i++) {
+            $label=trim($cleanAccountText($cells[$i]['html'])," :");
+            foreach ($labels as $wanted) {
+                if (strcasecmp($label,$wanted)===0) {
+                    for ($j=$i+1;$j<count($cells);$j++) {
+                        $class=$cells[$j]['attrs']['class']??'';
+                        if (strpos($class,'Form_Content_Row_Right')!==false || strpos($class,'Form_Content_Row_Right_Textarea')!==false) {
+                            return $ibsngExtractControl($cells[$j]['html']);
+                        }
                     }
                 }
-                if ($checkboxCellIndex < 0 || !$labelCell) continue;
-                for ($i = $checkboxCellIndex + 1; $i < $cells->length; $i++) {
-                    $cell = $cells->item($i);
-                    $class = $cell instanceof DOMElement ? $cell->getAttribute('class') : '';
-                    if (strpos($class, 'Form_Content_Row_Right') === false
-                        && strpos($class, 'Form_Content_Row_Right_Textarea') === false) continue;
-                    $score = strpos($labelCell->getAttribute('class'), 'Form_Content_Row_Left') !== false ? 120 : 100;
-                    if ($score > $bestScore) { $bestScore = $score; $valueCell = $cell; }
-                    break;
-                }
-            }
-            if (!$valueCell) return null;
-            $textarea = $xpath->query('.//textarea', $valueCell);
-            if ($textarea && $textarea->length) return $cleanAccountText($textarea->item(0)->textContent);
-            $select = $xpath->query('.//select', $valueCell);
-            if ($select && $select->length) {
-                $selected = $xpath->query('.//option[@selected]', $select->item(0));
-                return $cleanAccountText(($selected && $selected->length ? $selected->item(0) : $select->item(0))->textContent);
-            }
-            $input = $xpath->query('.//input[not(@type="checkbox") and not(@type="hidden")]', $valueCell);
-            if ($input && $input->length && $input->item(0) instanceof DOMElement) {
-                return $cleanAccountText($input->item(0)->getAttribute('value'));
-            }
-            return $cleanAccountText($valueCell->textContent);
-        }
-        return null;
-    } finally {
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-    }
-};
-$readDisplayedAccountValue = static function (array $wantedLabels) use ($accountHtml, $cleanAccountText): ?string {
-    if ($accountHtml === '' || !class_exists('DOMDocument')) return null;
-    $previous = libxml_use_internal_errors(true);
-    try {
-        $dom = new DOMDocument();
-        $dom->loadHTML('<?xml encoding="UTF-8">' . $accountHtml);
-        $xpath = new DOMXPath($dom);
-        $cells = $xpath->query('//td');
-        if (!$cells) return null;
-        foreach ($cells as $cell) {
-            if (!$cell instanceof DOMElement) continue;
-            $label = trim($cleanAccountText($cell->textContent), " :");
-            $matched = false;
-            foreach ($wantedLabels as $wanted) {
-                if (strcasecmp($label, $wanted) === 0) { $matched = true; break; }
-            }
-            if (!$matched) continue;
-            $row = $cell->parentNode;
-            if (!$row instanceof DOMElement || strtolower($row->tagName) !== 'tr') continue;
-            $seen = false;
-            foreach ($row->childNodes as $sibling) {
-                if (!$sibling instanceof DOMElement || strtolower($sibling->tagName) !== 'td') continue;
-                if ($sibling->isSameNode($cell)) { $seen = true; continue; }
-                if (!$seen) continue;
-                $class = $sibling->getAttribute('class');
-                if (strpos($class, 'Form_Content_Row_Right') === false
-                    && strpos($class, 'Form_Content_Row_Right_Textarea') === false) continue;
-                $textarea = $xpath->query('.//textarea', $sibling);
-                if ($textarea && $textarea->length) return $cleanAccountText($textarea->item(0)->textContent);
-                $select = $xpath->query('.//select', $sibling);
-                if ($select && $select->length) {
-                    $selected = $xpath->query('.//option[@selected]', $select->item(0));
-                    return $cleanAccountText(($selected && $selected->length ? $selected->item(0) : $select->item(0))->textContent);
-                }
-                $input = $xpath->query('.//input[not(@type="checkbox") and not(@type="hidden")]', $sibling);
-                if ($input && $input->length && $input->item(0) instanceof DOMElement) {
-                    return $cleanAccountText($input->item(0)->getAttribute('value'));
-                }
-                return $cleanAccountText($sibling->textContent);
             }
         }
-        return null;
-    } finally {
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
     }
+    return null;
 };
-$accountDisplay = static function (?string $value): string {
-    $value = trim((string)$value);
-    return $value === '' || preg_match('/^-+$/u', $value) ? 'نامشخص' : $value;
+$ibsngAttributeValue = static function (string $html, array $names) use ($ibsngElementBlocks, $ibsngDirectCells, $ibsngHtmlAttrs, $ibsngExtractControl): ?string {
+    foreach ($ibsngElementBlocks($html,'tr') as $row) {
+        $cells=$ibsngDirectCells($row['outer']); $checkboxCell=-1;
+        foreach ($cells as $i=>$cell) {
+            if (!preg_match_all('/<input\b[^>]*>/is',$cell['html'],$inputs)) continue;
+            foreach ($inputs[0] as $inputTag) {
+                $a=$ibsngHtmlAttrs($inputTag);
+                if (strpos(strtolower($a['name']??''),'attr_edit_checkbox_')===0
+                    && in_array(trim($a['value']??''),$names,true)) { $checkboxCell=$i; break 2; }
+            }
+        }
+        if ($checkboxCell<0) continue;
+        for ($j=$checkboxCell+1;$j<count($cells);$j++) {
+            $class=$cells[$j]['attrs']['class']??'';
+            if (strpos($class,'Form_Content_Row_Right')!==false || strpos($class,'Form_Content_Row_Right_Textarea')!==false) {
+                return $ibsngExtractControl($cells[$j]['html']);
+            }
+        }
+    }
+    return null;
 };
-$multiLoginRaw = $readAccountAttribute(['multi_login', 'multi_login_instances', 'multi_login_instance']);
+$accountDisplay = static function (?string $value) use ($cleanAccountText): string {
+    $v = trim((string)$value);
+    return $v === '' || preg_match('/^-+$/u', $v) ? 'نامشخص' : $cleanAccountText($v);
+};
+$multiLoginRaw = $ibsngAttributeValue($accountHtml, ['multi_login', 'multi_login_instances', 'multi_login_instance']);
 $multiLoginDisplay = trim((string)$multiLoginRaw);
 if ($multiLoginDisplay === '' || preg_match('/^-+$/u', $multiLoginDisplay)) {
     $multiLoginDisplay = 'تک‌کاربره';
@@ -393,17 +402,18 @@ $accountFields = [
     'Username' => (string)($userResult['username'] ?? 'نامشخص'),
     'IBSng User ID' => (string)($userResult['user_id'] ?? 'نامشخص'),
     'Group' => (string)($userResult['group'] ?? 'نامشخص'),
-    'Status' => $accountDisplay($readDisplayedAccountValue(['Status', 'User Status'])),
-    'First Login' => $accountDisplay($readAccountAttribute(['first_login'])),
-    'Last Login' => $accountDisplay($readDisplayedAccountValue(['Last Login', 'Last Login Date'])),
-    'Relative Expiration' => $accountDisplay($readAccountAttribute(['rel_exp'])),
-    'Nearest Expiration Date' => $accountDisplay($readDisplayedAccountValue(['Nearest Expiration Date'])),
-    'Absolute Expiration Date' => $accountDisplay($readAccountAttribute(['abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $readDisplayedAccountValue(['Absolute Expiration Date'])),
-    'User Is Locked' => $accountDisplay($readAccountAttribute(['user_is_locked', 'is_locked', 'locked']) ?? $readDisplayedAccountValue(['User Is Locked', 'User Locked'])),
-    'Creation Date' => $accountDisplay($readDisplayedAccountValue(['Creation Date', 'Create Date'])),
+    'Status' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Status', 'User Status'])),
+    'First Login' => $accountDisplay($ibsngAttributeValue($accountHtml, ['first_login'])),
+    'Last Login' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Last Login', 'Last Login Date'])),
+    'Relative Expiration' => $accountDisplay($ibsngAttributeValue($accountHtml, ['rel_exp'])),
+    'Nearest Expiration Date' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Nearest Expiration Date'])),
+    'Absolute Expiration Date' => $accountDisplay($ibsngAttributeValue($accountHtml, ['abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $ibsngDisplayedValue($accountHtml, ['Absolute Expiration Date'])),
+    'User Is Locked' => $accountDisplay($ibsngAttributeValue($accountHtml, ['user_is_locked', 'is_locked', 'locked']) ?? $ibsngDisplayedValue($accountHtml, ['User Is Locked', 'User Locked'])),
+    'Creation Date' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Creation Date', 'Create Date'])),
     'Multi Login raw value' => $multiLoginDisplay,
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
 ];
+
 ?>
 <div class="result panel">
 <strong data-fa="اطلاعات حساب IBSng" data-en="IBSng account details">اطلاعات حساب IBSng</strong>
