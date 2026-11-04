@@ -152,13 +152,12 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <body>
 <?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'orders'); ?>
 <main class="orders-shell">
+<section class="orders-card panel order-tracking-card">
 <header class="orders-page-heading">
 <div class="eyebrow" data-ui-text="orders_tracking_recovery">پیگیری و بازیابی خریدها</div>
 <h1 data-ui-text="orders_title">سفارش‌های من</h1>
 <p class="muted" data-ui-text="orders_intro">برای مشاهده سفارش‌های مرتبط با ایمیل خرید، کد تأیید ایمیل را وارد کنید. همچنین می‌توانید هر سفارش را با شناسه پیگیری در صفحه پیگیری سفارش مشاهده کنید.</p>
 </header>
-
-<section class="orders-card panel order-tracking-card">
 <h2 data-ui-text="orders_lookup_heading">پیگیری با شناسه سفارش</h2>
 <p class="muted" data-ui-text="orders_lookup_help">شناسه پیگیری درج‌شده در رسید خرید را وارد کنید.</p>
 <form method="get" action="<?= e(app_url('order-status.php')) ?>">
@@ -209,9 +208,9 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 </main>
 <?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 <style>
-.orders-page-heading{margin:28px 0 20px}
+.orders-page-heading{margin:0 0 22px}
 .orders-page-heading h1{line-height:1.45;margin:8px 0 12px}
-.orders-page-heading p{max-width:78ch}
+.orders-page-heading p{max-width:78ch;margin-bottom:0}
 .orders-card{box-sizing:border-box;width:100%;padding:clamp(20px,4vw,34px);margin:20px 0}
 .orders-card h2{font-size:clamp(1.12rem,2.5vw,1.4rem);line-height:1.55;margin:0 0 10px}
 .orders-card form>label{display:block;margin-top:8px;color:var(--muted);font-size:.9rem;font-weight:600;line-height:1.6}
