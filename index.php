@@ -57,16 +57,6 @@ try {
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
   <style>
-/* Brand shimmer is deliberately clipped to the title text; the mark stays still. */
-.storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
-.storefront-brand-mark{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;position:relative;overflow:hidden;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-strong,var(--accent)),var(--accent-soft,var(--accent)));color:#fff}
-.storefront-brand-mark svg{display:block;width:100%;height:100%;position:relative;z-index:0}
-.storefront-brand-mark::after{content:"";position:absolute;inset:-70%;z-index:1;pointer-events:none;background:linear-gradient(110deg,transparent 40%,#ffffff55 50%,transparent 60%);transform:translateX(-80%) rotate(10deg);animation:storefrontLogoShine 7s ease-in-out infinite}
-@keyframes storefrontLogoShine{0%,65%,100%{transform:translateX(-80%) rotate(10deg)}80%{transform:translateX(80%) rotate(10deg)}}
-.storefront-brand-title{position:relative;display:inline-block;isolation:isolate;overflow:hidden;max-width:100%;border-radius:2px}
-.storefront-brand-title::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(108deg,transparent 0%,transparent 38%,rgba(255,255,255,.08) 44%,rgba(255,255,255,.72) 50%,rgba(255,255,255,.12) 56%,transparent 63%,transparent 100%);transform:translateX(-125%);animation:storefrontBrandTextShine 5.8s ease-in-out infinite}
-@keyframes storefrontBrandTextShine{0%,66%{transform:translateX(-125%)}100%{transform:translateX(125%)}}
-@media(prefers-reduced-motion:reduce){.storefront-brand-title::after,.storefront-brand-mark::after{animation:none;display:none}}
 /* ATD Files Portal-inspired hero motion; storefront palette remains inherited. */
 .storefront-hero{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;align-items:center}
 .storefront-hero-content{position:relative;z-index:2;max-width:min(66%,680px)}
@@ -120,8 +110,8 @@ try {
 </style>
 </head>
 <body>
+  <?php storefront_header($pageTitle, 'home'); ?>
   <main class="store-shell">
-    <?php storefront_header($pageTitle, 'home'); ?>
     <section class="hero panel storefront-hero">
       <div class="storefront-hero-art" aria-hidden="true">
         <span class="storefront-orbit storefront-orbit-one"></span>
