@@ -263,8 +263,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
-<main class="checkout-shell">
 <?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'home'); ?>
+<main class="checkout-shell">
 <section class="checkout-card panel">
 <div class="eyebrow" data-ui-text="checkout_heading">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
