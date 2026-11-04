@@ -185,7 +185,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request">
 <label for="email" data-ui-text="orders_change_email">ارسال کد به ایمیل دیگر یا ارسال مجدد</label>
 <input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email" value="<?= e((string)($_SESSION['my_orders_email_pending'] ?? '')) ?>">
-<button class="button" type="submit" data-ui-text="orders_resend_code">ارسال مجدد / تغییر ایمیل</button>
+<button class="button primary" type="submit" data-ui-text="orders_resend_code">ارسال مجدد / تغییر ایمیل</button>
 </form>
 <?php elseif ($stage === 'orders'): ?>
 <p class="muted"><span data-ui-text="orders_verified_email">ایمیل تأییدشده:</span> <strong dir="ltr"><?= e($email) ?></strong></p>
