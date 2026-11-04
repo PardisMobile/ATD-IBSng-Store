@@ -61,6 +61,7 @@ function storefront_header(string $siteTitle, string $active = 'home'): void
         ['home', 'home', 'خانه', 'Home', ''],
         ['account', 'account', 'حساب کاربری', 'Account', 'customer-account.php'],
         ['orders', 'orders', 'پیگیری و بازیابی', 'Track & recover', 'my-orders.php'],
+        ['guide', 'guide', 'راهنما', 'Help', 'guide.php'],
     ];
     ?>
     <header class="store-header">
