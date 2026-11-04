@@ -197,6 +197,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php else: ?>
 <div class="credential-row"><span data-ui-text="status_password">رمز عبور</span><span data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</span></div>
 <?php endif; ?>
+
 </div>
 <?php endif; ?>
 </div>
@@ -208,7 +209,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php endif; ?>
 <p class="muted" data-ui-text="status_keep_tracking_private">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
 <?php endif; ?>
-<p><a class="button" href="<?= e(app_url('guide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
+<p><a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
 </section>
 <?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 </main>
