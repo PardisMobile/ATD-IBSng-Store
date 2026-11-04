@@ -175,17 +175,17 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 
 <?php if ($stage === 'verify'): ?>
 <p class="muted"><span data-ui-text="orders_verification_sent_to">کد تأیید به این ایمیل ارسال شده است:</span> <strong dir="ltr"><?= e((string)($_SESSION['my_orders_email_pending'] ?? '')) ?></strong></p>
-<form method="post" class="orders-email-code-form">
-<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="verify">
-<label for="code" data-ui-text="orders_verification_code">کد ۶ رقمی ارسال‌شده</label>
-<input class="form-field" id="code" name="code" dir="ltr" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code">
-<button class="button primary" type="submit" data-ui-text="orders_verify_submit">تأیید و مشاهده سفارش‌ها</button>
-</form>
 <form method="post" class="orders-email-change-form">
 <input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request">
 <label for="email" data-ui-text="orders_change_email">ارسال کد به ایمیل دیگر یا ارسال مجدد</label>
 <input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email" value="<?= e((string)($_SESSION['my_orders_email_pending'] ?? '')) ?>">
 <button class="button primary" type="submit" data-ui-text="orders_resend_code">ارسال مجدد / تغییر ایمیل</button>
+</form>
+<form method="post" class="orders-email-code-form">
+<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="verify">
+<label for="code" data-ui-text="orders_verification_code">کد ۶ رقمی ارسال‌شده</label>
+<input class="form-field" id="code" name="code" dir="ltr" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code">
+<button class="button primary" type="submit" data-ui-text="orders_verify_submit">تأیید و مشاهده سفارش‌ها</button>
 </form>
 <?php elseif ($stage === 'orders'): ?>
 <p class="muted"><span data-ui-text="orders_verified_email">ایمیل تأییدشده:</span> <strong dir="ltr"><?= e($email) ?></strong></p>
