@@ -149,8 +149,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
-<main class="status-shell">
 <?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'orders'); ?>
+<main class="status-shell">
 <section class="status-card panel">
 <div class="eyebrow" data-ui-text="status_page_heading">پیگیری سفارش</div>
 <?php if ($notFound || !$order): ?>

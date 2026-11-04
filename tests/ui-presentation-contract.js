@@ -47,6 +47,7 @@ for (const page of publicPages) {
   assert.match(source, /ui-components\.js/u, `${page} must load the shared component behavior`);
   assert.match(source, /assets\/css\/unified\.css/u, `${page} must load the shared component styles`);
   assert.doesNotMatch(source, /href="<\?= e\(app_url\(\)\) \?>"/u, `${page} must not emit an empty root link`);
+  assert.ok(source.indexOf('storefront_header(') < source.indexOf('<main'), `${page} must render the shared storefront header above its narrower content shell`);
 }
 
 const navigation = read('admin/_navigation.php');
@@ -63,6 +64,8 @@ for (const selector of [
   '.atd-preferences',
   '.atd-confirm-dialog',
   '.table-wrap',
+  'input:-webkit-autofill',
+  ':autofill',
   '@media(max-width:680px)',
   '@media(prefers-reduced-motion:reduce)',
 ]) {

@@ -119,8 +119,8 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </style>
 </head>
 <body>
-<main class="account-shell">
 <?php storefront_header($title, 'account'); ?>
+<main class="account-shell">
 <section class="panel account-card">
 <div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
 <p class="muted-note" data-ui-text="customer_intro">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>

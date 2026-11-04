@@ -30,8 +30,8 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
-<main class="guide">
 <?php storefront_header($siteTitle, 'guide'); ?>
+<main class="guide">
 <h1 data-ui-text="guide_title">راهنمای استفاده از اکانت</h1>
 <p class="muted" data-ui-text="guide_intro">اطلاعات ورود اکانت خریداری‌شده در ایمیل تحویل اکانت و صفحه پیگیری سفارش درج می‌شود. مراحل اتصال به نوع سرویس و برنامه‌ای که ارائه‌دهنده شما پشتیبانی می‌کند بستگی دارد.</p>
 <section><h2 data-ui-text="guide_step_account_title">۱. اطلاعات اکانت را پیدا کنید</h2><p data-ui-text="guide_step_account_body">ایمیل تحویل اکانت را باز کنید یا از لینک پیگیری سفارش استفاده کنید. نام کاربری و رمز عبور را دقیقاً مطابق اطلاعات ارائه‌شده وارد کنید. به بزرگی و کوچکی حروف و فاصله‌های اضافی توجه داشته باشید.</p></section>
