@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt = $pdo->prepare('INSERT INTO ibsng_servers (name, service_name, host, port, scheme, isp_name, username, password_ciphertext, is_active, is_default, last_test_at, last_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NOW(), NULL)');
                 $stmt->execute([
-                    $fields['name'], ($fields['serviceName'] !== '' ? $fields['serviceName'] : null), $fields['host'], $fields['port'], $fields['port'] === 443 ? 'https' : 'http',
+                    $fields['name'], ($fields['serviceName'] !== '' ? $fields['serviceName'] : null), $fields['host'], $fields['port'], 'http',
                     $fields['isp'], $fields['username'], app_encrypt_secret($fields['password'])
                 ]);
                 $message = 'اتصال IBSng با موفقیت تأیید و سرور ذخیره شد.';
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt = $pdo->prepare('UPDATE ibsng_servers SET name=?, service_name=?, host=?, port=?, scheme=?, isp_name=?, username=?, password_ciphertext=?, last_test_at=NOW(), last_error=NULL WHERE id=?');
                 $stmt->execute([
-                    $name, ($serviceName !== '' ? $serviceName : null), $host, $port, $port === 443 ? 'https' : 'http', $isp, $username,
+                    $name, ($serviceName !== '' ? $serviceName : null), $host, $port, 'http', $isp, $username,
                     app_encrypt_secret($password), $id
                 ]);
                 $message = 'تنظیمات سرور به‌روزرسانی شد و تست اتصال موفق بود.';
