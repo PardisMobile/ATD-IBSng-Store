@@ -207,6 +207,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <?php endif; ?>
 </section>
 </main>
+<?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 <style>
 .orders-page-heading{margin:28px 0 20px}
 .orders-page-heading h1{line-height:1.45;margin:8px 0 12px}
