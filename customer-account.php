@@ -14,7 +14,8 @@ if (empty($_SESSION['customer_account_csrf'])) {
 }
 $csrf = (string)$_SESSION['customer_account_csrf'];
 $error = '';
-$success = '';
+$success = (string)($_SESSION['customer_account_flash'] ?? '');
+unset($_SESSION['customer_account_flash']);
 $account = null;
 $username = trim((string)($_POST['username'] ?? ($_SESSION['customer_account_auth']['username'] ?? '')));
 $accountPassword = (string)($_POST['account_password'] ?? '');
@@ -69,15 +70,15 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
     $provided = trim((string)($_POST['captcha'] ?? ''));
     if (!hash_equals($captcha, $provided)) {
-        $error = app_message('customer_account_captcha_invalid');
+        $error = 'کد چهاررقمی صحیح نیست. دوباره تلاش کنید.';
     } elseif ($username === '' || strlen($username) > 128 || $accountPassword === '') {
-        $error = app_message('customer_account_credentials_required');
+        $error = 'نام کاربری و رمز عبور را وارد کنید.';
     } else {
         try {
             $pdo = Database::connection();
             $stmt = $pdo->query("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id DESC");
             $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if (!$servers) throw new RuntimeException(app_message('customer_account_servers_unavailable'));
+            if (!$servers) throw new RuntimeException('در حال حاضر سرور IBSng فعالی برای بررسی حساب وجود ندارد.');
             $matchedIds = [];
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
@@ -91,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
                     throw $e;
                 }
             }
-            if ($matchedIds === []) throw new RuntimeException(app_message('customer_account_not_found'));
+            if ($matchedIds === []) throw new RuntimeException('نام کاربری یا رمز عبور اشتباه است.');
             $_SESSION['customer_account_auth'] = ['username' => $username, 'server_ids' => $matchedIds, 'created_at' => time()];
             $auth = $_SESSION['customer_account_auth'];
             $account = $loadAccountDetails($pdo, $username, $matchedIds);
@@ -134,7 +135,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'change_password') {
                     throw new RuntimeException('رمز عبور فعلی صحیح نیست.');
                 }
                 $client->setUserPassword((string)$auth['username'], $newPassword);
-                $success = 'رمز عبور حساب با موفقیت تغییر کرد.';
+                $_SESSION['customer_account_flash'] = 'تغییر رمز عبور انجام شد. لطفاً با رمز جدید دوباره وارد شوید.';
+                unset($_SESSION['customer_account_auth']);
+                header('Location: ' . app_url('customer-account.php'), true, 303);
+                exit;
             } catch (Throwable $e) {
                 $error = $e->getMessage();
             }
@@ -192,7 +196,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .password-line button{font:inherit;cursor:pointer;min-height:40px}
 .password-line button:focus-visible,.account-form>.button:focus-visible,.account-shell .topbar nav .button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
-.account-session-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0}.account-session-bar form{margin:0}.account-success{padding:13px 15px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:15px 0;line-height:1.8}.account-actions-card{display:grid;gap:16px}.account-action-buttons{display:flex;flex-wrap:wrap;gap:10px}.password-change-form{padding-top:14px;border-top:1px solid var(--border)}.icon-button{width:42px;height:42px;padding:8px;flex:0 0 42px}.icon-button .ui-icon{width:21px;height:21px}.password-line{align-items:center}.password-line .button{display:inline-flex;align-items:center;justify-content:center}.account-shell .button{font:inherit;text-decoration:none}.account-shell .button.primary{background:var(--accent);color:var(--accent-foreground,#fff);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 18%,transparent)}.account-shell .button.primary:hover{background:var(--accent-strong,var(--accent));filter:brightness(1.06)}.password-change-form[hidden]{display:none}@media(max-width:560px){.account-session-bar{align-items:stretch}.account-session-bar form,.account-session-bar .button{width:100%}.account-action-buttons{display:grid}.account-action-buttons .button{width:100%}}
+.account-logout-form{margin:0}.account-success{padding:13px 15px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:15px 0;line-height:1.8}.account-actions-card{display:grid;gap:16px}.account-action-buttons{display:flex;flex-wrap:wrap;gap:10px}.password-change-form{padding-top:14px;border-top:1px solid var(--border)}.icon-button{width:42px;height:42px;padding:8px;flex:0 0 42px}.icon-button .ui-icon{width:21px;height:21px}.password-line{align-items:center}.password-line .button{display:inline-flex;align-items:center;justify-content:center}.account-shell .button{font:inherit;text-decoration:none}.account-shell .button.primary{background:var(--accent);color:var(--accent-foreground,#fff);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 18%,transparent)}.account-shell .button.primary:hover{background:var(--accent-strong,var(--accent));filter:brightness(1.06)}.password-change-form[hidden]{display:none}@media(max-width:560px){.account-action-buttons{display:grid}.account-logout-form,.account-logout-form .button{width:100%}.account-action-buttons .button{width:100%}}
 .account-shell .topbar nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
 .account-shell .topbar nav .button{white-space:normal;text-align:center}
 .account-item strong{font-variant-numeric:tabular-nums}
@@ -219,10 +223,6 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </form>
 </section>
 <?php else: ?>
-<div class="account-session-bar">
-<span class="muted-note"><?= e($username) ?></span>
-<form method="post"><input type="hidden" name="account_action" value="logout"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><button class="button primary" type="submit" data-fa="خروج از حساب" data-en="Log out">خروج از حساب</button></form>
-</div>
 <?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if ($success !== ''): ?><div class="account-success" role="status" aria-live="polite"><?= e($success) ?></div><?php endif; ?>
 <?php endif; ?>
@@ -245,6 +245,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-action-buttons">
 <a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <button class="button primary" type="button" data-toggle-password-form="change-password-<?= (int)$item['server_id'] ?>" aria-expanded="false" data-fa="تغییر رمز عبور" data-en="Change password">تغییر رمز عبور</button>
+<form method="post" class="account-logout-form"><input type="hidden" name="account_action" value="logout"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><button class="button primary" type="submit" data-fa="خروج از حساب" data-en="Log out">خروج از حساب</button></form>
 </div>
 <form method="post" class="account-fields password-change-form" id="change-password-<?= (int)$item['server_id'] ?>" hidden>
 <input type="hidden" name="account_action" value="change_password"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><input type="hidden" name="server_id" value="<?= (int)$item['server_id'] ?>">
