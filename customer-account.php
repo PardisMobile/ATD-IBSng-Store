@@ -148,6 +148,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </div>
 </section>
 <?php endforeach; ?>
+<p><a class="button" href="<?= e(app_url('guide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
 <?php endif; ?>
 <?php storefront_footer($title); ?>
 </main>
