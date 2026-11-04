@@ -378,7 +378,7 @@
       dashboard_logout: 'Sign out',
       dashboard_eyebrow: 'Dashboard',
       dashboard_greeting: 'Welcome,',
-      dashboard_intro: 'Administrator sign-in and basic statistics are available. Manage IBSng servers in their dedicated section; additional features will be added after reference review and testing.',
+      dashboard_intro: 'Manage servers, products, orders and store settings from this panel.',
       dashboard_database_error: 'Could not read database statistics. Check the connection and schema installation.',
       dashboard_stats_aria: 'Statistics',
       dashboard_stat_servers: 'IBSng servers',
@@ -386,7 +386,7 @@
       dashboard_stat_orders: 'Orders',
       dashboard_stat_admins: 'Administrators',
       dashboard_catalog_title: 'Store catalog management',
-      dashboard_catalog_intro: 'Define sale plans in Products and connect them to active IBSng server/group mappings. Active products appear in the public store. Order registration, payment, and provisioning are being completed.',
+      dashboard_catalog_intro: 'Define sale plans in Products and connect them to active IBSng server/group mappings. Active products appear in the public store.',
       dashboard_back_store: 'Back to store'
     },
     customer_account_page: {
@@ -501,7 +501,7 @@
       catalog_no_registration: 'No store registration required',
       catalog_section_eyebrow: 'Services',
       catalog_section_title: 'Available plans',
-      catalog_load_error: 'Products are temporarily unavailable. Check the database connection and schema installation.',
+      catalog_load_error: 'The store is being updated. Please try again in a few moments.',
       catalog_empty_title: 'No plans are available yet',
       catalog_empty_intro: 'The store administrator can add and publish products from the administration panel.',
       catalog_plan_eyebrow: 'Service plan',
@@ -574,7 +574,7 @@
   const originalNotices = new WeakMap();
   function applyNoticeCopy(language) {
     document.querySelectorAll('.notice, .account-error, .catalog-notice').forEach((element) => {
-      if (element.children.length > 0) return;
+      if (element.children.length > 0 || element.hasAttribute('data-ui-text')) return;
       if (!originalNotices.has(element)) originalNotices.set(element, element.textContent);
       const original = originalNotices.get(element);
       const translated = language === 'en'
@@ -681,7 +681,7 @@
     const initialLanguage=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
     const initialMode=get(storage.mode,'dark')==='light'?'light':'dark';
     controls.innerHTML =
-      '<button type="button" class="atd-pref-mode" aria-label="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'" aria-pressed="'+(initialMode==='light')+'" title="'+(initialLanguage==='fa'?(initialMode==='dark'?'حالت تاریک':'حالت روشن'):(initialMode==='dark'?'Dark mode':'Light mode'))+'">'+svg(initialMode==='dark'?'sun':'moon')+'</button>'+
+      '<button type="button" class="atd-pref-mode" aria-label="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'" aria-pressed="'+(initialMode==='light')+'" title="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'">'+svg(initialMode==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="'+(initialLanguage==='fa'?'انتخاب طرح رنگ':'Choose color scheme')+'" title="'+(initialLanguage==='fa'?'طرح رنگ':'Color scheme')+'">'+svg('palette')+'</button>'+
       '<button type="button" class="atd-pref-language" aria-label="'+(initialLanguage==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="'+(initialLanguage==='fa'?'زبان':'Language')+'">'+svg('globe')+'<span>'+(initialLanguage==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
@@ -704,7 +704,7 @@
       modeButton.setAttribute('aria-pressed',String(next==='light'));
       const language=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
       modeButton.setAttribute('aria-label',language==='fa'?(next==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(next==='dark'?'Switch to light mode':'Switch to dark mode'));
-      modeButton.title=language==='fa'?(next==='dark'?'حالت تاریک':'حالت روشن'):(next==='dark'?'Dark mode':'Light mode');
+      modeButton.title=language==='fa'?(next==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(next==='dark'?'Switch to light mode':'Switch to dark mode');
     });
     const paletteButton=controls.querySelector('.atd-pref-palette');
     paletteButton.setAttribute('aria-controls',palette.id);
@@ -721,7 +721,7 @@
       const currentMode=get(storage.mode,'dark')==='light'?'light':'dark';
       const modeButton=controls.querySelector('.atd-pref-mode');
       modeButton.setAttribute('aria-label',next==='fa'?(currentMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(currentMode==='dark'?'Switch to light mode':'Switch to dark mode'));
-      modeButton.title=next==='fa'?(currentMode==='dark'?'حالت تاریک':'حالت روشن'):(currentMode==='dark'?'Dark mode':'Light mode');
+      modeButton.title=next==='fa'?(currentMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(currentMode==='dark'?'Switch to light mode':'Switch to dark mode');
       modeButton.setAttribute('aria-pressed',String(currentMode==='light'));
       controls.querySelector('.atd-pref-palette').setAttribute('aria-label',next==='fa'?'انتخاب طرح رنگ':'Choose color scheme');
       controls.querySelector('.atd-pref-palette').title=next==='fa'?'طرح رنگ':'Color scheme';
@@ -744,7 +744,7 @@
       languageButton.setAttribute('aria-label', next === 'fa' ? 'Switch language to English' : 'تغییر زبان به فارسی');
       languageButton.title = next === 'fa' ? 'زبان' : 'Language';
       modeButton.setAttribute('aria-label', next === 'fa' ? (currentMode === 'dark' ? 'روشن کردن حالت روشن' : 'روشن کردن حالت تاریک') : (currentMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'));
-      modeButton.title = next === 'fa' ? (currentMode === 'dark' ? 'حالت تاریک' : 'حالت روشن') : (currentMode === 'dark' ? 'Dark mode' : 'Light mode');
+      modeButton.title = next === 'fa' ? (currentMode === 'dark' ? 'روشن کردن حالت روشن' : 'روشن کردن حالت تاریک') : (currentMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
       modeButton.setAttribute('aria-pressed', String(currentMode === 'light'));
       paletteControl.setAttribute('aria-label', next === 'fa' ? 'انتخاب طرح رنگ' : 'Choose color scheme');
       paletteControl.title = next === 'fa' ? 'طرح رنگ' : 'Color scheme';
@@ -786,7 +786,8 @@
         });
       });
     });
-    const host=document.querySelector('.atd-preferences-slot,.atd-admin-preferences-slot')||document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top')||document.body;
+    const host=document.getElementById('atd-preferences-host')||document.querySelector('.atd-preferences-slot,.atd-admin-preferences-slot')||document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top');
+    if (!host) return;
     host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();

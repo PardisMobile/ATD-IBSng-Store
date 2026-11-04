@@ -66,20 +66,19 @@ function storefront_header(string $siteTitle, string $active = 'home'): void
     ?>
     <header class="store-header">
       <div class="store-header-top">
-        <a class="brand storefront-brand" href="<?= e(app_url()) ?>" aria-label="<?= e($siteTitle) ?>">
+        <a class="brand storefront-brand" href="<?= e(app_url('/')) ?>" aria-label="<?= e($siteTitle) ?>">
           <?= storefront_brand_mark() ?>
           <span class="storefront-brand-title"><?= e($siteTitle) ?></span>
         </a>
         <div class="store-header-actions">
-          <span class="status-chip" data-fa="خدمات حساب" data-en="Account services" data-ui-text="storefront_status">خدمات حساب</span>
-          <div class="atd-preferences-slot" aria-label="ظاهر و زبان"></div>
+          <span class="status-chip" data-ui-text="storefront_status">خدمات حساب</span>
+          <div id="atd-preferences-host" class="atd-preferences-slot" aria-label="ظاهر و زبان"></div>
         </div>
       </div>
       <nav class="atd-store-nav" aria-label="منوی فروشگاه" data-ui-aria="store_nav_aria">
         <?php foreach ($entries as [$key, $icon, $fa, $en, $path]): ?>
-          <a class="atd-store-nav-link" href="<?= e(app_url($path)) ?>"
+          <a class="atd-store-nav-link" href="<?= e($key === 'home' ? app_url('/') : app_url($path)) ?>"
              data-fa="<?= e($fa) ?>" data-en="<?= e($en) ?>"
-             data-ui-text="<?= $key === 'home' ? 'nav_home' : ($key === 'account' ? 'customer_account' : ($key === 'orders' ? 'nav_orders' : 'nav_guide')) ?>"
              <?= $active === $key ? ' aria-current="page"' : '' ?>>
             <?= storefront_icon_svg($icon) ?><span><?= e($fa) ?></span>
           </a>

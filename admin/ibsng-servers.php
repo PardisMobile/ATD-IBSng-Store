@@ -196,7 +196,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_ibsng_servers">سرورهای IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;flex-wrap:wrap}.admin-top form{margin:0}.admin-top button{border:1px solid var(--border);background:var(--surface-2);color:var(--text);font:inherit;cursor:pointer}
 .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}.panel-card{padding:clamp(18px,3vw,26px);min-width:0}
@@ -206,7 +206,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 .server{padding:clamp(16px,3vw,22px);margin:14px 0;min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);transition:border-color var(--ui-motion-fast,160ms) ease,background var(--ui-motion-fast,160ms) ease}.server:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:color-mix(in srgb,var(--surface-2) 35%,transparent)}.server-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.server-head h3{margin:0;overflow-wrap:anywhere}.meta{color:var(--muted);line-height:1.9;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.actions form{display:flex;min-width:0}.actions button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text);min-height:var(--ui-control-height,44px);padding:10px 14px;border-radius:var(--ui-radius-md,12px);white-space:normal}.actions button:focus-visible,.admin-top button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.actions .danger{color:var(--danger,#ff8e9a)}.actions .primary{background:linear-gradient(120deg,var(--accent-light),var(--accent-dark));border:0;color:white}.empty{padding:26px;text-align:center;color:var(--muted)}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.admin-shell{width:calc(100% - 24px)}.admin-top{align-items:flex-start;flex-direction:column}.actions>*{flex:1 1 auto}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="admin-shell">

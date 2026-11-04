@@ -55,7 +55,7 @@ try {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($pageTitle) ?></title>
-  <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+  <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
   <style>
 /* Brand shimmer is deliberately clipped to the title text; the mark stays still. */
 .storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
@@ -155,7 +155,7 @@ try {
         <div><div class="eyebrow" data-ui-text="catalog_section_eyebrow">خدمات</div><h2 data-ui-text="catalog_section_title">سرویس‌های فروشگاه</h2></div>
       </div>
       <?php if ($catalogError): ?>
-        <div class="catalog-notice" data-ui-text="catalog_load_error">نمایش محصولات فعلاً ممکن نیست. اتصال دیتابیس و نصب schema را بررسی کنید.</div>
+        <div class="catalog-notice" role="alert" aria-live="polite" data-ui-text="catalog_load_error">فروشگاه در حال به‌روزرسانی است. لطفاً چند لحظه بعد دوباره تلاش کنید.</div>
       <?php elseif (!$products): ?>
         <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3 data-ui-text="catalog_empty_title">هنوز پلنی برای فروش فعال نشده است</h3><p data-ui-text="catalog_empty_intro">مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
       <?php else: ?>
@@ -179,6 +179,6 @@ try {
     </section>
     <?php storefront_footer($pageTitle); ?>
   </main>
-  <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+  <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </body>
 </html>

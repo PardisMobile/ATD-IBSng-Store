@@ -107,7 +107,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_order_status">وضعیت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}
 .status-card{padding:clamp(18px,4vw,30px);margin:22px 0 36px;min-width:0}
@@ -146,7 +146,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 @media(max-width:560px){.status-shell{width:calc(100% - 24px)}.target{align-items:flex-start;flex-direction:column}.state{white-space:normal}.purchase-summary,.account-specs{grid-template-columns:1fr}.credential-row{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.target{transition:none}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="status-shell">

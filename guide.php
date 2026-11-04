@@ -9,7 +9,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_guide">راهنمای استفاده | <?= e($siteTitle) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .guide{width:min(850px,calc(100% - 28px));margin:0 auto;padding:clamp(20px,4.5vw,38px);min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--ui-radius-lg,20px)}
 .guide h1{margin:8px 0 14px;font-size:clamp(1.65rem,4vw,2.35rem);line-height:1.45;overflow-wrap:anywhere}
@@ -27,7 +27,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 @media(max-width:560px){.guide{width:calc(100% - 20px);border-radius:18px}.guide section{padding:15px}.guide section ul{padding-inline-start:1.1rem}}
 @media(prefers-reduced-motion:reduce){.guide section{transition:none}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="guide">

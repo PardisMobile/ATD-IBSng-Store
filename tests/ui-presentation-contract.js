@@ -46,6 +46,7 @@ for (const page of publicPages) {
   assert.match(source, /ui-preferences\.js/u, `${page} must load the shared appearance and language controls`);
   assert.match(source, /ui-components\.js/u, `${page} must load the shared component behavior`);
   assert.match(source, /assets\/css\/unified\.css/u, `${page} must load the shared component styles`);
+  assert.doesNotMatch(source, /href="<\?= e\(app_url\(\)\) \?>"/u, `${page} must not emit an empty root link`);
 }
 
 const navigation = read('admin/_navigation.php');
@@ -66,6 +67,15 @@ for (const selector of [
   '@media(prefers-reduced-motion:reduce)',
 ]) {
   assert.ok(css.includes(selector), `Shared stylesheet is missing ${selector}`);
+}
+
+for (const page of [...publicPages, ...adminPages.map((file) => path.join('admin', file))]) {
+  const source = read(page);
+  if (!source.includes('assets/css/app.css')) continue;
+  assert.match(source, /app_asset_url\('assets\/css\/app\.css'\)/u, `${page} must cache-bust application CSS`);
+  assert.match(source, /app_asset_url\('assets\/css\/unified\.css'\)/u, `${page} must cache-bust component CSS`);
+  assert.match(source, /app_asset_url\('assets\/js\/ui-preferences\.js'\)/u, `${page} must cache-bust preference JavaScript`);
+  assert.match(source, /app_asset_url\('assets\/js\/ui-components\.js'\)/u, `${page} must cache-bust component JavaScript`);
 }
 
 for (const page of [...publicPages, ...adminPages.map((file) => path.join('admin', file))]) {

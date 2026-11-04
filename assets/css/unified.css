@@ -5,6 +5,13 @@
    pages and authentication screens. Legacy selectors above remain for
    compatibility, while shared markup uses these names.
    ------------------------------------------------------------------------- */
+html {
+  min-height:100%;
+  background:var(--bg);
+}
+body {
+  min-height:100vh;
+}
 :where(.store-shell,.orders-shell,.status-shell,.checkout-shell,.account-shell,.result-shell,.admin-shell,.provisioning-page .shell) {
   width:min(1120px, calc(100% - 32px));
   min-width:0;
@@ -17,6 +24,24 @@
 :root[data-theme="light"],
 :root[data-mode="light"] {
   --accent-foreground:#ffffff;
+}
+:root {
+  --atd-button-radius:14px;
+  --atd-button-min-height:44px;
+  --atd-button-bg:color-mix(in srgb,var(--surface) 88%,var(--accent) 12%);
+  --atd-button-fg:var(--text);
+  --atd-button-border:color-mix(in srgb,var(--accent) 22%,var(--border));
+  --atd-button-hover-bg:color-mix(in srgb,var(--surface-2) 76%,var(--accent) 24%);
+  --atd-button-hover-border:color-mix(in srgb,var(--accent) 48%,var(--border));
+  --atd-button-active-bg:color-mix(in srgb,var(--surface-2) 64%,var(--accent) 36%);
+}
+:root[data-theme="light"] {
+  --atd-button-bg:#ffffff;
+  --atd-button-fg:#27334a;
+  --atd-button-border:rgba(55,75,110,.18);
+  --atd-button-hover-bg:color-mix(in srgb,#fff 78%,var(--accent) 22%);
+  --atd-button-hover-border:color-mix(in srgb,var(--accent) 48%,#fff);
+  --atd-button-active-bg:color-mix(in srgb,#fff 65%,var(--accent) 35%);
 }
 .ui-icon {
   display:inline-block;
@@ -175,6 +200,20 @@
 .admin-store-link {
   min-height:40px;
   padding:8px 13px;
+}
+:root[data-theme="light"] .admin-store-link {
+  color:#1f4fa8;
+  border-color:color-mix(in srgb,var(--accent) 26%,var(--border));
+  background:#fff;
+}
+:root[data-theme="dark"] .admin-store-link {
+  color:var(--text);
+  border-color:var(--border-strong,var(--border));
+  background:var(--surface-2);
+}
+.admin-store-link:hover:not(:disabled) {
+  color:var(--text);
+  border-color:var(--accent);
 }
 .atd-admin-nav {
   display:grid;

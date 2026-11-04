@@ -26,7 +26,7 @@ try {
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_dashboard">داشبورد مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}
 .admin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:28px 0}
@@ -46,7 +46,7 @@ try {
 <section class="admin-welcome panel">
 <div class="eyebrow" data-ui-text="dashboard_eyebrow">داشبورد</div>
 <h1><span data-ui-text="dashboard_greeting">سلام،</span> <?= e((string)($_SESSION['admin_display_name'] ?? $_SESSION['admin_username'] ?? 'مدیر')) ?></h1>
-<p class="muted" data-ui-text="dashboard_intro">ورود مدیر و آمار پایه فعال‌اند. مدیریت سرورهای IBSng از بخش اختصاصی انجام می‌شود؛ قابلیت‌های بعدی پس از بررسی مرجع و آزمون اضافه خواهند شد.</p>
+<p class="muted" data-ui-text="dashboard_intro">مدیریت سرورها، محصولات، سفارش‌ها و تنظیمات فروشگاه از این پنل در دسترس است.</p>
 <?php if ($dbError): ?><div class="notice" role="alert" aria-live="assertive" data-ui-text="dashboard_database_error">خواندن آمار دیتابیس با خطا مواجه شد. اتصال و نصب schema را بررسی کنید.</div><?php endif; ?>
 </section>
 <section class="admin-grid" aria-label="آمار" data-ui-aria="dashboard_stats_aria">
@@ -57,10 +57,10 @@ try {
 </section>
 <section class="panel panel-card">
 <h2 data-ui-text="dashboard_catalog_title">مدیریت کاتالوگ فروشگاه</h2>
-<p class="muted" data-ui-text="dashboard_catalog_intro">از بخش محصولات، پلن‌های فروش را تعریف و به نگاشت فعال سرور/گروه IBSng وصل کنید. محصولات فعال در صفحه عمومی فروشگاه نمایش داده می‌شوند. ثبت سفارش، پرداخت و provisioning در حال تکمیل هستند.</p>
+<p class="muted" data-ui-text="dashboard_catalog_intro">از بخش محصولات، پلن‌های فروش را تعریف و به نگاشت فعال سرور/گروه IBSng وصل کنید. محصولات فعال در صفحه عمومی فروشگاه نمایش داده می‌شوند.</p>
 </section>
 <?php require __DIR__ . '/_footer.php'; ?>
 </main>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </body>
 </html>

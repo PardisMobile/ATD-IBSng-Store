@@ -36,8 +36,8 @@ $adminNavIcons = [
       <span><?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?><small data-fa="مدیریت فروشگاه" data-en="Store administration">مدیریت فروشگاه</small></span>
     </a>
     <div class="atd-admin-header-actions">
-      <a class="button admin-store-link" href="<?= e(app_url()) ?>" data-fa="مشاهده فروشگاه" data-en="View store" data-ui-text="dashboard_back_store">مشاهده فروشگاه</a>
-      <div class="atd-admin-preferences-slot" aria-label="ظاهر و زبان"></div>
+      <a class="button admin-store-link" href="<?= e(app_url('/')) ?>" data-fa="مشاهده فروشگاه" data-en="View store">مشاهده فروشگاه</a>
+      <div id="atd-preferences-host" class="atd-admin-preferences-slot" aria-label="ظاهر و زبان"></div>
     </div>
   </div>
   <nav class="atd-admin-nav" aria-label="منوی مدیریت">

@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title data-ui-title-key="title_admin_reset_password">تعیین رمز جدید مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title><link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<title data-ui-title-key="title_admin_reset_password">تعیین رمز جدید مدیریت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .auth-card{width:min(480px,calc(100% - 24px));margin:clamp(24px,8vh,72px) auto;padding:clamp(22px,5vw,40px);min-width:0}
 .auth-card h1{font-size:clamp(1.5rem,4vw,2rem);line-height:1.5;overflow-wrap:anywhere}
@@ -68,8 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 .auth-card a:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:3px;border-radius:4px}
 @media(max-width:480px){.auth-card{border-radius:18px}.auth-card form>.button{width:100%}}
 @media(prefers-reduced-motion:reduce){.field input{transition:none}}
-</style><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script>
-</head><body><main class="auth-card panel"><div class="auth-toolbar"><div class="atd-preferences-slot" aria-label="ظاهر و زبان"></div></div><div class="eyebrow" data-ui-text="reset_panel">پنل مدیریت</div><h1 data-ui-text="reset_title">تعیین رمز جدید</h1>
+</style><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
+</head><body><main class="auth-card panel"><div class="auth-toolbar"><div id="atd-preferences-host" class="atd-preferences-slot" aria-label="ظاهر و زبان"></div></div><div class="eyebrow" data-ui-text="reset_panel">پنل مدیریت</div><h1 data-ui-text="reset_title">تعیین رمز جدید</h1>
 <?php if ($success): ?><div class="notice" data-ui-text="reset_success">رمز عبور با موفقیت تغییر کرد.</div><a class="button primary" href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="reset_login">ورود به پنل</a>
 <?php elseif ($error !== ''): ?><div class="notice"><?= e($error) ?></div><a href="<?= e(app_url('admin/forgot-password.php')) ?>" data-ui-text="reset_request_new">درخواست لینک جدید</a>
 <?php elseif ($adminId > 0): ?><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="token" value="<?= e($token) ?>"><div class="field"><label for="password" data-ui-text="reset_password">رمز جدید (حداقل ۱۲ کاراکتر)</label><input id="password" name="password" type="password" required minlength="12" maxlength="200" autocomplete="new-password"></div><div class="field"><label for="password_confirm" data-ui-text="reset_confirm">تکرار رمز جدید</label><input id="password_confirm" name="password_confirm" type="password" required minlength="12" maxlength="200" autocomplete="new-password"></div><button class="button primary" type="submit" data-ui-text="reset_submit">ذخیره رمز جدید</button></form>

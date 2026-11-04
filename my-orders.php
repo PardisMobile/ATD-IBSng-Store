@@ -111,7 +111,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_orders">سفارش‌های من | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_url('assets/css/unified.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .orders-shell{width:min(900px,calc(100% - 32px));margin:0 auto}
 .orders-card{padding:clamp(20px,4vw,34px);margin:24px 0}
@@ -166,4 +166,4 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <div class="eyebrow" data-ui-text="orders_email_recovery_heading">یا بازیابی همه خریدها با ایمیل</div>
 <form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request"><label for="email" data-ui-text="orders_email_at_purchase">ایمیل زمان خرید</label><input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email"><button class="button button-primary" type="submit" data-ui-text="orders_send_code">ارسال کد تأیید</button></form>
 <?php endif; ?>
-</section><?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?></main><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_url('assets/js/ui-components.js')) ?>" defer></script></body></html>
+</section><?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script></body></html>

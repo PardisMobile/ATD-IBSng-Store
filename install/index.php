@@ -42,6 +42,12 @@ $copy = [
 ];
 function it(string $key): string { global $copy, $locale; return $copy[$locale][$key] ?? $key; }
 function install_e(string $value): string { return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+function install_asset(string $path): string {
+ $relativePath = ltrim($path, '/');
+ $file = dirname(__DIR__) . '/' . $relativePath;
+ $version = is_file($file) ? substr((string)hash_file('sha256', $file), 0, 12) : '';
+ return '../' . $relativePath . ($version !== '' ? '?v=' . $version : '');
+}
 
 $errors = [];
 $success = '';
@@ -152,7 +158,7 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= install_e(it('title')) ?></title>
-<link rel="stylesheet" href="../assets/css/app.css"><link rel="stylesheet" href="../assets/css/unified.css">
+<link rel="stylesheet" href="<?= install_e(install_asset('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= install_e(install_asset('assets/css/unified.css')) ?>">
 <script>
 (function(){
  const locale=document.documentElement.dataset.uiInstallerLocale;
@@ -161,8 +167,8 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
  document.cookie='atd-ui-language='+encodeURIComponent(locale)+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
 })();
 </script>
-<script src="<?= "../assets/js/ui-preferences.js" ?>" defer></script>
-<script src="<?= "../assets/js/ui-components.js" ?>" defer></script>
+<script src="<?= install_e(install_asset('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= install_e(install_asset('assets/js/ui-components.js')) ?>" defer></script>
 <script>
 document.addEventListener('atd:language-change',function(event){
  const language=event.detail&&event.detail.language;
