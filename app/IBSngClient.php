@@ -69,7 +69,7 @@ final class IBSngClient
             'password' => $this->password,
         ], false);
 
-        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers));
+        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
             $this->loggedIn = true;
             return;
         }
@@ -147,7 +147,7 @@ final class IBSngClient
             $completeTimeoutResponse = $errno === CURLE_OPERATION_TIMEDOUT
                 && $status >= 200 && $status < 400
                 && (($contentLength !== null && strlen($body) === $contentLength)
-                    || ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers === 1
+                    || ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers) === 1));
             if (!$completeTimeoutResponse) {
                 throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
                     ? 'اتصال به IBSng timeout شد.'
@@ -422,7 +422,7 @@ final class IBSngClient
 
         [$body, $status, $headers] = $this->requestRaw('/admin/plugins/edit.php', $post, true);
         $location = null;
-        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers));
+        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
             $location = trim($m[1]);
         }
         $query = [];
