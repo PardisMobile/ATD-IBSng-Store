@@ -270,52 +270,138 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php if (is_array($userResult)): ?>
 <?php
 $accountHtml = (string)($userResult['html'] ?? '');
-$accountField = static function (string $label) use ($accountHtml): string {
-    if ($accountHtml === '' || !class_exists('DOMDocument')) return 'نامشخص';
+$cleanAccountText = static function (string $value): string {
+    return trim(preg_replace('/\\s+/u', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
+};
+/*
+ * Keep the exact A1.24 DOM traversal from the hosted diagnostic that was
+ * already tested. Attribute values are read from attr_edit_checkbox_* rows;
+ * displayed values are read from IBSng's Form_Content_Row_Right cells.
+ */
+$readAccountAttribute = static function (array $attributeNames) use ($accountHtml, $cleanAccountText): ?string {
+    if ($accountHtml === '' || !class_exists('DOMDocument')) return null;
     $previous = libxml_use_internal_errors(true);
     try {
         $dom = new DOMDocument();
         $dom->loadHTML('<?xml encoding="UTF-8">' . $accountHtml);
         $xpath = new DOMXPath($dom);
-        foreach ($xpath->query('//td') ?: [] as $cell) {
-            if (!$cell instanceof DOMElement) continue;
-            $cellLabel = trim(preg_replace('/\\s+/u', ' ', html_entity_decode(strip_tags($cell->textContent), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '', " :");
-            if (strcasecmp($cellLabel, $label) !== 0) continue;
-            $row = $cell->parentNode;
-            if (!$row instanceof DOMElement || strtolower($row->tagName) !== 'tr') continue;
-            $found = false;
-            foreach ($row->childNodes as $sibling) {
-                if (!$sibling instanceof DOMElement || strtolower($sibling->tagName) !== 'td') continue;
-                if ($sibling->isSameNode($cell)) { $found = true; continue; }
-                if (!$found) continue;
-                $value = $xpath->query('.//input[not(@type="hidden") and not(@type="checkbox")]', $sibling);
-                if ($value && $value->length && $value->item(0) instanceof DOMElement) return trim($value->item(0)->getAttribute('value')) ?: 'نامشخص';
-                $selected = $xpath->query('.//select/option[@selected]', $sibling);
-                if ($selected && $selected->length) return trim($selected->item(0)->textContent) ?: 'نامشخص';
-                $text = trim(preg_replace('/\\s+/u', ' ', $sibling->textContent) ?? '');
-                return $text !== '' ? $text : 'نامشخص';
+        $checkboxes = $xpath->query('//input[starts-with(@name, "attr_edit_checkbox_")]');
+        if (!$checkboxes) return null;
+        foreach ($checkboxes as $checkbox) {
+            if (!$checkbox instanceof DOMElement) continue;
+            if (!in_array(trim($checkbox->getAttribute('value')), $attributeNames, true)) continue;
+            $rows = $xpath->query('ancestor::tr', $checkbox);
+            if (!$rows || !$rows->length) continue;
+            $valueCell = null; $bestScore = -1;
+            foreach ($rows as $row) {
+                $cells = $xpath->query('./td', $row);
+                if (!$cells || $cells->length < 2) continue;
+                $checkboxCellIndex = -1; $labelCell = null;
+                foreach ($cells as $index => $cell) {
+                    $matches = $xpath->query('.//input[@name="' . $checkbox->getAttribute('name') . '"]', $cell);
+                    if ($matches && $matches->length) {
+                        $checkboxCellIndex = (int)$index; $labelCell = $cell; break;
+                    }
+                }
+                if ($checkboxCellIndex < 0 || !$labelCell) continue;
+                for ($i = $checkboxCellIndex + 1; $i < $cells->length; $i++) {
+                    $cell = $cells->item($i);
+                    $class = $cell instanceof DOMElement ? $cell->getAttribute('class') : '';
+                    if (strpos($class, 'Form_Content_Row_Right') === false
+                        && strpos($class, 'Form_Content_Row_Right_Textarea') === false) continue;
+                    $score = strpos($labelCell->getAttribute('class'), 'Form_Content_Row_Left') !== false ? 120 : 100;
+                    if ($score > $bestScore) { $bestScore = $score; $valueCell = $cell; }
+                    break;
+                }
             }
+            if (!$valueCell) return null;
+            $textarea = $xpath->query('.//textarea', $valueCell);
+            if ($textarea && $textarea->length) return $cleanAccountText($textarea->item(0)->textContent);
+            $select = $xpath->query('.//select', $valueCell);
+            if ($select && $select->length) {
+                $selected = $xpath->query('.//option[@selected]', $select->item(0));
+                return $cleanAccountText(($selected && $selected->length ? $selected->item(0) : $select->item(0))->textContent);
+            }
+            $input = $xpath->query('.//input[not(@type="checkbox") and not(@type="hidden")]', $valueCell);
+            if ($input && $input->length && $input->item(0) instanceof DOMElement) {
+                return $cleanAccountText($input->item(0)->getAttribute('value'));
+            }
+            return $cleanAccountText($valueCell->textContent);
         }
-        return 'نامشخص';
+        return null;
     } finally {
         libxml_clear_errors();
         libxml_use_internal_errors($previous);
     }
 };
+$readDisplayedAccountValue = static function (array $wantedLabels) use ($accountHtml, $cleanAccountText): ?string {
+    if ($accountHtml === '' || !class_exists('DOMDocument')) return null;
+    $previous = libxml_use_internal_errors(true);
+    try {
+        $dom = new DOMDocument();
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $accountHtml);
+        $xpath = new DOMXPath($dom);
+        $cells = $xpath->query('//td');
+        if (!$cells) return null;
+        foreach ($cells as $cell) {
+            if (!$cell instanceof DOMElement) continue;
+            $label = trim($cleanAccountText($cell->textContent), " :");
+            if (!in_array(strtolower($label), array_map('strtolower', $wantedLabels), true)) continue;
+            $row = $cell->parentNode;
+            if (!$row instanceof DOMElement || strtolower($row->tagName) !== 'tr') continue;
+            $seen = false;
+            foreach ($row->childNodes as $sibling) {
+                if (!$sibling instanceof DOMElement || strtolower($sibling->tagName) !== 'td') continue;
+                if ($sibling->isSameNode($cell)) { $seen = true; continue; }
+                if (!$seen) continue;
+                $class = $sibling->getAttribute('class');
+                if (strpos($class, 'Form_Content_Row_Right') === false
+                    && strpos($class, 'Form_Content_Row_Right_Textarea') === false) continue;
+                $textarea = $xpath->query('.//textarea', $sibling);
+                if ($textarea && $textarea->length) return $cleanAccountText($textarea->item(0)->textContent);
+                $select = $xpath->query('.//select', $sibling);
+                if ($select && $select->length) {
+                    $selected = $xpath->query('.//option[@selected]', $select->item(0));
+                    return $cleanAccountText(($selected && $selected->length ? $selected->item(0) : $select->item(0))->textContent);
+                }
+                $input = $xpath->query('.//input[not(@type="checkbox") and not(@type="hidden")]', $sibling);
+                if ($input && $input->length && $input->item(0) instanceof DOMElement) {
+                    return $cleanAccountText($input->item(0)->getAttribute('value'));
+                }
+                return $cleanAccountText($sibling->textContent);
+            }
+        }
+        return null;
+    } finally {
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+    }
+};
+$accountDisplay = static function (?string $value): string {
+    $value = trim((string)$value);
+    return $value === '' || preg_match('/^-+$/u', $value) ? 'نامشخص' : $value;
+};
+$multiLoginRaw = $readAccountAttribute(['multi_login', 'multi_login_instances', 'multi_login_instance']);
+$multiLoginText = trim((string)$multiLoginRaw);
+$instanceCount = null;
+if (preg_match('/(\\d+)/u', $multiLoginText, $instanceMatch)) {
+    $instanceCount = (int)$instanceMatch[1];
+}
+$multiLoginEnabled = $instanceCount !== null && $instanceCount > 0;
 $accountFields = [
     'Username' => (string)($userResult['username'] ?? 'نامشخص'),
     'IBSng User ID' => (string)($userResult['user_id'] ?? 'نامشخص'),
     'Group' => (string)($userResult['group'] ?? 'نامشخص'),
-    'Status' => $accountField('Status'),
-    'First Login' => $accountField('First Login'),
-    'Last Login' => $accountField('Last Login'),
-    'Relative Expiration' => $accountField('Relative Expiration'),
-    'Nearest Expiration Date' => $accountField('Nearest Expiration Date'),
-    'Absolute Expiration Date' => $accountField('Absolute Expiration Date'),
-    'User Is Locked' => $accountField('User Is Locked'),
-    'Creation Date' => $accountField('Creation Date'),
-    'Multi Login' => $accountField('Multi Login'),
-    '10 Instances' => $accountField('10 Instances'),
+    'Status' => $accountDisplay($readDisplayedAccountValue(['Status', 'User Status'])),
+    'First Login' => $accountDisplay($readAccountAttribute(['first_login'])),
+    'Last Login' => $accountDisplay($readDisplayedAccountValue(['Last Login', 'Last Login Date'])),
+    'Relative Expiration' => $accountDisplay($readAccountAttribute(['rel_exp_date', 'rel_exp'])),
+    'Nearest Expiration Date' => $accountDisplay($readDisplayedAccountValue(['Nearest Expiration Date'])),
+    'Absolute Expiration Date' => $accountDisplay($readAccountAttribute(['abs_exp_date', 'abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $readDisplayedAccountValue(['Absolute Expiration Date'])),
+    'User Is Locked' => $accountDisplay($readAccountAttribute(['lock', 'user_is_locked', 'is_locked', 'locked'])),
+    'Creation Date' => $accountDisplay($readDisplayedAccountValue(['Creation Date', 'Create Date'])),
+    'Multi Login' => $multiLoginEnabled ? 'فعال' : 'غیرفعال',
+    '10 Instances' => $instanceCount !== null && $instanceCount > 0 ? (string)$instanceCount : 'نامشخص',
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
 ];
 ?>
