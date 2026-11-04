@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Pricing.php';
 require_once __DIR__ . '/app/Payments/PaymentManager.php';
+require_once __DIR__ . '/app/StorefrontView.php';
 
 $config = app_config();
 $pageTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
@@ -47,24 +48,6 @@ try {
     $catalogError = true;
 }
 
-function store_duration_label(int $seconds): string
-{
-    if ($seconds % 86400 === 0) return (int)($seconds / 86400) . ' روز';
-    if ($seconds % 3600 === 0) return (int)($seconds / 3600) . ' ساعت';
-    if ($seconds % 60 === 0) return (int)($seconds / 60) . ' دقیقه';
-    return number_format($seconds) . ' ثانیه';
-}
-
-function store_bytes_label(?string $bytes): string
-{
-    if ($bytes === null || $bytes === '') return 'Unlimited';
-    $value = (float)$bytes;
-    if ($value >= 1099511627776) return number_format($value / 1099511627776, 2) . ' TiB';
-    if ($value >= 1073741824) return number_format($value / 1073741824, 2) . ' GiB';
-    if ($value >= 1048576) return number_format($value / 1048576, 2) . ' MiB';
-    if ($value >= 1024) return number_format($value / 1024, 2) . ' KiB';
-    return number_format($value) . ' B';
-}
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
@@ -72,7 +55,7 @@ function store_bytes_label(?string $bytes): string
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($pageTitle) ?></title>
-  <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+  <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
   <style>
 /* Brand shimmer is deliberately clipped to the title text; the mark stays still. */
 .storefront-brand{display:inline-flex;align-items:center;gap:10px;min-width:0}
@@ -138,9 +121,25 @@ function store_bytes_label(?string $bytes): string
 </head>
 <body>
   <main class="store-shell">
-    <?php require __DIR__ . '/app/storefront-header.php'; ?>
-<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
+    <?php storefront_header($pageTitle, 'home'); ?>
     <section class="hero panel storefront-hero">
+      <div class="storefront-hero-art" aria-hidden="true">
+        <span class="storefront-orbit storefront-orbit-one"></span>
+        <span class="storefront-orbit storefront-orbit-two"></span>
+        <span class="storefront-hero-glow"></span>
+        <div class="storefront-float-card storefront-card-account">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18 4.5h2.5M19.25 3.25v2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>ACCOUNT</span>
+        </div>
+        <div class="storefront-float-card storefront-card-renew">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>RENEW</span>
+        </div>
+        <div class="storefront-float-card storefront-card-payment">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 10h18M7 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span>PAYMENT</span>
+        </div>
+      </div>
       <div class="storefront-hero-content">
         <div class="eyebrow">ATD • IBSng</div>
         <h1 data-ui-text="catalog_hero_title">سرویس موردنیازت رو ساده انتخاب کن</h1>
@@ -156,7 +155,7 @@ function store_bytes_label(?string $bytes): string
         <div><div class="eyebrow" data-ui-text="catalog_section_eyebrow">خدمات</div><h2 data-ui-text="catalog_section_title">سرویس‌های فروشگاه</h2></div>
       </div>
       <?php if ($catalogError): ?>
-        <div class="catalog-notice" data-ui-text="catalog_load_error">نمایش محصولات فعلاً ممکن نیست. اتصال دیتابیس و نصب schema را بررسی کنید.</div>
+        <div class="catalog-notice" role="alert" aria-live="polite" data-ui-text="catalog_load_error">فروشگاه در حال به‌روزرسانی است. لطفاً چند لحظه بعد دوباره تلاش کنید.</div>
       <?php elseif (!$products): ?>
         <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3 data-ui-text="catalog_empty_title">هنوز پلنی برای فروش فعال نشده است</h3><p data-ui-text="catalog_empty_intro">مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
       <?php else: ?>
@@ -169,16 +168,17 @@ function store_bytes_label(?string $bytes): string
             <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
             <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
-            <div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(store_duration_label((int)$product['duration_seconds'])) ?>"><?= e(store_duration_label((int)$product['duration_seconds'])) ?></strong></div>
-            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong><?= e(store_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes'])) ?></strong></div>
+            <div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(storefront_duration_label((int)$product['duration_seconds'])) ?>"><?= e(storefront_duration_label((int)$product['duration_seconds'])) ?></strong></div>
+            <?php $quotaLabel = storefront_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes']); ?>
+            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong<?= $product['quota_bytes'] === null ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>" data-ui-text="catalog_order">ثبت سفارش</a>
           </article>
         <?php endforeach; ?>
         </div>
       <?php endif; ?>
     </section>
-    <footer>© <?= date('Y') ?> <?= e($pageTitle) ?> · <a class="admin-link" href="<?= e(app_url('admin/login.php')) ?>" data-ui-text="admin_login">ورود مدیریت</a></footer>
+    <?php storefront_footer($pageTitle); ?>
   </main>
-  <script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+  <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </body>
 </html>
