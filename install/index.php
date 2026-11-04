@@ -42,6 +42,12 @@ $copy = [
 ];
 function it(string $key): string { global $copy, $locale; return $copy[$locale][$key] ?? $key; }
 function install_e(string $value): string { return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+function install_asset(string $path): string {
+ $relativePath = ltrim($path, '/');
+ $file = dirname(__DIR__) . '/' . $relativePath;
+ $version = is_file($file) ? substr((string)hash_file('sha256', $file), 0, 12) : '';
+ return '../' . $relativePath . ($version !== '' ? '?v=' . $version : '');
+}
 
 $errors = [];
 $success = '';
@@ -152,7 +158,7 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= install_e(it('title')) ?></title>
-<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="<?= install_e(install_asset('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= install_e(install_asset('assets/css/unified.css')) ?>">
 <script>
 (function(){
  const locale=document.documentElement.dataset.uiInstallerLocale;
@@ -161,7 +167,8 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
  document.cookie='atd-ui-language='+encodeURIComponent(locale)+'; path=/; max-age=31536000; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');
 })();
 </script>
-<script src="<?= "../assets/js/ui-preferences.js" ?>" defer></script>
+<script src="<?= install_e(install_asset('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= install_e(install_asset('assets/js/ui-components.js')) ?>" defer></script>
 <script>
 document.addEventListener('atd:language-change',function(event){
  const language=event.detail&&event.detail.language;
@@ -179,7 +186,7 @@ body{min-height:100vh;background:radial-gradient(ellipse at 12% 8%,#5a65dc2b,tra
 .eyebrow{color:var(--accent);font-size:.82rem;letter-spacing:.04em}.setup h1{font-size:clamp(1.65rem,4vw,2.4rem);line-height:1.35;margin:10px 0;overflow-wrap:anywhere}.muted{color:var(--muted);line-height:1.8}
 .progress{display:flex;gap:8px;margin:26px 0}.progress span{height:5px;flex:1;border-radius:9px;background:linear-gradient(90deg,var(--accent-light),var(--accent-dark))}
 fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);padding:clamp(14px,3vw,22px);margin:18px 0;background:color-mix(in srgb,var(--surface) 60%,transparent)}legend{padding:0 9px;color:var(--accent);font-weight:700}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.field{display:grid;gap:8px;margin:12px 0;min-width:0}.field label{font-size:.9rem;color:var(--muted)}.field input{width:100%;min-width:0;min-height:var(--ui-control-height,46px);box-sizing:border-box;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;outline:none;transition:border-color .16s ease,box-shadow .16s ease}.field input:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px var(--ui-focus-ring);outline:2px solid var(--accent);outline-offset:1px}\n.field input[dir="ltr"]{direction:ltr;text-align:left;unicode-bidi:plaintext;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.field{display:grid;gap:8px;margin:12px 0;min-width:0}.field label{font-size:.9rem;color:var(--muted)}.field input{width:100%;min-width:0;min-height:var(--ui-control-height,46px);box-sizing:border-box;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;outline:none;transition:border-color .16s ease,box-shadow .16s ease}.field input:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px var(--ui-focus-ring);outline:2px solid var(--accent);outline-offset:1px}.field input[dir="ltr"]{direction:ltr;text-align:left;unicode-bidi:plaintext;font-variant-numeric:tabular-nums}
 .notice{padding:14px 16px;border-radius:var(--ui-radius-md,13px);margin:12px 0;line-height:1.75}.ok{background:color-mix(in srgb,var(--success,var(--green)) 10%,transparent);border:1px solid color-mix(in srgb,var(--success,var(--green)) 30%,transparent)}.err{background:color-mix(in srgb,var(--danger,#ff7180) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger,#ff7180) 30%,transparent)}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.actions button{font:inherit;cursor:pointer}.actions .secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
 @media(max-width:620px){.grid{grid-template-columns:1fr}.setup{padding:clamp(18px,5vw,24px);border-radius:20px;margin:18px auto}.actions>*{width:100%}.top{align-items:flex-start}.progress{margin:20px 0}.field input{min-height:46px}}
@@ -225,24 +232,4 @@ fieldset{min-width:0;border:1px solid var(--border);border-radius:var(--ui-radiu
  </form>
  <?php else: ?><div class="actions"><a class="button primary" href="../admin/login.php"><?= install_e(it('sign')) ?></a><a class="button secondary" href="../"><?= install_e(it('store')) ?></a></div><?php endif; ?>
 </main>
-<script>
-/* Defensive client-side fallback: if PHP translation lookup returns a key,
-   render the installer copy from the selected locale without changing form values. */
-(function(){
- const locale=document.documentElement.dataset.uiInstallerLocale==='en'?'en':'fa';
- const copy={
-  fa:{title:'ATD IBSng Store Script',tag:'راه‌اندازی ساده و امن',intro:'فروشگاهتان را در چند مرحله آماده کنید.',lang:'English',site:'عنوان فروشگاه',db:'اتصال پایگاه داده',host:'میزبان',name:'نام دیتابیس',dbuser:'کاربر دیتابیس',dbpass:'رمز دیتابیس',admin:'حساب مدیر',username:'نام کاربری',display:'نام نمایشی',email:'ایمیل بازیابی مدیر',password:'رمز عبور (حداقل ۸ کاراکتر)',confirm:'تکرار رمز عبور',test:'آزمایش اتصال',install:'نصب فروشگاه',done:'نصب با موفقیت انجام شد.',locked:'این فروشگاه قبلاً نصب شده است؛ نصب‌کننده قفل است.',testok:'اتصال دیتابیس موفق بود.',badcsrf:'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.',dbbad:'اتصال برقرار نشد. اطلاعات دیتابیس و مجوزها را بررسی کنید.',missing:'اطلاعات اتصال دیتابیس کامل نیست.',schema:'فایل ساختار دیتابیس خوانده نشد.',usernamebad:'نام کاربری باید ۳ تا ۱۰۰ حرف انگلیسی، عدد یا . _ - باشد.',passwordbad:'رمز عبور باید حداقل ۸ کاراکتر باشد.',confirmbad:'تکرار رمز عبور یکسان نیست.',emailbad:'ایمیل مدیر معتبر نیست.',installbad:'نصب کامل نشد. اطلاعات دیتابیس و مجوز نوشتن فایل تنظیمات را بررسی کنید.',success:'آماده‌اید!',sign:'ورود به پنل مدیریت',store:'مشاهده فروشگاه',step:'نصب مرحله‌ای',note:'تنظیمات دیگر را پس از نصب از پنل مدیریت تغییر می‌دهید.'},
-  en:{title:'ATD IBSng Store Script',tag:'Simple & secure setup',intro:'Get your store ready in a few clear steps.',lang:'فارسی',site:'Store title',db:'Database connection',host:'Database host',name:'Database name',dbuser:'Database user',dbpass:'Database password',admin:'Administrator account',username:'Username',display:'Display name',email:'Administrator recovery email',password:'Password (at least 8 characters)',confirm:'Confirm password',test:'Test connection',install:'Install store',done:'Installation completed successfully.',locked:'This store is already installed. The installer is locked.',testok:'Database connection succeeded.',badcsrf:'Invalid request. Refresh the page and try again.',dbbad:'Could not connect. Check database details and permissions.',missing:'Database connection details are incomplete.',schema:'Could not read the database schema file.',usernamebad:'Username must be 3–100 characters using letters, numbers, dot, underscore or hyphen.',passwordbad:'Password must contain at least 8 characters.',confirmbad:'The passwords do not match.',emailbad:'Enter a valid administrator email address.',installbad:'Installation failed. Check database details and permission to write the configuration file.',success:'You are all set!',sign:'Open admin panel',store:'Visit store',step:'Guided installation',note:'Other settings can be changed later in the admin panel.'}
- };
- const words=copy[locale];
- const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
- let node;
- while((node=walker.nextNode())){
-  const key=node.nodeValue.trim();
-  if(words[key] && key===node.nodeValue.trim()) node.nodeValue=node.nodeValue.replace(key,words[key]);
- }
- const title=document.querySelector('title');
- if(title&&words[title.textContent])title.textContent=words[title.textContent];
-})();
-</script>
 </body></html>
