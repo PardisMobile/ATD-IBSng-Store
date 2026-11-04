@@ -169,7 +169,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_products">مدیریت محصولات | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;flex-wrap:wrap}.panel-card{padding:clamp(18px,3vw,26px);margin:20px 0;min-width:0}
 .field{display:grid;gap:8px;margin:14px 0;min-width:0}.field label{color:var(--muted);font-size:.9rem}
@@ -207,24 +207,44 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= (int)($product['id'] ?? 0) ?>">
+<fieldset class="form-section"><legend data-ui-text="products_section_basic">اطلاعات پایه محصول</legend>
 <div class="grid">
 <div class="field"><label for="name" data-ui-text="products_name">نام محصول</label><input id="name" name="name" maxlength="180" required value="<?= e((string)($product['name'] ?? '')) ?>"></div>
+<div class="field"><label for="description" data-ui-text="products_description">توضیحات</label><textarea id="description" name="description" rows="3"><?= e((string)($product['description'] ?? '')) ?></textarea></div>
+</div>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="products_section_validity">مدت اعتبار و تمدید</legend>
+<div class="grid">
 <div class="field"><label for="duration_seconds" data-ui-text="products_duration">مدت اعتبار (ثانیه)</label><input id="duration_seconds" name="duration_seconds" type="number" min="1" required value="<?= e((string)($product['duration_seconds'] ?? 2592000)) ?>"></div>
 <div class="field"><label for="ibsng_validity_days" data-ui-text="products_renewal_days">مدت تمدید IBSng (روز)</label><input id="ibsng_validity_days" name="ibsng_validity_days" type="number" min="1" max="36500" required value="<?= e((string)($product['ibsng_validity_days'] ?? '')) ?>"><div class="hint" data-ui-text="products_renewal_hint">این مقدار فقط برای تمدید IBSng است و از مدت عمومی محصول حدس زده نمی‌شود.</div></div>
+</div>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
+<div class="grid">
 <div class="field"><label for="price_minor" data-ui-text="products_base_price">قیمت پایه (کوچک‌ترین واحد پولِ ارز انتخابی)</label><input id="price_minor" name="price_minor" type="number" min="0" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
 <div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="number" min="0.00000001" step="0.00000001" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
 <div class="field"><label for="currency" data-ui-text="products_currency">کد پولی ISO (مثلاً IRR)</label><input id="currency" name="currency" maxlength="3" required value="<?= e((string)($product['currency'] ?? 'IRR')) ?>"></div>
+</div>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
+<div class="grid">
 <div class="field"><label for="quota_bytes" data-ui-text="products_quota">سقف حجم (بایت؛ خالی یعنی نامشخص/نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
-<div class="field" style="grid-column:1/-1"><label data-ui-text="products_mappings">سرورها و گروه‌های IBSng این محصول</label>
-<div id="mapping-list"><?php foreach ($productMappings as $mappingIndex => $productMapping): ?><div class="mapping-row grid" style="align-items:end" data-mapping-row>
+</div>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="products_section_mappings">اتصال سرور و گروه IBSng</legend>
+<div class="grid">
+<div class="field field-full"><label data-ui-text="products_mappings">سرورها و گروه‌های IBSng این محصول</label>
+<div id="mapping-list"><?php foreach ($productMappings as $mappingIndex => $productMapping): ?><div class="mapping-row grid" data-mapping-row>
 <div class="field"><label data-ui-text="products_server">سرور IBSng</label><select name="mappings[<?= (int)$mappingIndex ?>][server_id]" data-server-select required><option value="" data-ui-text="products_select_server">انتخاب سرور</option><?php foreach ($servers as $server): ?><option value="<?= (int)$server['id'] ?>"<?= (int)($productMapping['server_id'] ?? 0)===(int)$server['id']?' selected':'' ?>><?= e((string)$server['name']) ?> · <?= e((string)$server['host']) ?></option><?php endforeach; ?></select></div>
-<div class="field"><label data-ui-text="products_group_plan">گروه / پلن فعال</label><div style="display:flex;gap:8px"><select name="mappings[<?= (int)$mappingIndex ?>][ibsng_group_id]" data-group-select required><option value="" data-ui-text="products_select_mapping">انتخاب نگاشت</option><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>" data-server="<?= (int)$group['server_id'] ?>"<?= (int)($productMapping['ibsng_group_id'] ?? 0)===(int)$group['id']?' selected':'' ?>><?= e((string)$group['server_name']) ?> · <?= e((string)$group['plan_name']) ?> (<?= e((string)$group['group_name']) ?>)</option><?php endforeach; ?></select><button class="button" type="button" data-remove-mapping data-ui-text="products_remove_mapping">حذف</button></div></div>
+<div class="field"><label data-ui-text="products_group_plan">گروه / پلن فعال</label><div class="mapping-group-control"><select name="mappings[<?= (int)$mappingIndex ?>][ibsng_group_id]" data-group-select required><option value="" data-ui-text="products_select_mapping">انتخاب نگاشت</option><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>" data-server="<?= (int)$group['server_id'] ?>"<?= (int)($productMapping['ibsng_group_id'] ?? 0)===(int)$group['id']?' selected':'' ?>><?= e((string)$group['server_name']) ?> · <?= e((string)$group['plan_name']) ?> (<?= e((string)$group['group_name']) ?>)</option><?php endforeach; ?></select><button class="button" type="button" data-remove-mapping data-ui-text="products_remove_mapping">حذف</button></div></div>
 </div><?php endforeach; ?></div>
 <button class="button" type="button" id="add-mapping" data-ui-text="products_add_mapping">افزودن سرور / گروه</button><div class="hint" data-ui-text="products_mapping_hint">هر سرور فقط یک‌بار در این محصول انتخاب شود. گروه باید از نگاشت‌های دستی همان سرور باشد.</div></div>
 </div>
-<div class="field"><label for="description" data-ui-text="products_description">توضیحات</label><textarea id="description" name="description" rows="3"><?= e((string)($product['description'] ?? '')) ?></textarea></div>
-<label><input type="checkbox" name="is_active" value="1"<?= (int)($product['is_active'] ?? 1)===1?' checked':'' ?>> <span data-ui-text="products_show_store">نمایش در فروشگاه</span></label>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="products_section_publication">انتشار در فروشگاه</legend>
+<label class="check-toggle"><input type="checkbox" name="is_active" value="1"<?= (int)($product['is_active'] ?? 1)===1?' checked':'' ?>> <span data-ui-text="products_show_store">نمایش در فروشگاه</span></label>
+</fieldset>
 <div class="actions"><button class="button primary" type="submit" data-ui-text="products_save">ذخیره محصول</button><?php if ($product): ?><a class="button" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="products_cancel_edit">لغو ویرایش</a><?php endif; ?></div>
 </form>
 </section>
@@ -232,8 +252,9 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php if (!$products): ?><div class="empty" data-ui-text="products_empty">هنوز محصولی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($products as $item): ?><article class="product-row panel"><div class="row-head"><strong><?= e((string)$item['name']) ?></strong><span class="status-chip" data-ui-status="<?= (int)$item['is_active']===1?'active':'inactive' ?>"><?= (int)$item['is_active']===1?'فعال':'غیرفعال' ?></span></div>
 <p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div><span data-ui-text="products_duration_label">مدت:</span> <span data-ui-duration="<?= (int)$item['duration_seconds'] ?>" data-ui-duration-fa="<?= number_format((int)$item['duration_seconds']) ?> ثانیه"><?= number_format((int)$item['duration_seconds']) ?> ثانیه</span> <span data-ui-text="products_seconds">ثانیه · تمدید IBSng:</span> <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' <span data-ui-text="products_days">روز</span>' : '<span data-ui-text="products_not_configured">تنظیم نشده</span>' ?> <span data-ui-text="products_price_label">· قیمت:</span> <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted"><span data-ui-text="products_mappings_label">سرورها و گروه‌ها:</span> <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
-<div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>" data-ui-text="products_edit">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="<?= (int)$item['is_active']===1?'products_inactive':'products_active' ?>"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" onsubmit="return confirm(document.documentElement.lang==='en'?'Delete this product?':'محصول حذف شود؟');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="products_delete">حذف</button></form></div></article><?php endforeach; ?>
-</section><footer><a href="<?= e(app_url()) ?>" data-ui-text="products_back_store">بازگشت به فروشگاه</a></footer>
+<div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>" data-ui-text="products_edit">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="<?= (int)$item['is_active']===1?'products_inactive':'products_active' ?>"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" data-confirm-fa="محصول حذف شود؟" data-confirm-en="Delete this product?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="products_delete">حذف</button></form></div></article><?php endforeach; ?>
+</section>
+<?php require __DIR__ . '/_footer.php'; ?>
 </main>
 <script>
 (function(){
@@ -268,11 +289,11 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
   const rows=Array.from(list.querySelectorAll('[data-mapping-row]')),seen=new Set();
   for(const row of rows){
    const server=row.querySelector('[data-server-select]').value;
-   if(server&&seen.has(server)){event.preventDefault();alert(document.documentElement.lang==='en'?'Select each server only once for a product.':'هر سرور فقط یک‌بار برای محصول انتخاب شود.');return;}
+   if(server&&seen.has(server)){event.preventDefault();window.ATDUI?.toast(document.documentElement.lang==='en'?'Select each server only once in a product.':'هر سرور فقط یک‌بار برای محصول انتخاب شود.','error');return;}
    if(server)seen.add(server);
   }
  });
 })();
 </script>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </body></html>

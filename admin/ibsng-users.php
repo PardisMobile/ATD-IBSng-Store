@@ -235,24 +235,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_ibsng_users">مدیریت حساب‌های IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .ibsng-users-page .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.ibsng-users-page .admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.ibsng-users-page .panel-card{padding:24px;margin-top:20px}.ibsng-users-page .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.ibsng-users-page .field{display:grid;gap:8px;margin:14px 0}.ibsng-users-page .field label{color:var(--muted);font-size:.9rem}.ibsng-users-page .field input,.ibsng-users-page .field select{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit;transition:border-color .18s,box-shadow .18s}.ibsng-users-page .field input:focus-visible,.ibsng-users-page .field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}.ibsng-users-page .field input::placeholder{color:var(--muted)}.ibsng-users-page .field input[name=username],.ibsng-users-page .field input[name=new_password],.ibsng-users-page .field input[name=remote_user_id],.ibsng-users-page .field input[name=credit]{direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.ibsng-users-page .notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ibsng-users-page .ok{background:#44d6a018;border:1px solid #44d6a044}.ibsng-users-page .err{background:#ff718018;border:1px solid #ff718044}.ibsng-users-page .result{margin-top:16px;padding:18px;overflow-wrap:anywhere}.ibsng-users-page .result .technical-value{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ibsng-users-page .result code{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ibsng-users-page .actions{display:flex;gap:10px;flex-wrap:wrap}.ibsng-users-page .danger{color:#ff8e9a}.ibsng-users-page .muted{color:var(--muted);line-height:1.8}@media(max-width:600px){.ibsng-users-page .grid{grid-template-columns:1fr}.ibsng-users-page .admin-top{align-items:flex-start;flex-direction:column}.ibsng-users-page .panel-card{padding:18px}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body class="ibsng-users-page">
 <main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
-<h1 style="font-size:2rem">مدیریت حساب‌های IBSng</h1>
-<p class="muted">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
+<h1 data-fa="مدیریت حساب‌های IBSng" data-en="IBSng account management">مدیریت حساب‌های IBSng</h1>
+<p class="muted" data-fa="عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد." data-en="Operations run against the selected IBSng Web Panel. The manually mapped group must exactly match IBSng. Renewal uses the active plan's explicit IBSng validity; uncertain outcomes are recorded for review and are not retried.">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="notice err">سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.</div><?php else: ?>
 <form method="get">
-<div class="field"><label for="server_id">سرور IBSng</label><select id="server_id" name="server_id" onchange="this.form.submit()">
+<div class="field"><label for="server_id" data-fa="سرور IBSng" data-en="IBSng server">سرور IBSng</label><select id="server_id" name="server_id" onchange="this.form.submit()">
 <?php foreach ($servers as $server): ?><option value="<?= (int)$server['id'] ?>"<?= (int)$server['id'] === $selectedServerId ? ' selected' : '' ?>><?= e((string)$server['name']) ?> · <?= e((string)$server['host']) ?></option><?php endforeach; ?>
 </select></div>
 </form>
@@ -260,35 +260,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 <?php if ($selectedServerId > 0 && $servers): ?>
 <section class="panel panel-card">
-<h2>تمدید حساب موجود در IBSng</h2>
-<p class="muted">نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
+<h2 data-fa="تمدید حساب موجود در IBSng" data-en="Renew an existing IBSng account">تمدید حساب موجود در IBSng</h2>
+<p class="muted" data-fa="نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند." data-en="Enter the existing account username and choose a renewal plan. Renewal validity and gift days come from Store settings; Absolute Expiration is unchanged.">نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
 <?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.</div><?php else: ?>
-<form method="post">
+<form method="post" data-confirm-fa="تمدید این حساب در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود." data-confirm-en="Renew this account in IBSng? If the result is uncertain, the operation will not be automatically repeated.">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="renew">
 <input type="hidden" name="renewal_key" value="<?= e($renewalRequestKey) ?>">
 <div class="grid">
-<div class="field"><label for="renew_username">Username حساب موجود</label><input id="renew_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="field"><label for="renewal_product_id">پلن تمدید</label><select id="renewal_product_id" name="renewal_product_id" required><option value="" data-ui-text="users_select_plan">انتخاب پلن</option><?php foreach ($renewalProducts as $renewalProduct): ?><option value="<?= (int)$renewalProduct['id'] ?>"<?= (int)($_POST['renewal_product_id'] ?? 0)===(int)$renewalProduct['id']?' selected':'' ?>><?= e((string)$renewalProduct['name']) ?> · <?= (int)$renewalProduct['ibsng_validity_days'] ?> <span data-ui-text="users_days_unit">روز</span> · <?= e((string)$renewalProduct['group_name']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="renew_username" data-fa="نام کاربری حساب موجود" data-en="Existing account username">نام کاربری حساب موجود</label><input id="renew_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
+<div class="field"><label for="renewal_product_id" data-fa="پلن تمدید" data-en="Renewal plan">پلن تمدید</label><select id="renewal_product_id" name="renewal_product_id" required><option value="" data-ui-text="users_select_plan">انتخاب پلن</option><?php foreach ($renewalProducts as $renewalProduct): ?><option value="<?= (int)$renewalProduct['id'] ?>"<?= (int)($_POST['renewal_product_id'] ?? 0)===(int)$renewalProduct['id']?' selected':'' ?>><?= e((string)$renewalProduct['name']) ?> · <?= (int)$renewalProduct['ibsng_validity_days'] ?> <span data-ui-text="users_days_unit">روز</span> · <?= e((string)$renewalProduct['group_name']) ?></option><?php endforeach; ?></select></div>
 </div>
-<button class="button primary" type="submit" onclick="return confirm('تمدید این حساب در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود.');">تمدید حساب در IBSng</button>
+<button class="button primary" type="submit" data-fa="تمدید حساب در IBSng" data-en="Renew account in IBSng">تمدید حساب در IBSng</button>
 </form>
 <?php endif; ?>
 </section>
 <section class="panel panel-card">
-<h2>جست‌وجو و دریافت اطلاعات حساب</h2>
+<h2 data-fa="جست‌وجو و دریافت اطلاعات حساب" data-en="Lookup and account details">جست‌وجو و دریافت اطلاعات حساب</h2>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="lookup">
 <div class="field"><label for="lookup_username">Username</label><input id="lookup_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="actions"><button class="button primary" type="submit">جست‌وجوی حساب</button></div>
+<div class="actions"><button class="button primary" type="submit" data-fa="جست‌وجوی حساب" data-en="Search account">جست‌وجوی حساب</button></div>
 </form>
-<form method="post" style="margin-top:10px">
+<form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="credentials">
-<div class="field"><label for="credentials_username">Username برای نمایش اطلاعات ورود</label><input id="credentials_username" name="username" required autocomplete="off"></div>
-<button class="button" type="submit">دریافت username/password از IBSng</button>
+<div class="field"><label for="credentials_username" data-fa="نام کاربری برای نمایش اطلاعات ورود" data-en="Username to retrieve login credentials">نام کاربری برای نمایش اطلاعات ورود</label><input id="credentials_username" name="username" required autocomplete="off"></div>
+<button class="button" type="submit" data-fa="دریافت نام کاربری و رمز از IBSng" data-en="Get username and password from IBSng">دریافت نام کاربری و رمز از IBSng</button>
 </form>
 <?php if (is_array($userResult)): ?>
 <div class="result panel">
-<strong>اطلاعات حساب</strong>
+<strong data-fa="اطلاعات حساب" data-en="Account details">اطلاعات حساب</strong>
 <div class="muted">Username: <span class="technical-value"><?= e((string)($userResult['username'] ?? '')) ?></span></div>
 <div class="muted">IBSng User ID: <span class="technical-value"><?= e((string)($userResult['user_id'] ?? 'نامشخص')) ?></span></div>
 <div class="muted">Group: <span class="technical-value"><?= e((string)($userResult['group'] ?? 'نامشخص')) ?></span></div>
@@ -298,29 +298,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 </section>
 <section class="panel panel-card">
-<h2>اطلاعات گروه IBSng</h2>
-<p class="muted">گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود.</p>
-<?php if (!$groups): ?><p class="muted">برای این سرور گروه فعالی ثبت نشده است.</p><?php else: ?>
+<h2 data-fa="اطلاعات گروه IBSng" data-en="IBSng group information">اطلاعات گروه IBSng</h2>
+<p class="muted" data-fa="گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود." data-en="The group is selected from this server's manual mapping; groups are not fetched from IBSng.">گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود.</p>
+<?php if (!$groups): ?><p class="muted" data-fa="برای این سرور گروه فعالی ثبت نشده است." data-en="No active group is mapped for this server.">برای این سرور گروه فعالی ثبت نشده است.</p><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="group_info">
-<div class="field"><label for="group_info_id">گروه IBSng</label><select id="group_info_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
-<button class="button" type="submit">خواندن اطلاعات گروه</button>
+<div class="field"><label for="group_info_id" data-fa="گروه IBSng" data-en="IBSng group">گروه IBSng</label><select id="group_info_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
+<button class="button" type="submit" data-fa="خواندن اطلاعات گروه" data-en="Read group information">خواندن اطلاعات گروه</button>
 </form>
 <?php endif; ?>
 <?php if (is_array($groupInfoResult)): ?><div class="result panel"><strong><?= e((string)$groupInfoResult['name']) ?></strong><p class="muted"><?= e((string)$groupInfoResult['details']) ?></p></div><?php endif; ?>
 </section>
 <section class="panel panel-card">
-<h2>ایجاد حساب</h2>
-<?php if (!$groups): ?><p class="muted">برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید.</p><?php else: ?>
+<h2 data-fa="ایجاد حساب" data-en="Create account">ایجاد حساب</h2>
+<?php if (!$groups): ?><p class="muted" data-fa="برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید." data-en="No active mapping exists for this server. Add the exact IBSng group name in Plan / Group Mapping first.">برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید.</p><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="create">
 <div class="grid">
-<div class="field"><label for="group_id">گروه IBSng (از نگاشت دستی)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="group_id" data-fa="گروه IBSng (از نگاشت دستی)" data-en="IBSng group (manual mapping)">گروه IBSng (از نگاشت دستی)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
 <div class="field"><label for="create_username">Username</label><input id="create_username" name="username" required autocomplete="off"></div>
 <div class="field"><label for="new_password">Password</label><input id="new_password" name="new_password" type="password" required autocomplete="new-password"></div>
 <div class="field"><label for="credit">Credit</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
 </div>
-<button class="button primary" type="submit">ایجاد حساب در IBSng</button>
+<button class="button primary" type="submit" data-fa="ایجاد حساب در IBSng" data-en="Create account in IBSng">ایجاد حساب در IBSng</button>
 </form>
 <?php endif; ?>
 </section>
@@ -339,155 +339,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endif; ?>
 </section>
 <section class="panel panel-card">
-<h2>حذف حساب</h2>
-<p class="muted">حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند.</p>
-<form method="post" onsubmit="return confirm('حساب واقعاً از IBSng حذف شود؟ این عملیات برگشت‌پذیر نیست.');">
+<h2 data-fa="حذف حساب" data-en="Delete account">حذف حساب</h2>
+<p class="muted" data-fa="حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند." data-en="Deleting an account from IBSng cannot be undone. Following the reference behavior, this also requests deletion of connection and audit logs.">حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند.</p>
+<form method="post" data-confirm-fa="حساب واقعاً از IBSng حذف شود؟ این عملیات برگشت‌پذیر نیست." data-confirm-en="Really delete this account from IBSng? This cannot be undone.">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="confirm_delete" value="yes">
 <div class="field"><label for="delete_username">Username</label><input id="delete_username" name="username" required autocomplete="off"></div>
-<button class="button danger" type="submit">حذف حساب از IBSng</button>
+<button class="button danger" type="submit" data-fa="حذف حساب از IBSng" data-en="Delete account from IBSng">حذف حساب از IBSng</button>
 </form>
 </section>
 <?php endif; ?>
-<footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
+<?php require __DIR__ . '/_footer.php'; ?>
 </main>
 
-<script>
-(function () {
-  const pairs = {
-    "ATD IBSng Store · مدیریت":"ATD IBSng Store · Admin",
-    "سرورهای IBSng":"IBSng Servers",
-    "نگاشت پلن/گروه":"Plan / Group Mapping",
-    "مدیریت حساب‌های IBSng":"IBSng User Management",
-    "مدیریت حساب‌های IBSng":"IBSng User Management",
-    "IBSng · User Management":"IBSng · User Management",
-    "عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.":"Operations run against the selected IBSng Web Panel. The manually mapped group must exactly match IBSng. Renewal uses the active plan's explicit IBSng validity; uncertain outcomes are ledgered for review and are not retried.",
-    "درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.":"Invalid request. Please refresh the page.",
-    "ابتدا یک سرور فعال IBSng انتخاب کنید.":"Select an active IBSng server first.",
-    "نام کاربری برای جست‌وجو الزامی است.":"Username is required for lookup.",
-    "از نگاشت دستی همین سرور یک گروه فعال انتخاب کنید.":"Select an active group from this server's manual mapping.",
-    "نام کاربری برای دریافت اطلاعات حساب الزامی است.":"Username is required to retrieve account details.",
-    "گروه، نام کاربری و رمز عبور الزامی هستند.":"Group, username and password are required.",
-    "Credit باید یک مقدار عددی معتبر باشد.":"Credit must be a valid number.",
-    "درخواست ایجاد حساب در IBSng با پاسخ موفق تأیید شد.":"IBSng confirmed the account creation request.",
-    "برای حذف حساب، تأیید حذف الزامی است.":"Deletion confirmation is required.",
-    "این نام کاربری در IBSng وجود ندارد.":"This username does not exist in IBSng.",
-    "عملیات نامعتبر است.":"Invalid operation.",
-    "عملیات IBSng انجام نشد؛ وضعیت اتصال و پاسخ Web Panel را بررسی کنید.":"IBSng operation failed. Check connectivity and the Web Panel response.",
-    "سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.":"No active IBSng server is configured. Add and activate a server first.",
-    "سرور IBSng":"IBSng Server",
-    "ساختار دیتابیس برای تمدید IBSng آماده نیست.":"The database schema is not ready for IBSng renewal.",
-    "ارتقای دیتابیس را انجام دهید":"Apply the database upgrade",
-    "ابتدا ارتقای ساختار تمدید IBSng را از بخش مربوطه انجام دهید.":"Apply the IBSng renewal schema upgrade first.",
-    "تمدید حساب موجود در IBSng":"Renew Existing IBSng Account",
-    "نام کاربری، پلن تمدید و کلید درخواست معتبر الزامی است.":"Username, renewal plan, and request key are required.",
-    "پلن تمدید فعال و دارای مدت اعتبار مخصوص IBSng انتخاب نشده است.":"An active renewal plan with explicit IBSng validity has not been selected.",
-    "تمدید از پاسخ Web Panel IBSng تأیید شد.":"Renewal was confirmed by the IBSng Web Panel response.",
-    "نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.":"Enter the existing account username and choose a renewal plan. Renewal validity and gift days come from Store settings; Absolute Expiration is not changed.",
-    "برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.":"No active plan with configured IBSng validity exists for this server. Set the IBSng renewal validity in product management first.",
-    "Username حساب موجود":"Existing account username",
-    "پلن تمدید":"Renewal plan",
-    "تمدید حساب در IBSng":"Renew Account in IBSng",
-    "تمدید این حساب در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود.":"Renew this account in IBSng? If the result is uncertain, the operation will not be automatically repeated.",
-    "جست‌وجو و دریافت اطلاعات حساب":"Lookup and Account Details",
-    "Username":"Username",
-    "جست‌وجوی حساب":"Search Account",
-    "Username برای نمایش اطلاعات ورود":"Username to retrieve login credentials",
-    "دریافت username/password از IBSng":"Get username/password from IBSng",
-    "اطلاعات حساب":"Account Details",
-    "IBSng User ID:":"IBSng User ID:",
-    "Group:":"Group:",
-    "Password:":"Password:",
-    "اطلاعات گروه IBSng":"IBSng Group Information",
-    "گروه از نگاشت دستی همین سرور انتخاب می‌شود؛ فهرست گروه‌ها از IBSng واکشی نمی‌شود.":"The group is selected from this server's manual mapping; IBSng groups are not fetched automatically.",
-    "برای این سرور گروه فعالی ثبت نشده است.":"No active group is mapped for this server.",
-    "گروه IBSng":"IBSng Group",
-    "خواندن اطلاعات گروه":"Read Group Information",
-    "ایجاد حساب":"Create Account",
-    "برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید.":"No active mapping exists for this server. Add the exact IBSng group name manually in Plan / Group Mapping first.",
-    "گروه IBSng (از نگاشت دستی)":"IBSng Group (manual mapping)",
-    "Password":"Password",
-    "Credit":"Credit",
-    "ایجاد حساب در IBSng":"Create Account in IBSng",
-    "حذف حساب":"Delete Account",
-    "حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند.":"Deleting an account from IBSng cannot be undone. Following the reference behavior, this also requests deletion of connection and audit logs.",
-    "حساب واقعاً از IBSng حذف شود؟ این عملیات برگشت‌پذیر نیست.":"Really delete this account from IBSng? This cannot be undone.",
-    "حذف حساب از IBSng":"Delete Account from IBSng",
-    "بازگشت به فروشگاه":"Back to Store",
-    "تست نشده":"Not tested",
-    "نامشخص":"Unknown",
-    "حساب در Web Panel ایجاد شد.":"Account created in the Web Panel.",
-    "هنوز سروری اضافه نشده است.":"No servers have been added yet.",
-    "ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.":"Add an IBSng server first.",
-    "افزودن نگاشت":"Add Mapping",
-    "ثبت نگاشت":"Save Mapping",
-    "نگاشت‌های ثبت‌شده":"Saved Mappings",
-    "ویرایش نگاشت":"Edit Mapping",
-    "ذخیره تغییرات":"Save Changes",
-    "حذف":"Delete",
-    "فعال":"Active",
-    "غیرفعال":"Inactive",
-    "افزودن سرور IBSng":"Add IBSng Server",
-    "نام سرور":"Server Name",
-    "Host":"Host",
-    "پورت":"Port",
-    "ISP name":"ISP Name",
-    "نام کاربری":"Username",
-    "رمز عبور":"Password",
-    "تست اتصال و ذخیره تغییرات":"Test Connection & Save Changes",
-    "Test Connection":"Test Connection",
-    "انتخاب به‌عنوان پیش‌فرض":"Set as Default",
-    "غیرفعال‌سازی":"Disable",
-    "فعال‌سازی":"Enable",
-    "حذف سرور":"Delete Server",
-    "ویرایش تنظیمات":"Edit Settings",
-    "نام کاربری جدید (خالی = حفظ قبلی)":"New Username (blank = keep current)",
-    "رمز جدید (خالی = حفظ قبلی)":"New Password (blank = keep current)",
-    "نگاشت پلن فروشگاه به گروه IBSng":"Store Plan to IBSng Group Mapping",
-    "نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش نگاشت به‌صورت دستی تعریف می‌شود؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.":"Enter the exact name of an existing IBSng group. Mappings are managed manually; automatic group-list fetching is not implemented.",
-    "نام پلن فروشگاه":"Store Plan Name",
-    "نام دقیق گروه":"Exact Group Name",
-    "مثلاً: یک ماهه":"For example: One month",
-    "نام گروه در IBSng":"IBSng group name",
-    "برای این سرور هنوز نگاشتی ثبت نشده است.":"No mappings have been added for this server yet."
-  };
-  const reverse = Object.fromEntries(Object.entries(pairs).map(([fa,en]) => [en,fa]));
-  const root = document.documentElement;
-  const toggle = document.getElementById('langToggle');
-  function translateNode(node, map) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const raw = node.nodeValue || '';
-      const trimmed = raw.trim();
-      if (map[trimmed]) node.nodeValue = raw.replace(trimmed, map[trimmed]);
-      return;
-    }
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    ['placeholder','title','aria-label'].forEach(attr => {
-      const value = node.getAttribute(attr);
-      if (value && map[value]) node.setAttribute(attr, map[value]);
-    });
-    if (node.matches('input[type="submit"],input[type="button"]') && node.value && map[node.value]) {
-      node.value = map[node.value];
-    }
-    node.childNodes.forEach(child => translateNode(child, map));
-  }
-  function setLanguage(lang) {
-    const map = lang === 'en' ? pairs : reverse;
-    translateNode(document.body, map);
-    root.lang = lang;
-    root.dir = lang === 'fa' ? 'rtl' : 'ltr';
-    document.body.style.fontFamily = lang === 'fa'
-      ? 'Vazirmatn, Tahoma, sans-serif'
-      : '"Segoe UI", Arial, sans-serif';
-    if (toggle) toggle.textContent = lang === 'en' ? 'فارسی' : 'English';
-    try { localStorage.setItem('atd-ibsng-language', lang); localStorage.setItem('atd-ui-language', lang); } catch (e) {}
-  }
-  let initial = 'en';
-  try { initial = localStorage.getItem('atd-ui-language') || localStorage.getItem('atd-ibsng-language') || 'en'; } catch (e) {}
-  if (toggle) toggle.addEventListener('click', () => { const next = root.lang === 'fa' ? 'en' : 'fa'; setLanguage(next); document.dispatchEvent(new CustomEvent('atd:language-change', { detail: { language: next, direction: root.dir } })); });
-  setLanguage(initial);
-  document.addEventListener('atd:language-change', event => setLanguage(event.detail?.language === 'en' ? 'en' : 'fa'));
-})();
-</script>
 
 </body>
 </html>

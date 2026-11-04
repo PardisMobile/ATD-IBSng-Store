@@ -5,6 +5,7 @@ require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/EmailSender.php';
 require_once __DIR__ . '/app/EmailTemplates.php';
+require_once __DIR__ . '/app/StorefrontView.php';
 
 $config = app_config();
 if (empty($_SESSION['my_orders_csrf'])) {
@@ -110,7 +111,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_orders">سفارش‌های من | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .orders-shell{width:min(900px,calc(100% - 32px));margin:0 auto}
 .orders-card{padding:clamp(20px,4vw,34px);margin:24px 0}
@@ -149,8 +150,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 </style>
 </head>
 <body><main class="orders-shell">
-<?php require __DIR__ . '/app/storefront-header.php'; ?>
-<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
+<?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'orders'); ?>
 <section class="orders-card panel">
 <div class="eyebrow" data-ui-text="orders_tracking_recovery">پیگیری و بازیابی خریدها</div><h1 data-ui-text="orders_title">سفارش‌های من</h1>
 <p class="muted" data-ui-text="orders_intro">برای مشاهده سفارش‌های مرتبط با ایمیل خرید، کد تأیید ایمیل را وارد کنید. همچنین می‌توانید هر سفارش را با شناسه پیگیری در صفحه پیگیری سفارش مشاهده کنید.</p>
@@ -162,8 +162,8 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="logout"><button class="button" type="submit" data-ui-text="orders_logout">خروج از فهرست سفارش‌ها</button></form>
 <?php if (!$orders): ?><p class="muted" data-ui-text="orders_none_for_email">سفارشی برای این ایمیل پیدا نشد.</p><?php else: ?><div class="orders-list"><?php foreach ($orders as $order): ?><article class="order-row"><div><strong><?= e((string)$order['product_name_snapshot']) ?></strong><p class="muted"><span data-ui-text="orders_tracking_id">شناسه پیگیری:</span> <code><?= e((string)$order['tracking_code']) ?></code><br><span data-ui-text="orders_purchase_date">تاریخ خرید:</span> <?= e((string)$order['created_at']) ?></p><div class="history-facts"><span><small data-ui-text="orders_paid_amount">مبلغ پرداخت‌شده</small><strong class="history-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></span><span><small data-ui-text="orders_status">وضعیت سفارش</small><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($statusLabels[(string)$order['order_status']] ?? 'در حال بررسی') ?></strong></span></div></div><a class="button" href="<?= e(app_url('order-status.php?order=' . rawurlencode((string)$order['tracking_code']))) ?>" data-ui-text="orders_details">جزئیات سفارش</a></article><?php endforeach; ?></div><?php endif; ?>
 <?php else: ?>
-<div class="orders-list" style="margin-bottom:22px"><article class="order-row"><div><strong data-ui-text="orders_lookup_heading">پیگیری با شناسه سفارش</strong><p class="muted" data-ui-text="orders_lookup_help">شناسه پیگیری درج‌شده در رسید خرید را وارد کنید.</p><form method="get" action="<?= e(app_url('order-status.php')) ?>"><label for="order" data-ui-text="orders_order_id">شناسه سفارش</label><input class="form-field" id="order" name="order" dir="ltr" inputmode="text" maxlength="40" required placeholder="ATD-XXXXXXX یا شناسه سفارش" data-ui-placeholder="orders_order_placeholder"><button class="button button-primary" type="submit" data-ui-text="orders_track_submit">پیگیری سفارش</button></form></div></article></div>
+<div class="orders-list orders-lookup"><article class="order-row"><div><strong data-ui-text="orders_lookup_heading">پیگیری با شناسه سفارش</strong><p class="muted" data-ui-text="orders_lookup_help">شناسه پیگیری درج‌شده در رسید خرید را وارد کنید.</p><form method="get" action="<?= e(app_url('order-status.php')) ?>"><label for="order" data-ui-text="orders_order_id">شناسه سفارش</label><input class="form-field" id="order" name="order" dir="ltr" inputmode="text" maxlength="40" required placeholder="ATD-XXXXXXX یا شناسه سفارش" data-ui-placeholder="orders_order_placeholder"><button class="button button-primary" type="submit" data-ui-text="orders_track_submit">پیگیری سفارش</button></form></div></article></div>
 <div class="eyebrow" data-ui-text="orders_email_recovery_heading">یا بازیابی همه خریدها با ایمیل</div>
 <form method="post"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request"><label for="email" data-ui-text="orders_email_at_purchase">ایمیل زمان خرید</label><input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email"><button class="button button-primary" type="submit" data-ui-text="orders_send_code">ارسال کد تأیید</button></form>
 <?php endif; ?>
-</section></main><script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script></body></html>
+</section><?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script></body></html>

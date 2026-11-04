@@ -29,6 +29,8 @@
       checkout_buyer_name: 'Buyer name',
       checkout_phone: 'Phone number',
       checkout_email_optional: 'Email (optional)',
+      checkout_contact_section: 'Buyer information',
+      checkout_credentials_section: 'Account login details',
       checkout_email_help: 'If you provide an email, your order details will be sent after successful payment. Without an email, recovery by email is unavailable; keep your order tracking code.',
       checkout_credentials_method: 'Account credential method',
       checkout_custom_credentials: 'Choose my username and password',
@@ -64,6 +66,8 @@
       orders_order_placeholder: 'ATD-XXXXXXX or order ID'
     },
     document_titles: {
+      title_guide: 'User guide',
+      title_payment_result: 'Payment result',
       title_checkout: 'Checkout',
       title_orders: 'My orders',
       title_order_status: 'Order status',
@@ -100,10 +104,13 @@
       server_username_label: '· Username:',
       server_last_test_label: 'Last test:',
       server_not_tested: 'Not tested',
-      server_error_label: '· Error:'
+      server_error_label: '· Error:',
+      server_service_placeholder: 'For example: Multi-location service'
     },
     admin_ibsng_groups: {
-      groups_add_mapping: 'Add mapping'
+      groups_add_mapping: 'Add mapping',
+      groups_plan_placeholder: 'For example: One month',
+      groups_group_placeholder: 'IBSng group name'
     },
     admin_email_templates: {
       email_templates_admin: 'Store administration',
@@ -307,6 +314,12 @@
       settings_visit_store: 'View store'
     },
     admin_products: {
+      products_section_basic: 'Product basics',
+      products_section_validity: 'Validity and renewal',
+      products_section_pricing: 'Pricing and currency',
+      products_section_capacity: 'Data allowance and order',
+      products_section_mappings: 'IBSng server and group mappings',
+      products_section_publication: 'Storefront publication',
       products_nav_mapping: 'Plan/group mapping',
       products_nav_servers: 'IBSng servers',
       products_title: 'Manage products and plans',
@@ -365,7 +378,7 @@
       dashboard_logout: 'Sign out',
       dashboard_eyebrow: 'Dashboard',
       dashboard_greeting: 'Welcome,',
-      dashboard_intro: 'Administrator sign-in and basic statistics are available. Manage IBSng servers in their dedicated section; additional features will be added after reference review and testing.',
+      dashboard_intro: 'Manage servers, products, orders and store settings from this panel.',
       dashboard_database_error: 'Could not read database statistics. Check the connection and schema installation.',
       dashboard_stats_aria: 'Statistics',
       dashboard_stat_servers: 'IBSng servers',
@@ -373,7 +386,7 @@
       dashboard_stat_orders: 'Orders',
       dashboard_stat_admins: 'Administrators',
       dashboard_catalog_title: 'Store catalog management',
-      dashboard_catalog_intro: 'Define sale plans in Products and connect them to active IBSng server/group mappings. Active products appear in the public store. Order registration, payment, and provisioning are being completed.',
+      dashboard_catalog_intro: 'Define sale plans in Products and connect them to active IBSng server/group mappings. Active products appear in the public store.',
       dashboard_back_store: 'Back to store'
     },
     customer_account_page: {
@@ -433,6 +446,31 @@
       status_support_review: 'If a destination requires review, support will verify the result in the IBSng panel. Each server status is recorded independently.',
       status_keep_tracking_private: 'The password is shown only for destinations whose activation was confirmed successfully. Keep the tracking code confidential.'
     },
+    guide_page: {
+      guide_title: 'Account user guide',
+      guide_intro: 'The login details for a purchased account are included in the delivery email and on the order tracking page. The connection steps depend on the service and application supported by your provider.',
+      guide_step_account_title: '1. Find your account details',
+      guide_step_account_body: 'Open the account delivery email or use the order tracking link. Enter the username and password exactly as provided. Check letter case and remove any extra spaces.',
+      guide_step_app_title: '2. Choose the right app or connection method',
+      guide_step_app_body: 'The application, operating system and connection method must match the service you purchased. Use the provider-specific setup guide; this page does not guess server or protocol details.',
+      guide_step_troubleshoot_title: '3. Connection and initial troubleshooting',
+      guide_troubleshoot_credentials: 'Check the username and password again.',
+      guide_troubleshoot_expiry: 'Make sure the service is still active and has not expired.',
+      guide_troubleshoot_destination: 'If the delivery email specifies a destination or connection method, use that exact option.',
+      guide_troubleshoot_support: 'If the problem persists, provide the order ID to support. Do not publish your password in a public message.',
+      guide_tracking_title: 'Order tracking',
+      guide_tracking_body: 'Use the order tracking page to view payment, provisioning and account details.',
+      guide_tracking_link: 'Open order tracking'
+    },
+    payment_result_page: {
+      payment_success_title: 'Payment confirmed',
+      payment_success_body: 'The gateway confirmed your payment.',
+      payment_order_id: 'Order ID:',
+      payment_provisioning_note: 'Service activation is recorded and tracked separately.',
+      payment_track_activation: 'Track activation status',
+      payment_result_title: 'Payment result',
+      payment_back_store: 'Back to store'
+    },
     status: {
       pending_payment: 'Awaiting payment',
       paid: 'Payment confirmed',
@@ -450,6 +488,10 @@
       cancelled: 'Cancelled'
     },
     catalog: {
+      nav_home: 'Home',
+      nav_orders: 'Track & recover',
+      nav_guide: 'Help',
+      store_nav_aria: 'Store navigation',
       customer_account: 'Customer account',
       order_tracking: 'Track & recover orders',
       storefront_status: 'Account services',
@@ -459,7 +501,7 @@
       catalog_no_registration: 'No store registration required',
       catalog_section_eyebrow: 'Services',
       catalog_section_title: 'Available plans',
-      catalog_load_error: 'Products are temporarily unavailable. Check the database connection and schema installation.',
+      catalog_load_error: 'The store is being updated. Please try again in a few moments.',
       catalog_empty_title: 'No plans are available yet',
       catalog_empty_intro: 'The store administrator can add and publish products from the administration panel.',
       catalog_plan_eyebrow: 'Service plan',
@@ -468,15 +510,93 @@
       catalog_quota: 'Data allowance',
       catalog_order: 'Place order',
       admin_login: 'Administration'
+    },
+    common: {
+      dialog_cancel: 'Cancel',
+      dialog_confirm: 'Continue',
+      dialog_title: 'Please confirm',
+      dialog_close: 'Close',
+      password_show: 'Show password',
+      password_hide: 'Hide password'
     }
   };
+  const noticeCopy = {
+    'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.': 'Invalid request. Refresh the page and try again.',
+    'شناسه تراکنش معتبر نیست.': 'The transaction ID is invalid.',
+    'یادداشت بررسی درگاه الزامی است.': 'A gateway review note is required.',
+    'تراکنش پس از ثبت یادداشت بررسی، ناموفق تعیین شد. امکان تلاش مجدد برای سفارش آزاد شد.': 'The transaction was marked failed after review. A new attempt is now available for the order.',
+    'شناسه سفارش معتبر نیست.': 'The order ID is invalid.',
+    'شناسه عملیات معتبر نیست.': 'The operation ID is invalid.',
+    'تعیین تکلیف دستی ثبت شد؛ هیچ درخواست جدیدی به IBSng ارسال نشد.': 'The manual resolution was saved; no new request was sent to IBSng.',
+    'درخواست بررسی و ارسال مجدد ایمیل تحویل ثبت شد؛ وضعیت نتیجه را در جدول ایمیل‌ها ببینید.': 'The delivery retry was requested. Check the email table for the result.',
+    'تنظیمات راه‌های پشتیبانی، قیمت و هدیهٔ تمدید IBSng ذخیره شد.': 'Support, pricing and IBSng renewal gift settings were saved.',
+    'واحد نمایش قیمت معتبر نیست.': 'The price display unit is invalid.',
+    'نوع ارز درگاه پرداخت معتبر نیست.': 'The payment gateway currency type is invalid.',
+    'درگاه پرداخت انتخاب‌شده معتبر نیست.': 'The selected payment gateway is invalid.',
+    'تنظیمات تولید اطلاعات اکانت معتبر نیست.': 'The account credential generation settings are invalid.',
+    'روزهای هدیه باید عدد صحیح بین صفر تا ۳۶۵۰ باشند.': 'Gift days must be a whole number between 0 and 3650.',
+    'تنظیمات ایمیل ذخیره شد.': 'Email settings were saved.',
+    'درخواست ارسال ایمیل تست به mail service هاست تحویل داده شد. تحویل نهایی به صندوق مقصد تضمین‌شده نیست.': 'The test email was submitted to the host mail service. Final inbox delivery is not guaranteed.',
+    'mail() هاست ارسال را نپذیرفت. تنظیمات سرویس ایمیل هاست را بررسی کنید.': 'The host mail service rejected the message. Check its email configuration.',
+    'قالب ایمیل ذخیره شد.': 'The email template was saved.',
+    'ارتقای ساختار تمدید IBSng با موفقیت انجام شد.': 'The IBSng renewal schema upgrade completed successfully.',
+    'ارتقای دیتابیس انجام نشد. دسترسی ALTER و INSERT دیتابیس را بررسی کنید.': 'The database upgrade failed. Check ALTER and INSERT permissions.',
+    'سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.': 'No active IBSng server is configured. Add and activate a server first.',
+    'ساختار دیتابیس برای تمدید IBSng آماده نیست.': 'The database schema is not ready for IBSng renewal.',
+    'تمدید از پاسخ Web Panel IBSng تأیید شد.': 'Renewal was confirmed by the IBSng Web Panel.',
+    'عملیات IBSng انجام نشد؛ وضعیت اتصال و پاسخ Web Panel را بررسی کنید.': 'The IBSng operation failed. Check connectivity and the Web Panel response.',
+    'برای حذف حساب، تأیید حذف الزامی است.': 'Deletion confirmation is required.',
+    'این نام کاربری در IBSng وجود ندارد.': 'This username does not exist in IBSng.',
+    'نام کاربری برای جست‌وجو الزامی است.': 'A username is required for lookup.',
+    'نام کاربری برای دریافت اطلاعات حساب الزامی است.': 'A username is required to retrieve account details.',
+    'گروه، نام کاربری و رمز عبور الزامی هستند.': 'Group, username and password are required.',
+    'Credit باید یک مقدار عددی معتبر باشد.': 'Credit must be a valid number.',
+    'درخواست ایجاد حساب در IBSng با پاسخ موفق تأیید شد.': 'IBSng confirmed the account creation request.',
+    'نتیجهٔ IBSng قطعی نیست یا تعارض وجود دارد؛ عملیات در وضعیت «نیازمند بررسی» قرار گرفت و retry خودکار انجام نشد.': 'The IBSng result is uncertain or conflicting. The operation needs review and was not retried automatically.',
+    'ساخت حساب در IBSng تأیید شد.': 'Account creation was confirmed by IBSng.',
+    'نام کاربری یا رمز عبور صحیح نیست.': 'The username or password is incorrect.',
+    'تلاش‌های ورود بیش از حد بوده است. ۱۵ دقیقه دیگر دوباره تلاش کنید.': 'Too many login attempts. Please try again in 15 minutes.',
+    'ورود در حال حاضر ممکن نیست. وضعیت نصب و دیتابیس را بررسی کنید.': 'Login is currently unavailable. Check installation and database status.',
+    'کد چهاررقمی صحیح نیست؛ دوباره تلاش کنید.': 'The four-digit code is incorrect. Please try again.',
+    'نام کاربری و رمز عبور خود را وارد کنید.': 'Enter your username and password.',
+    'در حال حاضر امکان بررسی حساب وجود ندارد.': 'Account lookup is currently unavailable.',
+    'نام کاربری یا رمز عبور صحیح نیست، یا حساب پیدا نشد.': 'The username or password is incorrect, or the account was not found.',
+    'اگر این ایمیل سفارش ثبت‌شده‌ای داشته باشد، کد تأیید برای آن ارسال می‌شود.': 'If this email has an order, a verification code will be sent.',
+    'کد معتبر نیست یا منقضی شده است.': 'The code is invalid or has expired.',
+    'ایمیل با موفقیت تأیید شد.': 'Email verified successfully.',
+    'از بخش سفارش‌های من خارج شدید.': 'You have signed out of My Orders.',
+    'دریافت فهرست سفارش‌ها موقتاً ممکن نیست.': 'The order list is temporarily unavailable.',
+    'این پلن دیگر برای فروش فعال نیست.': 'This plan is no longer available for sale.',
+    'این نام کاربری قبلاً در سامانه وجود دارد. نام دیگری انتخاب کنید.': 'This username already exists. Please choose another one.',
+    'در حال حاضر امکان بررسی نام کاربری وجود ندارد. چند لحظه بعد دوباره تلاش کنید.': 'The username cannot be checked right now. Please try again shortly.',
+    'ارتباط با سرور سرویس برقرار نشد. لطفاً بعداً دوباره تلاش کنید.': 'The service server could not be reached. Please try again later.'
+  };
+  const originalNotices = new WeakMap();
+  function applyNoticeCopy(language) {
+    document.querySelectorAll('.notice, .account-error, .catalog-notice').forEach((element) => {
+      if (element.children.length > 0 || element.hasAttribute('data-ui-text')) return;
+      if (!originalNotices.has(element)) originalNotices.set(element, element.textContent);
+      const original = originalNotices.get(element);
+      const translated = language === 'en'
+        ? noticeCopy[original]
+        : Object.keys(noticeCopy).find((key) => noticeCopy[key] === original);
+      element.textContent = translated || original;
+    });
+  }
   function applyPageCopy() {
     const language = root.lang === 'en' ? 'en' : 'fa';
     document.querySelectorAll('[data-ui-text]').forEach((element) => {
       const key = element.dataset.uiText;
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
-      if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
-      element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
+      const target = element.querySelector(':scope > .ui-icon + span') || element;
+      if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = target.textContent;
+      target.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
+    });
+    document.querySelectorAll('[data-fa][data-en]').forEach((element) => {
+      const label = element.querySelector(':scope > span');
+      const next = language === 'en' ? element.dataset.en : element.dataset.fa;
+      if (label) label.textContent = next;
+      else element.textContent = next;
     });
     document.querySelectorAll('[data-ui-title-key]').forEach((element) => {
       const key = element.dataset.uiTitleKey;
@@ -533,6 +653,7 @@
         : [seconds, 'second'];
       element.textContent = new Intl.NumberFormat('en').format(unit[0]) + ' ' + unit[1] + (unit[0] === 1 ? '' : 's');
     });
+    applyNoticeCopy(language);
   }
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
@@ -560,7 +681,7 @@
     const initialLanguage=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
     const initialMode=get(storage.mode,'dark')==='light'?'light':'dark';
     controls.innerHTML =
-      '<button type="button" class="atd-pref-mode" aria-label="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'" aria-pressed="'+(initialMode==='light')+'" title="'+(initialLanguage==='fa'?(initialMode==='dark'?'حالت تاریک':'حالت روشن'):(initialMode==='dark'?'Dark mode':'Light mode'))+'">'+svg(initialMode==='dark'?'sun':'moon')+'</button>'+
+      '<button type="button" class="atd-pref-mode" aria-label="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'" aria-pressed="'+(initialMode==='light')+'" title="'+(initialLanguage==='fa'?(initialMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(initialMode==='dark'?'Switch to light mode':'Switch to dark mode'))+'">'+svg(initialMode==='dark'?'sun':'moon')+'</button>'+
       '<button type="button" class="atd-pref-palette" aria-label="'+(initialLanguage==='fa'?'انتخاب طرح رنگ':'Choose color scheme')+'" title="'+(initialLanguage==='fa'?'طرح رنگ':'Color scheme')+'">'+svg('palette')+'</button>'+
       '<button type="button" class="atd-pref-language" aria-label="'+(initialLanguage==='fa'?'Switch language to English':'تغییر زبان به فارسی')+'" title="'+(initialLanguage==='fa'?'زبان':'Language')+'">'+svg('globe')+'<span>'+(initialLanguage==='fa'?'EN':'فا')+'</span></button>';
     const palette = document.createElement('div');
@@ -583,7 +704,7 @@
       modeButton.setAttribute('aria-pressed',String(next==='light'));
       const language=get(storage.lang,get(storage.legacyLang,root.lang||'fa'))==='fa'?'fa':'en';
       modeButton.setAttribute('aria-label',language==='fa'?(next==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(next==='dark'?'Switch to light mode':'Switch to dark mode'));
-      modeButton.title=language==='fa'?(next==='dark'?'حالت تاریک':'حالت روشن'):(next==='dark'?'Dark mode':'Light mode');
+      modeButton.title=language==='fa'?(next==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(next==='dark'?'Switch to light mode':'Switch to dark mode');
     });
     const paletteButton=controls.querySelector('.atd-pref-palette');
     paletteButton.setAttribute('aria-controls',palette.id);
@@ -600,7 +721,7 @@
       const currentMode=get(storage.mode,'dark')==='light'?'light':'dark';
       const modeButton=controls.querySelector('.atd-pref-mode');
       modeButton.setAttribute('aria-label',next==='fa'?(currentMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(currentMode==='dark'?'Switch to light mode':'Switch to dark mode'));
-      modeButton.title=next==='fa'?(currentMode==='dark'?'حالت تاریک':'حالت روشن'):(currentMode==='dark'?'Dark mode':'Light mode');
+      modeButton.title=next==='fa'?(currentMode==='dark'?'روشن کردن حالت روشن':'روشن کردن حالت تاریک'):(currentMode==='dark'?'Switch to light mode':'Switch to dark mode');
       modeButton.setAttribute('aria-pressed',String(currentMode==='light'));
       controls.querySelector('.atd-pref-palette').setAttribute('aria-label',next==='fa'?'انتخاب طرح رنگ':'Choose color scheme');
       controls.querySelector('.atd-pref-palette').title=next==='fa'?'طرح رنگ':'Color scheme';
@@ -623,7 +744,7 @@
       languageButton.setAttribute('aria-label', next === 'fa' ? 'Switch language to English' : 'تغییر زبان به فارسی');
       languageButton.title = next === 'fa' ? 'زبان' : 'Language';
       modeButton.setAttribute('aria-label', next === 'fa' ? (currentMode === 'dark' ? 'روشن کردن حالت روشن' : 'روشن کردن حالت تاریک') : (currentMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'));
-      modeButton.title = next === 'fa' ? (currentMode === 'dark' ? 'حالت تاریک' : 'حالت روشن') : (currentMode === 'dark' ? 'Dark mode' : 'Light mode');
+      modeButton.title = next === 'fa' ? (currentMode === 'dark' ? 'روشن کردن حالت روشن' : 'روشن کردن حالت تاریک') : (currentMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
       modeButton.setAttribute('aria-pressed', String(currentMode === 'light'));
       paletteControl.setAttribute('aria-label', next === 'fa' ? 'انتخاب طرح رنگ' : 'Choose color scheme');
       paletteControl.title = next === 'fa' ? 'طرح رنگ' : 'Color scheme';
@@ -650,115 +771,24 @@
         updateAdminNav(event.detail?.language === 'en' ? 'en' : 'fa');
       });
     }
-    // One storefront header structure on every public page: brand and preferences
-    // share the first row; the same navigation is always rendered immediately below.
-    const publicPage = !location.pathname.includes('/admin') && !location.pathname.includes('/install');
-    if (publicPage) {
-      const nav = document.querySelector('.atd-store-nav') || document.createElement('nav');
-      nav.className = 'atd-store-nav';
+    document.querySelectorAll('.atd-store-nav').forEach((nav) => {
       nav.setAttribute('aria-label', root.lang === 'fa' ? 'منوی فروشگاه' : 'Store navigation');
-      nav.replaceChildren();
-      const base = document.querySelector('base')?.href || location.href;
-      const rootUrl = new URL('.', base).href;
-      const entries = [
-        ['home','خانه','Home','<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
-        ['account','حساب کاربری','Account','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
-        ['orders','پیگیری و بازیابی خریدها','Track & recover','<path d="M3 4h18v16H3z"/><path d="M7 8h10M7 12h6M7 16h4"/>'],
-        ['guide','راهنما','Help','<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1.2.8-1.5 1.2-1.5 2.5M12 17h.01"/>']
-      ];
-      const paths = {'home':'','account':'customer-account.php','orders':'my-orders.php','guide':'guide.php'};
-      entries.forEach(([key,fa,en,icon]) => {
-        const a = document.createElement('a');
-        a.className = 'atd-store-nav-link button';
-        a.href = rootUrl + paths[key];
-        a.dataset.navKey = key;
-        a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+icon+'</svg><span>'+(root.lang === 'fa' ? fa : en)+'</span>';
-        const current = location.pathname.replace(/\\/$/,'');
-        if ((key === 'home' && (current === '' || current.endsWith('/index.php'))) ||
-            (key === 'account' && current.endsWith('/customer-account.php')) ||
-            (key === 'orders' && (current.endsWith('/my-orders.php') || current.endsWith('/order-status.php'))) ||
-            (key === 'guide' && current.endsWith('/guide.php'))) a.setAttribute('aria-current','page');
-        nav.appendChild(a);
+      nav.querySelectorAll('[data-fa][data-en]').forEach((link) => {
+        const label = link.querySelector('span');
+        if (label) label.textContent = root.lang === 'fa' ? link.dataset.fa : link.dataset.en;
       });
-      const header = document.querySelector('main > header.topbar, main > .topbar, .store-shell > .topbar, .account-shell > .topbar, .orders-shell > .topbar, .topbar');
-      if (header) {
-        let row = header.querySelector(':scope > .atd-shared-header-top') || header.querySelector(':scope > .atd-store-header-row');
-        if (!row) {
-          row = document.createElement('div');
-          row.className = 'atd-store-header-row';
-          const brand = header.querySelector(':scope > .brand');
-          if (brand) row.appendChild(brand);
-          Array.from(header.children).forEach((child) => {
-            if (child !== row && child !== brand && child !== nav) child.remove();
-          });
-          header.prepend(row);
-        }
-        const preferenceSlot = header.querySelector(':scope > .atd-shared-header-top > .atd-shared-preferences-slot');
-        if (preferenceSlot) preferenceSlot.appendChild(controls);
-        else row.appendChild(controls);
-        if (nav.parentElement !== header) header.appendChild(nav);
-        else if (nav.previousElementSibling !== row) row.insertAdjacentElement('afterend', nav);
-      } else {
-        const main = document.querySelector('main');
-        const row = document.createElement('div');
-        row.className = 'atd-store-header-row';
-        const brand = document.createElement('a');
-        brand.className = 'brand';
-        brand.href = rootUrl;
-        brand.textContent = document.querySelector('title')?.textContent?.split('|')[0]?.trim() || 'ATD IBSng Store';
-        row.append(brand, controls);
-        if (main) main.prepend(nav, row);
-        else document.body.prepend(nav, row);
-      }
-      const updateStoreNav = (language) => {
+      document.addEventListener('atd:language-change', (event) => {
+        const language = event.detail?.language === 'en' ? 'en' : 'fa';
         nav.setAttribute('aria-label', language === 'fa' ? 'منوی فروشگاه' : 'Store navigation');
-        nav.querySelectorAll('[data-nav-key]').forEach((link) => {
-          const labels = {
-            home: ['خانه','Home'], account: ['حساب کاربری','Account'],
-            orders: ['پیگیری و بازیابی خریدها','Track & recover'], guide: ['راهنما','Help']
-          };
-          const label = labels[link.dataset.navKey];
-          const span = link.querySelector('span');
-          if (span && label) span.textContent = language === 'fa' ? label[0] : label[1];
+        nav.querySelectorAll('[data-fa][data-en]').forEach((link) => {
+          const label = link.querySelector('span');
+          if (label) label.textContent = language === 'fa' ? link.dataset.fa : link.dataset.en;
         });
-      };
-      updateStoreNav(root.lang === 'en' ? 'en' : 'fa');
-      document.addEventListener('atd:language-change', (event) => updateStoreNav(event.detail?.language === 'en' ? 'en' : 'fa'));
-    }
-    // Keep a single translated footer across public storefront pages.
-    if (publicPage) {
-      const pageShell = document.querySelector('main.store-shell,main.account-shell,main.orders-shell,main.checkout-shell,main.status-shell,main');
-      if (pageShell && !pageShell.querySelector(':scope > .atd-page-footer, :scope > footer')) {
-        const footer = document.createElement('footer');
-        footer.className = 'atd-page-footer';
-        const copy = document.createElement('span');
-        copy.textContent = '© ' + new Date().getFullYear() + ' ';
-        const brand = document.createElement('span');
-        brand.textContent = document.querySelector('.topbar .brand')?.textContent?.trim() || 'ATD IBSng Store';
-        const separator = document.createTextNode(' · ');
-        const adminLink = document.createElement('a');
-        adminLink.className = 'admin-link';
-        adminLink.href = new URL('admin/login.php', document.querySelector('base')?.href || location.href).href;
-        adminLink.dataset.uiText = 'admin_login';
-        const setFooterLanguage = (language) => {
-          adminLink.textContent = language === 'en' ? 'Admin login' : 'ورود مدیریت';
-        };
-        setFooterLanguage(root.lang === 'en' ? 'en' : 'fa');
-        document.addEventListener('atd:language-change', (event) => setFooterLanguage(event.detail?.language === 'en' ? 'en' : 'fa'));
-        footer.append(copy, brand, separator, adminLink);
-        pageShell.appendChild(footer);
-      }
-    }
-    // Admin preferences share the exact header row with the administration brand.
-    const adminPreferenceSlot = document.querySelector('.atd-admin-preferences-slot');
-    const adminHeader = document.querySelector('.atd-admin-header');
-    if (adminHeader && adminPreferenceSlot) {
-      adminPreferenceSlot.appendChild(controls);
-    } else if (!publicPage) {
-      const host = document.querySelector('.admin-top,.store-header,.admin-header,.topbar,.top') ||
-        document.querySelector('main') || document.body;
-      host.appendChild(controls);
-    }
+      });
+    });
+    const host=document.getElementById('atd-preferences-host')||document.querySelector('.atd-preferences-slot,.atd-admin-preferences-slot')||document.querySelector('.topbar,.admin-top,.store-header,.admin-header,.top');
+    if (!host) return;
+    host.appendChild(controls);
     document.addEventListener('pointerdown',(event)=>{
       if(!controls.contains(event.target)) closePalette();
     });

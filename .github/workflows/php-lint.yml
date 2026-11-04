@@ -47,3 +47,6 @@ jobs:
 
       - name: Run IBSng renewal ledger contract test
         run: php tests/ibsng-renewal-coordinator-contract-test.php
+
+      - name: Run UI presentation contract test
+        run: node tests/ui-presentation-contract.js
