@@ -33,8 +33,8 @@ $config = app_config();
 <style>.result-shell{width:min(700px,calc(100% - 32px));margin:0 auto}.result-card{padding:clamp(20px,4vw,34px);margin:24px 0}.notice{padding:16px;border:1px solid var(--border);border-radius:14px;line-height:1.9}.ok{border-color:#44d6a055;background:#44d6a012}.fail{border-color:#ff718055;background:#ff718012}</style>
 </head>
 <body>
-<main class="result-shell">
 <?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'home'); ?>
+<main class="result-shell">
 <section class="result-card panel">
 <?php if ($success): ?>
 <h1 data-ui-text="payment_success_title">پرداخت تأیید شد</h1>
