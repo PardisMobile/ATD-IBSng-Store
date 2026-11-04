@@ -145,10 +145,19 @@ final class IBSngClient
             if (preg_match('/^Content-Length:\s*(\d+)\s*$/im', $headers, $match)) {
                 $contentLength = (int)$match[1];
             }
+            /*
+             * Match the proven RouteBox A1.24 transport behavior:
+             * the legacy Apache server may deliver the HTTP response and then
+             * leave the connection open until cURL times out. In that case,
+             * retain a received 2xx/3xx response body; a redirect with Location
+             * is also a valid login response even when it has no body.
+             */
+            $hasRedirectLocation = $status >= 300 && $status < 400
+                && preg_match('/^Location\\s*:/im', $headers) === 1;
+            $hasHttpResponseBody = $body !== '';
             $completeTimeoutResponse = $errno === CURLE_OPERATION_TIMEDOUT
                 && $status >= 200 && $status < 400
-                && (($contentLength !== null && strlen($body) === $contentLength)
-                    || ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers) === 1));
+                && ($hasHttpResponseBody || $hasRedirectLocation);
             if (!$completeTimeoutResponse) {
                 throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
                     ? 'اتصال به IBSng timeout شد.'
