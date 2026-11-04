@@ -141,10 +141,6 @@ final class IBSngClient
         curl_close($curl);
 
         if ($completed === false) {
-            $contentLength = null;
-            if (preg_match('/^Content-Length:\s*(\d+)\s*$/im', $headers, $match)) {
-                $contentLength = (int)$match[1];
-            }
             /*
              * Match the proven RouteBox A1.24 transport behavior:
              * the legacy Apache server may deliver the HTTP response and then
