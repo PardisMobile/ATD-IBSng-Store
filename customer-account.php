@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/app/bootstrap.php';
+require_once __DIR__ . '/app/messages.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
@@ -23,7 +24,7 @@ $auth = $_SESSION['customer_account_auth'] ?? null;
 
 if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!hash_equals($csrf, (string)($_POST['csrf_token'] ?? ''))) {
-        $error = 'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.';
+        $error = app_message('customer_account_invalid_request');
     } else {
         unset($_SESSION['customer_account_auth']);
         $auth = null;
@@ -70,15 +71,15 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
     $provided = trim((string)($_POST['captcha'] ?? ''));
     if (!hash_equals($captcha, $provided)) {
-        $error = 'کد چهاررقمی صحیح نیست. دوباره تلاش کنید.';
+        $error = app_message('customer_account_captcha_invalid');
     } elseif ($username === '' || strlen($username) > 128 || $accountPassword === '') {
-        $error = 'نام کاربری و رمز عبور را وارد کنید.';
+        $error = app_message('customer_account_credentials_required');
     } else {
         try {
             $pdo = Database::connection();
             $stmt = $pdo->query("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id DESC");
             $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if (!$servers) throw new RuntimeException('در حال حاضر سرور IBSng فعالی برای بررسی حساب وجود ندارد.');
+            if (!$servers) throw new RuntimeException('customer_account_servers_unavailable');
             $matchedIds = [];
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
@@ -92,13 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
                     throw $e;
                 }
             }
-            if ($matchedIds === []) throw new RuntimeException('نام کاربری یا رمز عبور اشتباه است.');
+            if ($matchedIds === []) throw new RuntimeException('customer_account_not_found');
             $_SESSION['customer_account_auth'] = ['username' => $username, 'server_ids' => $matchedIds, 'created_at' => time()];
             $auth = $_SESSION['customer_account_auth'];
             $account = $loadAccountDetails($pdo, $username, $matchedIds);
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
         } catch (Throwable $e) {
-            $error = $e->getMessage();
+            $error = app_message($e->getMessage() && isset($GLOBALS['app_message_catalog']['fa'][$e->getMessage()]) ? $e->getMessage() : 'customer_account_lookup_failed');
         }
     }
     $_SESSION['account_lookup_captcha'] = (string)random_int(1000, 9999);
@@ -110,17 +111,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'change_password') {
     if (!hash_equals($csrf, (string)($_POST['csrf_token'] ?? ''))) {
         $error = 'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.';
     } elseif (!is_array($auth) || !in_array((int)($_POST['server_id'] ?? 0), array_map('intval', (array)($auth['server_ids'] ?? [])), true)) {
-        $error = 'نشست حساب معتبر نیست؛ دوباره وارد شوید.';
+        $error = app_message('customer_account_session_invalid');
     } else {
         $currentPassword = (string)($_POST['current_password'] ?? '');
         $newPassword = (string)($_POST['new_password'] ?? '');
         $confirmPassword = (string)($_POST['confirm_password'] ?? '');
         if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
-            $error = 'تمام فیلدهای رمز عبور را تکمیل کنید.';
+            $error = app_message('customer_account_password_fields_required');
         } elseif (!hash_equals($newPassword, $confirmPassword)) {
-            $error = 'رمز عبور جدید و تکرار آن یکسان نیستند.';
+            $error = app_message('customer_account_password_mismatch');
         } elseif (strlen($newPassword) > 128) {
-            $error = 'طول رمز عبور جدید بیش از حد مجاز است.';
+            $error = app_message('customer_account_password_too_long');
         } else {
             try {
                 $serverId = (int)$_POST['server_id'];
@@ -128,19 +129,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'change_password') {
                 $stmt = $pdo->prepare("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 AND id=? LIMIT 1");
                 $stmt->execute([$serverId]);
                 $server = $stmt->fetch(PDO::FETCH_ASSOC);
-                if (!$server) throw new RuntimeException('سرور این حساب در دسترس نیست.');
+                if (!$server) throw new RuntimeException('customer_account_server_unavailable');
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 $credentials = $client->getCredentials((string)$auth['username']);
                 if (!hash_equals((string)($credentials['password'] ?? ''), $currentPassword)) {
-                    throw new RuntimeException('رمز عبور فعلی صحیح نیست.');
+                    throw new RuntimeException('customer_account_current_password_invalid');
                 }
                 $client->setUserPassword((string)$auth['username'], $newPassword);
-                $_SESSION['customer_account_flash'] = 'تغییر رمز عبور انجام شد. لطفاً با رمز جدید دوباره وارد شوید.';
+                $_SESSION['customer_account_flash'] = app_message('customer_account_password_changed');
                 unset($_SESSION['customer_account_auth']);
                 header('Location: ' . app_url('customer-account.php'), true, 303);
                 exit;
             } catch (Throwable $e) {
-                $error = $e->getMessage();
+                $error = app_message($e->getMessage() && isset($GLOBALS['app_message_catalog']['fa'][$e->getMessage()]) ? $e->getMessage() : 'customer_account_password_change_failed');
             }
         }
     }
@@ -154,10 +155,10 @@ if (is_array($auth) && $account === null && $action !== 'logout') {
             unset($_SESSION['customer_account_auth']);
             $auth = null;
             $username = '';
-            $error = 'حساب در سرورهای فعال پیدا نشد؛ دوباره وارد شوید.';
+            $error = app_message('customer_account_account_unavailable');
         }
     } catch (Throwable $e) {
-        $error = $e->getMessage();
+        $error = app_message('customer_account_account_unavailable');
         $account = null;
     }
 }
