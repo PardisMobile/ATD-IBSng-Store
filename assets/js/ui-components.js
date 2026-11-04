@@ -96,6 +96,17 @@
       });
     });
 
+    document.querySelectorAll('[data-toggle-password-form]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const form = document.getElementById(button.dataset.togglePasswordForm || '');
+        if (!form) return;
+        const opening = form.hidden;
+        form.hidden = !opening;
+        button.setAttribute('aria-expanded', String(opening));
+        if (opening) form.querySelector('input')?.focus();
+      });
+    });
+
     const syncTableLabels = () => {
       document.querySelectorAll('.table-wrap').forEach((wrap) => {
         wrap.tabIndex = 0;
