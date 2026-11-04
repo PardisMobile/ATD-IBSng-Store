@@ -271,12 +271,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php
 $accountHtml = (string)($userResult['html'] ?? '');
 $cleanAccountText = static function (string $value): string {
-    return trim(preg_replace('/\\s+/u', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
+    return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
 };
 /*
- * Keep the exact A1.24 DOM traversal from the hosted diagnostic that was
- * already tested. Attribute values are read from attr_edit_checkbox_* rows;
- * displayed values are read from IBSng's Form_Content_Row_Right cells.
+ * These two DOM readers intentionally mirror the tested standalone
+ * atd-ibsng-fields-test.php diagnostic. Keep its A1.24 traversal unchanged.
  */
 $readAccountAttribute = static function (array $attributeNames) use ($accountHtml, $cleanAccountText): ?string {
     if ($accountHtml === '' || !class_exists('DOMDocument')) return null;
@@ -346,7 +345,11 @@ $readDisplayedAccountValue = static function (array $wantedLabels) use ($account
         foreach ($cells as $cell) {
             if (!$cell instanceof DOMElement) continue;
             $label = trim($cleanAccountText($cell->textContent), " :");
-            if (!in_array(strtolower($label), array_map('strtolower', $wantedLabels), true)) continue;
+            $matched = false;
+            foreach ($wantedLabels as $wanted) {
+                if (strcasecmp($label, $wanted) === 0) { $matched = true; break; }
+            }
+            if (!$matched) continue;
             $row = $cell->parentNode;
             if (!$row instanceof DOMElement || strtolower($row->tagName) !== 'tr') continue;
             $seen = false;
@@ -382,12 +385,10 @@ $accountDisplay = static function (?string $value): string {
     return $value === '' || preg_match('/^-+$/u', $value) ? 'نامشخص' : $value;
 };
 $multiLoginRaw = $readAccountAttribute(['multi_login', 'multi_login_instances', 'multi_login_instance']);
-$multiLoginText = trim((string)$multiLoginRaw);
-$instanceCount = null;
-if (preg_match('/(\\d+)/u', $multiLoginText, $instanceMatch)) {
-    $instanceCount = (int)$instanceMatch[1];
+$multiLoginDisplay = trim((string)$multiLoginRaw);
+if ($multiLoginDisplay === '' || preg_match('/^-+$/u', $multiLoginDisplay)) {
+    $multiLoginDisplay = 'تک‌کاربره';
 }
-$multiLoginEnabled = $instanceCount !== null && $instanceCount > 0;
 $accountFields = [
     'Username' => (string)($userResult['username'] ?? 'نامشخص'),
     'IBSng User ID' => (string)($userResult['user_id'] ?? 'نامشخص'),
@@ -395,13 +396,12 @@ $accountFields = [
     'Status' => $accountDisplay($readDisplayedAccountValue(['Status', 'User Status'])),
     'First Login' => $accountDisplay($readAccountAttribute(['first_login'])),
     'Last Login' => $accountDisplay($readDisplayedAccountValue(['Last Login', 'Last Login Date'])),
-    'Relative Expiration' => $accountDisplay($readAccountAttribute(['rel_exp_date', 'rel_exp'])),
+    'Relative Expiration' => $accountDisplay($readAccountAttribute(['rel_exp'])),
     'Nearest Expiration Date' => $accountDisplay($readDisplayedAccountValue(['Nearest Expiration Date'])),
-    'Absolute Expiration Date' => $accountDisplay($readAccountAttribute(['abs_exp_date', 'abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $readDisplayedAccountValue(['Absolute Expiration Date'])),
-    'User Is Locked' => $accountDisplay($readAccountAttribute(['lock', 'user_is_locked', 'is_locked', 'locked'])),
+    'Absolute Expiration Date' => $accountDisplay($readAccountAttribute(['abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $readDisplayedAccountValue(['Absolute Expiration Date'])),
+    'User Is Locked' => $accountDisplay($readAccountAttribute(['user_is_locked', 'is_locked', 'locked']) ?? $readDisplayedAccountValue(['User Is Locked', 'User Locked'])),
     'Creation Date' => $accountDisplay($readDisplayedAccountValue(['Creation Date', 'Create Date'])),
-    'Multi Login' => $multiLoginEnabled ? 'فعال' : 'غیرفعال',
-    '10 Instances' => $instanceCount !== null && $instanceCount > 0 ? (string)$instanceCount : 'نامشخص',
+    'Multi Login raw value' => $multiLoginDisplay,
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
 ];
 ?>
@@ -409,7 +409,7 @@ $accountFields = [
 <strong data-fa="اطلاعات حساب IBSng" data-en="IBSng account details">اطلاعات حساب IBSng</strong>
 <div class="grid">
 <?php foreach ($accountFields as $fieldLabel => $fieldValue): ?>
-<div class="field"><span class="muted"><?= e($fieldLabel) ?></span><strong class="technical-value"><?= e($fieldValue !== '' ? $fieldValue : 'نامشخص') ?></strong></div>
+<div class="field"><span class="muted"><?= e($fieldLabel) ?></span><strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong></div>
 <?php endforeach; ?>
 </div>
 </div>
