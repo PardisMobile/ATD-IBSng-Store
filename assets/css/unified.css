@@ -57,7 +57,7 @@ body {
 }
 
 .store-header {
-  width:min(1040px,calc(100% - 32px));
+  width:min(1120px,calc(100% - 32px));
   display:grid;
   gap:12px;
   margin:18px auto 0;
