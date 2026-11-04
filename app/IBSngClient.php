@@ -36,7 +36,8 @@ final class IBSngClient
             throw new InvalidArgumentException('فرمت Host معتبر نیست.');
         }
 
-        $this->baseUrl = 'http://' . $hostForUrl . ':' . $this->port . '/IBSng';
+        $portSuffix = $this->port === 80 ? '' : ':' . $this->port;
+        $this->baseUrl = 'http://' . $hostForUrl . $portSuffix . '/IBSng';
         $cookie = tempnam(sys_get_temp_dir(), 'atd_ibsng_');
         if ($cookie === false) {
             throw new RuntimeException('ساخت فضای موقت نشست IBSng انجام نشد.');
