@@ -16,7 +16,7 @@ final class IBSngClient
         private readonly int $port,
         private readonly string $username,
         private readonly string $password,
-        private readonly int $timeout = 15
+        private readonly int $timeout = 30
     ) {
         if ($this->host === '' || $this->username === '' || $this->password === '') {
             throw new InvalidArgumentException('اطلاعات اتصال IBSng کامل نیست.');
@@ -36,7 +36,7 @@ final class IBSngClient
             throw new InvalidArgumentException('فرمت Host معتبر نیست.');
         }
 
-        $this->baseUrl = ($this->port === 443 ? 'https' : 'http') . '://' . $hostForUrl . ':' . $this->port . '/IBSng';
+        $this->baseUrl = 'http://' . $hostForUrl . ':' . $this->port . '/IBSng';
         $cookie = tempnam(sys_get_temp_dir(), 'atd_ibsng_');
         if ($cookie === false) {
             throw new RuntimeException('ساخت فضای موقت نشست IBSng انجام نشد.');
@@ -53,71 +53,10 @@ final class IBSngClient
 
     public function testConnection(): void
     {
-        if (!function_exists('curl_init')) {
-            throw new RuntimeException('افزونه PHP cURL روی هاست فعال نیست.');
-        }
-
-        $url = $this->baseUrl . '/admin/';
-        $curl = curl_init($url);
-        if ($curl === false) {
-            throw new RuntimeException('راه‌اندازی ارتباط HTTP با IBSng ناموفق بود.');
-        }
-
-        curl_setopt_array($curl, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_MAXREDIRS => 0,
-            CURLOPT_CONNECTTIMEOUT => min(8, $this->timeout),
-            CURLOPT_TIMEOUT => $this->timeout,
-            CURLOPT_COOKIEJAR => $this->cookieFile,
-            CURLOPT_COOKIEFILE => $this->cookieFile,
-            CURLOPT_USERAGENT => 'ATD-IBSng-Store/1.0',
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query([
-                'username' => $this->username,
-                'password' => $this->password,
-            ], '', '&'),
-            CURLOPT_HTTPHEADER => [
-                'Accept: text/html,application/xhtml+xml',
-                'Cache-Control: no-cache',
-                'Accept-Encoding: identity',
-                'Connection: close',
-                'Content-Type: application/x-www-form-urlencoded',
-            ],
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0,
-        ]);
-
-        $response = curl_exec($curl);
-        $errno = curl_errno($curl);
-        $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        $headerSize = (int)curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-        curl_close($curl);
-
-        if ($response === false) {
-            throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
-                ? 'اتصال به IBSng timeout شد.'
-                : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
-        }
-
-        $headers = substr($response, 0, max(0, $headerSize));
-        $body = substr($response, max(0, $headerSize));
-
-        // Preserve the known-working Routebox authentication check.
-        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
-            return;
-        }
-
-        $hasLoginForm = stripos($body, 'name="username"') !== false
-            && stripos($body, 'name="password"') !== false;
-        if ($hasLoginForm) {
-            throw new RuntimeException('IBSng نام کاربری یا رمز عبور مدیر را نپذیرفت؛ اطلاعات ورود را بررسی کنید.');
-        }
-
-        // The reference RouteBox client treats a redirect after POST /admin/
-        // as the successful A1.24 login signal. An arbitrary HTTP 200 is not
-        // proof of bad credentials; it is an unexpected panel response.
-        throw new RuntimeException('پاسخ غیرمنتظره از Web Panel دریافت شد (HTTP ' . $status . ').');
+        // Match RouteBox's proven A1.24 handshake: POST /admin/ without
+        // following the success redirect. The 3xx Location response is the
+        // authentication signal; the redirected page can hang on legacy Apache.
+        $this->login();
     }
 
     private function login(): void
@@ -128,9 +67,9 @@ final class IBSngClient
         [$body, $status, $headers] = $this->requestRaw('/admin/', [
             'username' => $this->username,
             'password' => $this->password,
-        ], true);
+        ], false);
 
-        if ($status >= 300 && $status < 400 && preg_match('/^Location\s*:/im', $headers)) {
+        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
             $this->loggedIn = true;
             return;
         }
@@ -147,7 +86,7 @@ final class IBSngClient
     /**
      * @return array{0:string,1:int,2:string} body, HTTP status, response headers
      */
-    private function requestRaw(string $path, array $data = [], bool $withHeaders = false): array
+    private function requestRaw(string $path, array $data = [], bool $followLocation = true): array
     {
         if (!function_exists('curl_init')) {
             throw new RuntimeException('افزونه PHP cURL روی هاست فعال نیست.');
@@ -162,8 +101,8 @@ final class IBSngClient
         $options = [
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_MAXREDIRS => 0,
+            CURLOPT_FOLLOWLOCATION => $followLocation,
+            CURLOPT_MAXREDIRS => 5,
             CURLOPT_CONNECTTIMEOUT => min(8, $this->timeout),
             CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_COOKIEJAR => $this->cookieFile,
@@ -177,7 +116,7 @@ final class IBSngClient
             ],
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0,
             CURLOPT_HEADERFUNCTION => static function ($handle, string $line) use (&$headers): int {
-                if (preg_match('/^HTTP\\/\\d(?:\\.\\d)?\\s+\\d{3}/i', $line)) {
+                if (preg_match('/^HTTP\/\d(?:\.\d)?\s+\d{3}/i', $line)) {
                     $headers = $line;
                 } else {
                     $headers .= $line;
@@ -202,13 +141,13 @@ final class IBSngClient
 
         if ($completed === false) {
             $contentLength = null;
-            if (preg_match('/^Content-Length:\\s*(\\d+)\\s*$/im', $headers, $match)) {
+            if (preg_match('/^Content-Length:\s*(\d+)\s*$/im', $headers, $match)) {
                 $contentLength = (int)$match[1];
             }
             $completeTimeoutResponse = $errno === CURLE_OPERATION_TIMEDOUT
                 && $status >= 200 && $status < 400
-                && $contentLength !== null
-                && strlen($body) === $contentLength;
+                && (($contentLength !== null && strlen($body) === $contentLength)
+                    || ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers) === 1));
             if (!$completeTimeoutResponse) {
                 throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
                     ? 'اتصال به IBSng timeout شد.'
@@ -483,7 +422,7 @@ final class IBSngClient
 
         [$body, $status, $headers] = $this->requestRaw('/admin/plugins/edit.php', $post, true);
         $location = null;
-        if (preg_match('/^Location:\\s*([^\\r\\n]+)/mi', $headers, $m)) {
+        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
             $location = trim($m[1]);
         }
         $query = [];
