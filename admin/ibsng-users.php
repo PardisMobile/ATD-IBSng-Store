@@ -150,13 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($username === '') {
                     throw new InvalidArgumentException('نام کاربری برای جست‌وجو الزامی است.');
                 }
-                $userResult = $client->lookupUser($username);
-            } elseif ($action === 'credentials') {
-                if ($username === '') {
-                    throw new InvalidArgumentException('نام کاربری برای دریافت اطلاعات حساب الزامی است.');
-                }
-                $credentialResult = $client->getCredentials($username);
-                $userResult = $credentialResult;
+                // One Search Account action returns the complete management
+                // record, including credentials; no separate credentials form.
+                $userResult = $client->getCredentials($username);
             } elseif ($action === 'create') {
                 $groupId = (int)($_POST['group_id'] ?? 0);
                 $groupStmt = $pdo->prepare('SELECT group_name FROM ibsng_groups WHERE id=? AND server_id=? AND is_active=1');
@@ -227,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title data-ui-title-key="title_admin_ibsng_users">مدیریت حساب‌های IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.ibsng-users-page .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.ibsng-users-page .admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.ibsng-users-page .panel-card{padding:24px;margin-top:20px}.ibsng-users-page .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.ibsng-users-page .field{display:grid;gap:8px;margin:14px 0}.ibsng-users-page .field label{color:var(--muted);font-size:.9rem}.ibsng-users-page .field input,.ibsng-users-page .field select{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit;transition:border-color .18s,box-shadow .18s}.ibsng-users-page .field input:focus-visible,.ibsng-users-page .field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}.ibsng-users-page .field input::placeholder{color:var(--muted)}.ibsng-users-page .field input[name=username],.ibsng-users-page .field input[name=new_password],.ibsng-users-page .field input[name=remote_user_id],.ibsng-users-page .field input[name=credit]{direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.ibsng-users-page .notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ibsng-users-page .ok{background:#44d6a018;border:1px solid #44d6a044}.ibsng-users-page .err{background:#ff718018;border:1px solid #ff718044}.ibsng-users-page .result{margin-top:16px;padding:18px;overflow-wrap:anywhere}.ibsng-users-page .result .technical-value{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ibsng-users-page .result code{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ibsng-users-page .actions{display:flex;gap:10px;flex-wrap:wrap}.ibsng-users-page .danger{color:#ff8e9a}.ibsng-users-page .muted{color:var(--muted);line-height:1.8}@media(max-width:600px){.ibsng-users-page .grid{grid-template-columns:1fr}.ibsng-users-page .admin-top{align-items:flex-start;flex-direction:column}.ibsng-users-page .panel-card{padding:18px}}
+.ibsng-users-page .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.ibsng-users-page .admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.ibsng-users-page .panel-card{padding:24px;margin-top:20px}.ibsng-users-page .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.ibsng-users-page .field{display:grid;gap:8px;margin:14px 0}.ibsng-users-page .field label{color:var(--muted);font-size:.9rem}.ibsng-users-page .field input,.ibsng-users-page .field select{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit;transition:border-color .18s,box-shadow .18s}.ibsng-users-page .field input:focus-visible,.ibsng-users-page .field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}.ibsng-users-page .field input::placeholder{color:var(--muted)}.ibsng-users-page .field input[name=username],.ibsng-users-page .field input[name=new_password],.ibsng-users-page .field input[name=remote_user_id],.ibsng-users-page .field input[name=credit]{direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.ibsng-users-page .notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ibsng-users-page .ok{background:#44d6a018;border:1px solid #44d6a044}.ibsng-users-page .err{background:#ff718018;border:1px solid #ff718044}.ibsng-users-page .result{margin-top:16px;padding:18px;overflow-wrap:anywhere}.ibsng-users-page .result .technical-value{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ibsng-users-page .result code{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ibsng-users-page .actions{display:flex;gap:10px;flex-wrap:wrap}.ibsng-users-page .account-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.ibsng-users-page .account-detail{display:grid;gap:6px;padding:12px;border:1px solid var(--border);border-radius:12px;min-width:0}.ibsng-users-page .account-detail strong{overflow-wrap:anywhere}@media(max-width:600px){.ibsng-users-page .account-details-grid{grid-template-columns:1fr}}.ibsng-users-page .danger{color:#ff8e9a}.ibsng-users-page .muted{color:var(--muted);line-height:1.8}@media(max-width:600px){.ibsng-users-page .grid{grid-template-columns:1fr}.ibsng-users-page .admin-top{align-items:flex-start;flex-direction:column}.ibsng-users-page .panel-card{padding:18px}}
 </style>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
@@ -271,19 +267,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="field"><label for="lookup_username">Username</label><input id="lookup_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
 <div class="actions"><button class="button primary" type="submit" data-fa="جست‌وجوی حساب" data-en="Search account">جست‌وجوی حساب</button></div>
 </form>
-<form method="post">
-<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="credentials">
-<div class="field"><label for="credentials_username" data-fa="نام کاربری برای نمایش اطلاعات ورود" data-en="Username to retrieve login credentials">نام کاربری برای نمایش اطلاعات ورود</label><input id="credentials_username" name="username" required autocomplete="off"></div>
-<button class="button" type="submit" data-fa="دریافت نام کاربری و رمز از IBSng" data-en="Get username and password from IBSng">دریافت نام کاربری و رمز از IBSng</button>
-</form>
 <?php if (is_array($userResult)): ?>
+<?php
+$accountHtml = (string)($userResult['html'] ?? '');
+$accountField = static function (string $label) use ($accountHtml): string {
+    if ($accountHtml === '' || !class_exists('DOMDocument')) return 'نامشخص';
+    $previous = libxml_use_internal_errors(true);
+    try {
+        $dom = new DOMDocument();
+        $dom->loadHTML('<?xml encoding="UTF-8">' . $accountHtml);
+        $xpath = new DOMXPath($dom);
+        foreach ($xpath->query('//td') ?: [] as $cell) {
+            if (!$cell instanceof DOMElement) continue;
+            $cellLabel = trim(preg_replace('/\\s+/u', ' ', html_entity_decode(strip_tags($cell->textContent), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '', " :");
+            if (strcasecmp($cellLabel, $label) !== 0) continue;
+            $row = $cell->parentNode;
+            if (!$row instanceof DOMElement || strtolower($row->tagName) !== 'tr') continue;
+            $found = false;
+            foreach ($row->childNodes as $sibling) {
+                if (!$sibling instanceof DOMElement || strtolower($sibling->tagName) !== 'td') continue;
+                if ($sibling->isSameNode($cell)) { $found = true; continue; }
+                if (!$found) continue;
+                $value = $xpath->query('.//input[not(@type="hidden") and not(@type="checkbox")]', $sibling);
+                if ($value && $value->length && $value->item(0) instanceof DOMElement) return trim($value->item(0)->getAttribute('value')) ?: 'نامشخص';
+                $selected = $xpath->query('.//select/option[@selected]', $sibling);
+                if ($selected && $selected->length) return trim($selected->item(0)->textContent) ?: 'نامشخص';
+                $text = trim(preg_replace('/\\s+/u', ' ', $sibling->textContent) ?? '');
+                return $text !== '' ? $text : 'نامشخص';
+            }
+        }
+        return 'نامشخص';
+    } finally {
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+    }
+};
+$accountFields = [
+    'Username' => (string)($userResult['username'] ?? 'نامشخص'),
+    'IBSng User ID' => (string)($userResult['user_id'] ?? 'نامشخص'),
+    'Group' => (string)($userResult['group'] ?? 'نامشخص'),
+    'Status' => $accountField('Status'),
+    'First Login' => $accountField('First Login'),
+    'Last Login' => $accountField('Last Login'),
+    'Relative Expiration' => $accountField('Relative Expiration'),
+    'Nearest Expiration Date' => $accountField('Nearest Expiration Date'),
+    'Absolute Expiration Date' => $accountField('Absolute Expiration Date'),
+    'User Is Locked' => $accountField('User Is Locked'),
+    'Creation Date' => $accountField('Creation Date'),
+    'Multi Login' => $accountField('Multi Login'),
+    '10 Instances' => $accountField('10 Instances'),
+    'Password' => (string)($userResult['password'] ?? 'نامشخص'),
+];
+?>
 <div class="result panel">
-<strong data-fa="اطلاعات حساب" data-en="Account details">اطلاعات حساب</strong>
-<div class="muted">Username: <span class="technical-value"><?= e((string)($userResult['username'] ?? '')) ?></span></div>
-<div class="muted">IBSng User ID: <span class="technical-value"><?= e((string)($userResult['user_id'] ?? 'نامشخص')) ?></span></div>
-<div class="muted">Group: <span class="technical-value"><?= e((string)($userResult['group'] ?? 'نامشخص')) ?></span></div>
-<?php if (array_key_exists('password', $userResult)): ?><div class="muted">Password: <code class="technical-value"><?= e((string)$userResult['password']) ?></code></div><?php endif; ?>
-<?php if (!empty($userResult['summary'])): ?><p class="muted"><?= e((string)$userResult['summary']) ?></p><?php endif; ?>
+<strong data-fa="اطلاعات حساب IBSng" data-en="IBSng account details">اطلاعات حساب IBSng</strong>
+<div class="account-details-grid">
+<?php foreach ($accountFields as $fieldLabel => $fieldValue): ?>
+<div class="account-detail"><span class="muted"><?= e($fieldLabel) ?></span><strong class="technical-value"><?= e($fieldValue !== '' ? $fieldValue : 'نامشخص') ?></strong></div>
+<?php endforeach; ?>
+</div>
 </div>
 <?php endif; ?>
 </section>
