@@ -43,3 +43,16 @@ function app_url(string $path = ''): string
     $base = rtrim((string)(app_config()['base_url'] ?? ''), '/');
     return $base . ($path !== '' ? '/' . ltrim($path, '/') : '');
 }
+
+/**
+ * Return a versioned public asset URL so browsers and edge caches cannot mix
+ * updated markup with stale CSS or JavaScript after a deployment.
+ */
+function app_asset_url(string $path): string
+{
+    $relativePath = ltrim($path, '/');
+    $file = dirname(__DIR__) . '/' . $relativePath;
+    $version = is_file($file) ? substr((string)hash_file('sha256', $file), 0, 12) : '';
+    $url = app_url($relativePath);
+    return $version !== '' ? $url . '?v=' . $version : $url;
+}
