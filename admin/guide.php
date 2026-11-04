@@ -164,7 +164,7 @@ $esc = static fn($value): string => e((string)$value);
 </article>
 <?php endforeach; ?>
 </div>
-<div class="actions"><button class="button primary" type="submit" data-fa="ذخیره راهنمای عمومی" data-en="Save general guide">ذخیره راهنمای عمومی</button><a class="button" href="<?= e(app_url('guide.php')) ?>" target="_blank" rel="noopener" data-fa="مشاهده صفحه راهنما" data-en="Open customer guide">مشاهده صفحه راهنما</a></div>
+<div class="actions"><button class="button primary" type="submit" data-fa="ذخیره راهنمای عمومی" data-en="Save general guide">ذخیره راهنمای عمومی</button><a class="button" href="<?= e(app_url('userguide.php')) ?>" target="_blank" rel="noopener" data-fa="مشاهده صفحه راهنما" data-en="Open customer guide">مشاهده صفحه راهنما</a></div>
 </form>
 </section>
 <?php require __DIR__ . '/_footer.php'; ?>
