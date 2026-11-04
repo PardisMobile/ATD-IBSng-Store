@@ -149,8 +149,9 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 @media(prefers-reduced-motion:reduce){.order-row{transition:none}}
 </style>
 </head>
-<body><main class="orders-shell">
+<body>
 <?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'orders'); ?>
+<main class="orders-shell">
 <section class="orders-card panel">
 <div class="eyebrow" data-ui-text="orders_tracking_recovery">پیگیری و بازیابی خریدها</div><h1 data-ui-text="orders_title">سفارش‌های من</h1>
 <p class="muted" data-ui-text="orders_intro">برای مشاهده سفارش‌های مرتبط با ایمیل خرید، کد تأیید ایمیل را وارد کنید. همچنین می‌توانید هر سفارش را با شناسه پیگیری در صفحه پیگیری سفارش مشاهده کنید.</p>
