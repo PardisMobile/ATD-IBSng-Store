@@ -278,6 +278,36 @@ final class IBSngClient
         return $user;
     }
 
+    /** Update an existing IBSng account password through the native Edit User form. */
+    public function setUserPassword(string $username, string $newPassword): void
+    {
+        $username = trim($username);
+        if ($username === '' || $newPassword === '' || strlen($newPassword) > 128) {
+            throw new InvalidArgumentException('نام کاربری یا رمز عبور جدید معتبر نیست.');
+        }
+        $user = $this->lookupUser($username);
+        $uid = (string)$user['user_id'];
+        $editPath = '/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($uid)
+            . '&submit_form=1&add=1&count=1&owner_name=' . rawurlencode($this->username)
+            . '&x=35&y=1&edit__normal_username=normal_username';
+        $this->request($editPath);
+        $saved = $this->request($editPath, [
+            'target' => 'user',
+            'target_id' => $uid,
+            'update' => 1,
+            'edit_tpl_cs' => 'normal_username',
+            'attr_update_method_0' => 'normalAttrs',
+            'has_normal_username' => 't',
+            'current_normal_username' => $username,
+            'normal_username' => $username,
+            'password' => $newPassword,
+            'normal_save_user_add' => 't',
+        ]);
+        if (stripos($saved, 'user_info.php?user_id_multi') === false) {
+            throw new RuntimeException('IBSng تغییر رمز را با پاسخ قابل‌تأیید تأیید نکرد.');
+        }
+    }
+
     public function createUser(string $groupName, string $username, string $password, string $credit = '0'): void
     {
         $groupName = trim($groupName);
