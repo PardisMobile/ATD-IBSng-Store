@@ -192,6 +192,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .password-line button{font:inherit;cursor:pointer;min-height:40px}
 .password-line button:focus-visible,.account-form>.button:focus-visible,.account-shell .topbar nav .button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;box-shadow:0 0 0 4px var(--ui-focus-ring)}
+.account-session-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0}.account-session-bar form{margin:0}.account-success{padding:13px 15px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));background:color-mix(in srgb,var(--accent) 9%,var(--surface));color:var(--text);border-radius:var(--ui-radius-md,12px);margin:15px 0;line-height:1.8}.account-actions-card{display:grid;gap:16px}.account-action-buttons{display:flex;flex-wrap:wrap;gap:10px}.password-change-form{padding-top:14px;border-top:1px solid var(--border)}.icon-button{width:42px;height:42px;padding:8px;flex:0 0 42px}.icon-button .ui-icon{width:21px;height:21px}.password-line{align-items:center}.password-line .button{display:inline-flex;align-items:center;justify-content:center}.account-shell .button{font:inherit;text-decoration:none}.account-shell .button.primary{background:var(--accent);color:var(--accent-foreground,#fff);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 18%,transparent)}.account-shell .button.primary:hover{background:var(--accent-strong,var(--accent));filter:brightness(1.06)}.password-change-form[hidden]{display:none}@media(max-width:560px){.account-session-bar{align-items:stretch}.account-session-bar form,.account-session-bar .button{width:100%}.account-action-buttons{display:grid}.account-action-buttons .button{width:100%}}
 .account-shell .topbar nav{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
 .account-shell .topbar nav .button{white-space:normal;text-align:center}
 .account-item strong{font-variant-numeric:tabular-nums}
@@ -204,18 +205,27 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <body>
 <?php storefront_header($title, 'account'); ?>
 <main class="account-shell">
+<?php if (!$isLoggedIn): ?>
 <section class="panel account-card">
 <div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
 <p class="muted-note" data-ui-text="customer_intro">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
 <?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="account-form">
-<div class="account-fields">
+<input type="hidden" name="account_action" value="lookup"><div class="account-fields">
 <div class="field"><label for="username" data-ui-text="customer_username">نام کاربری</label><input id="username" name="username" dir="ltr" value="<?= e($username) ?>" required autocomplete="username"></div>
 <div class="field"><label for="account_password" data-ui-text="customer_password">رمز عبور</label><input id="account_password" name="account_password" type="password" dir="ltr" required autocomplete="current-password"></div>
 <div class="field"><label for="captcha" data-ui-text="customer_captcha">کد چهاررقمی</label><div class="captcha-row"><span class="captcha-code" dir="ltr" aria-label="کد ضدربات" data-ui-aria="customer_captcha_aria"><?= e($captcha) ?></span><input id="captcha" name="captcha" dir="ltr" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="کد را وارد کنید" data-ui-placeholder="customer_captcha_placeholder" required></div></div>
 </div><button class="button primary" type="submit" data-ui-text="customer_show_details">نمایش مشخصات</button>
 </form>
 </section>
+<?php else: ?>
+<div class="account-session-bar">
+<span class="muted-note"><?= e($username) ?></span>
+<form method="post"><input type="hidden" name="account_action" value="logout"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><button class="button primary" type="submit" data-fa="خروج از حساب" data-en="Log out">خروج از حساب</button></form>
+</div>
+<?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
+<?php if ($success !== ''): ?><div class="account-success" role="status" aria-live="polite"><?= e($success) ?></div><?php endif; ?>
+<?php endif; ?>
 <?php if (is_array($account)): ?>
 <?php foreach ($account as $item): ?>
 <section class="panel account-card">
@@ -227,9 +237,22 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($item['expiry']) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
-<div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button" data-ui-password-toggle aria-pressed="false">نمایش رمز</button></div></div>
+<div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
 </div>
-<p><a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
+</section>
+<section class="panel account-card account-actions-card">
+<h2 data-fa="مدیریت حساب" data-en="Account management">مدیریت حساب</h2>
+<div class="account-action-buttons">
+<a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
+<button class="button primary" type="button" data-toggle-password-form="change-password-<?= (int)$item['server_id'] ?>" aria-expanded="false" data-fa="تغییر رمز عبور" data-en="Change password">تغییر رمز عبور</button>
+</div>
+<form method="post" class="account-fields password-change-form" id="change-password-<?= (int)$item['server_id'] ?>" hidden>
+<input type="hidden" name="account_action" value="change_password"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><input type="hidden" name="server_id" value="<?= (int)$item['server_id'] ?>">
+<div class="field"><label for="current-password-<?= (int)$item['server_id'] ?>">رمز عبور فعلی</label><input id="current-password-<?= (int)$item['server_id'] ?>" name="current_password" type="password" dir="ltr" autocomplete="current-password" required></div>
+<div class="field"><label for="new-password-<?= (int)$item['server_id'] ?>">رمز عبور جدید</label><input id="new-password-<?= (int)$item['server_id'] ?>" name="new_password" type="password" dir="ltr" autocomplete="new-password" maxlength="128" required></div>
+<div class="field"><label for="confirm-password-<?= (int)$item['server_id'] ?>">تکرار رمز عبور جدید</label><input id="confirm-password-<?= (int)$item['server_id'] ?>" name="confirm_password" type="password" dir="ltr" autocomplete="new-password" maxlength="128" required></div>
+<button class="button primary" type="submit">ثبت رمز جدید</button>
+</form>
 </section>
 <?php endforeach; ?>
 <?php endif; ?>
