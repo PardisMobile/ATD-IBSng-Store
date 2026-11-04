@@ -35,13 +35,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 try {
-                    $data = $client->lookupUser($username);
-                    $state = IBSngRenewalState::fromClient($client, $username);
+                    // Verify the customer's own IBSng password before reading or
+                    // preparing any account details for display.
                     $credentials = $client->getCredentials($username);
                     if (!hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
-                        // Account username exists, but supplied IBSng account password is invalid.
+                        // The username may exist, but no account details are exposed
+                        // unless the supplied IBSng account password matches.
                         continue;
                     }
+
+                    $data = $credentials;
+                    $state = IBSngRenewalState::fromClient($client, $username);
                     $groupName = trim((string)($data['group'] ?? ''));
                     $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
                     $planStmt->execute([(int)$server['id'], $groupName]);
