@@ -8,18 +8,65 @@ require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/IBSngRenewalState.php';
 require_once __DIR__ . '/app/StorefrontView.php';
 
+$action = (string)($_POST['account_action'] ?? 'lookup');
+if (empty($_SESSION['customer_account_csrf'])) {
+    $_SESSION['customer_account_csrf'] = bin2hex(random_bytes(32));
+}
+$csrf = (string)$_SESSION['customer_account_csrf'];
+$error = '';
+$success = '';
+$account = null;
+$username = trim((string)($_POST['username'] ?? ($_SESSION['customer_account_auth']['username'] ?? '')));
+$accountPassword = (string)($_POST['account_password'] ?? '');
+$auth = $_SESSION['customer_account_auth'] ?? null;
+
+if ($action === 'logout' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!hash_equals($csrf, (string)($_POST['csrf_token'] ?? ''))) {
+        $error = 'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.';
+    } else {
+        unset($_SESSION['customer_account_auth']);
+        $auth = null;
+        $username = '';
+        $account = null;
+    }
+}
+
 if (empty($_SESSION['account_lookup_captcha']) || (int)($_SESSION['account_lookup_captcha_exp'] ?? 0) < time()) {
     $_SESSION['account_lookup_captcha'] = (string)random_int(1000, 9999);
     $_SESSION['account_lookup_captcha_exp'] = time() + 600;
 }
 $captcha = (string)$_SESSION['account_lookup_captcha'];
-$error = '';
-$account = null;
-$serverLabel = '';
-$username = trim((string)($_POST['username'] ?? ''));
-$accountPassword = (string)($_POST['account_password'] ?? '');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$loadAccountDetails = static function (PDO $pdo, string $username, array $serverIds): array {
+    $serverIds = array_values(array_unique(array_filter(array_map('intval', $serverIds), static fn($id) => $id > 0)));
+    if ($serverIds === []) return [];
+    $marks = implode(',', array_fill(0, count($serverIds), '?'));
+    $stmt = $pdo->prepare("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 AND id IN ($marks) ORDER BY is_default DESC,id DESC");
+    $stmt->execute($serverIds);
+    $accounts = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $server) {
+        $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
+        $credentials = $client->getCredentials($username);
+        $state = IBSngRenewalState::fromClient($client, $username);
+        $groupName = trim((string)($credentials['group'] ?? ''));
+        $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
+        $planStmt->execute([(int)$server['id'], $groupName]);
+        $planName = (string)($planStmt->fetchColumn() ?: '');
+        $accounts[] = [
+            'server_id' => (int)$server['id'],
+            'server' => (string)($server['service_name'] ?: $server['name']),
+            'username' => $username,
+            'plan' => $planName !== '' ? $planName : 'نامشخص',
+            'expiry' => (string)($state['nearest_exp_date'] ?? ''),
+            'remaining' => (int)($state['remaining_days'] ?? 0),
+            'expired' => (bool)($state['expired'] ?? false),
+            'password' => (string)($credentials['password'] ?? ''),
+        ];
+    }
+    return $accounts;
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
     $provided = trim((string)($_POST['captcha'] ?? ''));
     if (!hash_equals($captcha, $provided)) {
         $error = app_message('customer_account_captcha_invalid');
@@ -31,45 +78,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->query("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 ORDER BY is_default DESC,id DESC");
             $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if (!$servers) throw new RuntimeException(app_message('customer_account_servers_unavailable'));
-            $matched = [];
+            $matchedIds = [];
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 try {
-                    // Verify the customer's own IBSng password before reading or
-                    // preparing any account details for display.
                     $credentials = $client->getCredentials($username);
-                    if (!hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
-                        // The username may exist, but no account details are exposed
-                        // unless the supplied IBSng account password matches.
-                        continue;
+                    if (hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
+                        $matchedIds[] = (int)$server['id'];
                     }
-
-                    $data = $credentials;
-                    $state = IBSngRenewalState::fromClient($client, $username);
-                    $groupName = trim((string)($data['group'] ?? ''));
-                    $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
-                    $planStmt->execute([(int)$server['id'], $groupName]);
-                    $planName = (string)($planStmt->fetchColumn() ?: '');
-
-                    $matched[] = [
-                        'server' => (string)($server['service_name'] ?: $server['name']),
-                        'username' => $username,
-                        // Customer-facing label is the Store plan name mapped to the exact IBSng group.
-                        'plan' => $planName !== '' ? $planName : 'نامشخص',
-                        'expiry' => (string)($state['nearest_exp_date'] ?? ''),
-                        'remaining' => (int)($state['remaining_days'] ?? 0),
-                        'expired' => (bool)($state['expired'] ?? false),
-                        'password' => (string)($credentials['password'] ?? ''),
-                        'summary' => (string)($data['summary'] ?? ''),
-                    ];
                 } catch (RuntimeException $e) {
-                    // A username may not exist on this server; continue searching.
                     if (str_contains($e->getMessage(), 'وجود ندارد')) continue;
                     throw $e;
                 }
             }
-            if (!$matched) throw new RuntimeException(app_message('customer_account_not_found'));
-            $account = $matched;
+            if ($matchedIds === []) throw new RuntimeException(app_message('customer_account_not_found'));
+            $_SESSION['customer_account_auth'] = ['username' => $username, 'server_ids' => $matchedIds, 'created_at' => time()];
+            $auth = $_SESSION['customer_account_auth'];
+            $account = $loadAccountDetails($pdo, $username, $matchedIds);
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
         } catch (Throwable $e) {
             $error = $e->getMessage();
@@ -79,6 +104,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['account_lookup_captcha_exp'] = time() + 600;
     $captcha = (string)$_SESSION['account_lookup_captcha'];
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'change_password') {
+    if (!hash_equals($csrf, (string)($_POST['csrf_token'] ?? ''))) {
+        $error = 'درخواست معتبر نیست. صفحه را تازه‌سازی کنید.';
+    } elseif (!is_array($auth) || !in_array((int)($_POST['server_id'] ?? 0), array_map('intval', (array)($auth['server_ids'] ?? [])), true)) {
+        $error = 'نشست حساب معتبر نیست؛ دوباره وارد شوید.';
+    } else {
+        $currentPassword = (string)($_POST['current_password'] ?? '');
+        $newPassword = (string)($_POST['new_password'] ?? '');
+        $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+        if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
+            $error = 'تمام فیلدهای رمز عبور را تکمیل کنید.';
+        } elseif (!hash_equals($newPassword, $confirmPassword)) {
+            $error = 'رمز عبور جدید و تکرار آن یکسان نیستند.';
+        } elseif (strlen($newPassword) > 128) {
+            $error = 'طول رمز عبور جدید بیش از حد مجاز است.';
+        } else {
+            try {
+                $serverId = (int)$_POST['server_id'];
+                $pdo = Database::connection();
+                $stmt = $pdo->prepare("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 AND id=? LIMIT 1");
+                $stmt->execute([$serverId]);
+                $server = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$server) throw new RuntimeException('سرور این حساب در دسترس نیست.');
+                $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
+                $credentials = $client->getCredentials((string)$auth['username']);
+                if (!hash_equals((string)($credentials['password'] ?? ''), $currentPassword)) {
+                    throw new RuntimeException('رمز عبور فعلی صحیح نیست.');
+                }
+                $client->setUserPassword((string)$auth['username'], $newPassword);
+                $success = 'رمز عبور حساب با موفقیت تغییر کرد.';
+            } catch (Throwable $e) {
+                $error = $e->getMessage();
+            }
+        }
+    }
+}
+
+if (is_array($auth) && $account === null && $action !== 'logout') {
+    try {
+        $pdo = Database::connection();
+        $account = $loadAccountDetails($pdo, (string)$auth['username'], (array)$auth['server_ids']);
+        if ($account === []) {
+            unset($_SESSION['customer_account_auth']);
+            $auth = null;
+            $username = '';
+            $error = 'حساب در سرورهای فعال پیدا نشد؛ دوباره وارد شوید.';
+        }
+    } catch (Throwable $e) {
+        $error = $e->getMessage();
+        $account = null;
+    }
+}
+$isLoggedIn = is_array($auth) && is_array($account) && $account !== [];
 $config = app_config();
 $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 ?>
