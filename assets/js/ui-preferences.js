@@ -73,6 +73,7 @@
       title_order_status: 'Order status',
       title_customer_account: 'Customer account',
       title_admin_dashboard: 'Admin dashboard',
+      title_admin_guide: 'Account guide',
       title_admin_products: 'Product management',
       title_admin_settings: 'Support settings',
       title_admin_orders: 'Sales report',
