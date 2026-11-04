@@ -9,6 +9,7 @@ require_once __DIR__ . '/app/messages.php';
 require_once __DIR__ . '/app/Pricing.php';
 require_once __DIR__ . '/app/OrderTrackingCode.php';
 require_once __DIR__ . '/app/Payments/PaymentFlow.php';
+require_once __DIR__ . '/app/StorefrontView.php';
 
 final class UsernameAlreadyExistsException extends RuntimeException
 {
@@ -223,13 +224,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_checkout">ثبت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .checkout-shell{width:min(760px,calc(100% - 32px));margin:0 auto}
 .checkout-card{padding:clamp(20px,4vw,34px);margin:24px 0}
 .checkout-card h1{margin:8px 0 14px;line-height:1.45;overflow-wrap:anywhere}
 .checkout-card .eyebrow{font-size:.82rem;font-weight:800;letter-spacing:.02em}
 .checkout-card form{display:grid;gap:4px}
+.checkout-card .form-section{min-width:0;margin:16px 0;padding:clamp(14px,3vw,20px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:color-mix(in srgb,var(--surface-2) 46%,transparent)}
+.checkout-card .form-section legend{padding-inline:8px;color:var(--text);font-weight:800}
 .checkout-card .field{display:grid;gap:8px;margin:12px 0}
 .checkout-card .field>label{color:var(--muted);font-weight:700}
 .checkout-card .field input{box-sizing:border-box;width:100%;min-width:0;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;line-height:1.6;transition:border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}
@@ -257,12 +260,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 }
 @media(prefers-reduced-motion:reduce){.checkout-card *{transition:none!important}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="checkout-shell">
-<?php require __DIR__ . '/app/storefront-header.php'; ?>
-<?php require __DIR__ . '/app/storefront-animated-header.php'; ?>
+<?php storefront_header((string)($config['site_title'] ?? 'ATD IBSng Store'), 'home'); ?>
 <section class="checkout-card panel">
 <div class="eyebrow" data-ui-text="checkout_heading">ثبت سفارش</div>
 <?php if ($successOrder !== null): ?>
@@ -270,20 +272,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="notice success" role="status" aria-live="polite"><strong data-ui-text="checkout_tracking_code">کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-ui-text="checkout_track_order">پیگیری وضعیت سفارش</a><?php endif; ?>
-<a class="button" href="<?= e(app_url()) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
+<a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
-<h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url()) ?>" data-ui-text="checkout_back">بازگشت</a>
+<h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back">بازگشت</a>
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= number_format((int)$product['duration_seconds']) ?> ثانیه"><?= number_format((int)$product['duration_seconds']) ?> ثانیه</span></p>
+<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(storefront_duration_label((int)$product['duration_seconds'])) ?>"><?= e(storefront_duration_label((int)$product['duration_seconds'])) ?></span></p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+<fieldset class="form-section"><legend data-ui-text="checkout_contact_section">اطلاعات خریدار</legend>
 <div class="field"><label for="buyer_name" data-ui-text="checkout_buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_phone" data-ui-text="checkout_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_email" data-ui-text="checkout_email_optional">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted" data-ui-text="checkout_email_help">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
+</fieldset>
+<fieldset class="form-section"><legend data-ui-text="checkout_credentials_section">اطلاعات ورود اکانت</legend>
 <?php if ($credentialPolicy === 'choice'): ?>
 <div class="field"><label data-ui-text="checkout_credentials_method">روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> <span data-ui-text="checkout_custom_credentials">نام کاربری و رمز عبور دلخواه</span></label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> <span data-ui-text="checkout_auto_credentials">نام کاربری و رمز عبور اتوماتیک</span></label></div>
 <?php endif; ?>
@@ -296,11 +301,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
 <p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
 <?php endif; ?>
+</fieldset>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
 <button class="button primary" type="submit" data-ui-text="checkout_submit">ثبت سفارش</button>
 </form>
 <?php endif; ?>
 </section>
+<?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 </main>
 <script>
 (function () {
