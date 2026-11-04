@@ -38,6 +38,14 @@ if (!isset($routes['/order-status.php'])) {
     fwrite(STDERR, "FAIL: customer order status page is missing from the route allowlist.\\n");
     exit(1);
 }
+if (!isset($routes['/guide.php'])) {
+    fwrite(STDERR, "FAIL: original storefront guide page is missing from the route allowlist.\\n");
+    exit(1);
+}
+if (!isset($routes['/userguide.php'])) {
+    fwrite(STDERR, "FAIL: managed customer account guide page is missing from the route allowlist.\\n");
+    exit(1);
+}
 if (!isset($routes['/admin/guide.php'])) {
     fwrite(STDERR, "FAIL: general account guide admin page is missing from the route allowlist.\\n");
     exit(1);
