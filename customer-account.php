@@ -146,9 +146,9 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
 <div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button" data-ui-password-toggle aria-pressed="false">نمایش رمز</button></div></div>
 </div>
+<p><a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
 </section>
 <?php endforeach; ?>
-<p><a class="button" href="<?= e(app_url('guide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
 <?php endif; ?>
 <?php storefront_footer($title); ?>
 </main>
