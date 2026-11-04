@@ -303,8 +303,12 @@ final class IBSngClient
             'password' => $newPassword,
             'normal_save_user_add' => 't',
         ]);
-        if (stripos($saved, 'user_info.php?user_id_multi') === false) {
-            throw new RuntimeException('IBSng تغییر رمز را با پاسخ قابل‌تأیید تأیید نکرد.');
+        // IBSng may save the password successfully while returning a
+        // different redirect/body than the user-info marker. Verify the
+        // persisted credential instead of treating that response as failure.
+        $verified = $this->getCredentials($username);
+        if (!hash_equals((string)($verified['password'] ?? ''), $newPassword)) {
+            throw new RuntimeException('IBSng تغییر رمز را ذخیره نکرد؛ رمز قبلی همچنان فعال است.');
         }
     }
 
