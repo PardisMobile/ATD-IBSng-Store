@@ -196,7 +196,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-ui-title-key="title_admin_ibsng_servers">سرورهای IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
-<link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0;flex-wrap:wrap}.admin-top form{margin:0}.admin-top button{border:1px solid var(--border);background:var(--surface-2);color:var(--text);font:inherit;cursor:pointer}
 .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}.panel-card{padding:clamp(18px,3vw,26px);min-width:0}
@@ -206,24 +206,24 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 .server{padding:clamp(16px,3vw,22px);margin:14px 0;min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);transition:border-color var(--ui-motion-fast,160ms) ease,background var(--ui-motion-fast,160ms) ease}.server:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:color-mix(in srgb,var(--surface-2) 35%,transparent)}.server-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.server-head h3{margin:0;overflow-wrap:anywhere}.meta{color:var(--muted);line-height:1.9;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.actions form{display:flex;min-width:0}.actions button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--text);min-height:var(--ui-control-height,44px);padding:10px 14px;border-radius:var(--ui-radius-md,12px);white-space:normal}.actions button:focus-visible,.admin-top button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.actions .danger{color:var(--danger,#ff8e9a)}.actions .primary{background:linear-gradient(120deg,var(--accent-light),var(--accent-dark));border:0;color:white}.empty{padding:26px;text-align:center;color:var(--muted)}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.admin-shell{width:calc(100% - 24px)}.admin-top{align-items:flex-start;flex-direction:column}.actions>*{flex:1 1 auto}}
 </style>
-<script src="<?= e(app_url('assets/js/ui-preferences.js')) ?>" defer></script>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
-<div class="eyebrow">IBSng</div><h1 style="font-size:2rem" data-ui-text="server_title">سرورهای IBSng</h1>
+<div class="eyebrow">IBSng</div><h1 data-ui-text="server_title">سرورهای IBSng</h1>
 <p class="muted" data-ui-text="server_intro">در این مرحله، تست اتصال با ورود واقعی به Web Panel انجام می‌شود. رمز عبور در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 </section>
-<section class="panel panel-card" style="margin-top:20px">
+<section class="panel panel-card">
 <h2 data-ui-text="server_add_heading">افزودن سرور</h2>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="add">
 <div class="grid">
-<div class="field"><label for="name">نام سرور (داخلی)</label><input id="name" name="name" required maxlength="120"></div>
-<div class="field"><label for="service_name">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن"></div>
+<div class="field"><label for="name" data-fa="نام سرور (داخلی)" data-en="Internal server name">نام سرور (داخلی)</label><input id="name" name="name" required maxlength="120"></div>
+<div class="field"><label for="service_name" data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label for="host" data-ui-text="server_host_label">Host یا IP (بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
 <div class="field"><label for="port" data-ui-text="server_web_panel_port">پورت Web Panel</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
 <div class="field"><label for="isp_name">ISP name</label><input id="isp_name" name="isp_name" value="Main" required></div>
@@ -233,62 +233,38 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <button class="button primary" type="submit" data-ui-text="server_save_test">تست اتصال و ذخیره سرور</button>
 </form>
 </section>
-<section class="panel panel-card" style="margin-top:20px">
+<section class="panel panel-card">
 <h2 data-ui-text="server_saved_heading">سرورهای ثبت‌شده</h2>
 <?php if (!$servers): ?><div class="empty" data-ui-text="server_empty">هنوز سروری اضافه نشده است.</div><?php endif; ?>
 <?php foreach ($servers as $server): ?>
 <article class="server panel">
-<div class="server-head"><h3><?= e((string)$server['name']) ?> <?= (int)$server['is_default'] === 1 ? '<span data-ui-text="server_default_label">· پیش‌فرض</span>' : '' ?></h3><span class="status-chip"><?= (int)$server['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
+<div class="server-head"><h3><?= e((string)$server['name']) ?> <?= (int)$server['is_default'] === 1 ? '<span data-ui-text="server_default_label">· پیش‌فرض</span>' : '' ?></h3><span class="status-chip" data-ui-status="<?= (int)$server['is_active'] === 1 ? 'active' : 'inactive' ?>"><?= (int)$server['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
 <div class="meta" dir="ltr"><?= e((string)$server['host']) ?>:<?= (int)$server['port'] ?></div>
 <div class="meta">ISP name: <?= e((string)$server['isp_name']) ?> <span data-ui-text="server_username_label">· نام کاربری:</span> <?= e((string)$server['username']) ?></div>
 <div class="meta"><span data-ui-text="server_last_test_label">آخرین تست:</span> <?php if (($server['last_test_at'] ?? null) === null): ?><span data-ui-text="server_not_tested">تست نشده</span><?php else: ?><?= e((string)$server['last_test_at']) ?><?php endif; ?><?php if (!empty($server['last_error'])): ?> <span data-ui-text="server_error_label">· خطا:</span> <?= e((string)$server['last_error']) ?><?php endif; ?></div>
-<details style="margin-top:12px"><summary class="button">ویرایش تنظیمات</summary>
-<form method="post" style="margin-top:14px">
+<details><summary class="button" data-fa="ویرایش تنظیمات" data-en="Edit settings">ویرایش تنظیمات</summary>
+<form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>">
 <div class="grid">
-<div class="field"><label>نام سرور (داخلی)</label><input name="name" required value="<?= e((string)$server['name']) ?>"></div>
-<div class="field"><label>نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input name="service_name" maxlength="150" value="<?= e((string)($server['service_name'] ?? '')) ?>" placeholder="مثلاً: سرویس مولتی لوکیشن"></div>
+<div class="field"><label data-fa="نام سرور (داخلی)" data-en="Internal server name">نام سرور (داخلی)</label><input name="name" required value="<?= e((string)$server['name']) ?>"></div>
+<div class="field"><label data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input name="service_name" maxlength="150" value="<?= e((string)($server['service_name'] ?? '')) ?>" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label>Host</label><input name="host" required value="<?= e((string)$server['host']) ?>"></div>
-<div class="field"><label>پورت</label><select name="port"><option value="80"<?= (int)$server['port'] === 80 ? ' selected' : '' ?>>80 — HTTP</option><option value="443"<?= (int)$server['port'] === 443 ? ' selected' : '' ?>>443 — HTTPS</option></select></div>
+<div class="field"><label data-fa="پورت" data-en="Port">پورت</label><select name="port"><option value="80"<?= (int)$server['port'] === 80 ? ' selected' : '' ?>>80 — HTTP</option><option value="443"<?= (int)$server['port'] === 443 ? ' selected' : '' ?>>443 — HTTPS</option></select></div>
 <div class="field"><label>ISP name</label><input name="isp_name" value="<?= e((string)$server['isp_name']) ?>"></div>
-<div class="field"><label>نام کاربری جدید (خالی = حفظ قبلی)</label><input name="username" autocomplete="off"></div>
-<div class="field"><label>رمز جدید (خالی = حفظ قبلی)</label><input name="password" type="password" autocomplete="new-password"></div>
-</div><button class="button primary" type="submit">تست اتصال و ذخیره تغییرات</button>
+<div class="field"><label data-fa="نام کاربری جدید (خالی = حفظ قبلی)" data-en="New username (blank = keep current)">نام کاربری جدید (خالی = حفظ قبلی)</label><input name="username" autocomplete="off"></div>
+<div class="field"><label data-fa="رمز جدید (خالی = حفظ قبلی)" data-en="New password (blank = keep current)">رمز جدید (خالی = حفظ قبلی)</label><input name="password" type="password" autocomplete="new-password"></div>
+</div><button class="button primary" type="submit" data-fa="تست اتصال و ذخیره تغییرات" data-en="Test connection and save changes">تست اتصال و ذخیره تغییرات</button>
 </form></details>
 <div class="actions">
-<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="test"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit">Test Connection</button></form>
-<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="default"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit">انتخاب به‌عنوان پیش‌فرض</button></form>
-<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit"><?= (int)$server['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?></button></form>
-<form method="post" onsubmit="return confirm(document.documentElement.lang==='en'?'Delete this server? Deletion is allowed only when no dependent data exists.':'سرور حذف شود؟ حذف فقط در صورت نداشتن داده وابسته مجاز است.');"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button danger" type="submit">حذف</button></form>
+<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="test"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit" data-fa="تست اتصال" data-en="Test connection">تست اتصال</button></form>
+<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="default"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit" data-fa="انتخاب به‌عنوان پیش‌فرض" data-en="Set as default">انتخاب به‌عنوان پیش‌فرض</button></form>
+<form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button" type="submit" data-fa="<?= (int)$server['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?>" data-en="<?= (int)$server['is_active'] === 1 ? 'Disable' : 'Enable' ?>"><?= (int)$server['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?></button></form>
+<form method="post" data-confirm-fa="سرور حذف شود؟ حذف فقط در صورت نداشتن داده وابسته مجاز است." data-confirm-en="Delete this server? Deletion is allowed only when no dependent data exists."><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form>
 </div>
 </article>
 <?php endforeach; ?>
 </section>
-<footer><a href="<?= e(app_url()) ?>">بازگشت به فروشگاه</a></footer>
+<?php require __DIR__ . '/_footer.php'; ?>
 </main>
-<script>
-(function(){
-const pairs={"ATD IBSng Store · مدیریت":"ATD IBSng Store · Admin","داشبورد":"Dashboard","سرورهای IBSng":"IBSng Servers","نگاشت پلن/گروه":"Plan / Group Mapping","بازگشت به فروشگاه":"Back to Store","افزودن سرور IBSng":"Add IBSng Server","مدیریت سرورهای IBSng":"IBSng Server Management","نام سرور":"Server Name","نام سرور (داخلی)":"Internal Server Name","نام سرویس (اختیاری؛ برای نمایش به مشتری)":"Service Name (optional; customer-facing)","مثلاً: سرویس مولتی لوکیشن":"For example: Multi-location service","Host":"Host","پورت":"Port","ISP name":"ISP Name","نام کاربری":"Username","رمز عبور":"Password","تست اتصال و ذخیره تغییرات":"Test Connection & Save Changes","Test Connection":"Test Connection","انتخاب به‌عنوان پیش‌فرض":"Set as Default","غیرفعال‌سازی":"Disable","فعال‌سازی":"Enable","حذف":"Delete","حذف سرور":"Delete Server","ویرایش تنظیمات":"Edit Settings","نام کاربری جدید (خالی = حفظ قبلی)":"New Username (blank = keep current)","رمز جدید (خالی = حفظ قبلی)":"New Password (blank = keep current)","درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.":"Invalid request. Please refresh the page.","نام، Host، نام کاربری و رمز عبور IBSng الزامی است.":"Server name, host, username and IBSng password are required.","پورت باید 80 یا 443 باشد.":"Port must be 80 or 443.","اتصال IBSng با موفقیت تأیید و سرور ذخیره شد.":"IBSng connection verified and server saved.","سرور موردنظر پیدا نشد.":"The selected server was not found.","تنظیمات سرور به‌روزرسانی شد و تست اتصال موفق بود.":"Server settings updated; connection test succeeded.","اتصال موفق است؛ ورود مدیر IBSng تأیید شد.":"Connection succeeded; IBSng admin authentication verified.","برای انتخاب سرور پیش‌فرض، ابتدا آن را فعال کنید.":"Activate the server before setting it as default.","نگاشت پلن و گروه IBSng":"IBSng Plan / Group Mapping","نگاشت پلن فروشگاه به گروه IBSng":"Store Plan to IBSng Group Mapping","نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش نگاشت به‌صورت دستی تعریف می‌شود؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.":"Enter the exact existing IBSng group name. Mapping is manual; automatic group-list fetching is not implemented.","نام پلن":"Plan Name","نام دقیق گروه IBSng":"Exact IBSng Group Name","نام دقیق گروه":"Exact Group Name","مثلاً: یک ماهه":"For example: One month","نام گروه در IBSng":"IBSng group name","ثبت نگاشت":"Save Mapping","نگاشت‌های ثبت‌شده":"Saved Mappings","ویرایش نگاشت":"Edit Mapping","ذخیره تغییرات":"Save Changes","این نگاشت حذف شود؟":"Delete this mapping?","نگاشت پلن فروشگاه به گروه IBSng اضافه شد.":"Store plan to IBSng group mapping added.","نگاشت پلن و گروه IBSng ذخیره شد.":"Plan and IBSng group mapping saved.","وضعیت نگاشت تغییر کرد.":"Mapping status changed.","نگاشت حذف شد.":"Mapping deleted.","برای این سرور هنوز نگاشتی ثبت نشده است.":"No mappings have been added for this server yet.","ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.":"Add an IBSng server first.","سرور، نام پلن و نام دقیق گروه IBSng الزامی هستند.":"Server, plan name and exact IBSng group name are required.","نام پلن و نام دقیق گروه IBSng الزامی هستند.":"Plan name and exact IBSng group name are required.","این نام پلن یا گروه برای همین سرور قبلاً ثبت شده یا ذخیره‌سازی با خطا مواجه شد.":"This plan or group name already exists for this server, or saving failed.","این گروه به محصول/پلن فروشگاه متصل است؛ ابتدا نگاشت محصول را تغییر دهید.":"This group is assigned to a Store product/plan. Change the product mapping first.","نگاشت موردنظر پیدا نشد.":"The selected mapping was not found.","عملیات نامعتبر است.":"Invalid operation.","عملیات انجام نشد.":"The operation could not be completed.","سرور IBSng":"IBSng Server","Plan Name (نام پلن فروشگاه)":"Plan Name","IBSng Group Name (نام دقیق گروه)":"IBSng Group Name"};
-const reverse={"ATD IBSng Store · Admin":"ATD IBSng Store · مدیریت","Dashboard":"داشبورد","IBSng Servers":"سرورهای IBSng","Plan / Group Mapping":"نگاشت پلن/گروه","Back to Store":"بازگشت به فروشگاه","Add IBSng Server":"افزودن سرور IBSng","IBSng Server Management":"مدیریت سرورهای IBSng","Server Name":"نام سرور","Internal Server Name":"نام سرور (داخلی)","Service Name (optional; customer-facing)":"نام سرویس (اختیاری؛ برای نمایش به مشتری)","For example: Multi-location service":"مثلاً: سرویس مولتی لوکیشن","Host":"Host","Port":"پورت","ISP Name":"ISP name","Username":"نام کاربری","Password":"رمز عبور","Test Connection & Save Changes":"تست اتصال و ذخیره تغییرات","Test Connection":"Test Connection","Set as Default":"انتخاب به‌عنوان پیش‌فرض","Disable":"غیرفعال‌سازی","Enable":"فعال‌سازی","Delete":"حذف","Delete Server":"حذف سرور","Edit Settings":"ویرایش تنظیمات","New Username (blank = keep current)":"نام کاربری جدید (خالی = حفظ قبلی)","New Password (blank = keep current)":"رمز جدید (خالی = حفظ قبلی)","Invalid request. Please refresh the page.":"درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.","Server name, host, username and IBSng password are required.":"نام، Host، نام کاربری و رمز عبور IBSng الزامی است.","Port must be 80 or 443.":"پورت باید 80 یا 443 باشد.","IBSng connection verified and server saved.":"اتصال IBSng با موفقیت تأیید و سرور ذخیره شد.","The selected server was not found.":"سرور موردنظر پیدا نشد.","Server settings updated; connection test succeeded.":"تنظیمات سرور به‌روزرسانی شد و تست اتصال موفق بود.","Connection succeeded; IBSng admin authentication verified.":"اتصال موفق است؛ ورود مدیر IBSng تأیید شد.","Activate the server before setting it as default.":"برای انتخاب سرور پیش‌فرض، ابتدا آن را فعال کنید.","IBSng Plan / Group Mapping":"نگاشت پلن و گروه IBSng","Store Plan to IBSng Group Mapping":"نگاشت پلن فروشگاه به گروه IBSng","Enter the exact existing IBSng group name. Mapping is manual; automatic group-list fetching is not implemented.":"نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش نگاشت به‌صورت دستی تعریف می‌شود؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.","Plan Name":"Plan Name (نام پلن فروشگاه)","Exact IBSng Group Name":"نام دقیق گروه IBSng","Exact Group Name":"نام دقیق گروه","For example: One month":"مثلاً: یک ماهه","IBSng group name":"نام گروه در IBSng","Save Mapping":"ثبت نگاشت","Saved Mappings":"نگاشت‌های ثبت‌شده","Edit Mapping":"ویرایش نگاشت","Save Changes":"ذخیره تغییرات","Delete this mapping?":"این نگاشت حذف شود؟","Store plan to IBSng group mapping added.":"نگاشت پلن فروشگاه به گروه IBSng اضافه شد.","Plan and IBSng group mapping saved.":"نگاشت پلن و گروه IBSng ذخیره شد.","Mapping status changed.":"وضعیت نگاشت تغییر کرد.","Mapping deleted.":"نگاشت حذف شد.","No mappings have been added for this server yet.":"برای این سرور هنوز نگاشتی ثبت نشده است.","Add an IBSng server first.":"ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.","Server, plan name and exact IBSng group name are required.":"سرور، نام پلن و نام دقیق گروه IBSng الزامی هستند.","Plan name and exact IBSng group name are required.":"نام پلن و نام دقیق گروه IBSng الزامی هستند.","This plan or group name already exists for this server, or saving failed.":"این نام پلن یا گروه برای همین سرور قبلاً ثبت شده یا ذخیره‌سازی با خطا مواجه شد.","This group is assigned to a Store product/plan. Change the product mapping first.":"این گروه به محصول/پلن فروشگاه متصل است؛ ابتدا نگاشت محصول را تغییر دهید.","The selected mapping was not found.":"نگاشت موردنظر پیدا نشد.","Invalid operation.":"عملیات نامعتبر است.","The operation could not be completed.":"عملیات انجام نشد.","IBSng Server":"سرور IBSng","IBSng Group Name":"IBSng Group Name (نام دقیق گروه)"};
-const root=document.documentElement;
-const button=document.getElementById('langToggle');
-function walk(node,map){
- if(node.nodeType===Node.TEXT_NODE){const raw=node.nodeValue||'',t=raw.trim();if(map[t])node.nodeValue=raw.replace(t,map[t]);return;}
- if(node.nodeType!==Node.ELEMENT_NODE)return;
- ['placeholder','title','aria-label'].forEach(a=>{const v=node.getAttribute(a);if(v&&map[v])node.setAttribute(a,map[v]);});
- if((node.matches('input[type=submit],input[type=button]'))&&node.value&&map[node.value])node.value=map[node.value];
- node.childNodes.forEach(n=>walk(n,map));
-}
-function setLang(lang){walk(document.body,lang==='en'?pairs:reverse);root.lang=lang;root.dir=lang==='fa'?'rtl':'ltr';
- document.body.style.fontFamily=lang==='fa'?'Vazirmatn,Tahoma,sans-serif':'"Segoe UI",Arial,sans-serif';
- if(button)button.textContent=lang==='en'?'فارسی':'English';
- try{localStorage.setItem('atd-ibsng-language',lang);localStorage.setItem('atd-ui-language',lang)}catch(e){}
-}
-let lang='en';try{lang=localStorage.getItem('atd-ui-language')||localStorage.getItem('atd-ibsng-language')||'en'}catch(e){}
-if(button)button.addEventListener('click',()=>{const next=root.lang==='fa'?'en':'fa';setLang(next);document.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:next,direction:root.dir}}));});
-setLang(lang);
- document.addEventListener('atd:language-change',event=>setLang(event.detail?.language==='en'?'en':'fa'));
-})();
-</script>
 </body>
 </html>
