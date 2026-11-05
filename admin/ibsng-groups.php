@@ -159,7 +159,7 @@ if ($selectedServerId > 0) {
 </form></details>
 <div class="actions">
 <form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$group['id'] ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><button class="button" type="submit" data-fa="<?= (int)$group['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?>" data-en="<?= (int)$group['is_active'] === 1 ? 'Disable' : 'Enable' ?>"><?= (int)$group['is_active'] === 1 ? 'غیرفعال‌سازی' : 'فعال‌سازی' ?></button></form>
-<form method="post" data-confirm-fa="این نگاشت حذف شود؟" data-confirm-en="Delete this mapping?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$group['id'] ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><button class="button" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form>
+<form method="post" data-confirm-fa="این نگاشت حذف شود؟" data-confirm-en="Delete this mapping?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$group['id'] ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form>
 </div>
 </article>
 <?php endforeach; ?>
