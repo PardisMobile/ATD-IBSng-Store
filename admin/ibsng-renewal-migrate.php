@@ -18,6 +18,13 @@ function atd_ibsng_validity_column_exists(PDO $pdo): bool
     return (int)$stmt->fetchColumn() === 1;
 }
 
+function atd_ibsng_column_exists(PDO $pdo, string $table, string $column): bool
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
+    $stmt->execute([$table, $column]);
+    return (int)$stmt->fetchColumn() === 1;
+}
+
 function atd_ibsng_renewal_ledger_exists(PDO $pdo): bool
 {
     $stmt = $pdo->prepare(
@@ -30,7 +37,11 @@ function atd_ibsng_renewal_ledger_exists(PDO $pdo): bool
 
 function atd_ibsng_renewal_schema_ready(PDO $pdo): bool
 {
-    return atd_ibsng_validity_column_exists($pdo) && atd_ibsng_renewal_ledger_exists($pdo);
+    return atd_ibsng_validity_column_exists($pdo)
+        && !atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')
+        && atd_ibsng_column_exists($pdo, 'orders', 'validity_days_snapshot')
+        && !atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')
+        && atd_ibsng_renewal_ledger_exists($pdo);
 }
 
 $ready = atd_ibsng_renewal_schema_ready($pdo);
@@ -40,7 +51,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             if (!atd_ibsng_validity_column_exists($pdo)) {
-                $pdo->exec('ALTER TABLE products ADD COLUMN ibsng_validity_days INT UNSIGNED NULL AFTER duration_seconds');
+                $pdo->exec('ALTER TABLE products ADD COLUMN ibsng_validity_days INT UNSIGNED NOT NULL DEFAULT 30 AFTER description');
+            }
+            if (atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')) {
+                $nullValidity = (int)$pdo->query('SELECT COUNT(*) FROM products WHERE ibsng_validity_days IS NULL OR ibsng_validity_days < 1')->fetchColumn();
+                if ($nullValidity > 0) {
+                    throw new RuntimeException('Products with missing IBSng validity days must be corrected before schema unification.');
+                }
+                if (atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')) {
+                    $pdo->exec('ALTER TABLE products DROP COLUMN duration_seconds');
+                }
+                $pdo->exec('ALTER TABLE products MODIFY COLUMN ibsng_validity_days INT UNSIGNED NOT NULL');
+            }
+            if (atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')) {
+                $pdo->exec('ALTER TABLE orders CHANGE COLUMN duration_seconds_snapshot validity_days_snapshot INT UNSIGNED NOT NULL');
             }
             $pdo->exec(
                 "CREATE TABLE IF NOT EXISTS ibsng_renewals (
@@ -99,7 +123,7 @@ $config = app_config();
 <section class="panel panel-card">
 <div class="eyebrow">Database · Renewal Upgrade</div>
 <h1 data-ui-text="renewal_migration_title">ارتقای ساختار تمدید IBSng</h1>
-<p class="muted" data-ui-text="renewal_migration_intro">این مرحله ستون مستقل مدت اعتبار IBSng، جدول Ledger تمدید و تنظیمات پیش‌فرض هدیه را به‌صورت امن و قابل‌تکرار آماده می‌کند. مدت عمومی محصولات به‌صورت خودکار کپی یا تغییر داده نمی‌شود؛ برای هر محصول باید مدت تمدید IBSng را جداگانه مشخص کنید.</p>
+<p class="muted" data-ui-text="renewal_migration_intro">این مرحله ساختار یکپارچه مدت اعتبار بر حسب روز را اعمال می‌کند، ستون قدیمی ثانیه‌ای را حذف می‌کند و جدول Ledger تمدید و تنظیمات پیش‌فرض هدیه را آماده می‌کند.</p>
 <?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
