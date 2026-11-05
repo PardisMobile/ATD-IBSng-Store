@@ -12,7 +12,12 @@ $renewalColumnCheck = $pdo->prepare(
      WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
 );
 $renewalColumnCheck->execute(['products', 'ibsng_validity_days']);
-if ((int)$renewalColumnCheck->fetchColumn() !== 1) {
+$validityColumnReady = (int)$renewalColumnCheck->fetchColumn() === 1;
+$renewalColumnCheck->execute(['products', 'duration_seconds']);
+$legacyDurationColumnPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
+$renewalColumnCheck->execute(['orders', 'duration_seconds_snapshot']);
+$legacyOrderSnapshotPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
+if (!$validityColumnReady || $legacyDurationColumnPresent || $legacyOrderSnapshotPresent) {
     header('Location: ' . app_url('admin/ibsng-renewal-migrate.php'));
     exit;
 }
