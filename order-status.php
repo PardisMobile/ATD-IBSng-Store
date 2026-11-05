@@ -27,7 +27,7 @@ if (!$notFound) {
         $lookupColumn = $isTrackingCode ? 'tracking_code' : 'public_id';
         $lookupValue = $isTrackingCode ? ('ATD-' . substr($trackingCode, 3)) : $orderPublicId;
         $stmt = $pdo->prepare(
-            'SELECT o.id, o.public_id, o.tracking_code, o.product_id, o.product_name_snapshot, o.duration_seconds_snapshot, o.price_minor_snapshot, o.price_usdt_snapshot, o.currency, o.username, o.password_ciphertext, o.payment_status, o.order_status, o.created_at, p.quota_bytes
+            'SELECT o.id, o.public_id, o.tracking_code, o.product_id, o.product_name_snapshot, o.validity_days_snapshot, o.price_minor_snapshot, o.price_usdt_snapshot, o.currency, o.username, o.password_ciphertext, o.payment_status, o.order_status, o.created_at, p.quota_bytes
              FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE ' . $lookupColumn . ' = ? LIMIT 1'
         );
         $stmt->execute([$lookupValue]);
@@ -69,7 +69,7 @@ if (!$notFound) {
                         $accountDetails[(int)$attempt['server_id']] = [
                             'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)$attempt['server_name'],
                             'plan' => $planName,
-                            'validity' => (int)ceil((int)$order['duration_seconds_snapshot'] / 86400),
+                            'validity' => (int)$order['validity_days_snapshot'],
                             'quota_bytes' => $order['quota_bytes'] === null ? null : (int)$order['quota_bytes'],
                             'expiry' => (string)($state['nearest_exp_date'] ?? ''),
                             'remaining' => (int)($state['remaining_days'] ?? 0),
