@@ -460,10 +460,11 @@ final class IBSngClient
             $post['reset_first_login'] = 't';
         }
 
-        [$body, $status, $headers] = $this->requestRaw('/admin/plugins/edit.php', $post, true);
+        [$body, $status, $headers] = $this->requestRaw('/admin/plugins/edit.php', $post, false);
         $location = null;
-        if ($status >= 300 && $status < 400 && preg_match('/^Location\\s*:/im', $headers)) {
-            $location = trim($m[1]);
+        if ($status >= 300 && $status < 400
+            && preg_match('/^Location\\s*:\\s*(.+)$/im', $headers, $locationMatch)) {
+            $location = trim($locationMatch[1]);
         }
         $query = [];
         if ($location !== null) {

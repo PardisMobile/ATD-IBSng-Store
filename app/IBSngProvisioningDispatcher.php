@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/Crypto.php';
 require_once __DIR__ . '/IBSngClient.php';
 require_once __DIR__ . '/CustomerAccountDelivery.php';
+require_once __DIR__ . '/IBSngRenewalService.php';
+require_once __DIR__ . '/IBSngRenewalCoordinator.php';
 
 /**
  * Executes one durable create-account queue item.
@@ -26,9 +28,11 @@ final class IBSngProvisioningDispatcher
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT a.*, o.username, o.password_ciphertext, o.server_targets_snapshot,
+                        o.operation AS order_operation, o.product_id, p.ibsng_validity_days,
                         s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN orders o ON o.id = a.order_id
+                 LEFT JOIN products p ON p.id = o.product_id
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.id = ? FOR UPDATE"
             );
@@ -37,8 +41,9 @@ final class IBSngProvisioningDispatcher
             if (!$row) {
                 throw new RuntimeException('Provisioning attempt was not found.');
             }
-            if ($row['status'] !== 'queued' || $row['operation'] !== 'create') {
-                throw new RuntimeException('Only queued create attempts can be dispatched; no retry was made.');
+            if ($row['status'] !== 'queued' || !in_array($row['operation'], ['create', 'renew'], true)
+                || $row['operation'] !== $row['order_operation']) {
+                throw new RuntimeException('Queued operation does not match the immutable order operation; no remote action was sent.');
             }
 
             $targets = json_decode((string)$row['server_targets_snapshot'], true, 512, JSON_THROW_ON_ERROR);
@@ -50,7 +55,9 @@ final class IBSngProvisioningDispatcher
                 }
             }
             $groupName = trim((string)($target['group_name'] ?? ''));
-            if ($groupName === '' || trim((string)$row['username']) === '' || empty($row['password_ciphertext'])) {
+            if ($groupName === '' || trim((string)$row['username']) === ''
+                || ($row['operation'] === 'create' && empty($row['password_ciphertext']))
+                || ($row['operation'] === 'renew' && (int)($row['ibsng_validity_days'] ?? 0) < 1)) {
                 throw new RuntimeException('Immutable order provisioning snapshot is incomplete.');
             }
 
@@ -76,6 +83,33 @@ final class IBSngProvisioningDispatcher
                 (string)$row['admin_username'],
                 app_decrypt_secret((string)$row['server_password'])
             );
+            if ($row['operation'] === 'renew') {
+                $existingId = $client->findUserId($username);
+                if ($existingId === null) {
+                    $this->finish($attemptId, 'needs_review', null, 'renew_user_not_found', 'The existing IBSng account could not be found; renewal was not submitted.');
+                    return 'needs_review';
+                }
+                $settingsStmt = $this->pdo->prepare('SELECT setting_key, setting_value FROM app_settings WHERE setting_key IN (?, ?)');
+                $settingsStmt->execute(['ibsng_gift_days_first', 'ibsng_gift_days_repeat']);
+                $giftSettings = [];
+                foreach ($settingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) $giftSettings[(string)$setting['setting_key']] = (int)$setting['setting_value'];
+                $renewal = new IBSngRenewalService($this->pdo, $client, new IBSngRenewalCoordinator($this->pdo));
+                $result = $renewal->renew(
+                    (int)$row['server_id'], $username, $groupName, (int)$row['ibsng_validity_days'],
+                    max(0, $giftSettings['ibsng_gift_days_first'] ?? 1),
+                    max(0, $giftSettings['ibsng_gift_days_repeat'] ?? 5),
+                    (string)$row['idempotency_key'],
+                    (int)$row['product_id'],
+                    'ATD Store renewal order'
+                );
+                if (($result['status'] ?? '') !== 'completed') {
+                    $this->finish($attemptId, 'needs_review', $existingId, 'renewal_not_confirmed', 'IBSng renewal did not return a completed result.');
+                    return 'needs_review';
+                }
+                $this->finish($attemptId, 'succeeded', $existingId, null, null);
+                return 'succeeded';
+            }
+
             // Reconcile before attempting mutation. A found username in the
             // expected group is the durable result of an earlier ambiguous run.
             $existingId = $client->findUserId($username);
@@ -207,7 +241,11 @@ final class IBSngProvisioningDispatcher
             $update->execute([$orderStatus, $orderId]);
             if ($ownsTransaction) $this->pdo->commit();
             if ($ownsTransaction) {
-                try { CustomerAccountDelivery::afterProvisioning($this->pdo, $orderId); }
+                try {
+                    $operationStmt = $this->pdo->prepare('SELECT operation FROM orders WHERE id=?');
+                    $operationStmt->execute([$orderId]);
+                    if ((string)$operationStmt->fetchColumn() === 'create') CustomerAccountDelivery::afterProvisioning($this->pdo, $orderId);
+                }
                 catch (Throwable $emailError) { error_log('Account delivery hook failed for order ' . $orderId . ': ' . $emailError->getMessage()); }
             }
         } catch (Throwable $e) {

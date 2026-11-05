@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS orders (
     price_usdt_snapshot DECIMAL(18,8) NULL,
     currency CHAR(3) NOT NULL DEFAULT 'IRR',
     username VARCHAR(150) NOT NULL,
+    operation ENUM('create','renew') NOT NULL DEFAULT 'create',
     password_ciphertext TEXT NULL,
     server_policy ENUM('selected','default','configured_set') NOT NULL DEFAULT 'default',
     server_targets_snapshot JSON NULL,

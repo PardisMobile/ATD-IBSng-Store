@@ -50,16 +50,29 @@ if (empty($_SESSION['checkout_idempotency'])) {
     $_SESSION['checkout_idempotency'] = bin2hex(random_bytes(24));
 }
 
+$operation = (string)($_GET['mode'] ?? $_POST['mode'] ?? 'create') === 'renew' ? 'renew' : 'create';
+$renewServerId = filter_var($_GET['server_id'] ?? $_POST['server_id'] ?? null, FILTER_VALIDATE_INT);
+$customerAuth = $_SESSION['customer_account_auth'] ?? null;
+$renewAuthorized = $operation === 'renew' && is_array($customerAuth)
+    && $renewServerId !== false && $renewServerId !== null && $renewServerId > 0
+    && in_array((int)$renewServerId, array_map('intval', (array)($customerAuth['server_ids'] ?? [])), true);
+if ($operation === 'renew' && !$renewAuthorized) {
+    header('Location: ' . app_url('customer-account.php'), true, 303);
+    exit;
+}
 $productId = filter_var($_GET['product_id'] ?? $_POST['product_id'] ?? null, FILTER_VALIDATE_INT);
 $product = null;
 $productTargets = [];
 if ($productId !== false && $productId !== null && $productId > 0) {
-    $stmt = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.ibsng_validity_days,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
     $stmt->execute([$productId]);
     $product = $stmt->fetch() ?: null;
     if ($product) {
-        $targetStmt = $pdo->prepare('SELECT s.id AS server_id,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1 ORDER BY s.is_default DESC,s.id');
-        $targetStmt->execute([$productId]);
+        $targetSql = 'SELECT s.id AS server_id,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
+        if ($operation === 'renew') $targetSql .= ' AND s.id=?';
+        $targetSql .= ' ORDER BY s.is_default DESC,s.id';
+        $targetStmt = $pdo->prepare($targetSql);
+        $targetStmt->execute($operation === 'renew' ? [$productId, (int)$renewServerId] : [$productId]);
         $productTargets = $targetStmt->fetchAll(PDO::FETCH_ASSOC);
         if (!$productTargets) $product = null;
     }
@@ -80,11 +93,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $credentialMethod = $credentialPolicy === 'automatic'
             ? 'automatic'
             : ($credentialPolicy === 'choice' && $requestedCredentialMethod === 'automatic' ? 'automatic' : 'customer');
-        $username = trim((string)($_POST['username'] ?? ''));
-        $password = (string)($_POST['account_password'] ?? '');
+        $username = $operation === 'renew' ? (string)($customerAuth['username'] ?? '') : trim((string)($_POST['username'] ?? ''));
+        $password = $operation === 'renew' ? '' : (string)($_POST['account_password'] ?? '');
 
         $credentialGenerationFailed = false;
-        if ($credentialMethod === 'automatic') {
+        if ($operation === 'create' && $credentialMethod === 'automatic') {
             $username = '';
             $password = '';
             $usernameAlphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -112,11 +125,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             $error = app_message('buyer_phone_invalid');
         } elseif ($email !== '' && (strlen($email) > 190 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             $error = app_message('buyer_email_invalid');
-        } elseif ($credentialMethod === 'automatic' && ($credentialGenerationFailed || $username === '' || $password === '')) {
+        } elseif ($operation === 'create' && $credentialMethod === 'automatic' && ($credentialGenerationFailed || $username === '' || $password === '')) {
             $error = app_message('username_available_check_failed');
-        } elseif ($credentialMethod === 'customer' && ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username))) {
+        } elseif ($operation === 'create' && $credentialMethod === 'customer' && ($username === '' || strlen($username) > 150 || !preg_match('/^[A-Za-z0-9_.-]+$/', $username))) {
             $error = app_message('username_format_invalid');
-        } elseif ($credentialMethod === 'customer' && (strlen($password) < 4 || strlen($password) > 12)) {
+        } elseif ($operation === 'create' && $credentialMethod === 'customer' && (strlen($password) < 4 || strlen($password) > 12)) {
             $error = app_message('password_length_invalid');
         } else {
             try {
@@ -128,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 $existingOrder = $priorCheck->fetch();
                 if ($existingOrder) $successTrackingCode = (string)($existingOrder['tracking_code'] ?? '');
 
-                if (!$existingOrder) {
+                if (!$existingOrder && $operation === 'create') {
                     if (!$productTargets) throw new RuntimeException(app_message('ibsng_server_not_found'));
                     foreach ($productTargets as $target) {
                         $ibsng = new IBSngClient(
@@ -155,28 +168,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $successOrder = (string)$prior['public_id'];
                     $successTrackingCode = (string)($prior['tracking_code'] ?? '');
                 } else {
-                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
+                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.duration_seconds,p.ibsng_validity_days,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
                     $fresh->execute([$productId]);
                     $current = $fresh->fetch();
                     if (!$current) throw new RuntimeException(app_message('product_unavailable'));
-                    $freshTargets = $pdo->prepare('SELECT s.id AS server_id,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1 ORDER BY s.is_default DESC,s.id FOR UPDATE');
-                    $freshTargets->execute([$productId]);
+                    $freshTargetSql = 'SELECT s.id AS server_id,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
+                    if ($operation === 'renew') $freshTargetSql .= ' AND s.id=?';
+                    $freshTargetSql .= ' ORDER BY s.is_default DESC,s.id FOR UPDATE';
+                    $freshTargets = $pdo->prepare($freshTargetSql);
+                    $freshTargets->execute($operation === 'renew' ? [$productId, (int)$renewServerId] : [$productId]);
                     $currentTargets = $freshTargets->fetchAll(PDO::FETCH_ASSOC);
                     if (!$currentTargets) throw new RuntimeException(app_message('product_unavailable'));
                     $publicId = bin2hex(random_bytes(16));
                     $trackingCode = OrderTrackingCode::generate($pdo);
-                    $encryptedPassword = app_encrypt_secret($password);
+                    $encryptedPassword = $operation === 'create' ? app_encrypt_secret($password) : null;
                     $serverPolicy = count($currentTargets) > 1 ? 'configured_set' : 'selected';
                     $targetSnapshot = array_map(static fn(array $target): array => [
                         'server_id' => (int)$target['server_id'],
                         'ibsng_group_id' => (int)$target['ibsng_group_id'],
                         'group_name' => (string)$target['group_name'],
                     ], $currentTargets);
-                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
+                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,operation,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
                         $publicId, $trackingCode, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
                         (int)$current['duration_seconds'], (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
-                        $username, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
+                        $username, $operation, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
                     $pdo->commit();
                     $successOrder = $publicId;
@@ -283,13 +299,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(storefront_duration_label((int)$product['duration_seconds'])) ?>"><?= e(storefront_duration_label((int)$product['duration_seconds'])) ?></span></p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
-<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
 <fieldset class="form-section"><legend data-ui-text="checkout_contact_section">اطلاعات خریدار</legend>
 <div class="field"><label for="buyer_name" data-ui-text="checkout_buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_phone" data-ui-text="checkout_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_email" data-ui-text="checkout_email_optional">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted" data-ui-text="checkout_email_help">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
 </fieldset>
-<fieldset class="form-section"><legend data-ui-text="checkout_credentials_section">اطلاعات ورود اکانت</legend>
+<?php if ($operation === 'renew'): ?><div class="notice">این سفارش برای تمدید حساب <strong dir="ltr"><?= e($username) ?></strong> ثبت می‌شود؛ نیازی به واردکردن رمز عبور نیست.</div><?php else: ?><fieldset class="form-section"><legend data-ui-text="checkout_credentials_section">اطلاعات ورود اکانت</legend>
 <?php if ($credentialPolicy === 'choice'): ?>
 <div class="field"><label data-ui-text="checkout_credentials_method">روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> <span data-ui-text="checkout_custom_credentials">نام کاربری و رمز عبور دلخواه</span></label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> <span data-ui-text="checkout_auto_credentials">نام کاربری و رمز عبور اتوماتیک</span></label></div>
 <?php endif; ?>
@@ -302,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
 <p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
 <?php endif; ?>
-</fieldset>
+</fieldset><?php endif; ?>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
 <button class="button primary" type="submit" data-ui-text="checkout_submit">ثبت سفارش</button>
 </form>
@@ -312,6 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 </main>
 <script>
 (function () {
+  if (<?= $operation === 'renew' ? 'true' : 'false' ?>) return;
   const radios = document.querySelectorAll('input[name="credential_method"]');
   const manual = document.getElementById('manual-credentials');
   const automaticNote = document.getElementById('automatic-credentials-note');

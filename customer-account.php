@@ -244,6 +244,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section class="panel account-card account-actions-card">
 <h2 data-fa="مدیریت حساب" data-en="Account management">مدیریت حساب</h2>
 <div class="account-action-buttons">
+<a class="button primary" href="<?= e(app_url('index.php?mode=renew&server_id=' . (int)$item['server_id'])) ?>" data-fa="تمدید سرویس" data-en="Renew service">تمدید سرویس</a>
 <a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <button class="button primary" type="button" data-toggle-password-form="change-password-<?= (int)$item['server_id'] ?>" aria-expanded="false" data-fa="تغییر رمز عبور" data-en="Change password">تغییر رمز عبور</button>
 <form method="post" class="account-logout-form"><input type="hidden" name="account_action" value="logout"><input type="hidden" name="csrf_token" value="<?= e($csrf) ?>"><button class="button primary" type="submit" data-fa="خروج از حساب" data-en="Log out">خروج از حساب</button></form>
