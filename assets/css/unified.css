@@ -218,6 +218,12 @@ body {
 .atd-store-nav-link[aria-current="page"] .ui-icon {
   opacity:1;
 }
+.atd-store-nav-link[aria-current="page"]:hover {
+  color:var(--text);
+  border-color:color-mix(in srgb,var(--accent) 32%,var(--border));
+  background:color-mix(in srgb,var(--surface-2) 76%,var(--accent) 24%);
+  transform:translateY(-1px);
+}
 .orders-lookup {
   margin-bottom:22px;
 }
