@@ -80,9 +80,8 @@ CREATE TABLE IF NOT EXISTS products (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(180) NOT NULL,
     description TEXT NULL,
-    duration_seconds BIGINT UNSIGNED NOT NULL,
-    -- Explicit IBSng renewal validity; never inferred from generic duration_seconds.
-    ibsng_validity_days INT UNSIGNED NULL,
+    ibsng_validity_days INT UNSIGNED NOT NULL,
+
     price_minor BIGINT UNSIGNED NOT NULL,
     -- Independent product price for crypto settlement; never FX-derived.
     price_usdt DECIMAL(18,8) NULL,
@@ -114,7 +113,7 @@ CREATE TABLE IF NOT EXISTS orders (
     buyer_email VARCHAR(190) NOT NULL DEFAULT '',
     product_id BIGINT UNSIGNED NULL,
     product_name_snapshot VARCHAR(180) NOT NULL,
-    duration_seconds_snapshot BIGINT UNSIGNED NOT NULL,
+    validity_days_snapshot INT UNSIGNED NOT NULL,
     price_minor_snapshot BIGINT UNSIGNED NOT NULL,
     -- Independent crypto amount captured at order creation; NULL on legacy orders without a historical snapshot.
     price_usdt_snapshot DECIMAL(18,8) NULL,
