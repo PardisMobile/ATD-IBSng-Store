@@ -429,7 +429,7 @@ final class IBSngClient
 
         // Do not submit a group name that the server did not offer in its
         // actual group selector. This also catches login/error pages.
-        if (!preg_match('/<select\\b[^>]*name=["\\']group_name["\\'][^>]*>(.*?)<\\/select>/is', $groupForm, $selectMatch)
+        if (!preg_match("/<select\\b[^>]*name=[\"']group_name[\"'][^>]*>(.*?)<\\/select>/is", $groupForm, $selectMatch)
             && !preg_match('/<select\\b[^>]*>(.*?)<\\/select>/is', $groupForm, $selectMatch)) {
             throw new RuntimeException('فرم انتخاب گروه از IBSng دریافت نشد.');
         }
@@ -438,7 +438,7 @@ final class IBSngClient
         if (preg_match_all('/<option\\b([^>]*)>(.*?)<\\/option>/is', $optionsHtml, $options, PREG_SET_ORDER)) {
             foreach ($options as $option) {
                 $optionValue = null;
-                if (preg_match('/\\bvalue=["\\']([^"\\']*)["\\']/i', $option[1], $valueMatch)) {
+                if (preg_match("/\\bvalue=[\"']([^\"']*)[\"']/i", $option[1], $valueMatch)) {
                     $optionValue = html_entity_decode($valueMatch[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 }
                 $optionLabel = trim(html_entity_decode(strip_tags($option[2]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
