@@ -28,8 +28,7 @@ final class IBSngProvisioningDispatcher
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT a.*, o.username, o.password_ciphertext, o.server_targets_snapshot,
-                        o.operation AS order_operation, o.product_id,
-                        o.ibsng_validity_days_snapshot AS ibsng_validity_days,
+                        o.product_id,
                         s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN orders o ON o.id = a.order_id
@@ -41,8 +40,7 @@ final class IBSngProvisioningDispatcher
             if (!$row) {
                 throw new RuntimeException('Provisioning attempt was not found.');
             }
-            if ($row['status'] !== 'queued' || !in_array($row['operation'], ['create', 'renew'], true)
-                || $row['operation'] !== $row['order_operation']) {
+            if ($row['status'] !== 'queued' || !in_array($row['operation'], ['create', 'renew'], true)) {
                 throw new RuntimeException('Queued operation does not match the immutable order operation; no remote action was sent.');
             }
 
@@ -57,7 +55,7 @@ final class IBSngProvisioningDispatcher
             $groupName = trim((string)($target['group_name'] ?? ''));
             if ($groupName === '' || trim((string)$row['username']) === ''
                 || ($row['operation'] === 'create' && empty($row['password_ciphertext']))
-                || ($row['operation'] === 'renew' && (int)($row['ibsng_validity_days'] ?? 0) < 1)) {
+                || ($row['operation'] === 'renew' && (int)($target['validity_days'] ?? 0) < 1)) {
                 throw new RuntimeException('Immutable order provisioning snapshot is incomplete.');
             }
 
@@ -95,7 +93,7 @@ final class IBSngProvisioningDispatcher
                 foreach ($settingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) $giftSettings[(string)$setting['setting_key']] = (int)$setting['setting_value'];
                 $renewal = new IBSngRenewalService($this->pdo, $client, new IBSngRenewalCoordinator($this->pdo));
                 $result = $renewal->renew(
-                    (int)$row['server_id'], $username, $groupName, (int)$row['ibsng_validity_days'],
+                    (int)$row['server_id'], $username, $groupName, (int)$target['validity_days'],
                     max(0, $giftSettings['ibsng_gift_days_first'] ?? 1),
                     max(0, $giftSettings['ibsng_gift_days_repeat'] ?? 5),
                     (string)$row['idempotency_key'],

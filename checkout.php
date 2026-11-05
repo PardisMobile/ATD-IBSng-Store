@@ -187,12 +187,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                         'server_id' => (int)$target['server_id'],
                         'ibsng_group_id' => (int)$target['ibsng_group_id'],
                         'group_name' => (string)$target['group_name'],
+                        'operation' => $operation,
+                        'validity_days' => $operation === 'renew' ? (int)$current['ibsng_validity_days'] : null,
                     ], $currentTargets);
-                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,ibsng_validity_days_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,operation,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
+                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,duration_seconds_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
                         $publicId, $trackingCode, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
-                        (int)$current['duration_seconds'], $current['ibsng_validity_days'] !== null ? (int)$current['ibsng_validity_days'] : null, (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
-                        $username, $operation, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
+                        (int)$current['duration_seconds'], (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
+                        $username, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
                     $pdo->commit();
                     $successOrder = $publicId;
