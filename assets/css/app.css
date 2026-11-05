@@ -1053,12 +1053,6 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   transform:translateY(-1px);
   box-shadow:0 5px 16px color-mix(in srgb,var(--accent) 10%,transparent);
 }
-/* Danger buttons keep their semantic red label at rest, but use the shared readable
-   foreground while hovered so the higher-specificity legacy danger color cannot win. */
-.button.danger:hover:not(:disabled),
-button.button.danger:hover:not(:disabled) {
-  color:var(--atd-button-fg,var(--text));
-}
 :where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):active:not(:disabled) {
   background:var(--atd-button-active-bg,var(--surface-2));
   transform:translateY(0) scale(.985);
