@@ -88,8 +88,6 @@ body {
 }
 .button, button.button, summary.button {
   border: 1px solid var(--border);
-  background: rgba(23, 33, 58, .84);
-  color: var(--text);
   cursor: pointer;
   border-radius: 13px;
   transition: transform .16s ease, filter .16s ease, border-color .16s ease;
