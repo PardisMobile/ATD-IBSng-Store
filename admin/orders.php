@@ -35,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $sql = "SELECT product_name_snapshot AS service_name,
-               CASE WHEN operation='renew' THEN 'تمدید' ELSE 'خرید' END AS operation_label,
                COUNT(*) AS paid_orders,
                SUM(CASE WHEN order_status='active' THEN 1 ELSE 0 END) AS active_sales,
                SUM(CASE WHEN order_status='partial' THEN 1 ELSE 0 END) AS partial_sales,
@@ -43,7 +42,7 @@ $sql = "SELECT product_name_snapshot AS service_name,
                currency
         FROM orders
         WHERE payment_status='paid'
-        GROUP BY product_name_snapshot, currency, operation
+        GROUP BY product_name_snapshot, currency
         ORDER BY paid_orders DESC, service_name ASC";
 $rows = $pdo->query($sql)->fetchAll();
 $totalPaid = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='paid'")->fetchColumn();
@@ -73,9 +72,9 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="stats"><div class="panel stat"><span class="muted" data-ui-text="orders_total_paid">کل سفارش‌های پرداخت‌شده</span><strong><?= number_format($totalPaid) ?></strong></div><div class="panel stat"><span class="muted" data-ui-text="orders_total_pending">سفارش‌های در انتظار پرداخت</span><strong><?= number_format($totalPending) ?></strong></div></div>
-<div class="table-wrap"><table><thead><tr><th data-ui-text="orders_service">سرویس</th><th>نوع عملیات</th><th data-ui-text="orders_paid_count">تعداد سفارش پرداخت‌شده</th><th data-ui-text="orders_activation_success">فعال‌سازی موفق</th><th data-ui-text="orders_partial_result">نتیجه جزئی</th><th data-ui-text="orders_gross_amount">مبلغ ناخالص</th><th data-ui-text="orders_unit">واحد</th></tr></thead><tbody>
-<?php if (!$rows): ?><tr><td colspan="7" data-ui-text="orders_no_paid_sales">هنوز فروش پرداخت‌شده‌ای ثبت نشده است.</td></tr><?php endif; ?>
-<?php foreach ($rows as $row): ?><tr><td><?= e((string)$row['service_name']) ?></td><td><?= e((string)$row['operation_label']) ?></td><td><?= number_format((int)$row['paid_orders']) ?></td><td><?= number_format((int)$row['active_sales']) ?></td><td><?= number_format((int)$row['partial_sales']) ?></td><td><?= number_format((int)$row['gross_amount']) ?></td><td><?= e((string)$row['currency']) ?></td></tr><?php endforeach; ?>
+<div class="table-wrap"><table><thead><tr><th data-ui-text="orders_service">سرویس</th><th data-ui-text="orders_paid_count">تعداد سفارش پرداخت‌شده</th><th data-ui-text="orders_activation_success">فعال‌سازی موفق</th><th data-ui-text="orders_partial_result">نتیجه جزئی</th><th data-ui-text="orders_gross_amount">مبلغ ناخالص</th><th data-ui-text="orders_unit">واحد</th></tr></thead><tbody>
+<?php if (!$rows): ?><tr><td colspan="6" data-ui-text="orders_no_paid_sales">هنوز فروش پرداخت‌شده‌ای ثبت نشده است.</td></tr><?php endif; ?>
+<?php foreach ($rows as $row): ?><tr><td><?= e((string)$row['service_name']) ?></td><td><?= number_format((int)$row['paid_orders']) ?></td><td><?= number_format((int)$row['active_sales']) ?></td><td><?= number_format((int)$row['partial_sales']) ?></td><td><?= number_format((int)$row['gross_amount']) ?></td><td><?= e((string)$row['currency']) ?></td></tr><?php endforeach; ?>
 </tbody></table></div>
 
 <section class="section-gap" aria-labelledby="ambiguous-payments-title">

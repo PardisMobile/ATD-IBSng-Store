@@ -191,8 +191,7 @@ final class PaymentTransactionService
         try {
             $stmt = $this->pdo->prepare(
                 'SELECT t.*, o.payment_status AS order_payment_status,
-                        o.server_targets_snapshot AS server_targets_snapshot,
-                        o.operation AS order_operation
+                        o.server_targets_snapshot AS server_targets_snapshot
                  FROM payment_transactions t
                  JOIN orders o ON o.id = t.order_id
                  WHERE t.id = ? FOR UPDATE'
@@ -257,7 +256,7 @@ final class PaymentTransactionService
                 $queue = $this->pdo->prepare(
                     "INSERT IGNORE INTO provisioning_attempts
                      (order_id, server_id, operation, status, attempt_number, idempotency_key)
-                     VALUES (?, ?, ?, 'queued', 1, ?)"
+                     VALUES (?, ?, 'create', 'queued', 1, ?)"
                 );
                 $queued = 0;
                 foreach ($targets as $target) {
@@ -266,12 +265,8 @@ final class PaymentTransactionService
                         throw new RuntimeException('Order provisioning destination snapshot is incomplete.');
                     }
                     $serverId = (int)$target['server_id'];
-                    $operation = (string)($transaction['order_operation'] ?? 'create');
-                    if (!in_array($operation, ['create', 'renew'], true)) {
-                        throw new RuntimeException('Order operation is not supported for provisioning.');
-                    }
-                    $idempotencyKey = 'order:' . (int)$transaction['order_id'] . ':server:' . $serverId . ':' . $operation;
-                    $queue->execute([(int)$transaction['order_id'], $serverId, $operation, $idempotencyKey]);
+                    $idempotencyKey = 'order:' . (int)$transaction['order_id'] . ':server:' . $serverId . ':create';
+                    $queue->execute([(int)$transaction['order_id'], $serverId, $idempotencyKey]);
                     $queued += $queue->rowCount();
                 }
                 if ($queued > 0) {

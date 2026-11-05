@@ -38,22 +38,11 @@ try {
     // Fail closed: do not advertise a crypto price unless the selected gateway
     // is configured for crypto and explicitly supports USDT.
 }
-$catalogMode = (string)($_GET['mode'] ?? '');
-$renewServerId = filter_var($_GET['server_id'] ?? null, FILTER_VALIDATE_INT);
-$isRenewCatalog = $catalogMode === 'renew';
-$customerAuth = $_SESSION['customer_account_auth'] ?? null;
-if ($isRenewCatalog && (!is_array($customerAuth) || $renewServerId === false || $renewServerId === null || !in_array((int)$renewServerId, array_map('intval', (array)($customerAuth['server_ids'] ?? [])), true))) {
-    header('Location: ' . app_url('customer-account.php'), true, 303);
-    exit;
-}
 $products = [];
 $catalogError = false;
 try {
     $pdo = Database::connection();
-    $stmt = $isRenewCatalog
-        ? $pdo->prepare('SELECT DISTINCT p.id,p.name,p.description,p.duration_seconds,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p JOIN product_server_groups psg ON psg.product_id=p.id JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id JOIN ibsng_servers s ON s.id=psg.server_id WHERE p.is_active=1 AND psg.server_id=? AND g.is_active=1 AND s.is_active=1 ORDER BY p.sort_order,p.id DESC')
-        : $pdo->query('SELECT id,name,description,duration_seconds,price_minor,price_usdt,currency,quota_bytes FROM products WHERE is_active=1 ORDER BY sort_order,id DESC');
-    if ($isRenewCatalog) $stmt->execute([(int)$renewServerId]);
+    $stmt = $pdo->query('SELECT id,name,description,duration_seconds,price_minor,price_usdt,currency,quota_bytes FROM products WHERE is_active=1 ORDER BY sort_order,id DESC');
     $products = $stmt->fetchAll();
 } catch (Throwable $e) {
     $catalogError = true;
@@ -152,7 +141,6 @@ try {
       </div>
     </section>
     <section id="services" class="section">
-      <?php if ($isRenewCatalog): ?><div class="catalog-notice"><strong data-fa="انتخاب پلن برای تمدید" data-en="Choose a plan to renew">انتخاب پلن برای تمدید</strong></div><?php endif; ?>
       <div class="section-heading">
         <div><div class="eyebrow" data-ui-text="catalog_section_eyebrow">خدمات</div><h2 data-ui-text="catalog_section_title">سرویس‌های فروشگاه</h2></div>
       </div>
@@ -173,7 +161,7 @@ try {
             <div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-duration="<?= (int)$product['duration_seconds'] ?>" data-ui-duration-fa="<?= e(storefront_duration_label((int)$product['duration_seconds'])) ?>"><?= e(storefront_duration_label((int)$product['duration_seconds'])) ?></strong></div>
             <?php $quotaLabel = storefront_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes']); ?>
             <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong<?= $product['quota_bytes'] === null ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
-            <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'] . ($isRenewCatalog ? '&mode=renew&server_id=' . (int)$renewServerId : ''))) ?>"<?= $isRenewCatalog ? ' data-fa="تمدید" data-en="Renew"' : ' data-ui-text="catalog_order"' ?>><?= $isRenewCatalog ? 'تمدید' : 'ثبت سفارش' ?></a>
+            <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'])) ?>" data-ui-text="catalog_order">ثبت سفارش</a>
           </article>
         <?php endforeach; ?>
         </div>

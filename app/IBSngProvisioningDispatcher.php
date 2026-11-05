@@ -28,11 +28,11 @@ final class IBSngProvisioningDispatcher
         try {
             $stmt = $this->pdo->prepare(
                 "SELECT a.*, o.username, o.password_ciphertext, o.server_targets_snapshot,
-                        o.operation AS order_operation, o.product_id, p.ibsng_validity_days,
+                        o.operation AS order_operation, o.product_id,
+                        o.ibsng_validity_days_snapshot AS ibsng_validity_days,
                         s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN orders o ON o.id = a.order_id
-                 LEFT JOIN products p ON p.id = o.product_id
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.id = ? FOR UPDATE"
             );
