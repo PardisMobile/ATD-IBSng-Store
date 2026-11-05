@@ -147,7 +147,7 @@ $esc = static fn($value): string => e((string)$value);
 <div class="guide-admin-method-head">
 <div class="field" style="flex:1;min-width:220px"><label data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"></div>
 <label class="check-toggle"><input type="checkbox" name="methods[<?= (int)$index ?>][active]" value="1"<?= !empty($method['active']) ? ' checked' : '' ?>> <span data-fa="فعال و قابل نمایش برای مشتری" data-en="Enabled and visible to customers">فعال و قابل نمایش برای مشتری</span></label>
-<button class="button" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
+<button class="button danger" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
 </div>
 <?php foreach ($systems as $systemKey => $labels): $system = is_array($method['systems'][$systemKey] ?? null) ? $method['systems'][$systemKey] : []; ?>
 <fieldset class="form-section">
@@ -194,7 +194,7 @@ $esc = static fn($value): string => e((string)$value);
   const label=document.createElement('label');label.className='check-toggle';
   const check=document.createElement('input');check.type='checkbox';check.name='methods['+i+'][active]';check.value='1';
   const labelText=document.createElement('span');labelText.textContent='فعال و قابل نمایش برای مشتری';label.append(check,labelText);
-  const remove=document.createElement('button');remove.type='button';remove.className='button';remove.textContent='حذف روش';remove.dataset.removeGuideMethod='';
+  const remove=document.createElement('button');remove.type='button';remove.className='button danger';remove.textContent='حذف روش';remove.dataset.removeGuideMethod='';
   head.append(name,label,remove);article.append(head);
   systems.forEach(([key,title])=>{
    const fs=document.createElement('fieldset');fs.className='form-section';
