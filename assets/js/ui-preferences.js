@@ -330,9 +330,7 @@
       products_intro: 'Each product can be connected to one or more corresponding IBSng servers and groups. Duration is stored in seconds, price in the smallest currency unit, and quota in bytes.',
       products_prerequisite: 'Create an active IBSng server and then an active group mapping before defining a product.',
       products_name: 'Product name',
-      products_duration: 'Validity duration (seconds)',
-      products_renewal_days: 'IBSng renewal duration (days)',
-      products_renewal_hint: 'This value is only for IBSng renewal and is not inferred from the general product duration.',
+      products_validity_days: 'Validity duration (days)',
       products_base_price: 'Base price (smallest unit of selected currency)',
       products_usdt_price: 'Independent USDT price (optional)',
       products_usdt_hint: 'This price is stored separately and is not calculated from an exchange rate. It will not appear in the store until crypto payment is enabled.',
@@ -354,8 +352,7 @@
       products_cancel_edit: 'Cancel editing',
       products_registered: 'Registered products',
       products_empty: 'No products have been added yet.',
-      products_duration_label: 'Duration:',
-      products_seconds: 'seconds · IBSng renewal:',
+      products_duration_label: 'Validity:',
       products_days: 'days',
       products_not_configured: 'Not configured',
       products_price_label: '· Price:',
@@ -644,18 +641,10 @@
       if (element.dataset.uiOriginalText === undefined) element.dataset.uiOriginalText = element.textContent;
       element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
     });
-    document.querySelectorAll('[data-ui-duration]').forEach((element) => {
-      if (language !== 'en') {
-        element.textContent = element.dataset.uiDurationFa || element.dataset.uiOriginalText || element.textContent;
-        return;
-      }
-      const seconds = Number(element.dataset.uiDuration);
-      if (!Number.isFinite(seconds) || seconds < 0) return;
-      const unit = seconds % 86400 === 0 ? [seconds / 86400, 'day']
-        : seconds % 3600 === 0 ? [seconds / 3600, 'hour']
-        : seconds % 60 === 0 ? [seconds / 60, 'minute']
-        : [seconds, 'second'];
-      element.textContent = new Intl.NumberFormat('en').format(unit[0]) + ' ' + unit[1] + (unit[0] === 1 ? '' : 's');
+    document.querySelectorAll('[data-ui-validity-days]').forEach((element) => {
+      const days = Number(element.dataset.validityDays);
+      if (!Number.isFinite(days) || days < 1) return;
+      element.textContent = new Intl.NumberFormat(language === 'en' ? 'en' : 'fa').format(days) + ' ' + (language === 'en' ? (days === 1 ? 'day' : 'days') : 'روز');
     });
     applyNoticeCopy(language);
   }
