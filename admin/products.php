@@ -36,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'save') {
                 $name = trim((string)($_POST['name'] ?? ''));
                 $description = trim((string)($_POST['description'] ?? ''));
-                $duration = product_post_int('duration_seconds');
                 $ibsngValidity = product_post_int('ibsng_validity_days');
                 $price = product_post_int('price_minor');
                 $priceUsdtRaw = trim((string)($_POST['price_usdt'] ?? ''));
@@ -67,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($name === '' || (function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name)) > 180) {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
                 }
-                if ($duration < 1 || $ibsngValidity < 1 || $ibsngValidity > 36500 || $price < 0 || $sortOrder < 0) {
-                    throw new InvalidArgumentException('مدت عمومی، مدت اعتبار مخصوص IBSng (۱ تا ۳۶۵۰۰ روز)، قیمت یا ترتیب نمایش معتبر نیست.');
+                if ($ibsngValidity < 1 || $ibsngValidity > 36500 || $price < 0 || $sortOrder < 0) {
+                    throw new InvalidArgumentException('مدت اعتبار باید بین ۱ تا ۳۶۵۰۰ روز باشد؛ قیمت یا ترتیب نمایش نیز معتبر نیست.');
                 }
                 if (!preg_match('/^[A-Z]{3}$/', $currency)) {
                     throw new InvalidArgumentException('واحد پول باید کد سه‌حرفی مانند IRR باشد.');
@@ -89,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($id > 0) {
-                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,duration_seconds=?,ibsng_validity_days=?,price_minor=?,price_usdt=?,currency=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder, $id]);
+                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,ibsng_validity_days=?,price_minor=?,price_usdt=?,currency=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder, $id]);
                     $check = $pdo->prepare('SELECT id FROM products WHERE id=?');
                     $check->execute([$id]);
                     if (!$check->fetchColumn()) {
@@ -98,8 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $productId = $id;
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO products (name,description,duration_seconds,ibsng_validity_days,price_minor,price_usdt,currency,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?)');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $duration, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder]);
+                    $stmt = $pdo->prepare('INSERT INTO products (name,description,ibsng_validity_days,price_minor,price_usdt,currency,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?,?)');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $ibsngValidity, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder]);
                     $productId = (int)$pdo->lastInsertId();
                 }
 
@@ -201,7 +200,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1 data-ui-text="products_title">مدیریت محصولات و پلن‌ها</h1>
-<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت بر حسب ثانیه، قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت ثبت می‌شود.</p>
+<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت است.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
@@ -215,8 +214,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_validity">مدت اعتبار و تمدید</legend>
 <div class="grid">
-<div class="field"><label for="duration_seconds" data-ui-text="products_duration">مدت اعتبار (ثانیه)</label><input id="duration_seconds" name="duration_seconds" type="number" min="1" required value="<?= e((string)($product['duration_seconds'] ?? 2592000)) ?>"></div>
-<div class="field"><label for="ibsng_validity_days" data-ui-text="products_renewal_days">مدت تمدید IBSng (روز)</label><input id="ibsng_validity_days" name="ibsng_validity_days" type="number" min="1" max="36500" required value="<?= e((string)($product['ibsng_validity_days'] ?? '')) ?>"><div class="hint" data-ui-text="products_renewal_hint">این مقدار فقط برای تمدید IBSng است و از مدت عمومی محصول حدس زده نمی‌شود.</div></div>
+<div class="field"><label for="ibsng_validity_days" data-ui-text="products_validity_days">مدت اعتبار (روز)</label><input id="ibsng_validity_days" name="ibsng_validity_days" type="number" min="1" max="36500" required value="<?= e((string)($product['ibsng_validity_days'] ?? '')) ?>"></div></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
@@ -251,7 +249,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <section class="panel panel-card"><h2 data-ui-text="products_registered">محصولات ثبت‌شده</h2>
 <?php if (!$products): ?><div class="empty" data-ui-text="products_empty">هنوز محصولی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($products as $item): ?><article class="product-row panel"><div class="row-head"><strong><?= e((string)$item['name']) ?></strong><span class="status-chip" data-ui-status="<?= (int)$item['is_active']===1?'active':'inactive' ?>"><?= (int)$item['is_active']===1?'فعال':'غیرفعال' ?></span></div>
-<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div><span data-ui-text="products_duration_label">مدت:</span> <span data-ui-duration="<?= (int)$item['duration_seconds'] ?>" data-ui-duration-fa="<?= number_format((int)$item['duration_seconds']) ?> ثانیه"><?= number_format((int)$item['duration_seconds']) ?> ثانیه</span> <span data-ui-text="products_seconds">ثانیه · تمدید IBSng:</span> <?= $item['ibsng_validity_days'] !== null ? number_format((int)$item['ibsng_validity_days']) . ' <span data-ui-text="products_days">روز</span>' : '<span data-ui-text="products_not_configured">تنظیم نشده</span>' ?> <span data-ui-text="products_price_label">· قیمت:</span> <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted"><span data-ui-text="products_mappings_label">سرورها و گروه‌ها:</span> <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
+<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div><span data-ui-text="products_duration_label">مدت:</span> <span data-ui-validity-days><?= number_format((int)$item['ibsng_validity_days']) ?> <span data-ui-text="products_days">روز</span></span> <span data-ui-text="products_price_label">· قیمت:</span> <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted"><span data-ui-text="products_mappings_label">سرورها و گروه‌ها:</span> <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
 <div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>" data-ui-text="products_edit">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="<?= (int)$item['is_active']===1?'products_inactive':'products_active' ?>"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" data-confirm-fa="محصول حذف شود؟" data-confirm-en="Delete this product?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button danger" type="submit" data-ui-text="products_delete">حذف</button></form></div></article><?php endforeach; ?>
 </section>
 <?php require __DIR__ . '/_footer.php'; ?>
