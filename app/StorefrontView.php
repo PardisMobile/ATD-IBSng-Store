@@ -24,12 +24,9 @@ function storefront_icon_svg(string $name): string
         . 'aria-hidden="true" focusable="false">' . $path . '</svg>';
 }
 
-function storefront_duration_label(int $seconds): string
+function storefront_validity_label(int $days): string
 {
-    if ($seconds > 0 && $seconds % 86400 === 0) return (int)($seconds / 86400) . ' روز';
-    if ($seconds > 0 && $seconds % 3600 === 0) return (int)($seconds / 3600) . ' ساعت';
-    if ($seconds > 0 && $seconds % 60 === 0) return (int)($seconds / 60) . ' دقیقه';
-    return number_format($seconds) . ' ثانیه';
+    return number_format($days) . ' روز';
 }
 
 function storefront_bytes_label(?string $bytes): string
