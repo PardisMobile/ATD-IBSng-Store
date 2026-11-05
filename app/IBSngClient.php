@@ -323,40 +323,86 @@ final class IBSngClient
             throw new RuntimeException('این نام کاربری از قبل در IBSng وجود دارد.');
         }
 
-        $result = $this->request('/admin/user/add_new_users.php', [
-            'submit_form' => 1,
-            'add' => 1,
-            'count' => 1,
-            'credit' => $credit,
-            'owner_name' => $this->username,
-            'group_name' => $groupName,
-            'edit__normal_username' => 1,
-        ]);
-        if (!preg_match('/user_id=(\d+)&su/', $result, $match)) {
-            throw new RuntimeException('IBSng شناسه کاربر جدید را در پاسخ ایجاد حساب برنگرداند.');
+        /*
+         * Follow the verified RouteBox IBSng A1.24 creation flow:
+         * create one account without following the 302 redirect, because
+         * IBSng returns the new user ID in the Location response header.
+         */
+        $this->login();
+        [$createBody, $createStatus, $createHeaders] = $this->requestRaw(
+            '/admin/user/add_new_users.php',
+            [
+                'count' => 1,
+                'credit' => $credit,
+                'owner_name' => $this->username,
+                'group_name' => $groupName,
+                'credit_comment' => '',
+            ],
+            false
+        );
+
+        $uid = null;
+        if (preg_match('/^Location\\s*:\\s*(.+)$/im', $createHeaders, $locationMatch)) {
+            $location = trim($locationMatch[1]);
+            if (preg_match('/[?&]user_id=([0-9]+)/i', $location, $idMatch)) {
+                $uid = $idMatch[1];
+            }
         }
-        $uid = $match[1];
-        $editPath = '/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($uid)
-            . '&submit_form=1&add=1&count=1&credit=1&owner_name=' . rawurlencode($this->username)
-            . '&group_name=' . rawurlencode($groupName) . '&x=35&y=1&edit__normal_username=normal_username';
-        $saved = $this->request($editPath, [
-            'target' => 'user',
-            'target_id' => $uid,
-            'update' => 1,
-            'edit_tpl_cs' => 'normal_username',
-            'attr_update_method_0' => 'normalAttrs',
-            'has_normal_username' => 't',
-            'current_normal_username' => '',
-            'normal_username' => $username,
-            'password' => $password,
-            'normal_save_user_add' => 't',
-            'credit' => $credit,
-        ]);
-        if (stripos($saved, 'exist') !== false) {
-            throw new RuntimeException('IBSng اعلام کرد نام کاربری تکراری است.');
+        if ($uid === null && preg_match('/[?&]user_id=([0-9]+)/i', $createBody, $idMatch)) {
+            $uid = $idMatch[1];
         }
-        if (stripos($saved, 'user_info.php?user_id_multi') === false) {
-            throw new RuntimeException('پاسخ ذخیره حساب جدید از IBSng تأیید قابل تشخیص نداشت.');
+        if ($uid === null) {
+            throw new RuntimeException(
+                'IBSng شناسه کاربر جدید را برنگرداند. HTTP ' . $createStatus
+                . '؛ نتیجه ساخت باید در پنل IBSng بررسی شود.'
+            );
+        }
+
+        /*
+         * IBSng A1.24 requires opening the edit page before saving the
+         * customer-selected normal username and password.
+         */
+        [, $editPageStatus] = $this->requestRaw(
+            '/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($uid),
+            [],
+            false
+        );
+        if ($editPageStatus >= 400) {
+            throw new RuntimeException('صفحه ویرایش کاربر جدید در IBSng باز نشد (HTTP ' . $editPageStatus . ').');
+        }
+
+        [$saved, $saveStatus] = $this->requestRaw(
+            '/admin/plugins/edit.php',
+            [
+                'update' => '1',
+                'edit_tpl_cs' => 'normal_username',
+                'target' => 'user',
+                'target_id' => $uid,
+                'user_id' => $uid,
+                'has_normal_username' => 't',
+                'current_normal_username' => '',
+                'normal_username' => $username,
+                'password' => $password,
+                'normal_save_user_add' => 't',
+                'attr_update_method_0' => 'normalAttrs',
+            ],
+            false
+        );
+
+        if ($saveStatus >= 400) {
+            throw new RuntimeException('IBSng ذخیره نام کاربری و رمز عبور را نپذیرفت (HTTP ' . $saveStatus . ').');
+        }
+
+        $responseText = trim(preg_replace(
+            '/\\s+/u',
+            ' ',
+            html_entity_decode(strip_tags($saved), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ) ?? '');
+        if (
+            stripos($responseText, 'normal username') !== false
+            && stripos($responseText, 'error') !== false
+        ) {
+            throw new RuntimeException('IBSng تنظیم نام کاربری یا رمز عبور را نپذیرفت.');
         }
     }
 
