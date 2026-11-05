@@ -642,7 +642,7 @@
       element.textContent = language === 'en' && translated ? translated : element.dataset.uiOriginalText;
     });
     document.querySelectorAll('[data-ui-validity-days]').forEach((element) => {
-      const days = Number(element.dataset.validityDays);
+      const days = Number(element.dataset.uiValidityDays);
       if (!Number.isFinite(days) || days < 1) return;
       element.textContent = new Intl.NumberFormat(language === 'en' ? 'en' : 'fa').format(days) + ' ' + (language === 'en' ? (days === 1 ? 'day' : 'days') : 'روز');
     });
