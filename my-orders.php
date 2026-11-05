@@ -6,6 +6,7 @@ require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/EmailSender.php';
 require_once __DIR__ . '/app/EmailTemplates.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/messages.php';
 
 $config = app_config();
 if (empty($_SESSION['my_orders_csrf'])) {
@@ -29,6 +30,9 @@ if (isset($_POST['action'])) {
             $pdo = Database::connection();
             $action = (string)$_POST['action'];
             if ($action === 'request') {
+                // A new request replaces any stale pending challenge in this browser session.
+                unset($_SESSION['my_orders_email_pending']);
+                $stage = 'request';
                 $email = strtolower(trim((string)($_POST['email'] ?? '')));
                 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 190) {
                     $notice = app_message('order_recovery_email_invalid');
@@ -40,23 +44,26 @@ if (isset($_POST['action'])) {
                     if ((int)$throttle->fetchColumn() >= 5) {
                         $notice = app_message('order_recovery_rate_limited');
                     } else {
-                        $hasOrders = $pdo->prepare('SELECT 1 FROM orders WHERE LOWER(TRIM(buyer_email)) = ? LIMIT 1');
-                        $hasOrders->execute([$email]);
-                        if ($hasOrders->fetchColumn()) {
-                            // Only the newest email challenge remains usable.
-                            $invalidate = $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE email_normalized = ? AND consumed_at IS NULL');
-                            $invalidate->execute([$email]);
-                            $code = (string)random_int(100000, 999999);
-                            $hash = password_hash($code, PASSWORD_DEFAULT);
-                            $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
-                            $insert->execute([$email, $hash, $ipHash]);
-                            $template = EmailTemplates::get($pdo, 'order_recovery');
-                            $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => '۱۰ دقیقه'];
-                            EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $vars), EmailTemplates::render($template['html'], $vars), EmailTemplates::render($template['text'], $vars));
+                        // Issue the same email challenge whether or not orders exist.
+                        // This avoids exposing customer/order membership through the UI.
+                        $invalidate = $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE email_normalized = ? AND consumed_at IS NULL');
+                        $invalidate->execute([$email]);
+                        $code = (string)random_int(100000, 999999);
+                        $hash = password_hash($code, PASSWORD_DEFAULT);
+                        $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
+                        $insert->execute([$email, $hash, $ipHash]);
+                        $challengeId = (int)$pdo->lastInsertId();
+                        $template = EmailTemplates::get($pdo, 'order_recovery');
+                        $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => '۱۰ دقیقه'];
+                        $sent = EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $vars), EmailTemplates::render($template['html'], $vars), EmailTemplates::render($template['text'], $vars));
+                        if ($sent) {
+                            $_SESSION['my_orders_email_pending'] = $email;
+                            $stage = 'verify';
+                            $notice = app_message('order_recovery_code_sent_generic');
+                        } else {
+                            $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE id = ?')->execute([$challengeId]);
+                            $notice = app_message('order_recovery_unavailable');
                         }
-                        $_SESSION['my_orders_email_pending'] = $email;
-                        $stage = 'verify';
-                        $notice = app_message('order_recovery_code_sent_generic');
                     }
                 }
             } elseif ($action === 'verify') {
@@ -88,6 +95,10 @@ if (isset($_POST['action'])) {
             }
         } catch (Throwable $error) {
             error_log('Customer order recovery failed: ' . $error->getMessage());
+            if (($action ?? '') === 'request') {
+                unset($_SESSION['my_orders_email_pending']);
+                $stage = 'request';
+            }
             $notice = app_message('order_recovery_unavailable');
         }
     }
