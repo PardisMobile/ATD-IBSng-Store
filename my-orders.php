@@ -44,25 +44,30 @@ if (isset($_POST['action'])) {
                     if ((int)$throttle->fetchColumn() >= 5) {
                         $notice = app_message('order_recovery_rate_limited');
                     } else {
-                        // Issue the same email challenge whether or not orders exist.
-                        // This avoids exposing customer/order membership through the UI.
-                        $invalidate = $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE email_normalized = ? AND consumed_at IS NULL');
-                        $invalidate->execute([$email]);
-                        $code = (string)random_int(100000, 999999);
-                        $hash = password_hash($code, PASSWORD_DEFAULT);
-                        $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
-                        $insert->execute([$email, $hash, $ipHash]);
-                        $challengeId = (int)$pdo->lastInsertId();
-                        $template = EmailTemplates::get($pdo, 'order_recovery');
-                        $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => '۱۰ دقیقه'];
-                        $sent = EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $vars), EmailTemplates::render($template['html'], $vars), EmailTemplates::render($template['text'], $vars));
-                        if ($sent) {
-                            $_SESSION['my_orders_email_pending'] = $email;
-                            $stage = 'verify';
+                        $orders = $pdo->prepare('SELECT COUNT(*) FROM orders WHERE LOWER(TRIM(buyer_email)) = ?');
+                        $orders->execute([$email]);
+                        if ((int)$orders->fetchColumn() < 1) {
+                            // Do not issue or send a recovery code when there is no purchase history.
                             $notice = app_message('order_recovery_code_sent_generic');
                         } else {
-                            $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE id = ?')->execute([$challengeId]);
-                            $notice = app_message('order_recovery_unavailable');
+                            $invalidate = $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE email_normalized = ? AND consumed_at IS NULL');
+                            $invalidate->execute([$email]);
+                            $code = (string)random_int(100000, 999999);
+                            $hash = password_hash($code, PASSWORD_DEFAULT);
+                            $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
+                            $insert->execute([$email, $hash, $ipHash]);
+                            $challengeId = (int)$pdo->lastInsertId();
+                            $template = EmailTemplates::get($pdo, 'order_recovery');
+                            $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => '۱۰ دقیقه'];
+                            $sent = EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $vars), EmailTemplates::render($template['html'], $vars), EmailTemplates::render($template['text'], $vars));
+                            if ($sent) {
+                                $_SESSION['my_orders_email_pending'] = $email;
+                                $stage = 'verify';
+                                $notice = app_message('order_recovery_code_sent_generic');
+                            } else {
+                                $pdo->prepare('UPDATE customer_order_recovery_codes SET consumed_at = NOW() WHERE id = ?')->execute([$challengeId]);
+                                $notice = app_message('order_recovery_unavailable');
+                            }
                         }
                     }
                 }
