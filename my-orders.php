@@ -204,7 +204,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 </form>
 <?php elseif ($stage === 'orders'): ?>
 <p class="muted"><span data-ui-text="orders_verified_email">ایمیل تأییدشده:</span> <strong dir="ltr"><?= e($email) ?></strong></p>
-<form method="post" class="orders-email-logout-form"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="logout"><button class="button" type="submit" data-ui-text="orders_logout">خروج از فهرست سفارش‌ها</button></form>
+<form method="post" class="orders-email-logout-form"><input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="logout"><button class="button primary" type="submit" data-ui-text="orders_logout">خروج از فهرست سفارش‌ها</button></form>
 <?php if (!$orders): ?><p class="muted" data-ui-text="orders_none_for_email">سفارشی برای این ایمیل پیدا نشد.</p><?php else: ?>
 <div class="orders-list"><?php foreach ($orders as $order): ?>
 <article class="order-row"><div><strong><?= e((string)$order['product_name_snapshot']) ?></strong>
