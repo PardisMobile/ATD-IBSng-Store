@@ -1046,6 +1046,12 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
   -webkit-tap-highlight-color:transparent;
   touch-action:manipulation;
 }
+/* Base-style links must not pick up the browser's visited-link color. */
+a.button:not(.primary):not(.danger):link,
+a.button:not(.primary):not(.danger):visited {
+  color:var(--atd-button-fg,var(--text));
+}
+
 :where(.button, button:not(.atd-preferences button), input[type="submit"], input[type="button"], summary.button):hover:not(:disabled) {
   background:var(--atd-button-hover-bg,var(--hover-surface,var(--surface-2)));
   color:var(--atd-button-fg,var(--text));
