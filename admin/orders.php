@@ -35,7 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $sql = "SELECT product_name_snapshot AS service_name,
-               CASE WHEN operation='renew' THEN 'تمدید' ELSE 'خرید' END AS operation_label,
+               CASE
+                   WHEN COALESCE(JSON_UNQUOTE(JSON_EXTRACT(server_targets_snapshot, '$[0].operation')), 'create') = 'renew'
+                   THEN 'تمدید' ELSE 'خرید'
+               END AS operation_label,
                COUNT(*) AS paid_orders,
                SUM(CASE WHEN order_status='active' THEN 1 ELSE 0 END) AS active_sales,
                SUM(CASE WHEN order_status='partial' THEN 1 ELSE 0 END) AS partial_sales,
@@ -43,7 +46,8 @@ $sql = "SELECT product_name_snapshot AS service_name,
                currency
         FROM orders
         WHERE payment_status='paid'
-        GROUP BY product_name_snapshot, currency, operation
+        GROUP BY product_name_snapshot, currency,
+                 COALESCE(JSON_UNQUOTE(JSON_EXTRACT(server_targets_snapshot, '$[0].operation')), 'create')
         ORDER BY paid_orders DESC, service_name ASC";
 $rows = $pdo->query($sql)->fetchAll();
 $totalPaid = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='paid'")->fetchColumn();
