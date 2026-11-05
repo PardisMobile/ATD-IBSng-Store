@@ -146,15 +146,15 @@ body {
 }
 body { position: relative; isolation: isolate; }
 body::before {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background-image: linear-gradient(rgba(120,157,230,.035) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(120,157,230,.035) 1px, transparent 1px);
   background-size: 34px 34px;
   animation: atd-grid-drift 24s linear infinite;
 }
 body::after {
-  content: ""; position: fixed; width: 32vw; height: 32vw; min-width: 220px; min-height: 220px;
-  top: 2vh; right: -10vw; border-radius: 50%; pointer-events: none; z-index: -1;
+  content: ""; position: absolute; width: 32vw; height: 32vw; min-width: 220px; min-height: 220px;
+  top: 0; right: -10vw; border-radius: 50%; pointer-events: none; z-index: -1;
   background: radial-gradient(circle, color-mix(in srgb,var(--accent) 13%,transparent), transparent 68%);
   filter: blur(12px); animation: atd-orb-float 11s ease-in-out infinite;
 }
