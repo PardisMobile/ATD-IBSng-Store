@@ -406,7 +406,7 @@ final class IBSngClient
         }
     }
 
-    /** Change an existing account's group through the Mirza-style Edit User form. */
+    /** Change an existing account's group through the native IBSng A1.24 Edit User form. */
     public function changeUserGroup(string $username, string $groupName): void
     {
         $username = trim($username);
@@ -414,19 +414,60 @@ final class IBSngClient
         if ($username === '' || $groupName === '') {
             throw new InvalidArgumentException('نام کاربری و گروه مقصد الزامی هستند.');
         }
+
+        // Read the account first; IBSng's Edit User form is selected by user ID.
         $user = $this->lookupUser($username);
         $uid = (string)$user['user_id'];
-        $editPath = '/admin/plugins/edit.php?edit_user=1&user_id=' . rawurlencode($uid)
-            . '&submit_form=1&add=1&count=1&credit=1&owner_name=' . rawurlencode($this->username)
-            . '&group_name=' . rawurlencode($groupName) . '&x=35&y=1&edit__normal_username=normal_username';
-        $saved = $this->request($editPath, [
-            'target' => 'user', 'target_id' => $uid, 'update' => 1,
-            'edit_tpl_cs' => 'normal_username', 'attr_update_method_0' => 'normalAttrs',
-            'has_normal_username' => 't', 'current_normal_username' => $username,
-            'normal_username' => $username, 'normal_save_user_add' => 't',
+
+        // IBSng first renders only the requested attribute editor when its
+        // checkbox is posted. The live A1.24 form uses group_name here.
+        $groupForm = $this->request('/admin/plugins/edit.php', [
+            'user_id' => $uid,
+            'edit_user' => '1',
+            'attr_edit_checkbox_0' => 'group_name',
         ]);
-        if (stripos($saved, 'user_info.php?user_id_multi') === false) {
-            throw new RuntimeException('پاسخ ذخیره تغییر گروه از IBSng قابل تأیید نبود.');
+
+        // Do not submit a group name that the server did not offer in its
+        // actual group selector. This also catches login/error pages.
+        if (!preg_match('/<select\\b[^>]*name=["\\']group_name["\\'][^>]*>(.*?)<\\/select>/is', $groupForm, $selectMatch)
+            && !preg_match('/<select\\b[^>]*>(.*?)<\\/select>/is', $groupForm, $selectMatch)) {
+            throw new RuntimeException('فرم انتخاب گروه از IBSng دریافت نشد.');
+        }
+        $optionsHtml = $selectMatch[1];
+        $groupFound = false;
+        if (preg_match_all('/<option\\b([^>]*)>(.*?)<\\/option>/is', $optionsHtml, $options, PREG_SET_ORDER)) {
+            foreach ($options as $option) {
+                $optionValue = null;
+                if (preg_match('/\\bvalue=["\\']([^"\\']*)["\\']/i', $option[1], $valueMatch)) {
+                    $optionValue = html_entity_decode($valueMatch[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
+                $optionLabel = trim(html_entity_decode(strip_tags($option[2]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                if ($optionValue === $groupName || $optionLabel === $groupName) {
+                    $groupFound = true;
+                    break;
+                }
+            }
+        }
+        if (!$groupFound) {
+            throw new RuntimeException('گروه مقصد در فهرست گروه‌های قابل انتخاب IBSng وجود ندارد: ' . $groupName);
+        }
+
+        // These field names and values are taken from the live A1.24 form:
+        // target=user, update=1, edit_tpl_cs=group_name,
+        // attr_update_method_0=groupName, and select name=group_name.
+        $this->request('/admin/plugins/edit.php', [
+            'target' => 'user',
+            'target_id' => $uid,
+            'update' => '1',
+            'edit_tpl_cs' => 'group_name',
+            'attr_update_method_0' => 'groupName',
+            'group_name' => $groupName,
+        ]);
+
+        // Confirm the persisted group by reading User Information again.
+        $verified = $this->lookupUser($username);
+        if ((string)($verified['group'] ?? '') !== $groupName) {
+            throw new RuntimeException('IBSng درخواست تغییر گروه را پذیرفت، اما گروه نهایی کاربر با گروه مقصد مطابقت ندارد.');
         }
     }
 
