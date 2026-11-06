@@ -225,7 +225,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
 <div class="grid">
-<div class="field"><label for="quota_bytes" data-ui-text="products_quota">سقف حجم (بایت؛ خالی یعنی نامشخص/نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
+<div class="field"><label for="quota_bytes" data-fa="سقف حجم (بایت؛ خالی یا صفر = نامحدود)" data-en="Quota limit (bytes; blank or zero = unlimited)">سقف حجم (بایت؛ خالی یا صفر = نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
