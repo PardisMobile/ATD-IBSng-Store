@@ -5,7 +5,7 @@ $adminCurrentPage = basename((string)($_SERVER['SCRIPT_NAME'] ?? 'index.php'));
 $adminNavEntries = [
     ['index.php', 'dashboard', 'داشبورد', 'Dashboard'],
     ['ibsng-servers.php', 'servers', 'سرورهای IBSng', 'IBSng Servers'],
-    ['ibsng-groups.php', 'groups', 'نگاشت پلن/گروه', 'Plan / Group Mapping'],
+    ['ibsng-groups.php', 'groups', 'تعریف پلن و گروه', 'Plan & Group Setup'],
     ['ibsng-users.php', 'users', 'مدیریت حساب‌های IBSng', 'IBSng Accounts'],
     ['products.php', 'products', 'مدیریت محصولات', 'Products'],
     ['guide.php', 'guide', 'راهنمای استفاده', 'Account Guide'],
