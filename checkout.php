@@ -64,16 +64,17 @@ $productId = filter_var($_GET['product_id'] ?? $_POST['product_id'] ?? null, FIL
 $product = null;
 $productTargets = [];
 if ($productId !== false && $productId !== null && $productId > 0) {
-    $stmt = $pdo->prepare('SELECT p.id,p.name,p.ibsng_validity_days,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
     $stmt->execute([$productId]);
     $product = $stmt->fetch() ?: null;
     if ($product) {
-        $targetSql = 'SELECT s.id AS server_id,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
+        $targetSql = 'SELECT s.id AS server_id,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password,m.ibsng_group_id,g.group_name,g.validity_days FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
         if ($operation === 'renew') $targetSql .= ' AND s.id=?';
         $targetSql .= ' ORDER BY s.is_default DESC,s.id';
         $targetStmt = $pdo->prepare($targetSql);
         $targetStmt->execute($operation === 'renew' ? [$productId, (int)$renewServerId] : [$productId]);
         $productTargets = $targetStmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($productTargets) $product['validity_days'] = (int)$productTargets[0]['validity_days'];
         if (!$productTargets) $product = null;
     }
 }
@@ -168,11 +169,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $successOrder = (string)$prior['public_id'];
                     $successTrackingCode = (string)($prior['tracking_code'] ?? '');
                 } else {
-                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.ibsng_validity_days,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
+                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
                     $fresh->execute([$productId]);
                     $current = $fresh->fetch();
                     if (!$current) throw new RuntimeException(app_message('product_unavailable'));
-                    $freshTargetSql = 'SELECT s.id AS server_id,m.ibsng_group_id,g.group_name FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
+                    $freshTargetSql = 'SELECT s.id AS server_id,m.ibsng_group_id,g.group_name,g.validity_days FROM product_server_groups m JOIN ibsng_servers s ON s.id=m.server_id JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=? AND s.is_active=1 AND g.is_active=1';
                     if ($operation === 'renew') $freshTargetSql .= ' AND s.id=?';
                     $freshTargetSql .= ' ORDER BY s.is_default DESC,s.id FOR UPDATE';
                     $freshTargets = $pdo->prepare($freshTargetSql);
@@ -188,12 +189,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                         'ibsng_group_id' => (int)$target['ibsng_group_id'],
                         'group_name' => (string)$target['group_name'],
                         'operation' => $operation,
-                        'validity_days' => $operation === 'renew' ? (int)$current['ibsng_validity_days'] : null,
+                        'validity_days' => (int)$target['validity_days'],
                     ], $currentTargets);
                     $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,validity_days_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
                         $publicId, $trackingCode, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
-                        (int)$current['ibsng_validity_days'], (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
+                        (int)($currentTargets[0]['validity_days'] ?? 30), (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
                         $username, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
                     $pdo->commit();
@@ -298,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['ibsng_validity_days'] ?>"><?= e(storefront_validity_label((int)$product['ibsng_validity_days'])) ?></span></p>
+<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['ibsng_validity_days'])) ?></span></p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
