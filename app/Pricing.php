@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 /**
- * Store prices remain in their persisted currency/minor-unit representation.
- * This helper only converts the amount for presentation; it never changes an
- * order snapshot or a payment amount.
+ * Product fiat prices are stored canonically in IRR. The global store setting
+ * controls the unit accepted in the admin form, shown to customers, and sent
+ * to fiat payment providers. USDT remains an independent product price.
  */
 function store_price_display_unit(PDO $pdo): string
 {
@@ -14,23 +14,52 @@ function store_price_display_unit(PDO $pdo): string
     return in_array($value, ['IRR', 'IRT'], true) ? (string)$value : 'IRT';
 }
 
-/** @return array{amount:string,currency:string,label:string} */
-function store_format_price(int $amount, string $currency, string $displayUnit): array
+/** Convert an amount entered in the configured store unit to canonical IRR storage. */
+function store_price_to_storage(int $amount, string $unit): int
 {
-    $currency = strtoupper(trim($currency));
-    $displayAmount = (string)$amount;
-    if ($currency === 'IRR' && $displayUnit === 'IRT') {
-        $whole = intdiv($amount, 10);
-        $remainder = $amount % 10;
-        $displayAmount = number_format($whole, 0, '.', ',') . ($remainder > 0 ? '.' . $remainder : '');
-        $currency = 'IRT';
-    } elseif ($currency === 'IRT' && $displayUnit === 'IRR') {
-        $digits = (string)$amount . '0';
-        $displayAmount = preg_replace('/\\B(?=(\\d{3})+(?!\\d))/', ',', $digits) ?? $digits;
-        $currency = 'IRR';
-    } else {
-        $displayAmount = number_format($amount, 0, '.', ',');
+    if ($amount < 0 || !in_array($unit, ['IRR', 'IRT'], true)) {
+        throw new InvalidArgumentException('Invalid store price or display unit.');
     }
-    $label = $currency === 'IRT' ? 'تومان' : ($currency === 'IRR' ? 'ریال' : $currency);
-    return ['amount' => $displayAmount, 'currency' => $currency, 'label' => $label];
+    if ($unit === 'IRT') {
+        if ($amount > intdiv(PHP_INT_MAX, 10)) {
+            throw new InvalidArgumentException('Store price is outside the supported range.');
+        }
+        return $amount * 10;
+    }
+    return $amount;
+}
+
+/** Convert canonical IRR storage to the configured unit used for checkout/payment. */
+function store_price_for_unit(int $storedIrr, string $unit): int
+{
+    if ($storedIrr < 0 || !in_array($unit, ['IRR', 'IRT'], true)) {
+        throw new InvalidArgumentException('Invalid stored price or display unit.');
+    }
+    if ($unit === 'IRT') {
+        if ($storedIrr % 10 !== 0) {
+            throw new RuntimeException('Stored IRR price cannot be represented as a whole Toman amount.');
+        }
+        return intdiv($storedIrr, 10);
+    }
+    return $storedIrr;
+}
+
+/** @return array{amount:string,currency:string,label:string} */
+function store_format_price(int $storedIrr, string $displayUnit): array
+{
+    if ($storedIrr < 0 || !in_array($displayUnit, ['IRR', 'IRT'], true)) {
+        throw new InvalidArgumentException('Invalid stored price or display unit.');
+    }
+
+    if ($displayUnit === 'IRT') {
+        $whole = intdiv($storedIrr, 10);
+        $remainder = $storedIrr % 10;
+        $displayAmount = number_format($whole, 0, '.', ',') . ($remainder > 0 ? '.' . $remainder : '');
+        $label = 'تومان';
+    } else {
+        $displayAmount = number_format($storedIrr, 0, '.', ',');
+        $label = 'ریال';
+    }
+
+    return ['amount' => $displayAmount, 'currency' => $displayUnit, 'label' => $label];
 }
