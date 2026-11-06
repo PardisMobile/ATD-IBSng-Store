@@ -299,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['ibsng_validity_days'])) ?></span></p>
+<p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
