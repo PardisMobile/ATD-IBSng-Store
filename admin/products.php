@@ -192,20 +192,6 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .notice{padding:13px 15px;border-radius:var(--ui-radius-md,12px);margin:14px 0;line-height:1.8}.ok{background:color-mix(in srgb,var(--success,var(--green)) 10%,transparent);border:1px solid color-mix(in srgb,var(--success,var(--green)) 30%,transparent)}.err{background:color-mix(in srgb,var(--danger,#ff7180) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger,#ff7180) 30%,transparent)}
 .product-row{padding:clamp(16px,3vw,20px);margin:14px 0;min-width:0}.row-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer}.muted{overflow-wrap:anywhere}.empty{padding:24px;text-align:center;color:var(--muted)}
-/* Product editor and saved-plan cards: clearer grouping without changing form behavior. */
-/* Keep the IBSng server/group section unchanged; normalize only the other form sections. */
-form > .form-section:not(:has(#mapping-list)) { min-width:0; }
-form > .form-section:nth-of-type(1) .grid,
-form > .form-section:nth-of-type(2) .grid,
-form > .form-section:nth-of-type(3) .grid { align-items:start; column-gap:20px; }
-form > .form-section:nth-of-type(1) .field,
-form > .form-section:nth-of-type(2) .field,
-form > .form-section:nth-of-type(3) .field { min-width:0; align-content:start; }
-form > .form-section:nth-of-type(1) textarea { min-height:112px; }
-form > .form-section:nth-of-type(3) .field > .grid { grid-template-columns:minmax(0,1fr) minmax(100px,.42fr); gap:8px; }
-form > .form-section:nth-of-type(5) { display:flex; flex-direction:column; gap:8px; }
-form > .form-section:nth-of-type(5) .check-toggle { width:fit-content; }
-@media(max-width:680px){form > .form-section:nth-of-type(1) .grid,form > .form-section:nth-of-type(2) .grid,form > .form-section:nth-of-type(3) .grid{grid-template-columns:minmax(0,1fr);gap:0;}form > .form-section:nth-of-type(3) .field > .grid{grid-template-columns:minmax(0,1fr) 110px;}}
 .product-row{border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);transition:border-color .18s ease,transform .18s ease;}
 .product-row:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));transform:translateY(-1px)}
 .product-row .row-head{align-items:center;margin-bottom:8px}
