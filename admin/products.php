@@ -54,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $quota = trim((string)($_POST['quota_amount'] ?? ''));
                 $quotaUnit = (string)($_POST['quota_unit'] ?? 'GB');
-                $currency = strtoupper(trim((string)($_POST['currency'] ?? 'IRR')));
                 $sortOrder = product_post_int('sort_order');
                 $active = isset($_POST['is_active']) ? 1 : 0;
                 $rawMappings = $_POST['mappings'] ?? [];
@@ -74,9 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
                 }
                 if ($price < 0 || $sortOrder < 0) throw new InvalidArgumentException('قیمت یا ترتیب نمایش معتبر نیست.');
-                if (!preg_match('/^[A-Z]{3}$/', $currency)) {
-                    throw new InvalidArgumentException('واحد پول باید کد سه‌حرفی مانند IRR باشد.');
-                }
+                $price = store_price_to_storage($price, store_price_display_unit($pdo));
                 $quotaBytes = null;
                 if (!in_array($quotaUnit, ['MB', 'GB', 'TB'], true)) {
                     throw new InvalidArgumentException('واحد حجم انتخاب‌شده معتبر نیست.');
@@ -102,8 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($id > 0) {
-                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,price_minor=?,price_usdt=?,currency=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder, $id]);
+                    $stmt = $pdo->prepare('UPDATE products SET name=?,description=?,price_minor=?,price_usdt=?,quota_bytes=?,is_active=?,sort_order=? WHERE id=?');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $price, $priceUsdt, $quotaBytes, $active, $sortOrder, $id]);
                     $check = $pdo->prepare('SELECT id FROM products WHERE id=?');
                     $check->execute([$id]);
                     if (!$check->fetchColumn()) {
@@ -111,8 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $productId = $id;
                 } else {
-                    $stmt = $pdo->prepare('INSERT INTO products (name,description,price_minor,price_usdt,currency,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?)');
-                    $stmt->execute([$name, $description !== '' ? $description : null, $price, $priceUsdt, $currency, $quotaBytes, $active, $sortOrder]);
+                    $stmt = $pdo->prepare('INSERT INTO products (name,description,price_minor,price_usdt,quota_bytes,is_active,sort_order) VALUES (?,?,?,?,?,?,?)');
+                    $stmt->execute([$name, $description !== '' ? $description : null, $price, $priceUsdt, $quotaBytes, $active, $sortOrder]);
                     $productId = (int)$pdo->lastInsertId();
                 }
 
@@ -228,9 +225,8 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
 <div class="grid">
-<div class="field"><label for="price_minor" data-ui-text="products_base_price">قیمت پایه (کوچک‌ترین واحد پولِ ارز انتخابی)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
+<div class="field"><label for="price_minor">قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)store_price_for_unit((int)($product['price_minor'] ?? 0), $priceDisplayUnit)) ?>"></div>
 <div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="8" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
-<div class="field"><label for="currency" data-ui-text="products_currency">کد پولی ISO (مثلاً IRR)</label><input id="currency" name="currency" maxlength="3" required value="<?= e((string)($product['currency'] ?? 'IRR')) ?>"></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
@@ -278,7 +274,7 @@ echo e($quotaAmountForEdit);
 <section class="panel panel-card"><h2 data-ui-text="products_registered">محصولات ثبت‌شده</h2>
 <?php if (!$products): ?><div class="empty" data-ui-text="products_empty">هنوز محصولی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($products as $item): ?><article class="product-row panel"><div class="row-head"><strong><?= e((string)$item['name']) ?></strong><span class="status-chip" data-ui-status="<?= (int)$item['is_active']===1?'active':'inactive' ?>"><?= (int)$item['is_active']===1?'فعال':'غیرفعال' ?></span></div>
-<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div><span data-ui-text="products_price_label">قیمت:</span> <?php $displayPrice = store_format_price((int)$item['price_minor'], (string)$item['currency'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted"><span data-ui-text="products_mappings_label">سرورها و گروه‌ها:</span> <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
+<p class="muted"><?= e((string)($item['description'] ?? '')) ?></p><div><span data-ui-text="products_price_label">قیمت:</span> <?php $displayPrice = store_format_price((int)$item['price_minor'], $priceDisplayUnit); ?><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div><div class="muted"><span data-ui-text="products_mappings_label">سرورها و گروه‌ها:</span> <?= e((string)($item['mapping_labels'] ?? '—')) ?></div>
 <div class="actions"><a class="button" href="<?= e(app_url('admin/products.php?edit='.(int)$item['id'])) ?>" data-ui-text="products_edit">ویرایش</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button" type="submit" data-ui-text="<?= (int)$item['is_active']===1?'products_inactive':'products_active' ?>"><?= (int)$item['is_active']===1?'غیرفعال‌سازی':'فعال‌سازی' ?></button></form><form method="post" data-confirm-fa="محصول حذف شود؟" data-confirm-en="Delete this product?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><button class="button danger" type="submit" data-ui-text="products_delete">حذف</button></form></div></article><?php endforeach; ?>
 </section>
 <?php require __DIR__ . '/_footer.php'; ?>
