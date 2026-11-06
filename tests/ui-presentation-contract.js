@@ -89,6 +89,19 @@ for (const page of [...publicPages, ...adminPages.map((file) => path.join('admin
 const script = read('assets/js/ui-preferences.js');
 assert.match(script, /data-fa/u, 'Shared JavaScript must apply bilingual labels');
 
+const ibsngUsers = read(path.join('admin', 'ibsng-users.php'));
+assert.match(ibsngUsers, /app_url\('admin\/upgrade\.php'\)/u, 'IBSng users must link to the current database upgrade page');
+assert.doesNotMatch(ibsngUsers, /ibsng-renewal-migrate\.php/u, 'IBSng users must not link to the retired upgrade path');
+for (const [source, translated] of [
+  ['First Login', 'اولین ورود'],
+  ['Last Login', 'آخرین ورود'],
+  ['Relative Expiration', 'انقضای نسبی'],
+  ['Creation Date', 'تاریخ ایجاد'],
+]) {
+  assert.ok(ibsngUsers.includes(source) && ibsngUsers.includes(translated), `IBSng account detail label is missing: ${source}`);
+}
+assert.match(ibsngUsers, /Translate field labels only\. IBSng values remain exactly as received\./u, 'IBSng values must remain raw while labels are translated');
+
 const components = read('assets/js/ui-components.js');
 assert.match(components, /atd-confirm-dialog/u, 'Shared JavaScript must provide the styled confirmation dialog');
 assert.match(components, /data-ui-password-toggle/u, 'Password visibility must use the shared behavior');
