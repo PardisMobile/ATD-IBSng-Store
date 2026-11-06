@@ -85,7 +85,6 @@ CREATE TABLE IF NOT EXISTS products (
     price_minor BIGINT UNSIGNED NOT NULL,
     -- Independent product price for crypto settlement; never FX-derived.
     price_usdt DECIMAL(18,8) NULL,
-    currency CHAR(3) NOT NULL DEFAULT 'IRR',
     quota_bytes BIGINT UNSIGNED NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     sort_order INT NOT NULL DEFAULT 0,
