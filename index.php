@@ -51,8 +51,8 @@ $catalogError = false;
 try {
     $pdo = Database::connection();
     $stmt = $isRenewCatalog
-        ? $pdo->prepare('SELECT DISTINCT p.id,p.name,p.description,g.validity_days,s.name AS server_name,g.plan_name,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p JOIN product_server_groups psg ON psg.product_id=p.id JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id JOIN ibsng_servers s ON s.id=psg.server_id WHERE p.is_active=1 AND psg.server_id=? AND g.is_active=1 AND s.is_active=1 ORDER BY p.sort_order,p.id DESC')
-        : $pdo->query('SELECT p.id,p.name,p.description,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p WHERE p.is_active=1 ORDER BY p.sort_order,p.id DESC');
+        ? $pdo->prepare('SELECT DISTINCT p.id,p.name,p.description,g.validity_days,s.name AS server_name,g.plan_name,p.price_minor,p.price_usdt,p.quota_bytes FROM products p JOIN product_server_groups psg ON psg.product_id=p.id JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id JOIN ibsng_servers s ON s.id=psg.server_id WHERE p.is_active=1 AND psg.server_id=? AND g.is_active=1 AND s.is_active=1 ORDER BY p.sort_order,p.id DESC')
+        : $pdo->query('SELECT p.id,p.name,p.description,p.price_minor,p.price_usdt,p.quota_bytes FROM products p WHERE p.is_active=1 ORDER BY p.sort_order,p.id DESC');
     if ($isRenewCatalog) {
         $stmt->execute([(int)$renewServerId]);
         $products = $stmt->fetchAll();
@@ -192,7 +192,7 @@ try {
             <div class="eyebrow" data-ui-text="catalog_plan_eyebrow">پلن سرویس</div>
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
-            <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
+            <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
             <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <?php
