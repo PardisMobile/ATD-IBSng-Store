@@ -12,24 +12,21 @@ function assertStorePrice(array $expected, array $actual, string $case): void
 }
 
 assertStorePrice(
-    ['amount' => '123.4', 'currency' => 'IRT', 'label' => 'تومان'],
-    store_format_price(1234, 'IRR', 'IRT'),
-    'Rial base is converted to Toman for display without losing tenths'
+    ['amount' => '250,000', 'currency' => 'IRT', 'label' => 'تومان'],
+    store_format_price(2500000, 'IRT'),
+    'Canonical Rial price is converted to Toman for display'
 );
 assertStorePrice(
-    ['amount' => '12,340', 'currency' => 'IRR', 'label' => 'ریال'],
-    store_format_price(1234, 'IRT', 'IRR'),
-    'Toman base is converted to Rial for display'
+    ['amount' => '2,500,000', 'currency' => 'IRR', 'label' => 'ریال'],
+    store_format_price(2500000, 'IRR'),
+    'Canonical Rial price is shown in Rial'
 );
-assertStorePrice(
-    ['amount' => '1,234', 'currency' => 'IRR', 'label' => 'ریال'],
-    store_format_price(1234, 'IRR', 'IRR'),
-    'Rial display leaves Rial base unchanged'
-);
-assertStorePrice(
-    ['amount' => '1,234', 'currency' => 'USD', 'label' => 'USD'],
-    store_format_price(1234, 'USD', 'IRT'),
-    'Non-IRR currencies are not affected by the Toman/Rial display preference'
-);
+
+if (store_price_to_storage(250000, 'IRT') !== 2500000
+    || store_price_to_storage(2500000, 'IRR') !== 2500000
+    || store_price_for_unit(2500000, 'IRT') !== 250000
+    || store_price_for_unit(2500000, 'IRR') !== 2500000) {
+    throw new RuntimeException('Global currency conversion failed.');
+}
 
 echo "Store pricing display tests passed.\n";
