@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $groupStmt->execute([$groupId, $selectedServerId]);
                 $groupName = (string)$groupStmt->fetchColumn();
                 if ($groupName === '' || $username === '') {
-                    throw new InvalidArgumentException('کاربر و گروه مقصد از نگاشت فعال همین سرور را انتخاب کنید.');
+                    throw new InvalidArgumentException('کاربر و گروه مقصد را از گروه‌های فعال همین سرور انتخاب کنید.');
                 }
                 $client->changeUserGroup($username, $groupName);
                 $message = 'درخواست تغییر گروه کاربر موجود از مسیر Edit User ارسال شد.';
@@ -427,11 +427,11 @@ $accountFields = [
 </section>
 <section class="panel panel-card">
 <h2 data-fa="ایجاد حساب" data-en="Create account">ایجاد حساب</h2>
-<?php if (!$groups): ?><p class="muted" data-fa="برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید." data-en="No active mapping exists for this server. Add the exact IBSng group name in Plan / Group Mapping first.">برای این سرور نگاشت فعال ثبت نشده است؛ ابتدا از صفحه نگاشت پلن/گروه، نام دقیق گروه IBSng را دستی ثبت کنید.</p><?php else: ?>
+<?php if (!$groups): ?><p class="muted" data-fa="برای این سرور گروه فعالی ثبت نشده است؛ ابتدا از صفحه تعریف پلن و گروه، نام دقیق گروه IBSng را ثبت کنید." data-en="No active group is available for this server. First add the exact IBSng group name in Plan & Group Setup.">برای این سرور گروه فعالی ثبت نشده است؛ ابتدا از صفحه تعریف پلن و گروه، نام دقیق گروه IBSng را ثبت کنید.</p><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="create">
 <div class="grid">
-<div class="field"><label for="group_id" data-fa="گروه IBSng (از نگاشت دستی)" data-en="IBSng group (manual mapping)">گروه IBSng (از نگاشت دستی)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="group_id" data-fa="گروه IBSng (از گروه‌های فعال)" data-en="IBSng group (active groups)">گروه IBSng (از گروه‌های فعال)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
 <div class="field"><label for="create_username">Username</label><input id="create_username" name="username" required autocomplete="off"></div>
 <div class="field"><label for="new_password">Password</label><input id="new_password" name="new_password" type="password" required autocomplete="new-password"></div>
 <div class="field"><label for="credit">Credit</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
