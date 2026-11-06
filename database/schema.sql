@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS ibsng_groups (
     server_id BIGINT UNSIGNED NOT NULL,
     plan_name VARCHAR(150) NOT NULL,
     group_name VARCHAR(150) NOT NULL,
+    validity_days INT UNSIGNED NOT NULL DEFAULT 30,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -80,7 +81,6 @@ CREATE TABLE IF NOT EXISTS products (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(180) NOT NULL,
     description TEXT NULL,
-    ibsng_validity_days INT UNSIGNED NOT NULL,
 
     price_minor BIGINT UNSIGNED NOT NULL,
     -- Independent product price for crypto settlement; never FX-derived.
