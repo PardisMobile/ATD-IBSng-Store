@@ -73,7 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('نام محصول الزامی است و نباید بیشتر از ۱۸۰ کاراکتر باشد.');
                 }
                 if ($price < 0 || $sortOrder < 0) throw new InvalidArgumentException('قیمت یا ترتیب نمایش معتبر نیست.');
-                $price = store_price_to_storage($price, store_price_display_unit($pdo));
+                $priceUnit = store_price_display_unit($pdo);
+                if ($priceUnit === 'IRR' && $price % 10 !== 0) {
+                    throw new InvalidArgumentException('برای امکان تبدیل دقیق بین ریال و تومان، قیمت ریالی باید مضرب ۱۰ باشد.');
+                }
+                $price = store_price_to_storage($price, $priceUnit);
                 $quotaBytes = null;
                 if (!in_array($quotaUnit, ['MB', 'GB', 'TB'], true)) {
                     throw new InvalidArgumentException('واحد حجم انتخاب‌شده معتبر نیست.');
