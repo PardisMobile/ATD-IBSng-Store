@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('واحد پول باید کد سه‌حرفی مانند IRR باشد.');
                 }
                 $quotaBytes = null;
-                if (!in_array($quotaUnit, ['MB', 'GB', 'B'], true)) {
+                if (!in_array($quotaUnit, ['MB', 'GB', 'TB'], true)) {
                     throw new InvalidArgumentException('واحد حجم انتخاب‌شده معتبر نیست.');
                 }
                 if ($quota !== '') {
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new InvalidArgumentException('حجم باید یک عدد مثبت یا صفر باشد.');
                     }
                     $amount = (float)$quota;
-                    $multiplier = $quotaUnit === 'GB' ? 1073741824 : ($quotaUnit === 'MB' ? 1048576 : 1);
+                    $multiplier = $quotaUnit === 'TB' ? 1099511627776 : ($quotaUnit === 'GB' ? 1073741824 : 1048576);
                     $bytes = $amount * $multiplier;
                     if (!is_finite($bytes) || $bytes > PHP_INT_MAX) {
                         throw new InvalidArgumentException('حجم واردشده بیش از حد مجاز است.');
@@ -214,7 +214,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1 data-ui-text="products_title">مدیریت محصولات و پلن‌ها</h1>
-<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم را می‌توانید بر حسب MB یا GB وارد کنید؛ مقدار نهایی در پایگاه داده بر حسب بایت ذخیره می‌شود.</p>
+<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم را می‌توانید بر حسب MB، GB یا TB وارد کنید؛ مقدار نهایی در پایگاه داده بر حسب بایت ذخیره می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
@@ -240,19 +240,22 @@ $quotaBytesForEdit = isset($product['quota_bytes']) && $product['quota_bytes'] !
 $quotaUnitForEdit = 'GB';
 $quotaAmountForEdit = '';
 if ($quotaBytesForEdit !== null && $quotaBytesForEdit > 0) {
-    if ($quotaBytesForEdit % 1073741824 === 0) {
+    if ($quotaBytesForEdit % 1099511627776 === 0) {
+        $quotaUnitForEdit = 'TB';
+        $quotaAmountForEdit = (string)($quotaBytesForEdit / 1099511627776);
+    } elseif ($quotaBytesForEdit % 1073741824 === 0) {
         $quotaUnitForEdit = 'GB';
         $quotaAmountForEdit = (string)($quotaBytesForEdit / 1073741824);
     } elseif ($quotaBytesForEdit % 1048576 === 0) {
         $quotaUnitForEdit = 'MB';
         $quotaAmountForEdit = (string)($quotaBytesForEdit / 1048576);
     } else {
-        $quotaUnitForEdit = 'B';
-        $quotaAmountForEdit = (string)$quotaBytesForEdit;
+        $quotaUnitForEdit = 'MB';
+        $quotaAmountForEdit = rtrim(rtrim(number_format($quotaBytesForEdit / 1048576, 9, '.', ''), '0'), '.');
     }
 }
 echo e($quotaAmountForEdit);
-?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="B"<?= $quotaUnitForEdit === 'B' ? ' selected' : '' ?> data-fa="بایت (مقدار دقیق)" data-en="Bytes (exact)">بایت (مقدار دقیق)</option></select></div><div class="hint" data-fa="واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند." data-en="MB and GB use a 1024-based conversion. Existing stored byte values are preserved when editing.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
+?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-fa="واحدهای MB، GB و TB با مبنای ۱۰۲۴ محاسبه می‌شوند." data-en="MB, GB and TB use a 1024-based conversion.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
