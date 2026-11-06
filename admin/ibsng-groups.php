@@ -117,7 +117,7 @@ if ($selectedServerId > 0) {
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · Plan & Group Setup</div>
 <h1 data-fa="تعریف پلن فروشگاه و گروه IBSng" data-en="Store plan and IBSng group setup">تعریف پلن فروشگاه و گروه IBSng</h1>
-<p class="muted" data-fa="نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است." data-en="The group name must exactly match an existing IBSng group. Mappings are managed manually; automatic group-list fetching is not implemented.">نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.</p>
+<p class="muted" data-fa="نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است." data-en="The group name must exactly match an existing IBSng group. Groups are managed manually; automatic group-list fetching is not implemented.">نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="empty" data-fa="ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید." data-en="Add an IBSng server first.">ابتدا از بخش سرورهای IBSng یک سرور اضافه کنید.</div><?php else: ?>
