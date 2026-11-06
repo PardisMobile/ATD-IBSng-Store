@@ -51,10 +51,35 @@ $catalogError = false;
 try {
     $pdo = Database::connection();
     $stmt = $isRenewCatalog
-        ? $pdo->prepare('SELECT DISTINCT p.id,p.name,p.description,g.validity_days,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p JOIN product_server_groups psg ON psg.product_id=p.id JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id JOIN ibsng_servers s ON s.id=psg.server_id WHERE p.is_active=1 AND psg.server_id=? AND g.is_active=1 AND s.is_active=1 ORDER BY p.sort_order,p.id DESC')
-        : $pdo->query('SELECT p.id,p.name,p.description,(SELECT g.validity_days FROM product_server_groups m JOIN ibsng_groups g ON g.id=m.ibsng_group_id WHERE m.product_id=p.id ORDER BY m.server_id LIMIT 1) AS validity_days,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p WHERE p.is_active=1 ORDER BY p.sort_order,p.id DESC');
-    if ($isRenewCatalog) $stmt->execute([(int)$renewServerId]);
-    $products = $stmt->fetchAll();
+        ? $pdo->prepare('SELECT DISTINCT p.id,p.name,p.description,g.validity_days,s.name AS server_name,g.plan_name,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p JOIN product_server_groups psg ON psg.product_id=p.id JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id JOIN ibsng_servers s ON s.id=psg.server_id WHERE p.is_active=1 AND psg.server_id=? AND g.is_active=1 AND s.is_active=1 ORDER BY p.sort_order,p.id DESC')
+        : $pdo->query('SELECT p.id,p.name,p.description,p.price_minor,p.price_usdt,p.currency,p.quota_bytes FROM products p WHERE p.is_active=1 ORDER BY p.sort_order,p.id DESC');
+    if ($isRenewCatalog) {
+        $stmt->execute([(int)$renewServerId]);
+        $products = $stmt->fetchAll();
+    } else {
+        $products = $stmt->fetchAll();
+        if ($products) {
+            $productIds = array_map(static fn(array $item): int => (int)$item['id'], $products);
+            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+            $mappingQuery = $pdo->prepare(
+                'SELECT psg.product_id,s.name AS server_name,g.plan_name,g.validity_days
+                 FROM product_server_groups psg
+                 JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id AND g.is_active=1
+                 JOIN ibsng_servers s ON s.id=psg.server_id AND s.is_active=1
+                 WHERE psg.product_id IN (' . $placeholders . ')
+                 ORDER BY psg.product_id,s.is_default DESC,s.id,g.plan_name'
+            );
+            $mappingQuery->execute($productIds);
+            $mappingsByProduct = [];
+            foreach ($mappingQuery->fetchAll(PDO::FETCH_ASSOC) as $mapping) {
+                $mappingsByProduct[(int)$mapping['product_id']][] = $mapping;
+            }
+            foreach ($products as &$catalogProduct) {
+                $catalogProduct['mappings'] = $mappingsByProduct[(int)$catalogProduct['id']] ?? [];
+            }
+            unset($catalogProduct);
+        }
+    }
 } catch (Throwable $e) {
     $catalogError = true;
 }
@@ -170,9 +195,23 @@ try {
             <?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
             <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
-            <?php if ($isRenewCatalog): ?><div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-validity-days="<?= (int)$product['validity_days'] ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label((int)$product['validity_days'])) ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></strong></div><?php endif; ?>
+            <?php
+            if ($isRenewCatalog) {
+                $validityDays = (int)$product['validity_days'];
+                ?><div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
+            } else {
+                $mappings = is_array($product['mappings'] ?? null) ? $product['mappings'] : [];
+                $durations = array_values(array_unique(array_map(static fn(array $mapping): int => (int)$mapping['validity_days'], $mappings)));
+                if (count($durations) === 1) {
+                    $validityDays = $durations[0];
+                    ?><div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
+                } elseif (count($durations) > 1) {
+                    ?><div class="plan-meta plan-validity-mappings"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong><?php foreach ($mappings as $mapping): ?><span class="plan-validity-server"><?= e((string)$mapping['server_name']) ?>: <?= e(storefront_validity_label((int)$mapping['validity_days'])) ?></span><?php endforeach; ?></strong></div><?php
+                }
+            }
+            ?>
             <?php $quotaLabel = storefront_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes']); ?>
-            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong<?= $product['quota_bytes'] === null ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
+            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong<?= ($product['quota_bytes'] === null || (float)$product['quota_bytes'] <= 0) ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'] . ($isRenewCatalog ? '&mode=renew&server_id=' . (int)$renewServerId : ''))) ?>"<?= $isRenewCatalog ? ' data-fa="تمدید" data-en="Renew"' : ' data-ui-text="catalog_order"' ?>><?= $isRenewCatalog ? 'تمدید' : 'ثبت سفارش' ?></a>
           </article>
         <?php endforeach; ?>
