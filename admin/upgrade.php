@@ -1,0 +1,140 @@
+<?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/app/AdminAuth.php';
+require_admin();
+
+$pdo = Database::connection();
+$message = '';
+$error = '';
+
+function atd_ibsng_validity_column_exists(PDO $pdo): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.columns
+         WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+    );
+    $stmt->execute(['ibsng_groups', 'validity_days']);
+    return (int)$stmt->fetchColumn() === 1;
+}
+
+function atd_ibsng_column_exists(PDO $pdo, string $table, string $column): bool
+{
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?');
+    $stmt->execute([$table, $column]);
+    return (int)$stmt->fetchColumn() === 1;
+}
+
+function atd_ibsng_renewal_ledger_exists(PDO $pdo): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM information_schema.tables
+         WHERE table_schema = DATABASE() AND table_name = ?'
+    );
+    $stmt->execute(['ibsng_renewals']);
+    return (int)$stmt->fetchColumn() === 1;
+}
+
+function atd_ibsng_renewal_schema_ready(PDO $pdo): bool
+{
+    return atd_ibsng_validity_column_exists($pdo)
+        && !atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')
+        && !atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')
+        && atd_ibsng_column_exists($pdo, 'orders', 'validity_days_snapshot')
+        && !atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')
+        && atd_ibsng_renewal_ledger_exists($pdo);
+}
+
+$ready = atd_ibsng_renewal_schema_ready($pdo);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
+        $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+    } else {
+        try {
+            if (!atd_ibsng_validity_column_exists($pdo)) $pdo->exec('ALTER TABLE ibsng_groups ADD COLUMN validity_days INT UNSIGNED NOT NULL DEFAULT 30');
+            if (atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')) {
+                $conflicts = (int)$pdo->query('SELECT COUNT(*) FROM (SELECT g.id FROM ibsng_groups g JOIN product_server_groups m ON m.ibsng_group_id=g.id JOIN products p ON p.id=m.product_id GROUP BY g.id HAVING COUNT(DISTINCT p.ibsng_validity_days) > 1) validity_conflicts')->fetchColumn();
+                if ($conflicts > 0) throw new RuntimeException('A shared IBSng group has conflicting product validity values; resolve these mappings before migration.');
+                $pdo->exec('UPDATE ibsng_groups g JOIN product_server_groups m ON m.ibsng_group_id=g.id JOIN products p ON p.id=m.product_id SET g.validity_days=p.ibsng_validity_days');
+                $pdo->exec('ALTER TABLE products DROP COLUMN ibsng_validity_days');
+            }
+            if (atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')) $pdo->exec('ALTER TABLE products DROP COLUMN duration_seconds');
+            if (atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')) {
+                $pdo->exec('ALTER TABLE orders CHANGE COLUMN duration_seconds_snapshot validity_days_snapshot INT UNSIGNED NOT NULL');
+            }
+            $pdo->exec(
+                "CREATE TABLE IF NOT EXISTS ibsng_renewals (
+                    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    idempotency_key VARCHAR(190) NOT NULL UNIQUE,
+                    server_id BIGINT UNSIGNED NOT NULL,
+                    ibsng_user_id VARCHAR(150) NOT NULL,
+                    username VARCHAR(150) NOT NULL,
+                    product_id BIGINT UNSIGNED NULL,
+                    account_state ENUM('active','expired','unknown') NOT NULL DEFAULT 'unknown',
+                    validity_days INT UNSIGNED NOT NULL,
+                    gift_days INT UNSIGNED NOT NULL DEFAULT 0,
+                    relative_expiration_after INT UNSIGNED NULL,
+                    status ENUM('pending','completed','failed','needs_review') NOT NULL DEFAULT 'pending',
+                    result_json JSON NULL,
+                    error_message TEXT NULL,
+                    started_at DATETIME NOT NULL,
+                    completed_at DATETIME NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    KEY idx_ibsng_renewal_user_history (server_id, ibsng_user_id, status, created_at),
+                    KEY idx_ibsng_renewal_review (status, updated_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+            );
+            $settings = $pdo->prepare(
+                'INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)'
+            );
+            $settings->execute(['ibsng_gift_days_first', '1']);
+            $settings->execute(['ibsng_gift_days_repeat', '5']);
+            $ready = atd_ibsng_renewal_schema_ready($pdo);
+            if (!$ready) {
+                throw new RuntimeException('Renewal schema verification did not pass.');
+            }
+            $message = 'ارتقای ساختار دیتابیس با موفقیت انجام شد.';
+        } catch (Throwable $e) {
+            error_log('IBSng renewal schema upgrade failed: ' . $e->getMessage());
+            $error = 'ارتقای دیتابیس انجام نشد. دسترسی‌های لازم برای تغییر ساختار و ثبت تنظیمات را بررسی کنید.';
+        }
+    }
+}
+$config = app_config();
+?>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-ui-title-key="title_admin_upgrade">ارتقای تمدید IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
+<link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
+<style>
+.admin-shell{width:min(900px,calc(100% - 32px));margin:0 auto;padding-bottom:28px}.admin-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:24px 0}.panel-card{padding:clamp(18px,4vw,30px);margin:18px 0}.notice{padding:14px 16px;border-radius:13px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.muted{color:var(--muted);line-height:1.8}
+</style>
+</head>
+<body>
+<main class="admin-shell">
+<?php require __DIR__ . '/_navigation.php'; ?>
+<section class="panel panel-card">
+<div class="eyebrow">Database · Upgrade</div>
+<h1 data-ui-text="upgrade_title">ارتقای ساختار تمدید IBSng</h1>
+<p class="muted" data-ui-text="upgrade_intro">این بخش ساختار دیتابیس موردنیاز قابلیت تمدید حساب‌های IBSng را به‌روزرسانی می‌کند؛ شامل ثبت مدت اعتبار گروه‌ها، آماده‌سازی سوابق تمدید و تنظیم مقادیر پیش‌فرض هدیه. وضعیت ساختار فعلی بررسی می‌شود و در صورت نیاز، ارتقا به‌صورت امن و قابل تکرار اعمال خواهد شد.</p>
+<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<?php if ($ready): ?>
+<div class="notice ok" data-ui-text="upgrade_ready">ساختار دیتابیس برای تمدید IBSng آماده است.</div>
+<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="upgrade_products">رفتن به تعریف پلن و گروه</a>
+<?php else: ?>
+<div class="notice err" data-ui-text="upgrade_not_ready">ساختار جدید تمدید هنوز روی دیتابیس این نصب اعمال نشده است.</div>
+<form method="post" data-confirm-fa="ارتقای دیتابیس برای قابلیت تمدید IBSng انجام شود؟" data-confirm-en="Apply the database upgrade required for IBSng account renewals?">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
+<button class="button primary" type="submit" data-ui-text="upgrade_apply">اعمال ارتقای دیتابیس</button>
+</form>
+<?php endif; ?>
+</section>
+<?php require __DIR__ . '/_footer.php'; ?>
+</main>
+<script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
+</body>
+</html>
