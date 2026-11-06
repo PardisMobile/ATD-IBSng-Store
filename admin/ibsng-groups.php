@@ -25,20 +25,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'add') {
                 $planName = trim((string)($_POST['plan_name'] ?? ''));
                 $groupName = trim((string)($_POST['group_name'] ?? ''));
-                if ($selectedServerId < 1 || $planName === '' || $groupName === '') {
-                    throw new InvalidArgumentException('سرور، نام پلن و نام دقیق گروه IBSng الزامی هستند.');
-                }
-                $stmt = $pdo->prepare('INSERT INTO ibsng_groups (server_id, plan_name, group_name) VALUES (?, ?, ?)');
-                $stmt->execute([$selectedServerId, $planName, $groupName]);
+                $validityDays = filter_var($_POST['validity_days'] ?? null, FILTER_VALIDATE_INT);
+                if ($selectedServerId < 1 || $planName === '' || $groupName === '' || $validityDays === false || $validityDays < 1 || $validityDays > 36500) throw new InvalidArgumentException('سرور، نام پلن، نام دقیق گروه IBSng و مدت اعتبار بین ۱ تا ۳۶۵۰۰ روز الزامی هستند.');
+                $stmt = $pdo->prepare('INSERT INTO ibsng_groups (server_id, plan_name, group_name, validity_days) VALUES (?, ?, ?, ?)');
+                $stmt->execute([$selectedServerId, $planName, $groupName, $validityDays]);
                 $message = 'نگاشت پلن فروشگاه به گروه IBSng اضافه شد.';
             } elseif ($action === 'update') {
                 $planName = trim((string)($_POST['plan_name'] ?? ''));
                 $groupName = trim((string)($_POST['group_name'] ?? ''));
-                if ($groupId < 1 || $planName === '' || $groupName === '') {
-                    throw new InvalidArgumentException('نام پلن و نام دقیق گروه IBSng الزامی هستند.');
-                }
-                $stmt = $pdo->prepare('UPDATE ibsng_groups SET plan_name=?, group_name=? WHERE id=? AND server_id=?');
-                $stmt->execute([$planName, $groupName, $groupId, $selectedServerId]);
+                $validityDays = filter_var($_POST['validity_days'] ?? null, FILTER_VALIDATE_INT);
+                if ($groupId < 1 || $planName === '' || $groupName === '' || $validityDays === false || $validityDays < 1 || $validityDays > 36500) throw new InvalidArgumentException('نام پلن، نام دقیق گروه IBSng و مدت اعتبار بین ۱ تا ۳۶۵۰۰ روز الزامی هستند.');
+                $stmt = $pdo->prepare('UPDATE ibsng_groups SET plan_name=?, group_name=?, validity_days=? WHERE id=? AND server_id=?');
+                $stmt->execute([$planName, $groupName, $validityDays, $groupId, $selectedServerId]);
                 if ($stmt->rowCount() === 0) {
                     $check = $pdo->prepare('SELECT id FROM ibsng_groups WHERE id=? AND server_id=?');
                     $check->execute([$groupId, $selectedServerId]);
@@ -81,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $groups = [];
 if ($selectedServerId > 0) {
-    $stmt = $pdo->prepare('SELECT id,plan_name,group_name,is_active,created_at FROM ibsng_groups WHERE server_id=? ORDER BY id DESC');
+    $stmt = $pdo->prepare('SELECT id,plan_name,group_name,validity_days,is_active,created_at FROM ibsng_groups WHERE server_id=? ORDER BY id DESC');
     $stmt->execute([$selectedServerId]);
     $groups = $stmt->fetchAll();
 }
@@ -93,7 +91,7 @@ if ($selectedServerId > 0) {
 <title data-ui-title-key="title_admin_ibsng_groups">نگاشت پلن و گروه IBSng | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.panel-card{padding:24px;margin-top:20px}.field{display:grid;gap:8px;margin:14px 0}.field label{color:var(--muted);font-size:.9rem}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.field input:focus-visible,.field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}.field input[name="group_name"]{direction:ltr;text-align:left;unicode-bidi:plaintext}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.group-row{padding:18px;margin:14px 0}.group-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.muted{overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer}.empty{padding:25px;text-align:center;color:var(--muted)}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.panel-card{padding:24px;margin-top:20px}.field{display:grid;gap:8px;margin:14px 0}.field label{color:var(--muted);font-size:.9rem}.field input,.field select{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.field input:focus-visible,.field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-focus-ring)}.field input[name="group_name"]{direction:ltr;text-align:left;unicode-bidi:plaintext}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 16px}.notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.group-row{padding:18px;margin:14px 0}.group-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.muted{overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer}.empty{padding:25px;text-align:center;color:var(--muted)}
 .group-row{border:1px solid var(--border);border-radius:16px;background:var(--surface);transition:border-color .18s ease,background-color .18s ease}
 .group-row:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:color-mix(in srgb,var(--surface) 94%,var(--accent))}
 .group-head{align-items:center}
@@ -138,6 +136,7 @@ if ($selectedServerId > 0) {
 <div class="grid">
 <div class="field"><label for="plan_name" data-fa="نام پلن فروشگاه" data-en="Store plan name">نام پلن فروشگاه</label><input id="plan_name" name="plan_name" required maxlength="150" placeholder="مثلاً: یک ماهه" data-ui-placeholder="groups_plan_placeholder"></div>
 <div class="field"><label for="group_name" data-fa="نام دقیق گروه IBSng" data-en="Exact IBSng group name">نام دقیق گروه IBSng</label><input id="group_name" name="group_name" dir="ltr" required maxlength="150" placeholder="نام گروه در IBSng" data-ui-placeholder="groups_group_placeholder"></div>
+<div class="field"><label for="validity_days" data-fa="مدت اعتبار (روز)" data-en="Duration (Days)">مدت اعتبار (روز)</label><input id="validity_days" name="validity_days" type="number" min="1" max="36500" required value="30"></div>
 </div>
 <button class="button primary" type="submit" data-fa="ثبت نگاشت" data-en="Save mapping">ثبت نگاشت</button>
 </form>
@@ -148,13 +147,14 @@ if ($selectedServerId > 0) {
 <?php foreach ($groups as $group): ?>
 <article class="group-row panel">
 <div class="group-head"><strong><?= e((string)$group['plan_name']) ?></strong><span class="status-chip" data-ui-status="<?= (int)$group['is_active'] === 1 ? 'active' : 'inactive' ?>"><?= (int)$group['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
-<div class="muted" dir="ltr"><?= e((string)$group['group_name']) ?></div>
+<div class="muted" dir="ltr"><?= e((string)$group['group_name']) ?></div><div class="muted"><span data-fa="مدت اعتبار:" data-en="Duration:">مدت اعتبار:</span> <?= (int)$group['validity_days'] ?> <span data-fa="روز" data-en="days">روز</span></div>
 <details><summary class="button" data-fa="ویرایش نگاشت" data-en="Edit mapping">ویرایش نگاشت</summary>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?= (int)$group['id'] ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>">
 <div class="grid">
 <div class="field"><label data-fa="نام پلن فروشگاه" data-en="Store plan name">نام پلن فروشگاه</label><input name="plan_name" required value="<?= e((string)$group['plan_name']) ?>"></div>
 <div class="field"><label data-fa="نام دقیق گروه IBSng" data-en="Exact IBSng group name">نام دقیق گروه IBSng</label><input name="group_name" dir="ltr" required value="<?= e((string)$group['group_name']) ?>"></div>
+<div class="field"><label data-fa="مدت اعتبار (روز)" data-en="Duration (Days)">مدت اعتبار (روز)</label><input name="validity_days" type="number" min="1" max="36500" required value="<?= (int)$group['validity_days'] ?>"></div>
 </div><button class="button primary" type="submit" data-fa="ذخیره تغییرات" data-en="Save changes">ذخیره تغییرات</button>
 </form></details>
 <div class="actions">
