@@ -233,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <div class="eyebrow">IBSng · User Management</div>
 <h1 data-fa="مدیریت اکانت‌های IBSng" data-en="IBSng account management">مدیریت اکانت‌های IBSng</h1>
-<p class="muted" data-fa="عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد." data-en="Operations run against the selected IBSng Web Panel. The manually mapped group must exactly match IBSng. Renewal uses the active plan's explicit IBSng validity; uncertain outcomes are recorded for review and are not retried.">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. نام گروه از نگاشت دستی Store گرفته می‌شود و باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
+<p class="muted" data-fa="عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. گروه انتخاب‌شده در فروشگاه باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد." data-en="Operations run against the selected IBSng Web Panel. The group selected in the Store must exactly match the IBSng group name. Renewal uses the active plan's explicit IBSng validity; uncertain outcomes are recorded for review and are not retried.">عملیات روی Web Panel سرور انتخاب‌شده انجام می‌شود. گروه انتخاب‌شده در فروشگاه باید دقیقاً با نام گروه IBSng مطابقت داشته باشد. تمدید از پلن فعال و مدت اعتبار مخصوص IBSng استفاده می‌کند؛ اگر نتیجهٔ تمدید نامشخص بماند، عملیات برای بررسی ثبت می‌شود و دوباره اجرا نخواهد شد.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers): ?><div class="notice err">سرور فعال IBSng ثبت نشده است. ابتدا از صفحه سرورها یک سرور فعال اضافه کنید.</div><?php else: ?>
@@ -247,8 +247,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php if ($selectedServerId > 0 && $servers): ?>
 <section class="panel panel-card">
 <h2 data-fa="تمدید اکانت موجود در IBSng" data-en="Renew an existing IBSng account">تمدید اکانت موجود در IBSng</h2>
-<p class="muted" data-fa="نام کاربری اکانت موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند." data-en="Enter the existing account username and choose a renewal plan. Renewal validity and gift days come from Store settings; Absolute Expiration is unchanged.">نام کاربری اکانت موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
-<?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، مدت اعتبار را در تنظیمات Mapping گروه IBSng مشخص کنید.</div><?php else: ?>
+<p class="muted" data-fa="نام کاربری اکانت موردنظر را وارد کنید و پلن تمدید را انتخاب کنید. مدت اعتبار و روزهای هدیه بر اساس تنظیمات فروشگاه و وضعیت اعتبار فعلی اکانت محاسبه می‌شوند. تاریخ انقضای مطلق اکانت (Absolute Expiration) تغییر نمی‌کند." data-en="Enter the account username and select a renewal plan. Validity and gift days are calculated based on Store settings and the account's current validity. The account's Absolute Expiration date does not change.">نام کاربری اکانت موردنظر را وارد کنید و پلن تمدید را انتخاب کنید. مدت اعتبار و روزهای هدیه بر اساس تنظیمات فروشگاه و وضعیت اعتبار فعلی اکانت محاسبه می‌شوند. تاریخ انقضای مطلق اکانت (Absolute Expiration) تغییر نمی‌کند.</p>
+<?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/upgrade.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا مدت اعتبار را برای گروه IBSng در بخش تعریف پلن و گروه مشخص کنید.</div><?php else: ?>
 <form method="post" data-confirm-fa="تمدید این اکانت در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود." data-confirm-en="Renew this account in IBSng? If the result is uncertain, the operation will not be automatically repeated.">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="renew">
 <input type="hidden" name="renewal_key" value="<?= e($renewalRequestKey) ?>">
@@ -414,12 +414,29 @@ $accountFields = [
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
 ];
 
+// Translate field labels only. IBSng values remain exactly as received.
+$accountFieldLabelsFa = [
+    'Username' => 'نام کاربری',
+    'IBSng User ID' => 'شناسه اکانت',
+    'Group' => 'گروه',
+    'Status' => 'وضعیت',
+    'First Login' => 'اولین ورود',
+    'Last Login' => 'آخرین ورود',
+    'Relative Expiration' => 'انقضای نسبی',
+    'Nearest Expiration Date' => 'نزدیک‌ترین تاریخ انقضا',
+    'Absolute Expiration Date' => 'تاریخ انقضای مطلق',
+    'User Is Locked' => 'وضعیت قفل اکانت',
+    'Creation Date' => 'تاریخ ایجاد',
+    'Multi Login raw value' => 'مقدار خام ورود هم‌زمان',
+    'Password' => 'رمز عبور',
+];
+
 ?>
 <div class="result panel">
 <strong data-fa="اطلاعات اکانت IBSng" data-en="IBSng account details">اطلاعات اکانت IBSng</strong>
 <div class="grid">
 <?php foreach ($accountFields as $fieldLabel => $fieldValue): ?>
-<div class="field"><span class="muted"><?= e($fieldLabel) ?></span><strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong></div>
+<div class="field"><span class="muted" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span><strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong></div>
 <?php endforeach; ?>
 </div>
 </div>
@@ -442,8 +459,8 @@ $accountFields = [
 </section>
 <section class="panel panel-card">
 <h2 data-ui-text="users_change_group_title">تغییر گروه کاربر موجود</h2>
-<p class="muted" data-ui-text="users_change_group_intro">کاربر در IBSng باید از قبل وجود داشته باشد. گروه مقصد فقط از نگاشت دستی و فعال همین سرور انتخاب می‌شود؛ تغییر از فرم Edit User انجام می‌شود.</p>
-<?php if (!$groups): ?><p class="muted" data-ui-text="users_change_group_empty">برای این سرور گروه فعالی در نگاشت دستی وجود ندارد.</p><?php else: ?>
+<p class="muted" data-ui-text="users_change_group_intro">کاربر در IBSng باید از قبل وجود داشته باشد. گروه مقصد فقط از میان گروه‌های فعال ثبت‌شده برای همین سرور انتخاب می‌شود؛ تغییر از فرم Edit User انجام می‌شود.</p>
+<?php if (!$groups): ?><p class="muted" data-ui-text="users_change_group_empty">برای این سرور گروه فعالی ثبت نشده است.</p><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="change_group">
 <div class="grid">
