@@ -13,7 +13,7 @@ $adminNavEntries = [
     ['orders.php', 'orders', 'گزارش فروش', 'Sales Report'],
     ['email-settings.php', 'email-settings', 'تنظیمات ایمیل', 'Email Settings'],
     ['email-templates.php', 'email-templates', 'قالب‌های ایمیل', 'Email Templates'],
-    ['settings.php', 'settings', 'تنظیمات پشتیبانی و فروشگاه', 'Store & Support Settings'],
+    ['settings.php', 'settings', 'تنظیمات سایت', 'Site Settings'],
     ['upgrade.php', 'upgrade', 'ارتقا', 'Upgrade'],
 ];
 $adminNavIcons = [
