@@ -89,7 +89,7 @@
       title_admin_forgot_password: 'Forgot administrator password',
       title_admin_reset_password: 'Set a new administrator password',
       title_admin_provisioning: 'Provisioning queue',
-      title_admin_renewal_migration: 'IBSng renewal upgrade'
+      title_admin_upgrade: 'Database upgrade'
     },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
@@ -138,15 +138,15 @@
       email_event_expiration_reminder: 'Expiration reminder'
     },
     admin_renewal_migration: {
-      renewal_migration_admin: 'Store administration',
-      renewal_migration_back_products: 'Back to products',
-      renewal_migration_title: 'IBSng renewal schema upgrade',
-      renewal_migration_intro: 'This step safely and repeatably adds the independent IBSng validity duration column, renewal ledger table, and default gift settings. General product duration is not copied or changed automatically; set the IBSng renewal duration separately for each product.',
-      renewal_migration_ready: 'The database structure for IBSng renewal is ready.',
-      renewal_migration_products: 'Set product renewal durations',
-      renewal_migration_not_ready: 'The new renewal schema has not yet been applied to this installation database.',
-      renewal_migration_confirm: 'Apply the IBSng renewal schema upgrade to the database?',
-      renewal_migration_apply: 'Apply database upgrade'
+      upgrade_admin: 'Store administration',
+      upgrade_back_products: 'Back to products',
+      upgrade_title: 'Database upgrade',
+      upgrade_intro: 'This page checks and updates the database structure required for IBSng account renewals. It prepares group validity settings, the renewal history table, and default renewal gift values. The current database structure is checked first, and the upgrade is applied only when needed. The operation is designed to be safely repeatable.',
+      upgrade_ready: 'The database structure required for IBSng renewals is up to date.',
+      upgrade_products: 'Open plans and groups',
+      upgrade_not_ready: 'The required database changes have not yet been applied to this installation.',
+      upgrade_confirm: 'Apply the database upgrade required for IBSng account renewals?',
+      upgrade_apply: 'Apply database upgrade'
     },
     admin_provisioning: {
       provisioning_admin: 'Store administration',
@@ -327,8 +327,8 @@
       products_nav_mapping: 'Plan/group mapping',
       products_nav_servers: 'IBSng servers',
       products_title: 'Manage products and plans',
-      products_intro: 'Each product can be connected to one or more corresponding IBSng servers and groups. Duration is stored in seconds, price in the smallest currency unit, and quota in bytes.',
-      products_prerequisite: 'Create an active IBSng server and then an active group mapping before defining a product.',
+      products_intro: 'Each product can be connected to one or more IBSng servers, with a corresponding group selected for each server. Product validity and renewal duration are specified in days. Enter the service volume in MB, GB, or TB; leave it blank or set it to zero for unlimited service. Enter the product price using the currency unit selected in the store settings.',
+      products_prerequisite: 'To create a product, first add at least one active server in the “IBSng Servers” section and an active group for that server in the “Plans & Groups” section.',
       products_name: 'Product name',
       products_validity_days: 'Validity duration (days)',
       products_base_price: 'Base price (smallest unit of selected currency)',
