@@ -228,14 +228,14 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
 <div class="grid">
-<div class="field"><label for="price_minor" data-ui-text="products_base_price">قیمت پایه (کوچک‌ترین واحد پولِ ارز انتخابی)</label><input id="price_minor" name="price_minor" type="number" min="0" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
-<div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="number" min="0.00000001" step="0.00000001" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
+<div class="field"><label for="price_minor" data-ui-text="products_base_price">قیمت پایه (کوچک‌ترین واحد پولِ ارز انتخابی)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)($product['price_minor'] ?? 0)) ?>"></div>
+<div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="8" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
 <div class="field"><label for="currency" data-ui-text="products_currency">کد پولی ISO (مثلاً IRR)</label><input id="currency" name="currency" maxlength="3" required value="<?= e((string)($product['currency'] ?? 'IRR')) ?>"></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
 <div class="grid">
-<div class="field"><label for="quota_amount" data-fa="سقف حجم (خالی یا صفر = نامحدود)" data-en="Quota limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(110px,.55fr);gap:8px"><input id="quota_amount" name="quota_amount" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 100 یا 5" value="<?php
+<div class="field"><label for="quota_amount" data-fa="سقف حجم (خالی یا صفر = نامحدود)" data-en="Quota limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(110px,.55fr);gap:8px"><input id="quota_amount" name="quota_amount" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="9" placeholder="مثلاً 100 یا 5" value="<?php
 $quotaBytesForEdit = isset($product['quota_bytes']) && $product['quota_bytes'] !== null ? (int)$product['quota_bytes'] : null;
 $quotaUnitForEdit = 'GB';
 $quotaAmountForEdit = '';
@@ -256,7 +256,7 @@ if ($quotaBytesForEdit !== null && $quotaBytesForEdit > 0) {
 }
 echo e($quotaAmountForEdit);
 ?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-fa="واحدهای MB، GB و TB با مبنای ۱۰۲۴ محاسبه می‌شوند." data-en="MB, GB and TB use a 1024-based conversion.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
-<div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
+<div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_mappings">اتصال سرور و گروه IBSng</legend>
@@ -311,6 +311,35 @@ echo e($quotaAmountForEdit);
   nextIndex++;
   list.appendChild(row);
   bind(row);
+ });
+ // Numeric fields: prevent non-numeric keyboard input and sanitize pasted/input text.
+ document.querySelectorAll('[data-numeric]').forEach(input=>{
+  const decimal=input.dataset.numeric==='decimal';
+  const maxDecimals=Number(input.dataset.maxDecimals||0);
+  const clean=value=>{
+   let result=String(value).replace(decimal?/[^0-9.]/g:/[^0-9]/g);
+   if(decimal){
+    const dot=result.indexOf('.');
+    if(dot!==-1) result=result.slice(0,dot+1)+result.slice(dot+1).replace(/\\./g,'').slice(0,maxDecimals);
+   }
+   return result;
+  };
+  input.addEventListener('beforeinput',event=>{
+   if(event.inputType==='insertText' && event.data && !(decimal?/^[0-9.]$/.test(event.data):/^[0-9]$/.test(event.data))){
+    event.preventDefault();
+   }
+  });
+  input.addEventListener('input',()=>{const value=clean(input.value);if(value!==input.value)input.value=value;});
+  input.addEventListener('paste',event=>{
+   const pasted=(event.clipboardData||window.clipboardData)?.getData('text');
+   if(pasted!==undefined){
+    event.preventDefault();
+    const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
+    const inserted=clean(pasted);
+    input.setRangeText(inserted,start,end,'end');
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+   }
+  });
  });
  document.querySelector('form').addEventListener('submit',event=>{
   const rows=Array.from(list.querySelectorAll('[data-mapping-row]')),seen=new Set();
