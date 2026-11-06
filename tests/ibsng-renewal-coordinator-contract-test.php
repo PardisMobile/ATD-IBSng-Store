@@ -38,8 +38,8 @@ if (strpos($service, 'reserve(') === false || strpos($service, 'submitRenewalAtt
 if (!str_contains($service, 'markNeedsReview')) {
     throw new RuntimeException('Uncertain remote outcomes must be marked for reconciliation.');
 }
-if (!str_contains($schema, 'ibsng_validity_days') || !str_contains($policyMigration, 'ibsng_validity_days')) {
-    throw new RuntimeException('IBSng renewal validity must be stored explicitly, not inferred from generic product duration.');
+if (!str_contains($schema, 'validity_days INT UNSIGNED NOT NULL DEFAULT 30') || !str_contains($renewalAdmin, 'g.validity_days')) {
+    throw new RuntimeException('IBSng renewal validity must be owned and read from the selected IBSng group mapping.');
 }
 if (!str_contains($policyMigration, 'ibsng_gift_days_first') || !str_contains($policyMigration, 'ibsng_gift_days_repeat')) {
     throw new RuntimeException('The upgrade migration must preserve configurable first/repeat gift policy.');
