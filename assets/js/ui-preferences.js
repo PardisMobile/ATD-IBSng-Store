@@ -112,7 +112,7 @@
       server_service_placeholder: 'For example: Multi-location service'
     },
     admin_ibsng_groups: {
-      groups_add_mapping: 'Add mapping',
+      groups_add_plan: 'Add plan',
       groups_plan_placeholder: 'For example: One month',
       groups_group_placeholder: 'IBSng group name'
     },
@@ -340,12 +340,12 @@
       products_mappings: 'IBSng servers and groups for this product',
       products_server: 'IBSng server',
       products_select_server: 'Select server',
-      products_group_plan: 'Active group / plan',
-      products_select_mapping: 'Select mapping',
+      products_group_plan: 'Active group',
+      products_select_group: 'Select group',
       products_remove_mapping: 'Remove',
       products_delete: 'Delete',
       products_add_mapping: 'Add server / group',
-      products_mapping_hint: 'Select each server only once per product. The group must be a manual mapping for that server.',
+      products_mapping_hint: 'Select each server only once per product. The group must be active on that server.',
       products_description: 'Description',
       products_show_store: 'Show in store',
       products_save: 'Save product',
