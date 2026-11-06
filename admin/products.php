@@ -52,7 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $priceUsdt = $priceUsdtRaw;
                 }
-                $quota = trim((string)($_POST['quota_bytes'] ?? ''));
+                $quota = trim((string)($_POST['quota_amount'] ?? ''));
+                $quotaUnit = (string)($_POST['quota_unit'] ?? 'GB');
                 $currency = strtoupper(trim((string)($_POST['currency'] ?? 'IRR')));
                 $sortOrder = product_post_int('sort_order');
                 $active = isset($_POST['is_active']) ? 1 : 0;
@@ -77,11 +78,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('واحد پول باید کد سه‌حرفی مانند IRR باشد.');
                 }
                 $quotaBytes = null;
+                if (!in_array($quotaUnit, ['MB', 'GB', 'B'], true)) {
+                    throw new InvalidArgumentException('واحد حجم انتخاب‌شده معتبر نیست.');
+                }
                 if ($quota !== '') {
-                    if (!ctype_digit($quota) || (float)$quota > PHP_INT_MAX) {
-                        throw new InvalidArgumentException('حجم باید عدد صحیح بر حسب بایت باشد.');
+                    if (!preg_match('/^(?:0|[1-9][0-9]{0,11})(?:\\.[0-9]{1,9})?$/D', $quota)) {
+                        throw new InvalidArgumentException('حجم باید یک عدد مثبت یا صفر باشد.');
                     }
-                    $quotaBytes = (int)$quota;
+                    $amount = (float)$quota;
+                    $multiplier = $quotaUnit === 'GB' ? 1073741824 : ($quotaUnit === 'MB' ? 1048576 : 1);
+                    $bytes = $amount * $multiplier;
+                    if (!is_finite($bytes) || $bytes > PHP_INT_MAX) {
+                        throw new InvalidArgumentException('حجم واردشده بیش از حد مجاز است.');
+                    }
+                    $quotaBytes = (int)round($bytes);
                 }
 
                 $pdo->beginTransaction();
@@ -204,7 +214,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1 data-ui-text="products_title">مدیریت محصولات و پلن‌ها</h1>
-<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم بر حسب بایت است.</p>
+<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم را می‌توانید بر حسب MB یا GB وارد کنید؛ مقدار نهایی در پایگاه داده بر حسب بایت ذخیره می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
@@ -225,7 +235,24 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
 <div class="grid">
-<div class="field"><label for="quota_bytes" data-fa="سقف حجم (بایت؛ خالی یا صفر = نامحدود)" data-en="Quota limit (bytes; blank or zero = unlimited)">سقف حجم (بایت؛ خالی یا صفر = نامحدود)</label><input id="quota_bytes" name="quota_bytes" inputmode="numeric" value="<?= e((string)($product['quota_bytes'] ?? '')) ?>"></div>
+<div class="field"><label for="quota_amount" data-fa="سقف حجم (خالی یا صفر = نامحدود)" data-en="Quota limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(110px,.55fr);gap:8px"><input id="quota_amount" name="quota_amount" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 100 یا 5" value="<?php
+$quotaBytesForEdit = isset($product['quota_bytes']) && $product['quota_bytes'] !== null ? (int)$product['quota_bytes'] : null;
+$quotaUnitForEdit = 'GB';
+$quotaAmountForEdit = '';
+if ($quotaBytesForEdit !== null && $quotaBytesForEdit > 0) {
+    if ($quotaBytesForEdit % 1073741824 === 0) {
+        $quotaUnitForEdit = 'GB';
+        $quotaAmountForEdit = (string)($quotaBytesForEdit / 1073741824);
+    } elseif ($quotaBytesForEdit % 1048576 === 0) {
+        $quotaUnitForEdit = 'MB';
+        $quotaAmountForEdit = (string)($quotaBytesForEdit / 1048576);
+    } else {
+        $quotaUnitForEdit = 'B';
+        $quotaAmountForEdit = (string)$quotaBytesForEdit;
+    }
+}
+echo e($quotaAmountForEdit);
+?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="B"<?= $quotaUnitForEdit === 'B' ? ' selected' : '' ?> data-fa="بایت (مقدار دقیق)" data-en="Bytes (exact)">بایت (مقدار دقیق)</option></select></div><div class="hint" data-fa="واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند." data-en="MB and GB use a 1024-based conversion. Existing stored byte values are preserved when editing.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="number" min="0" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
