@@ -53,6 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             if (!atd_ibsng_validity_column_exists($pdo)) $pdo->exec('ALTER TABLE ibsng_groups ADD COLUMN validity_days INT UNSIGNED NOT NULL DEFAULT 30');
             if (atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')) {
+                $conflicts = (int)$pdo->query('SELECT COUNT(*) FROM (SELECT g.id FROM ibsng_groups g JOIN product_server_groups m ON m.ibsng_group_id=g.id JOIN products p ON p.id=m.product_id GROUP BY g.id HAVING COUNT(DISTINCT p.ibsng_validity_days) > 1) validity_conflicts')->fetchColumn();
+                if ($conflicts > 0) throw new RuntimeException('A shared IBSng group has conflicting product validity values; resolve these mappings before migration.');
                 $pdo->exec('UPDATE ibsng_groups g JOIN product_server_groups m ON m.ibsng_group_id=g.id JOIN products p ON p.id=m.product_id SET g.validity_days=p.ibsng_validity_days');
                 $pdo->exec('ALTER TABLE products DROP COLUMN ibsng_validity_days');
             }
@@ -122,7 +124,7 @@ $config = app_config();
 <?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
 <div class="notice ok" data-ui-text="renewal_migration_ready">ساختار دیتابیس برای تمدید IBSng آماده است.</div>
-<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="renewal_migration_products">تنظیم مدت تمدید محصولات</a>
+<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="renewal_migration_products">تنظیم مدت اعتبار در نگاشت‌های IBSng</a>
 <?php else: ?>
 <div class="notice err" data-ui-text="renewal_migration_not_ready">ساختار جدید تمدید هنوز روی دیتابیس این نصب اعمال نشده است.</div>
 <form method="post" data-confirm-fa="ارتقای ساختار تمدید IBSng روی دیتابیس انجام شود؟" data-confirm-en="Apply the IBSng renewal schema upgrade to the database?">
