@@ -223,12 +223,12 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <fieldset class="form-section"><legend data-ui-text="products_section_basic">اطلاعات پایه محصول</legend>
 <div class="grid">
 <div class="field"><label for="name" data-ui-text="products_name">نام محصول</label><input id="name" name="name" maxlength="180" required value="<?= e((string)($product['name'] ?? '')) ?>"></div>
-<div class="field"><label for="description" data-ui-text="products_description">توضیحات</label><textarea id="description" name="description" rows="3"><?= e((string)($product['description'] ?? '')) ?></textarea></div>
+<div class="field"><label for="description" data-ui-text="products_description">توضیحات</label><textarea id="description" name="description" rows="1"><?= e((string)($product['description'] ?? '')) ?></textarea></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
 <div class="grid">
-<div class="field"><label for="price_minor">قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)store_price_for_unit((int)($product['price_minor'] ?? 0), $priceDisplayUnit)) ?>"></div>
+<div class="field"><label for="price_minor" data-fa="قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)" data-en="Price (<?= e($priceDisplayUnit) ?>)">قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)store_price_for_unit((int)($product['price_minor'] ?? 0), $priceDisplayUnit)) ?>"><div class="hint" data-fa="واحد پول این قیمت از تنظیمات سایت تعیین می‌شود." data-en="The currency unit for this price is determined by Site Settings.">واحد پول این قیمت از تنظیمات سایت تعیین می‌شود.</div></div>
 <div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="8" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
 </div>
 </fieldset>
