@@ -320,7 +320,7 @@ echo e($quotaAmountForEdit);
    let result=String(value).replace(decimal?/[^0-9.]/g:/[^0-9]/g);
    if(decimal){
     const dot=result.indexOf('.');
-    if(dot!==-1) result=result.slice(0,dot+1)+result.slice(dot+1).replace(/\\./g,'').slice(0,maxDecimals);
+    if(dot!==-1) result=result.slice(0,dot+1)+result.slice(dot+1).replace(/\./g,'').slice(0,maxDecimals);
    }
    return result;
   };
