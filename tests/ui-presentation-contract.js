@@ -18,7 +18,7 @@ const adminPages = [
   'email-settings.php',
   'email-templates.php',
   'settings.php',
-  'ibsng-renewal-migrate.php',
+  'upgrade.php',
 ];
 
 for (const page of adminPages) {
