@@ -20,7 +20,7 @@ $legacyProductValidityPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
 $renewalColumnCheck->execute(['orders', 'duration_seconds_snapshot']);
 $legacyOrderSnapshotPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
 if (!$validityColumnReady || $legacyProductValidityPresent || $legacyDurationColumnPresent || $legacyOrderSnapshotPresent) {
-    header('Location: ' . app_url('admin/ibsng-renewal-migrate.php'));
+    header('Location: ' . app_url('admin/upgrade.php'));
     exit;
 }
 $message = '';
@@ -193,6 +193,19 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 .notice{padding:13px 15px;border-radius:var(--ui-radius-md,12px);margin:14px 0;line-height:1.8}.ok{background:color-mix(in srgb,var(--success,var(--green)) 10%,transparent);border:1px solid color-mix(in srgb,var(--success,var(--green)) 30%,transparent)}.err{background:color-mix(in srgb,var(--danger,#ff7180) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger,#ff7180) 30%,transparent)}
 .product-row{padding:clamp(16px,3vw,20px);margin:14px 0;min-width:0}.row-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{font:inherit;cursor:pointer}.muted{overflow-wrap:anywhere}.empty{padding:24px;text-align:center;color:var(--muted)}
 /* Product editor and saved-plan cards: clearer grouping without changing form behavior. */
+/* Keep the IBSng server/group section unchanged; normalize only the other form sections. */
+form > .form-section:not(:has(#mapping-list)) { min-width:0; }
+form > .form-section:nth-of-type(1) .grid,
+form > .form-section:nth-of-type(2) .grid,
+form > .form-section:nth-of-type(3) .grid { align-items:start; column-gap:20px; }
+form > .form-section:nth-of-type(1) .field,
+form > .form-section:nth-of-type(2) .field,
+form > .form-section:nth-of-type(3) .field { min-width:0; align-content:start; }
+form > .form-section:nth-of-type(1) textarea { min-height:112px; }
+form > .form-section:nth-of-type(3) .field > .grid { grid-template-columns:minmax(0,1fr) minmax(100px,.42fr); gap:8px; }
+form > .form-section:nth-of-type(5) { display:flex; flex-direction:column; gap:8px; }
+form > .form-section:nth-of-type(5) .check-toggle { width:fit-content; }
+@media(max-width:680px){form > .form-section:nth-of-type(1) .grid,form > .form-section:nth-of-type(2) .grid,form > .form-section:nth-of-type(3) .grid{grid-template-columns:minmax(0,1fr);gap:0;}form > .form-section:nth-of-type(3) .field > .grid{grid-template-columns:minmax(0,1fr) 110px;}}
 .product-row{border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);transition:border-color .18s ease,transform .18s ease;}
 .product-row:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));transform:translateY(-1px)}
 .product-row .row-head{align-items:center;margin-bottom:8px}
@@ -215,10 +228,10 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">Store · Catalog</div><h1 data-ui-text="products_title">مدیریت محصولات و پلن‌ها</h1>
-<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور و گروه IBSng متناظر با آن‌ها متصل شود. مدت اعتبار محصول و تمدید IBSng بر حسب روز ثبت می‌شود؛ قیمت بر حسب کوچک‌ترین واحد پول و حجم را می‌توانید بر حسب MB، GB یا TB وارد کنید؛ مقدار نهایی در پایگاه داده بر حسب بایت ذخیره می‌شود.</p>
+<p class="muted" data-ui-text="products_intro">هر محصول می‌تواند به یک یا چند سرور IBSng متصل شود و برای هر سرور، گروه مربوط به آن انتخاب شود. مدت اعتبار محصول و تمدید سرویس بر اساس تعداد روز تعیین می‌شود. حجم سرویس را بر حسب MB، GB یا TB وارد کنید؛ برای سرویس نامحدود، مقدار را خالی یا صفر بگذارید. قیمت محصول را بر اساس واحد پول انتخاب‌شده در تنظیمات فروشگاه وارد کنید.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول ابتدا یک سرور فعال و سپس یک نگاشت گروه فعال در بخش IBSng ایجاد کنید.</div><?php endif; ?>
+<?php if (!$servers || !$groups): ?><div class="notice err" data-ui-text="products_prerequisite">برای تعریف محصول، ابتدا حداقل یک سرور فعال در بخش «سرورهای IBSng» و یک گروه فعال برای آن سرور در بخش «تعریف پلن و گروه» ثبت کنید.</div><?php endif; ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?= (int)($product['id'] ?? 0) ?>">
 <fieldset class="form-section"><legend data-ui-text="products_section_basic">اطلاعات پایه محصول</legend>
