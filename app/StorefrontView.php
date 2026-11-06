@@ -31,7 +31,7 @@ function storefront_validity_label(int $days): string
 
 function storefront_bytes_label(?string $bytes): string
 {
-    if ($bytes === null || $bytes === '') return 'نامحدود';
+    if ($bytes === null || trim($bytes) === '' || (float)$bytes <= 0) return 'نامحدود';
     $value = (float)$bytes;
     if ($value >= 1099511627776) return number_format($value / 1099511627776, 2) . ' TiB';
     if ($value >= 1073741824) return number_format($value / 1073741824, 2) . ' GiB';
