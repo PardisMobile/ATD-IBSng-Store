@@ -14,7 +14,7 @@ $renewalColumnCheck = $pdo->prepare(
     'SELECT COUNT(*) FROM information_schema.columns
      WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
 );
-$renewalColumnCheck->execute(['products', 'ibsng_validity_days']);
+$renewalColumnCheck->execute(['ibsng_groups', 'validity_days']);
 $renewalColumnReady = (int)$renewalColumnCheck->fetchColumn() === 1;
 $renewalLedgerCheck = $pdo->prepare(
     'SELECT COUNT(*) FROM information_schema.tables
@@ -42,11 +42,11 @@ if ($selectedServerId > 0) {
     $groups = $stmt->fetchAll();
     if ($renewalSchemaReady) {
         $renewalProductsStmt = $pdo->prepare(
-            'SELECT p.id,p.name,p.ibsng_validity_days,g.group_name
+            'SELECT p.id,p.name,g.validity_days,g.group_name
              FROM products p
              JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
              JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
-             WHERE p.is_active=1 AND g.is_active=1 AND p.ibsng_validity_days IS NOT NULL
+             WHERE p.is_active=1 AND g.is_active=1 AND g.validity_days IS NOT NULL
              ORDER BY p.sort_order,p.name'
         );
         $renewalProductsStmt->execute([$selectedServerId]);
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new InvalidArgumentException('نام کاربری، پلن تمدید و کلید درخواست معتبر الزامی است.');
                 }
                 $planStmt = $pdo->prepare(
-                    'SELECT p.id,p.ibsng_validity_days,g.group_name
+                    'SELECT p.id,g.validity_days,g.group_name
                      FROM products p
                      JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
                      JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 $planStmt->execute([$selectedServerId, $productId]);
                 $renewalPlan = $planStmt->fetch(PDO::FETCH_ASSOC);
-                if (!is_array($renewalPlan) || (int)$renewalPlan['ibsng_validity_days'] < 1) {
+                if (!is_array($renewalPlan) || (int)$renewalPlan['validity_days'] < 1) {
                     throw new InvalidArgumentException('پلن تمدید فعال و دارای مدت اعتبار مخصوص IBSng انتخاب نشده است.');
                 }
 
@@ -248,13 +248,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="panel panel-card">
 <h2 data-fa="تمدید حساب موجود در IBSng" data-en="Renew an existing IBSng account">تمدید حساب موجود در IBSng</h2>
 <p class="muted" data-fa="نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند." data-en="Enter the existing account username and choose a renewal plan. Renewal validity and gift days come from Store settings; Absolute Expiration is unchanged.">نام کاربری حساب موجود را وارد کنید و پلن تمدید را انتخاب کنید. مدت روزهای تمدید و هدیه از تنظیمات Store خوانده می‌شود؛ Absolute Expiration تغییر نمی‌کند.</p>
-<?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، «مدت تمدید IBSng (روز)» را مشخص کنید.</div><?php else: ?>
+<?php if (!$renewalSchemaReady): ?><div class="notice err">ساختار دیتابیس برای تمدید IBSng آماده نیست. <a href="<?= e(app_url('admin/ibsng-renewal-migrate.php')) ?>">ارتقای دیتابیس را انجام دهید</a>.</div><?php elseif (!$renewalProducts): ?><div class="notice err">برای این سرور پلن فعالی با مدت اعتبار IBSng تنظیم‌شده وجود ندارد. ابتدا در مدیریت محصولات، مدت اعتبار را در تنظیمات Mapping گروه IBSng مشخص کنید.</div><?php else: ?>
 <form method="post" data-confirm-fa="تمدید این حساب در IBSng انجام شود؟ در صورت پاسخ نامشخص، تمدید خودکار تکرار نمی‌شود." data-confirm-en="Renew this account in IBSng? If the result is uncertain, the operation will not be automatically repeated.">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="renew">
 <input type="hidden" name="renewal_key" value="<?= e($renewalRequestKey) ?>">
 <div class="grid">
 <div class="field"><label for="renew_username" data-fa="نام کاربری حساب موجود" data-en="Existing account username">نام کاربری حساب موجود</label><input id="renew_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
-<div class="field"><label for="renewal_product_id" data-fa="پلن تمدید" data-en="Renewal plan">پلن تمدید</label><select id="renewal_product_id" name="renewal_product_id" required><option value="" data-ui-text="users_select_plan">انتخاب پلن</option><?php foreach ($renewalProducts as $renewalProduct): ?><option value="<?= (int)$renewalProduct['id'] ?>"<?= (int)($_POST['renewal_product_id'] ?? 0)===(int)$renewalProduct['id']?' selected':'' ?>><?= e((string)$renewalProduct['name']) ?> · <?= (int)$renewalProduct['ibsng_validity_days'] ?> <span data-ui-text="users_days_unit">روز</span> · <?= e((string)$renewalProduct['group_name']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="renewal_product_id" data-fa="پلن تمدید" data-en="Renewal plan">پلن تمدید</label><select id="renewal_product_id" name="renewal_product_id" required><option value="" data-ui-text="users_select_plan">انتخاب پلن</option><?php foreach ($renewalProducts as $renewalProduct): ?><option value="<?= (int)$renewalProduct['id'] ?>"<?= (int)($_POST['renewal_product_id'] ?? 0)===(int)$renewalProduct['id']?' selected':'' ?>><?= e((string)$renewalProduct['name']) ?> · <?= (int)$renewalProduct['validity_days'] ?> <span data-ui-text="users_days_unit">روز</span> · <?= e((string)$renewalProduct['group_name']) ?></option><?php endforeach; ?></select></div>
 </div>
 <button class="button primary" type="submit" data-fa="تمدید حساب در IBSng" data-en="Renew account in IBSng">تمدید حساب در IBSng</button>
 </form>
