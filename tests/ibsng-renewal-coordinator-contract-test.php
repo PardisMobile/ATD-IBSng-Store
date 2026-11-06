@@ -9,7 +9,7 @@ $migration = file_get_contents(dirname(__DIR__) . '/database/migrations/001_ibsn
 $policyMigration = file_get_contents(dirname(__DIR__) . '/database/migrations/002_ibsng_renewal_policy.sql');
 $coordinator = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalCoordinator.php');
 $service = file_get_contents(dirname(__DIR__) . '/app/IBSngRenewalService.php');
-$migrationAdmin = file_get_contents(dirname(__DIR__) . '/admin/ibsng-renewal-migrate.php');
+$migrationAdmin = file_get_contents(dirname(__DIR__) . '/admin/upgrade.php');
 $renewalAdmin = file_get_contents(dirname(__DIR__) . '/admin/ibsng-users.php');
 foreach ([$client, $schema, $migration, $policyMigration, $coordinator, $service, $migrationAdmin, $renewalAdmin] as $source) {
     if (!is_string($source) || $source === '') {
