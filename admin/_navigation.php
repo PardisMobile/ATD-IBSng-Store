@@ -6,7 +6,7 @@ $adminNavEntries = [
     ['index.php', 'dashboard', 'داشبورد', 'Dashboard'],
     ['ibsng-servers.php', 'servers', 'سرورهای IBSng', 'IBSng Servers'],
     ['ibsng-groups.php', 'groups', 'تعریف پلن و گروه', 'Plan & Group Setup'],
-    ['ibsng-users.php', 'users', 'مدیریت حساب‌های IBSng', 'IBSng Accounts'],
+    ['ibsng-users.php', 'users', 'مدیریت اکانت‌های IBSng', 'IBSng Accounts'],
     ['products.php', 'products', 'مدیریت محصولات', 'Products'],
     ['guide.php', 'guide', 'راهنمای کاربران', 'Account Guide'],
     ['provisioning.php', 'provisioning', 'صف فعال‌سازی', 'Provisioning Queue'],
