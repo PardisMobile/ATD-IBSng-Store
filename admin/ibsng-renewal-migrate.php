@@ -14,7 +14,7 @@ function atd_ibsng_validity_column_exists(PDO $pdo): bool
         'SELECT COUNT(*) FROM information_schema.columns
          WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
     );
-    $stmt->execute(['products', 'ibsng_validity_days']);
+    $stmt->execute(['ibsng_groups', 'validity_days']);
     return (int)$stmt->fetchColumn() === 1;
 }
 
@@ -38,6 +38,7 @@ function atd_ibsng_renewal_ledger_exists(PDO $pdo): bool
 function atd_ibsng_renewal_schema_ready(PDO $pdo): bool
 {
     return atd_ibsng_validity_column_exists($pdo)
+        && !atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')
         && !atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')
         && atd_ibsng_column_exists($pdo, 'orders', 'validity_days_snapshot')
         && !atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')
@@ -50,19 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
         try {
-            if (!atd_ibsng_validity_column_exists($pdo)) {
-                $pdo->exec('ALTER TABLE products ADD COLUMN ibsng_validity_days INT UNSIGNED NOT NULL DEFAULT 30 AFTER description');
-            }
+            if (!atd_ibsng_validity_column_exists($pdo)) $pdo->exec('ALTER TABLE ibsng_groups ADD COLUMN validity_days INT UNSIGNED NOT NULL DEFAULT 30');
             if (atd_ibsng_column_exists($pdo, 'products', 'ibsng_validity_days')) {
-                $nullValidity = (int)$pdo->query('SELECT COUNT(*) FROM products WHERE ibsng_validity_days IS NULL OR ibsng_validity_days < 1')->fetchColumn();
-                if ($nullValidity > 0) {
-                    throw new RuntimeException('Products with missing IBSng validity days must be corrected before schema unification.');
-                }
-                if (atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')) {
-                    $pdo->exec('ALTER TABLE products DROP COLUMN duration_seconds');
-                }
-                $pdo->exec('ALTER TABLE products MODIFY COLUMN ibsng_validity_days INT UNSIGNED NOT NULL');
+                $pdo->exec('UPDATE ibsng_groups g JOIN product_server_groups m ON m.ibsng_group_id=g.id JOIN products p ON p.id=m.product_id SET g.validity_days=p.ibsng_validity_days');
+                $pdo->exec('ALTER TABLE products DROP COLUMN ibsng_validity_days');
             }
+            if (atd_ibsng_column_exists($pdo, 'products', 'duration_seconds')) $pdo->exec('ALTER TABLE products DROP COLUMN duration_seconds');
             if (atd_ibsng_column_exists($pdo, 'orders', 'duration_seconds_snapshot')) {
                 $pdo->exec('ALTER TABLE orders CHANGE COLUMN duration_seconds_snapshot validity_days_snapshot INT UNSIGNED NOT NULL');
             }
