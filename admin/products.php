@@ -15,9 +15,11 @@ $renewalColumnCheck->execute(['ibsng_groups', 'validity_days']);
 $validityColumnReady = (int)$renewalColumnCheck->fetchColumn() === 1;
 $renewalColumnCheck->execute(['products', 'duration_seconds']);
 $legacyDurationColumnPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
+$renewalColumnCheck->execute(['products', 'ibsng_validity_days']);
+$legacyProductValidityPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
 $renewalColumnCheck->execute(['orders', 'duration_seconds_snapshot']);
 $legacyOrderSnapshotPresent = (int)$renewalColumnCheck->fetchColumn() === 1;
-if (!$validityColumnReady || $legacyDurationColumnPresent || $legacyOrderSnapshotPresent) {
+if (!$validityColumnReady || $legacyProductValidityPresent || $legacyDurationColumnPresent || $legacyOrderSnapshotPresent) {
     header('Location: ' . app_url('admin/ibsng-renewal-migrate.php'));
     exit;
 }
