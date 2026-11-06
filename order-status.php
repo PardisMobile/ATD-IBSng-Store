@@ -27,7 +27,7 @@ if (!$notFound) {
         $lookupColumn = $isTrackingCode ? 'tracking_code' : 'public_id';
         $lookupValue = $isTrackingCode ? ('ATD-' . substr($trackingCode, 3)) : $orderPublicId;
         $stmt = $pdo->prepare(
-            'SELECT o.id, o.public_id, o.tracking_code, o.product_id, o.product_name_snapshot, o.validity_days_snapshot, o.price_minor_snapshot, o.price_usdt_snapshot, o.currency, o.username, o.password_ciphertext, o.payment_status, o.order_status, o.created_at, p.quota_bytes
+            'SELECT o.id, o.public_id, o.tracking_code, o.product_id, o.product_name_snapshot, o.validity_days_snapshot, o.server_targets_snapshot, o.price_minor_snapshot, o.price_usdt_snapshot, o.currency, o.username, o.password_ciphertext, o.payment_status, o.order_status, o.created_at, p.quota_bytes
              FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE ' . $lookupColumn . ' = ? LIMIT 1'
         );
         $stmt->execute([$lookupValue]);
@@ -66,10 +66,15 @@ if (!$notFound) {
                         $planStmt = $pdo->prepare('SELECT g.plan_name FROM product_server_groups psg JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id WHERE psg.product_id=? AND psg.server_id=? AND g.group_name=? AND g.is_active=1 LIMIT 1');
                         $planStmt->execute([(int)$order['product_id'], (int)$attempt['server_id'], $groupName]);
                         $planName = (string)($planStmt->fetchColumn() ?: 'نامشخص');
+                        $targetSnapshots = json_decode((string)($order['server_targets_snapshot'] ?? '[]'), true);
+                        $targetValidity = (int)$order['validity_days_snapshot'];
+                        if (is_array($targetSnapshots)) foreach ($targetSnapshots as $targetSnapshot) {
+                            if ((int)($targetSnapshot['server_id'] ?? 0) === (int)$attempt['server_id'] && (int)($targetSnapshot['validity_days'] ?? 0) > 0) { $targetValidity = (int)$targetSnapshot['validity_days']; break; }
+                        }
                         $accountDetails[(int)$attempt['server_id']] = [
                             'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)$attempt['server_name'],
                             'plan' => $planName,
-                            'validity' => (int)$order['validity_days_snapshot'],
+                            'validity' => $targetValidity,
                             'quota_bytes' => $order['quota_bytes'] === null ? null : (int)$order['quota_bytes'],
                             'expiry' => (string)($state['nearest_exp_date'] ?? ''),
                             'remaining' => (int)($state['remaining_days'] ?? 0),
