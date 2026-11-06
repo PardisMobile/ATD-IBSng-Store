@@ -64,7 +64,7 @@ $productId = filter_var($_GET['product_id'] ?? $_POST['product_id'] ?? null, FIL
 $product = null;
 $productTargets = [];
 if ($productId !== false && $productId !== null && $productId > 0) {
-    $stmt = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1');
     $stmt->execute([$productId]);
     $product = $stmt->fetch() ?: null;
     if ($product) {
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $successOrder = (string)$prior['public_id'];
                     $successTrackingCode = (string)($prior['tracking_code'] ?? '');
                 } else {
-                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt,p.currency FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
+                    $fresh = $pdo->prepare('SELECT p.id,p.name,p.price_minor,p.price_usdt FROM products p WHERE p.id=? AND p.is_active=1 LIMIT 1 FOR UPDATE');
                     $fresh->execute([$productId]);
                     $current = $fresh->fetch();
                     if (!$current) throw new RuntimeException(app_message('product_unavailable'));
@@ -194,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,validity_days_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
                         $publicId, $trackingCode, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
-                        (int)($currentTargets[0]['validity_days'] ?? 30), (int)$current['price_minor'], $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, (string)$current['currency'],
+                        (int)($currentTargets[0]['validity_days'] ?? 30), store_price_for_unit((int)$current['price_minor'], $priceDisplayUnit), $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, $priceDisplayUnit,
                         $username, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
                     $pdo->commit();
@@ -297,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1><?= e(app_message('product_not_found')) ?></h1><a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back">بازگشت</a>
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
-<?php $displayPrice = store_format_price((int)$product['price_minor'], (string)$product['currency'], $priceDisplayUnit); ?>
+<?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
 <?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
