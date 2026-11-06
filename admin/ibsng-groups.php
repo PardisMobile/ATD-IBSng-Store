@@ -115,8 +115,8 @@ if ($selectedServerId > 0) {
 <main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
-<div class="eyebrow">IBSng · Group / Plan Mapping</div>
-<h1 data-fa="تعریف پلن فروشگاه و گروه IBSng" data-en="Store plan to IBSng group mapping">تعریف پلن فروشگاه و گروه IBSng</h1>
+<div class="eyebrow">IBSng · Plan & Group Setup</div>
+<h1 data-fa="تعریف پلن فروشگاه و گروه IBSng" data-en="Store plan and IBSng group setup">تعریف پلن فروشگاه و گروه IBSng</h1>
 <p class="muted" data-fa="نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است." data-en="The group name must exactly match an existing IBSng group. Mappings are managed manually; automatic group-list fetching is not implemented.">نام گروه باید دقیقاً مطابق گروه موجود در IBSng وارد شود. در این بخش گروه‌ها به‌صورت دستی تعریف می‌شوند؛ دریافت خودکار فهرست گروه‌ها هنوز اضافه نشده است.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
@@ -138,12 +138,12 @@ if ($selectedServerId > 0) {
 <div class="field"><label for="group_name" data-fa="نام دقیق گروه IBSng" data-en="Exact IBSng group name">نام دقیق گروه IBSng</label><input id="group_name" name="group_name" dir="ltr" required maxlength="150" placeholder="نام گروه در IBSng" data-ui-placeholder="groups_group_placeholder"></div>
 <div class="field"><label for="validity_days" data-fa="مدت اعتبار (روز)" data-en="Duration (Days)">مدت اعتبار (روز)</label><input id="validity_days" name="validity_days" type="number" min="1" max="36500" required value="30"></div>
 </div>
-<button class="button primary" type="submit" data-fa="ذخیره پلن" data-en="Save mapping">ذخیره پلن</button>
+<button class="button primary" type="submit" data-fa="ذخیره پلن" data-en="Save plan">ذخیره پلن</button>
 </form>
 </section>
 <section class="panel panel-card">
 <h2 data-fa="پلن‌های ثبت‌شده" data-en="Saved plans">پلن‌های ثبت‌شده</h2>
-<?php if (!$groups): ?><div class="empty" data-fa="برای این سرور هنوز پلنی ثبت نشده است." data-en="No mappings have been added for this server yet.">برای این سرور هنوز پلنی ثبت نشده است.</div><?php endif; ?>
+<?php if (!$groups): ?><div class="empty" data-fa="برای این سرور هنوز پلنی ثبت نشده است." data-en="No plans have been added for this server yet.">برای این سرور هنوز پلنی ثبت نشده است.</div><?php endif; ?>
 <?php foreach ($groups as $group): ?>
 <article class="group-row panel">
 <div class="group-head"><strong><?= e((string)$group['plan_name']) ?></strong><span class="status-chip" data-ui-status="<?= (int)$group['is_active'] === 1 ? 'active' : 'inactive' ?>"><?= (int)$group['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
