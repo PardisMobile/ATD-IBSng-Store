@@ -117,16 +117,16 @@ $config = app_config();
 <main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
-<div class="eyebrow">Database · Upgrade</div>
+<div class="eyebrow" data-fa="پایگاه داده · ارتقا" data-en="Database · Upgrade">پایگاه داده · ارتقا</div>
 <h1 data-ui-text="upgrade_title">ارتقای ساختار تمدید IBSng</h1>
-<p class="muted" data-ui-text="upgrade_intro">این بخش ساختار دیتابیس موردنیاز قابلیت تمدید حساب‌های IBSng را به‌روزرسانی می‌کند؛ شامل ثبت مدت اعتبار گروه‌ها، آماده‌سازی سوابق تمدید و تنظیم مقادیر پیش‌فرض هدیه. وضعیت ساختار فعلی بررسی می‌شود و در صورت نیاز، ارتقا به‌صورت امن و قابل تکرار اعمال خواهد شد.</p>
-<?php if ($message !== ''): ?><div class="notice ok"><?= e($message) ?></div><?php endif; ?>
-<?php if ($error !== ''): ?><div class="notice err"><?= e($error) ?></div><?php endif; ?>
+<p class="muted" data-ui-text="upgrade_intro">این صفحه ساختار دیتابیس موردنیاز برای تمدید حساب‌های IBSng را بررسی و به‌روزرسانی می‌کند. این عملیات تنظیم مدت اعتبار گروه‌ها، جدول سوابق تمدید و مقادیر پیش‌فرض هدیه را آماده می‌کند. ابتدا وضعیت دیتابیس بررسی می‌شود و فقط در صورت نیاز، تغییرات لازم اعمال خواهند شد. اجرای مجدد این عملیات نیز ایمن است.</p>
+<?php if ($message !== ''): ?><div class="notice ok" data-fa="ارتقای دیتابیس با موفقیت انجام شد." data-en="The database upgrade completed successfully."><?= e($message) ?></div><?php endif; ?>
+<?php if ($error !== ''): ?><div class="notice err" data-fa="ارتقای دیتابیس انجام نشد. دسترسی‌های لازم برای تغییر ساختار و ثبت تنظیمات را بررسی کنید." data-en="The database upgrade failed. Check the database permissions required to alter the schema and save settings."><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
-<div class="notice ok" data-ui-text="upgrade_ready">ساختار دیتابیس برای تمدید IBSng آماده است.</div>
+<div class="notice ok" data-ui-text="upgrade_ready">ساختار دیتابیس موردنیاز تمدید IBSng به‌روز است.</div>
 <a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="upgrade_products">رفتن به تعریف پلن و گروه</a>
 <?php else: ?>
-<div class="notice err" data-ui-text="upgrade_not_ready">ساختار جدید تمدید هنوز روی دیتابیس این نصب اعمال نشده است.</div>
+<div class="notice err" data-ui-text="upgrade_not_ready">تغییرات موردنیاز دیتابیس هنوز روی این نصب اعمال نشده‌اند.</div>
 <form method="post" data-confirm-fa="ارتقای دیتابیس برای قابلیت تمدید IBSng انجام شود؟" data-confirm-en="Apply the database upgrade required for IBSng account renewals?">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <button class="button primary" type="submit" data-ui-text="upgrade_apply">اعمال ارتقای دیتابیس</button>
