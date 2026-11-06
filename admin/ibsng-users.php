@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      JOIN product_server_groups m ON m.product_id=p.id AND m.server_id=?
                      JOIN ibsng_groups g ON g.id=m.ibsng_group_id AND g.server_id=m.server_id
                      WHERE p.id=? AND p.is_active=1 AND g.is_active=1
-                       AND p.ibsng_validity_days IS NOT NULL LIMIT 1'
+                       AND g.validity_days IS NOT NULL LIMIT 1'
                 );
                 $planStmt->execute([$selectedServerId, $productId]);
                 $renewalPlan = $planStmt->fetch(PDO::FETCH_ASSOC);
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $selectedServerId,
                     $username,
                     (string)$renewalPlan['group_name'],
-                    (int)$renewalPlan['ibsng_validity_days'],
+                    (int)$renewalPlan['validity_days'],
                     $giftFirst,
                     $giftRepeat,
                     $renewalRequestKey,
