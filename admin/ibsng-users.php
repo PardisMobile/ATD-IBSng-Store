@@ -264,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h2 data-fa="جست‌وجو و دریافت اطلاعات اکانت" data-en="Lookup and account details">جست‌وجو و دریافت اطلاعات اکانت</h2>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="lookup">
-<div class="field"><label for="lookup_username">Username</label><input id="lookup_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
+<div class="field"><label for="lookup_username" data-fa="نام کاربری اکانت" data-en="Account username">نام کاربری اکانت</label><input id="lookup_username" name="username" required autocomplete="off" value="<?= e((string)($_POST['username'] ?? '')) ?>"></div>
 <div class="actions"><button class="button primary" type="submit" data-fa="جست‌وجوی اکانت" data-en="Search account">جست‌وجوی اکانت</button></div>
 </form>
 <?php if (is_array($userResult)): ?>
@@ -449,22 +449,22 @@ $accountFieldLabelsFa = [
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="create">
 <div class="grid">
 <div class="field"><label for="group_id" data-fa="گروه IBSng (از گروه‌های فعال)" data-en="IBSng group (active groups)">گروه IBSng (از گروه‌های فعال)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
-<div class="field"><label for="create_username">Username</label><input id="create_username" name="username" required autocomplete="off"></div>
-<div class="field"><label for="new_password">Password</label><input id="new_password" name="new_password" type="password" required autocomplete="new-password"></div>
-<div class="field"><label for="credit">Credit</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
+<div class="field"><label for="create_username" data-fa="نام کاربری" data-en="Username">نام کاربری</label><input id="create_username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="new_password" data-fa="رمز عبور" data-en="Password">رمز عبور</label><input id="new_password" name="new_password" type="password" required autocomplete="new-password"></div>
+<div class="field"><label for="credit" data-fa="اعتبار (Credit)" data-en="Credit">اعتبار (Credit)</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
 </div>
 <button class="button primary" type="submit" data-fa="ایجاد اکانت در IBSng" data-en="Create account in IBSng">ایجاد اکانت در IBSng</button>
 </form>
 <?php endif; ?>
 </section>
 <section class="panel panel-card">
-<h2 data-ui-text="users_change_group_title">تغییر گروه کاربر موجود</h2>
-<p class="muted" data-ui-text="users_change_group_intro">کاربر در IBSng باید از قبل وجود داشته باشد. گروه مقصد فقط از میان گروه‌های فعال ثبت‌شده برای همین سرور انتخاب می‌شود؛ تغییر از فرم Edit User انجام می‌شود.</p>
+<h2 data-ui-text="users_change_group_title">تغییر گروه اکانت موجود</h2>
+<p class="muted" data-ui-text="users_change_group_intro">اکانت باید از قبل در IBSng وجود داشته باشد. گروه مقصد فقط از میان گروه‌های فعال ثبت‌شده برای همین سرور انتخاب می‌شود؛ تغییر از فرم Edit User انجام می‌شود.</p>
 <?php if (!$groups): ?><p class="muted" data-ui-text="users_change_group_empty">برای این سرور گروه فعالی ثبت نشده است.</p><?php else: ?>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="change_group">
 <div class="grid">
-<div class="field"><label for="change_group_username" data-ui-text="users_existing_username">Username کاربر موجود</label><input id="change_group_username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="change_group_username" data-ui-text="users_existing_username">نام کاربری اکانت موجود</label><input id="change_group_username" name="username" required autocomplete="off"></div>
 <div class="field"><label for="change_group_id" data-ui-text="users_destination_group">گروه مقصد</label><select id="change_group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
 </div>
 <button class="button primary" type="submit" data-ui-text="users_change_group_submit">تغییر گروه در IBSng</button>
@@ -476,7 +476,7 @@ $accountFieldLabelsFa = [
 <p class="muted" data-fa="حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند." data-en="Deleting an account from IBSng cannot be undone. Following the reference behavior, this also requests deletion of connection and audit logs.">حذف از IBSng عملیات برگشت‌ناپذیر است. این عملیات طبق رفتار مرجع، گزینه حذف connection logs و audit logs را نیز ارسال می‌کند.</p>
 <form method="post" data-confirm-fa="اکانت واقعاً از IBSng حذف شود؟ این عملیات برگشت‌پذیر نیست." data-confirm-en="Really delete this account from IBSng? This cannot be undone.">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="server_id" value="<?= $selectedServerId ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="confirm_delete" value="yes">
-<div class="field"><label for="delete_username">Username</label><input id="delete_username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="delete_username" data-fa="نام کاربری اکانت" data-en="Account username">نام کاربری اکانت</label><input id="delete_username" name="username" required autocomplete="off"></div>
 <button class="button danger" type="submit" data-fa="حذف اکانت از IBSng" data-en="Delete account from IBSng">حذف اکانت از IBSng</button>
 </form>
 </section>
