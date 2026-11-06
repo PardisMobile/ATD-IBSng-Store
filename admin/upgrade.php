@@ -124,7 +124,7 @@ $config = app_config();
 <?php if ($error !== ''): ?><div class="notice err" data-fa="ارتقای دیتابیس انجام نشد. دسترسی‌های لازم برای تغییر ساختار و ثبت تنظیمات را بررسی کنید." data-en="The database upgrade failed. Check the database permissions required to alter the schema and save settings."><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
 <div class="notice ok" data-ui-text="upgrade_ready">ساختار دیتابیس موردنیاز تمدید IBSng به‌روز است.</div>
-<a class="button primary" href="<?= e(app_url('admin/products.php')) ?>" data-ui-text="upgrade_products">رفتن به تعریف پلن و گروه</a>
+<a class="button primary" href="<?= e(app_url('admin/ibsng-groups.php')) ?>" data-ui-text="upgrade_products">رفتن به تعریف پلن و گروه</a>
 <?php else: ?>
 <div class="notice err" data-ui-text="upgrade_not_ready">تغییرات موردنیاز دیتابیس هنوز روی این نصب اعمال نشده‌اند.</div>
 <form method="post" data-confirm-fa="ارتقای دیتابیس برای قابلیت تمدید IBSng انجام شود؟" data-confirm-en="Apply the database upgrade required for IBSng account renewals?">
