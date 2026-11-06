@@ -14,7 +14,7 @@ $adminNavEntries = [
     ['email-settings.php', 'email-settings', 'تنظیمات ایمیل', 'Email Settings'],
     ['email-templates.php', 'email-templates', 'قالب‌های ایمیل', 'Email Templates'],
     ['settings.php', 'settings', 'تنظیمات پشتیبانی و فروشگاه', 'Store & Support Settings'],
-    ['ibsng-renewal-migrate.php', 'renewal', 'ارتقای تمدید IBSng', 'IBSng Renewal Upgrade'],
+    ['upgrade.php', 'upgrade', 'ارتقا', 'Upgrade'],
 ];
 $adminNavIcons = [
     'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -28,7 +28,7 @@ $adminNavIcons = [
     'email-settings' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
     'email-templates' => '<path d="M6 3h9l4 4v14H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v5h5M8 13h7M8 17h5"/>',
     'settings' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>',
-    'renewal' => '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 17 7l3 5M4 12l3 5a7 7 0 0 0 11.4-2"/><path d="M12 9v6M9 12h6"/>',
+    'upgrade' => '<path d="M12 3v12m0 0 5-5m-5 5-5-5"/><path d="M5 17v3h14v-3"/>',
 ];
 ?>
 <header class="atd-admin-header">
