@@ -516,7 +516,7 @@ $accountFields = [
     'Creation Date' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Creation Date', 'Create Date'])),
     'Multi Login raw value' => $multiLoginDisplay,
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
-    'Consumed Traffic' => $formatTrafficBytes($consumedBytes),
+    'Consumed Traffic' => !empty($isUnlimitedTraffic) ? 'غیرحجمی' : $formatTrafficBytes($consumedBytes),
     'Remaining Traffic' => $remainingTrafficDisplay ?? $formatTrafficBytes($remainingBytes),
 ];
 
