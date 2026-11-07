@@ -230,13 +230,13 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_pricing">قیمت و ارز</legend>
 <div class="grid product-form-grid">
-<div class="field"><label for="price_minor" data-fa="قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)" data-en="Price (<?= e($priceDisplayUnit) ?>)">قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)store_price_for_unit((int)($product['price_minor'] ?? 0), $priceDisplayUnit)) ?>"><div class="hint" data-ui-text="products_currency_unit_hint">واحد پول این قیمت از تنظیمات سایت تعیین می‌شود.</div></div>
+<div class="field"><label for="price_minor" data-fa="قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)" data-en="Price (<?= e($priceDisplayUnit) ?>)">قیمت (<?= $priceDisplayUnit === 'IRT' ? 'تومان' : 'ریال' ?>)</label><input id="price_minor" name="price_minor" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" required value="<?= e((string)store_price_for_unit((int)($product['price_minor'] ?? 0), $priceDisplayUnit)) ?>"><div class="hint" data-fa="واحد پول تومان/ریال از تنظیمات سایت تعیین می‌شود." data-en="The toman/rial currency unit is determined by Site Settings.">واحد پول این قیمت از تنظیمات سایت تعیین می‌شود.</div></div>
 <div class="field"><label for="price_usdt" data-ui-text="products_usdt_price">قیمت مستقل USDT (اختیاری)</label><input id="price_usdt" name="price_usdt" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="8" value="<?= e((string)($product['price_usdt'] ?? '')) ?>"><div class="hint" data-ui-text="products_usdt_hint">این قیمت جداگانه ثبت می‌شود و از نرخ تبدیل ارز محاسبه نمی‌شود. تا فعال‌شدن درگاه کریپتو در فروشگاه نمایش داده نخواهد شد.</div></div>
 </div>
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
 <div class="grid product-form-grid">
-<div class="field"><label for="quota_amount" data-fa="محدودیت حجم (خالی یا صفر = نامحدود)" data-en="Data limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="quota-input-grid"><input id="quota_amount" name="quota_amount" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="9" placeholder="مثلاً 100 یا 5" value="<?php
+<div class="field"><label for="quota_amount" data-fa="محدودیت حجم (خالی یا صفر = نامحدود)" data-en="Data limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="quota-input-grid"><input id="quota_amount" name="quota_amount" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="9" placeholder="مثلاً 100 یا 5" data-ui-placeholder="products_quota_placeholder" value="<?php
 $quotaBytesForEdit = isset($product['quota_bytes']) && $product['quota_bytes'] !== null ? (int)$product['quota_bytes'] : null;
 $quotaUnitForEdit = 'GB';
 $quotaAmountForEdit = '';
@@ -256,7 +256,7 @@ if ($quotaBytesForEdit !== null && $quotaBytesForEdit > 0) {
     }
 }
 echo e($quotaAmountForEdit);
-?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-ui-text="products_quota_unit_hint">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
+?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-fa="تبدیل واحدهای MB، GB و TB بر مبنای ۱۰۲۴ انجام می‌شود." data-en="MB, GB and TB are converted using a base of 1024.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
