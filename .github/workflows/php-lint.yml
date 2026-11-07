@@ -33,6 +33,9 @@ jobs:
       - name: Run payment manager allowlist test
         run: php tests/PaymentManagerTest.php
 
+      - name: Run multi-gateway payment contract test
+        run: php tests/multi-gateway-payment-contract-test.php
+
       - name: Run customer order account display contract test
         run: php tests/order-status-account-contract-test.php
 
