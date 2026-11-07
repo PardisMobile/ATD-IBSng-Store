@@ -122,7 +122,7 @@ $orderSql = "SELECT o.id, o.public_id, o.tracking_code, o.buyer_name, o.buyer_ph
                     o.order_status, o.created_at, o.server_targets_snapshot,
                     CASE WHEN COALESCE(JSON_UNQUOTE(JSON_EXTRACT(o.server_targets_snapshot, '$[0].operation')), 'create') = 'renew'
                          THEN 'تمدید' ELSE 'خرید' END AS operation_label,
-                    t.provider, t.provider_reference, t.verified_at
+                    t.provider, t.provider_reference, t.verified_at, t.raw_result_json
              FROM orders o
              INNER JOIN payment_transactions t ON t.order_id=o.id AND t.status='verified'
              WHERE o.payment_status='paid'$dateWhere
@@ -192,6 +192,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <div class="table-wrap"><table class="orders-detail-table"><thead><tr><th>شناسه سفارش</th><th>سرویس</th><th>نام کاربری</th><th>نوع</th><th>مبلغ پرداختی</th><th>وضعیت سفارش</th><th>زمان ثبت</th><th>جزئیات</th></tr></thead><tbody>
 <?php if (!$orderRows): ?><tr><td colspan="8">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($orderRows as $order): ?>
+<?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); ?>
 <tr>
 <td><span class="order-reference"><?= e((string)$order['public_id']) ?></span><br><small class="muted"><?= e((string)$order['tracking_code']) ?></small></td>
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
@@ -206,7 +207,8 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <div><span class="muted">تلفن</span><strong class="numeric-value"><?= e((string)$order['buyer_phone'] ?: 'بدون تلفن') ?></strong></div>
 <div><span class="muted">ایمیل</span><strong><?= e((string)$order['buyer_email'] ?: 'بدون ایمیل') ?></strong></div>
 <div><span class="muted">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
-<div><span class="muted">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
+<div><span class="muted" data-fa="درگاه پرداخت" data-en="Payment gateway">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
+<?php if ($isSandboxPayment): ?><div><span class="muted" data-fa="محیط پرداخت" data-en="Payment environment">محیط پرداخت</span><strong><span data-fa="آزمایشی" data-en="Sandbox">آزمایشی</span></strong></div><?php endif; ?>
 <div><span class="muted">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
 <div><span class="muted">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
 </div>
