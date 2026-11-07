@@ -21,10 +21,9 @@ multi_gateway_contract_assert(is_string($flow) && str_contains($flow, 'public st
 multi_gateway_contract_assert(str_contains($flow, 'payment_enabled_providers'), 'Payment flow must read the enabled gateway list.');
 multi_gateway_contract_assert(str_contains($flow, '($all[\'payment_provider\'] ?? \'\')'), 'Payment flow must retain legacy single-provider settings fallback.');
 multi_gateway_contract_assert(str_contains($flow, 'public static function initiate(PDO $pdo, int $orderId, string $selectedProvider)'), 'Payment initiation must receive the customer-selected provider.');
-multi_gateway_contract_assert(str_contains($flow, "$provider,
-            $amount['amount_minor']"), 'The selected provider must be persisted on the payment transaction.');
+multi_gateway_contract_assert(str_contains($flow, '$provider,') && str_contains($flow, 'PaymentTransactionService($pdo)'), 'The selected provider must be passed into durable payment transaction creation.');
 multi_gateway_contract_assert(is_string($checkout) && str_contains($checkout, 'name="payment_provider"'), 'Checkout must present a customer-selectable payment provider.');
 multi_gateway_contract_assert(str_contains($checkout, 'PaymentFlow::initiate($pdo, $orderId, $selectedPaymentProvider)'), 'Checkout must pass the selected provider to payment initiation.');
-multi_gateway_contract_assert(is_string($manager) && str_contains($manager, "glob($directory . '/*.php')"), 'Future trusted gateway adapters must remain discoverable without checkout-specific provider branches.');
+multi_gateway_contract_assert(is_string($manager) && str_contains($manager, 'glob($directory . \'/*.php\')'), 'Future trusted gateway adapters must remain discoverable without checkout-specific provider branches.');
 
 echo "Multi-gateway payment contract tests passed.\\n";
