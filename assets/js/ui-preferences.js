@@ -45,7 +45,7 @@
       orders_back_store: 'Back to store',
       orders_tracking_recovery: 'Track and recover purchases',
       orders_title: 'My orders',
-      orders_intro: 'Enter the email verification code to view orders associated with your purchase email. You can also open any order using its tracking ID.',
+      orders_intro: 'To view a single order, enter its tracking code or order ID. To view all orders placed with your email address, use email verification.',
       orders_verification_sent_to: 'A verification code was sent to this email:',
       orders_change_email: 'Use another email address or request a new code',
       orders_resend_code: 'Resend code / change email',
@@ -59,14 +59,14 @@
       orders_paid_amount: 'Amount paid',
       orders_status: 'Order status',
       orders_details: 'Order details',
-      orders_lookup_heading: 'Track using an order ID',
-      orders_lookup_help: 'Enter the tracking ID shown on your purchase receipt.',
-      orders_order_id: 'Order ID',
+      orders_lookup_heading: 'Track with a tracking code or order ID',
+      orders_lookup_help: 'Enter your tracking code or order ID.',
+      orders_order_id: 'Tracking code or order ID',
       orders_track_submit: 'Track order',
-      orders_email_recovery_heading: 'Or recover all purchases by email',
-      orders_email_at_purchase: 'Email used at checkout',
+      orders_email_recovery_heading: 'View orders by email',
+      orders_email_at_purchase: 'Email address used at checkout',
       orders_send_code: 'Send verification code',
-      orders_order_placeholder: 'ATD-XXXXXXX or order ID'
+      orders_order_placeholder: 'Tracking code ATD-XXXXXXX or order ID'
     },
     document_titles: {
       title_guide: 'User guide',
@@ -419,7 +419,7 @@
       status_nav_store: 'Back to store',
       status_page_heading: 'Order tracking',
       status_not_found: 'Order not found',
-      status_not_found_help: 'The tracking ID is invalid or the order is unavailable. Open the tracking link from the payment result page.',
+      status_not_found_help: 'The tracking code or order ID is invalid, or no matching order was found. Please check the information you entered.',
       status_tracking_id: 'Tracking ID',
       status_order_state: 'Order status',
       status_paid_amount: 'Amount paid',
@@ -460,7 +460,7 @@
       guide_troubleshoot_destination: 'If the delivery email specifies a destination or connection method, use that exact option.',
       guide_troubleshoot_support: 'If the problem persists, provide the order ID to support. Do not publish your password in a public message.',
       guide_tracking_title: 'Order tracking',
-      guide_tracking_body: 'Use the order tracking page to view payment, provisioning and account details.',
+      guide_tracking_body: 'Use the order tracking page to view payment status, service activation and account details.',
       guide_tracking_link: 'Open order tracking'
     },
     payment_result_page: {
