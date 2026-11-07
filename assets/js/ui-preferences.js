@@ -320,7 +320,7 @@
       settings_username_prefix: 'Username prefix',
       settings_username_prefix_hint: 'Latin letters, numbers, and . _ - only; for example, atd',
       settings_username_suffix: 'Random username suffix length',
-      settings_password_length: 'Generated password length',
+      settings_password_length: 'Generated password length (4–11 characters)',
       settings_password_charset: 'Password character set',
       settings_charset_digits: 'Numbers only',
       settings_charset_letters: 'Letters only',
