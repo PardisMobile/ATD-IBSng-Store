@@ -67,6 +67,9 @@ final class DatabaseSchemaSync
         if ($this->tableExists('orders') && !$this->columnExists('orders', 'price_usdt_snapshot')) {
             $pending[] = 'افزودن تصویر ثابت قیمت USDT به سفارش‌ها';
         }
+        if ($this->tableExists('orders') && !$this->columnExists('orders', 'language')) {
+            $pending[] = 'افزودن زبان انتخاب‌شده به سفارش‌ها برای ارسال ایمیل';
+        }
         if ($this->tableExists('orders') && !$this->columnExists('orders', 'tracking_code')) {
             $pending[] = 'افزودن کد پیگیری یکتای سفارش‌ها';
         } elseif ($this->tableExists('orders')) {
@@ -134,6 +137,9 @@ final class DatabaseSchemaSync
         if (!$this->columnExists('orders', 'price_usdt_snapshot')) {
             if (!$this->columnExists('orders', 'price_minor_snapshot')) throw new RuntimeException('ستون orders.price_minor_snapshot وجود ندارد.');
             $this->pdo->exec('ALTER TABLE orders ADD COLUMN price_usdt_snapshot DECIMAL(18,8) NULL AFTER price_minor_snapshot');
+        }
+        if (!$this->columnExists('orders', 'language')) {
+            $this->pdo->exec("ALTER TABLE orders ADD COLUMN language CHAR(2) NOT NULL DEFAULT 'fa' AFTER buyer_email");
         }
         if (!$this->columnExists('orders', 'tracking_code')) {
             if (!$this->columnExists('orders', 'public_id')) throw new RuntimeException('ستون orders.public_id وجود ندارد.');
