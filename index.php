@@ -168,7 +168,7 @@ try {
       </div>
       <div class="storefront-hero-content">
         <div class="eyebrow">ATD • IBSng</div>
-        <h1 data-ui-text="catalog_hero_title">سرویس موردنیازت رو ساده انتخاب کن</h1>
+        <h1 data-ui-text="catalog_hero_title">خرید و تمدید، سریع و آسان و مطمئن</h1>
         <p data-ui-text="catalog_hero_intro">پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
         <div class="hero-actions">
           <a class="button primary" href="#services" data-ui-text="catalog_view_services">مشاهده سرویس‌ها</a>
