@@ -34,9 +34,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Sales are counted only when the order is paid AND its gateway transaction
-// is verified. The verified transaction is the immutable source of actual paid
-// amount; order price snapshots are shown separately as historical list prices.
+// The order snapshot is the fixed amount agreed with the customer at
+// order creation. Product price changes must never alter historical sales.
+$fromDate = trim((string)($_GET['from_date'] ?? ''));
+$toDate = trim((string)($_GET['to_date'] ?? ''));
+$datePattern = '/^\\d{4}-\\d{2}-\\d{2}$/';
+if (($fromDate !== '' && (!preg_match($datePattern, $fromDate) || !checkdate((int)substr($fromDate, 5, 2), (int)substr($fromDate, 8, 2), (int)substr($fromDate, 0, 4))))
+    || ($toDate !== '' && (!preg_match($datePattern, $toDate) || !checkdate((int)substr($toDate, 5, 2), (int)substr($toDate, 8, 2), (int)substr($toDate, 0, 4))))) {
+    $fromDate = '';
+    $toDate = '';
+    $error = 'بازهٔ تاریخ واردشده معتبر نیست.';
+}
+if ($fromDate !== '' && $toDate !== '' && $fromDate > $toDate) {
+    [$fromDate, $toDate] = [$toDate, $fromDate];
+}
+$dateWhere = '';
+$dateParams = [];
+if ($fromDate !== '') {
+    $dateWhere .= ' AND o.created_at >= ?';
+    $dateParams[] = $fromDate . ' 00:00:00';
+}
+if ($toDate !== '') {
+    $dateWhere .= ' AND o.created_at < DATE_ADD(?, INTERVAL 1 DAY)';
+    $dateParams[] = $toDate . ' 00:00:00';
+}
+
 $sql = "SELECT
             o.product_name_snapshot AS service_name,
             CASE
@@ -50,14 +72,14 @@ $sql = "SELECT
             COUNT(DISTINCT o.id) AS paid_orders,
             COUNT(DISTINCT CASE WHEN o.order_status = 'active' THEN o.id END) AS active_sales,
             COUNT(DISTINCT CASE WHEN o.order_status = 'partial' THEN o.id END) AS partial_sales,
-            SUM(t.amount_minor) AS paid_amount,
-            t.currency
+            SUM(o.price_minor_snapshot) AS paid_amount,
+            o.currency
         FROM orders o
-        INNER JOIN payment_transactions t ON t.order_id = o.id AND t.status = 'verified'
         WHERE o.payment_status = 'paid'
+          AND EXISTS (SELECT 1 FROM payment_transactions t WHERE t.order_id=o.id AND t.status='verified')$dateWhere
         GROUP BY
             o.product_name_snapshot,
-            t.currency,
+            o.currency,
             CASE
                 WHEN COALESCE(
                     JSON_UNQUOTE(JSON_EXTRACT(o.server_targets_snapshot, '$[0].operation')),
@@ -67,14 +89,30 @@ $sql = "SELECT
                 ELSE 'خرید'
             END
         ORDER BY paid_orders DESC, service_name ASC";
-$rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-$totalPaid = (int)$pdo->query("SELECT COUNT(*) FROM orders o WHERE o.payment_status='paid' AND EXISTS (SELECT 1 FROM payment_transactions t WHERE t.order_id=o.id AND t.status='verified')")->fetchColumn();
-$totalPending = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='pending'")->fetchColumn();
-$totalSalesRows = $pdo->query("SELECT t.currency, SUM(t.amount_minor) AS total_amount
-    FROM payment_transactions t
-    INNER JOIN orders o ON o.id=t.order_id
-    WHERE t.status='verified' AND o.payment_status='paid'
-    GROUP BY t.currency ORDER BY t.currency")->fetchAll(PDO::FETCH_ASSOC);
+$summaryStmt = $pdo->prepare($sql);
+$summaryStmt->execute($dateParams);
+$rows = $summaryStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$countSql = "SELECT COUNT(*) FROM orders o
+             WHERE o.payment_status='paid'
+               AND EXISTS (SELECT 1 FROM payment_transactions t WHERE t.order_id=o.id AND t.status='verified')$dateWhere";
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($dateParams);
+$totalPaid = (int)$countStmt->fetchColumn();
+
+$pendingSql = "SELECT COUNT(*) FROM orders o WHERE o.payment_status='pending'$dateWhere";
+$pendingStmt = $pdo->prepare($pendingSql);
+$pendingStmt->execute($dateParams);
+$totalPending = (int)$pendingStmt->fetchColumn();
+
+$totalSql = "SELECT o.currency, SUM(o.price_minor_snapshot) AS total_amount
+             FROM orders o
+             WHERE o.payment_status='paid'
+               AND EXISTS (SELECT 1 FROM payment_transactions t WHERE t.order_id=o.id AND t.status='verified')$dateWhere
+             GROUP BY o.currency ORDER BY o.currency";
+$totalStmt = $pdo->prepare($totalSql);
+$totalStmt->execute($dateParams);
+$totalSalesRows = $totalStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Recent individual paid orders. A verified transaction is unique per order
 // under PaymentTransactionService's locked paid-state transition.
@@ -84,13 +122,14 @@ $orderSql = "SELECT o.id, o.public_id, o.tracking_code, o.buyer_name, o.buyer_ph
                     o.order_status, o.created_at, o.server_targets_snapshot,
                     CASE WHEN COALESCE(JSON_UNQUOTE(JSON_EXTRACT(o.server_targets_snapshot, '$[0].operation')), 'create') = 'renew'
                          THEN 'تمدید' ELSE 'خرید' END AS operation_label,
-                    t.provider, t.provider_reference, t.amount_minor AS paid_amount,
-                    t.currency AS paid_currency, t.verified_at
+                    t.provider, t.provider_reference, t.verified_at
              FROM orders o
              INNER JOIN payment_transactions t ON t.order_id=o.id AND t.status='verified'
-             WHERE o.payment_status='paid'
+             WHERE o.payment_status='paid'$dateWhere
              ORDER BY o.created_at DESC, o.id DESC LIMIT 100";
-$orderRows = $pdo->query($orderSql)->fetchAll(PDO::FETCH_ASSOC);
+$orderStmt = $pdo->prepare($orderSql);
+$orderStmt->execute($dateParams);
+$orderRows = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
 $orderIds = array_map(static fn(array $r): int => (int)$r['id'], $orderRows);
 $attemptsByOrder = [];
 if ($orderIds !== []) {
@@ -124,12 +163,17 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <title data-ui-title-key="title_admin_orders">گزارش خرید و فروش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:980px}.order-details{min-width:180px}.order-details summary{cursor:pointer;color:var(--accent);font-weight:650}.order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.order-detail-grid>div{display:grid;gap:3px;min-width:0}.order-detail-grid strong{overflow-wrap:anywhere}.order-attempts{border-top:1px solid var(--border);padding-top:10px;margin-top:10px}.attempt-line{display:grid;gap:4px;padding:9px 0;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.attempt-line small{overflow-wrap:anywhere}@media(max-width:480px){.order-detail-grid{grid-template-columns:1fr}}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.report-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px)}.report-filters label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}.report-filters input{min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.filter-actions{display:flex;gap:8px;flex-wrap:wrap}.filter-actions a{display:inline-flex;align-items:center;text-decoration:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:980px}.order-details{min-width:180px}.order-details summary{cursor:pointer;color:var(--accent);font-weight:650}.order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.order-detail-grid>div{display:grid;gap:3px;min-width:0}.order-detail-grid strong{overflow-wrap:anywhere}.order-attempts{border-top:1px solid var(--border);padding-top:10px;margin-top:10px}.attempt-line{display:grid;gap:4px;padding:9px 0;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.attempt-line small{overflow-wrap:anywhere}@media(max-width:480px){.order-detail-grid{grid-template-columns:1fr}}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body><main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
-<section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارش‌ها</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش فقط از تراکنش‌های تأییدشدهٔ درگاه محاسبه می‌شود. مبلغ پرداختی هر سفارش ثابت می‌ماند و تغییر قیمت محصولات، گزارش پرداخت‌های قبلی را تغییر نمی‌دهد.</p>
+<section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارش‌ها</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش سفارش‌های پرداخت‌شده بر اساس مبلغ ثابت‌شده هنگام ثبت سفارش محاسبه می‌شود؛ تغییر قیمت محصول روی سفارش‌های قبلی اثری ندارد.</p>
+<form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش">
+<label>از تاریخ <input type="date" name="from_date" value="<?= e($fromDate) ?>"></label>
+<label>تا تاریخ <input type="date" name="to_date" value="<?= e($toDate) ?>"></label>
+<div class="filter-actions"><button class="button" type="submit">اعمال بازه</button><a class="button button-secondary" href="<?= e(app_url('admin/orders.php')) ?>">حذف فیلتر</a></div>
+</form>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="stats">
@@ -153,9 +197,9 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
 <td><span class="numeric-value"><?= e((string)$order['username']) ?></span></td>
 <td><?= e((string)$order['operation_label']) ?></td>
-<td><strong><?= number_format((int)$order['paid_amount']) ?> <?= e((string)$order['paid_currency']) ?></strong></td>
+<td><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></td>
 <td><?= e((string)$order['order_status']) ?></td>
-<td><span class="numeric-value"><?= e((string)$order['created_at']) ?></span></td>
+<td><span class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></span></td>
 <td><details class="order-details"><summary>مشاهده جزئیات</summary>
 <div class="order-detail-grid">
 <div><span class="muted">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
@@ -164,7 +208,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <div><span class="muted">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
 <div><span class="muted">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
 <div><span class="muted">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
-<div><span class="muted">زمان تأیید پرداخت</span><strong class="numeric-value"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
+<div><span class="muted">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
 </div>
 <?php if (!empty($attemptsByOrder[(int)$order['id']])): ?>
 <div class="order-attempts"><strong>نتیجه عملیات IBSng</strong>
@@ -198,4 +242,16 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </tbody></table></div>
 </section>
 </section><?php require __DIR__ . '/_footer.php'; ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
+<script>
+document.querySelectorAll('.report-date[data-date]').forEach((node) => {
+  const raw = node.dataset.date;
+  if (!raw) return;
+  const date = new Date(raw.replace(' ', 'T') + 'Z');
+  if (Number.isNaN(date.getTime())) return;
+  const gregorian = new Intl.DateTimeFormat('en-GB', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}).format(date);
+  const persian = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}).format(date);
+  node.textContent = persian + ' · ' + gregorian;
+  node.title = 'تقویم شمسی و میلادی (UTC)';
+});
+</script>
 </body></html>
