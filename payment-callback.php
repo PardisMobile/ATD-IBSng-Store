@@ -28,7 +28,7 @@ $config = app_config();
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="<?= e(app_asset_url('assets/icons/atd-app-icon.svg')) ?>"><link rel="apple-touch-icon" href="<?= e(app_asset_url('assets/icons/atd-app-icon.svg')) ?>"><link rel="manifest" href="<?= e(app_asset_url('site.webmanifest')) ?>">
+<link rel="icon" type="image/svg+xml" href="<?= e(app_asset_url('assets/icons/atd-app-icon.svg')) ?>"><link rel="apple-touch-icon" sizes="180x180" href="<?= e(app_asset_url('assets/icons/apple-touch-icon.png')) ?>"><link rel="manifest" href="<?= e(app_asset_url('site.webmanifest')) ?>">
 <title data-ui-title-key="title_payment_result">نتیجه پرداخت | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>.result-shell{width:min(700px,calc(100% - 32px));margin:0 auto}.result-card{padding:clamp(20px,4vw,34px);margin:24px 0}.notice{padding:16px;border:1px solid var(--border);border-radius:14px;line-height:1.9}.ok{border-color:#44d6a055;background:#44d6a012}.fail{border-color:#ff718055;background:#ff718012}</style>
