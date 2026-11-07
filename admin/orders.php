@@ -82,6 +82,8 @@ $orderSql = "SELECT o.id, o.public_id, o.tracking_code, o.buyer_name, o.buyer_ph
                     o.buyer_email, o.username, o.product_name_snapshot, o.price_minor_snapshot,
                     o.price_usdt_snapshot, o.currency AS order_currency, o.payment_status,
                     o.order_status, o.created_at, o.server_targets_snapshot,
+                    CASE WHEN COALESCE(JSON_UNQUOTE(JSON_EXTRACT(o.server_targets_snapshot, '$[0].operation')), 'create') = 'renew'
+                         THEN 'تمدید' ELSE 'خرید' END AS operation_label,
                     t.provider, t.provider_reference, t.amount_minor AS paid_amount,
                     t.currency AS paid_currency, t.verified_at
              FROM orders o
@@ -150,7 +152,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <td><span class="order-reference"><?= e((string)$order['public_id']) ?></span><br><small class="muted"><?= e((string)$order['tracking_code']) ?></small></td>
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
 <td><span class="numeric-value"><?= e((string)$order['username']) ?></span></td>
-<td><?= (isset(json_decode((string)$order['server_targets_snapshot'], true)[0]['operation']) && json_decode((string)$order['server_targets_snapshot'], true)[0]['operation'] === 'renew') ? 'تمدید' : 'خرید' ?></td>
+<td><?= e((string)$order['operation_label']) ?></td>
 <td><strong><?= number_format((int)$order['paid_amount']) ?> <?= e((string)$order['paid_currency']) ?></strong></td>
 <td><?= e((string)$order['order_status']) ?></td>
 <td><span class="numeric-value"><?= e((string)$order['created_at']) ?></span></td>
