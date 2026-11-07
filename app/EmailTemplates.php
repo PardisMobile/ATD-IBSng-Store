@@ -98,22 +98,22 @@ final class EmailTemplates
         return preg_replace_callback('/<(html|body|main)\\b([^>]*)>/i', static function (array $match) use ($language, $direction, $alignment): string {
             $tag = strtolower($match[1]);
             $attributes = $match[2];
-            if (preg_match('/\\sdir\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes)) {
-                $attributes = preg_replace('/\\sdir\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' dir="' . $direction . '"', $attributes, 1) ?? $attributes;
+            if (preg_match('~\\sdir\\s*=\\s*"([^"]*)"~i', $attributes)) {
+                $attributes = preg_replace('~\\sdir\\s*=\\s*"([^"]*)"~i', ' dir="' . $direction . '"', $attributes, 1) ?? $attributes;
             } else {
                 $attributes .= ' dir="' . $direction . '"';
             }
             if ($tag === 'html') {
-                if (preg_match('/\\slang\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes)) {
-                    $attributes = preg_replace('/\\slang\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' lang="' . $language . '"', $attributes, 1) ?? $attributes;
+                if (preg_match('~\\slang\\s*=\\s*"([^"]*)"~i', $attributes)) {
+                    $attributes = preg_replace('~\\slang\\s*=\\s*"([^"]*)"~i', ' lang="' . $language . '"', $attributes, 1) ?? $attributes;
                 } else {
                     $attributes .= ' lang="' . $language . '"';
                 }
             }
             if ($tag !== 'html') {
                 $css = 'direction:' . $direction . ';text-align:' . $alignment . ';';
-                if (preg_match('/\\sstyle\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes, $style)) {
-                    $attributes = preg_replace('/\\sstyle\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' style="' . htmlspecialchars(rtrim($style[2], ';') . ';' . $css, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"', $attributes, 1) ?? $attributes;
+                if (preg_match('~\\sstyle\\s*=\\s*"([^"]*)"~i', $attributes, $style)) {
+                    $attributes = preg_replace('~\\sstyle\\s*=\\s*"([^"]*)"~i', ' style="' . htmlspecialchars(rtrim($style[2], ';') . ';' . $css, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"', $attributes, 1) ?? $attributes;
                 } else {
                     $attributes .= ' style="' . $css . '"';
                 }
