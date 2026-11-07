@@ -216,7 +216,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <?php endforeach; ?></div><?php endif; ?>
 <?php else: ?>
 <form method="post" class="orders-email-request-form">
-<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request">
+<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="site_language" value="fa" data-ui-language-field><input type="hidden" name="action" value="request">
 <label for="email" data-ui-text="orders_email_at_purchase">ایمیلی که هنگام خرید ثبت کرده‌اید</label>
 <input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email">
 <button class="button primary" type="submit" data-ui-text="orders_send_code">ارسال کد تأیید</button>
@@ -255,4 +255,5 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 @media(max-width:600px){.orders-shell{width:calc(100% - 24px)}.orders-card{padding:18px}.order-row{grid-template-columns:minmax(0,1fr);align-items:stretch}.order-row .button{width:100%}.history-facts{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.order-row{transition:none}}
 </style>
+<script>(function(){const sync=()=>document.querySelectorAll('[data-ui-language-field]').forEach(el=>el.value=document.documentElement.lang==="en"?"en":"fa");document.addEventListener("atd:language-change",sync);document.querySelectorAll('form').forEach(form=>form.addEventListener('submit',sync));window.addEventListener("pageshow",sync);})();</script>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script></body></html>
