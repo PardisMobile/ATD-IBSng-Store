@@ -95,7 +95,7 @@ if (!$notFound) {
 $statusLabels = [
     'pending_payment' => 'در انتظار پرداخت',
     'paid' => 'پرداخت تأیید شد',
-    'provisioning' => 'در حال فعال‌سازی',
+    'provisioning' => 'در حال فعال‌سازی سرویس',
     'active' => 'فعال',
     'partial' => 'فعال‌سازی ناقص',
     'failed' => 'فعال‌سازی ناموفق',
