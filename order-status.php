@@ -164,7 +164,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
 <div class="purchase-summary">
-<div class="purchase-fact"><span data-ui-text="status_tracking_id">شناسه پیگیری</span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_tracking_id">کد رهگیری</span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
 <div class="purchase-fact"><span data-ui-text="status_order_state">وضعیت سفارش</span><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
 <div class="purchase-fact"><span data-ui-text="status_paid_amount">مبلغ پرداخت‌شده</span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
 <div class="purchase-fact"><span data-ui-text="status_purchase_date">تاریخ خرید</span><strong><?= e((string)$order['created_at']) ?></strong></div>
