@@ -184,9 +184,9 @@ final class PaymentFlow
         }
 
         // Payment confirmation and remote IBSng provisioning are separate
-        // durable stages. Kick queued creates immediately after the payment
-        // transaction commits, but never let a provisioning issue turn a
-        // verified payment into a failed callback response.
+        // durable stages. Kick queued creates and renewals immediately after
+        // the payment transaction commits, but never let a provisioning issue
+        // turn a verified payment into a failed callback response.
         self::dispatchQueuedProvisioning($pdo, (int)$transaction['order_id']);
 
         return [
@@ -250,7 +250,7 @@ final class PaymentFlow
         try {
             $stmt = $pdo->prepare(
                 "SELECT id FROM provisioning_attempts
-                 WHERE order_id = ? AND operation = 'create' AND status = 'queued'
+                 WHERE order_id = ? AND operation IN ('create', 'renew') AND status = 'queued'
                  ORDER BY id ASC"
             );
             $stmt->execute([$orderId]);
