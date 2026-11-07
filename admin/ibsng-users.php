@@ -444,7 +444,8 @@ if ($accountHtml !== '' && trim((string)($userResult['group'] ?? '')) !== '') {
     }
 }
 $formatTrafficBytes = static function (?int $bytes): string {
-    if ($bytes === null || $bytes <= 0) return 'نامحدود';
+    if ($bytes === null) return 'نامحدود';
+    $bytes = max(0, $bytes);
     $value = $bytes / 1048576;
     $unit = 'MB';
     foreach (['GB','TB'] as $nextUnit) {
