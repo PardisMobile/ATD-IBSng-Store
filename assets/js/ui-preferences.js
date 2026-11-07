@@ -38,7 +38,8 @@
       checkout_username: 'Username',
       checkout_password: 'Account password',
       checkout_auto_note: 'Your username and password are generated automatically and will be displayed on the order details page after payment is confirmed.',
-      checkout_renew_notice: 'This order is for renewing account {username}. You do not need to enter the account password to submit the renewal request.',
+      checkout_renew_notice_before: 'This order is for renewing account',
+      checkout_renew_notice_after: 'You do not need to enter the account password to submit the renewal request.',
       checkout_password_storage: 'Password information is stored encrypted in the database.',
       checkout_submit: 'Place order'
     },
