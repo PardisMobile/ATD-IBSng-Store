@@ -172,20 +172,20 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <header class="orders-page-heading">
 <div class="eyebrow" data-ui-text="orders_tracking_recovery">پیگیری و بازیابی خریدها</div>
 <h1 data-ui-text="orders_title">سفارش‌های من</h1>
-<p class="muted" data-ui-text="orders_intro">برای مشاهده سفارش‌های مرتبط با ایمیل خرید، کد تأیید ایمیل را وارد کنید. همچنین می‌توانید هر سفارش را با شناسه پیگیری در صفحه پیگیری سفارش مشاهده کنید.</p>
+<p class="muted" data-ui-text="orders_intro">برای مشاهده جزئیات یک سفارش، کد رهگیری یا شناسه سفارش را وارد کنید. برای مشاهده همه سفارش‌های ثبت‌شده با ایمیل خود، از روش تأیید ایمیل استفاده کنید.</p>
 </header>
-<h2 data-ui-text="orders_lookup_heading">پیگیری با شناسه سفارش</h2>
-<p class="muted" data-ui-text="orders_lookup_help">شناسه پیگیری درج‌شده در رسید خرید را وارد کنید.</p>
+<h2 data-ui-text="orders_lookup_heading">پیگیری با کد رهگیری یا شناسه سفارش</h2>
+<p class="muted" data-ui-text="orders_lookup_help">کد رهگیری یا شناسه سفارش خود را وارد کنید.</p>
 <form method="get" action="<?= e(app_url('order-status.php')) ?>">
-<label for="order" data-ui-text="orders_order_id">شناسه سفارش</label>
-<input class="form-field" id="order" name="order" dir="ltr" inputmode="text" maxlength="40" required placeholder="ATD-XXXXXXX یا شناسه سفارش" data-ui-placeholder="orders_order_placeholder">
+<label for="order" data-ui-text="orders_order_id">کد رهگیری یا شناسه سفارش</label>
+<input class="form-field" id="order" name="order" dir="ltr" inputmode="text" maxlength="40" required placeholder="کد رهگیری ATD-XXXXXXX یا شناسه سفارش" data-ui-placeholder="orders_order_placeholder">
 <button class="button primary" type="submit" data-ui-text="orders_track_submit">پیگیری سفارش</button>
 </form>
 </section>
 
 <section class="orders-card panel order-email-card">
-<div class="eyebrow" data-ui-text="orders_email_recovery_heading">بازیابی همه خریدها با ایمیل</div>
-<h2 data-ui-text="orders_email_at_purchase">ایمیل زمان خرید</h2>
+<div class="eyebrow" data-ui-text="orders_email_recovery_heading">مشاهده سفارش‌ها با ایمیل</div>
+<h2 data-ui-text="orders_email_at_purchase">ایمیلی که هنگام خرید ثبت کرده‌اید</h2>
 <?php if ($notice !== ''): ?><div class="notice" role="status" aria-live="polite"><?= e($notice) ?></div><?php endif; ?>
 
 <?php if ($stage === 'verify'): ?>
@@ -215,7 +215,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <?php else: ?>
 <form method="post" class="orders-email-request-form">
 <input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request">
-<label for="email" data-ui-text="orders_email_at_purchase">ایمیل زمان خرید</label>
+<label for="email" data-ui-text="orders_email_at_purchase">ایمیلی که هنگام خرید ثبت کرده‌اید</label>
 <input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email">
 <button class="button primary" type="submit" data-ui-text="orders_send_code">ارسال کد تأیید</button>
 </form>
