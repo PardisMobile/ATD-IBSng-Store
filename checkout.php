@@ -26,11 +26,13 @@ foreach ($credentialSettingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) {
 }
 $credentialPolicy = $credentialSettings['credential_mode'] ?? 'customer';
 $credentialPrefix = $credentialSettings['username_prefix'] ?? 'atd';
-$credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 6)));
-$generatedPasswordLength = max(4, min(12, (int)($credentialSettings['password_length'] ?? 12)));
-$generatedPasswordCharset = ($credentialSettings['password_charset'] ?? 'mixed') === 'alphanumeric'
-    ? 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
-    : 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*-_';
+$credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 5)));
+$generatedPasswordLength = max(4, min(11, (int)($credentialSettings['password_length'] ?? 5)));
+$generatedPasswordCharset = match ($credentialSettings['password_charset'] ?? 'alphanumeric') {
+    'digits' => '23456789',
+    'letters' => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',
+    default => 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789',
+};
 function checkout_random_string(string $alphabet, int $length): string
 {
     if ($alphabet === '' || $length < 1) throw new InvalidArgumentException('Invalid random string settings.');
