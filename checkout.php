@@ -345,7 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <div class="field">
 <?php foreach ($availablePaymentProviders as $paymentChoice): ?>
 <label><input type="radio" name="payment_provider" value="<?= e($paymentChoice['code']) ?>"<?= $selectedPaymentProvider === $paymentChoice['code'] ? ' checked' : '' ?> required>
-<span><?= e($paymentChoice['label']) ?> — <?= e($paymentChoice['currency']) ?></span></label>
+<span><?= e($paymentChoice['label']) ?> — <?= e($paymentChoice['currency']) ?> (<?php if ($paymentChoice['currency'] === 'USDT'): ?><?= e(rtrim(rtrim(number_format($paymentChoice['amount_minor'] / 100000000, 8, '.', ''), '0'), '.')) ?> USDT<?php else: ?><?= e(store_format_price((int)$paymentChoice['amount_minor'], $paymentChoice['currency'])['amount']) ?> <?= e(store_format_price((int)$paymentChoice['amount_minor'], $paymentChoice['currency'])['label']) ?><?php endif; ?>)</span></label>
 <?php endforeach; ?>
 </div>
 <?php endif; ?>
