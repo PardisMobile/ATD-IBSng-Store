@@ -169,10 +169,10 @@ try {
       <div class="storefront-hero-content">
         <div class="eyebrow">ATD • IBSng</div>
         <h1 data-ui-text="catalog_hero_title">خرید و تمدید، سریع و آسان و مطمئن</h1>
-        <p data-ui-text="catalog_hero_intro">پلن‌های قابل ارائه را مشاهده کن؛ اطلاعات هر پلن بر اساس تنظیمات فروشگاه نمایش داده می‌شود.</p>
+        <p data-ui-text="catalog_hero_intro">سرویس های موجود را بررسی کنید و پیش از خرید، مشخصات هر سرویس را مشاهده کنید.</p>
         <div class="hero-actions">
           <a class="button primary" href="#services" data-ui-text="catalog_view_services">مشاهده سرویس‌ها</a>
-          <span class="muted" data-ui-text="catalog_no_registration">بدون نیاز به ثبت‌نام فروشگاهی</span>
+          <span class="muted" data-ui-text="catalog_no_registration">خرید بدون نیاز به ایجاد حساب کاربری</span>
         </div>
       </div>
     </section>
@@ -184,17 +184,17 @@ try {
       <?php if ($catalogError): ?>
         <div class="catalog-notice" role="alert" aria-live="polite" data-ui-text="catalog_load_error">فروشگاه در حال به‌روزرسانی است. لطفاً چند لحظه بعد دوباره تلاش کنید.</div>
       <?php elseif (!$products): ?>
-        <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3 data-ui-text="catalog_empty_title">هنوز پلنی برای فروش فعال نشده است</h3><p data-ui-text="catalog_empty_intro">مدیر فروشگاه می‌تواند از پنل مدیریت، محصولات را تعریف و برای نمایش فعال کند.</p></div>
+        <div class="empty-state panel"><div class="empty-icon" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg></div><h3 data-ui-text="catalog_empty_title">در حال حاضر سرویسی برای ارائه موجود نیست</h3><p data-ui-text="catalog_empty_intro">سایت در حال به روز رسانی میباشد، فعلا سرویسی برای نمایش وجود ندارد.</p></div>
       <?php else: ?>
         <div class="catalog-grid">
         <?php foreach ($products as $product): ?>
           <article class="plan-card panel">
-            <div class="eyebrow" data-ui-text="catalog_plan_eyebrow">پلن سرویس</div>
+            <div class="eyebrow" data-ui-text="catalog_plan_eyebrow">مشخصات سرویس</div>
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
-            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت کریپتو</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
+            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت به تتر</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <?php
             if ($isRenewCatalog) {
                 $validityDays = (int)$product['validity_days'];
@@ -211,7 +211,7 @@ try {
             }
             ?>
             <?php $quotaLabel = storefront_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes']); ?>
-            <div class="plan-meta"><span data-ui-text="catalog_quota">حجم</span><strong<?= ($product['quota_bytes'] === null || (float)$product['quota_bytes'] <= 0) ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
+            <div class="plan-meta"><span data-ui-text="catalog_quota" >حجم سرویس</span><strong<?= ($product['quota_bytes'] === null || (float)$product['quota_bytes'] <= 0) ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'] . ($isRenewCatalog ? '&mode=renew&server_id=' . (int)$renewServerId : ''))) ?>"<?= $isRenewCatalog ? ' data-fa="تمدید" data-en="Renew"' : ' data-ui-text="catalog_order"' ?>><?= $isRenewCatalog ? 'تمدید' : 'ثبت سفارش' ?></a>
           </article>
         <?php endforeach; ?>
