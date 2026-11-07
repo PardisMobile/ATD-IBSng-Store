@@ -94,13 +94,13 @@ assert.match(ibsngUsers, /app_url\('admin\/upgrade\.php'\)/u, 'IBSng users must 
 assert.doesNotMatch(ibsngUsers, /ibsng-renewal-migrate\.php/u, 'IBSng users must not link to the retired upgrade path');
 for (const [source, translated] of [
   ['First Login', 'اولین ورود'],
-  ['Last Login', 'آخرین ورود'],
   ['Relative Expiration', 'انقضای نسبی'],
   ['Creation Date', 'تاریخ ایجاد'],
 ]) {
   assert.ok(ibsngUsers.includes(source) && ibsngUsers.includes(translated), `IBSng account detail label is missing: ${source}`);
 }
 assert.match(ibsngUsers, /Translate field labels only\. IBSng values remain exactly as received\./u, 'IBSng values must remain raw while labels are translated');
+assert.doesNotMatch(ibsngUsers, /['\"]Last Login['\"]|آخرین ورود/u, 'IBSng account details must keep Last Login hidden as requested');
 
 const components = read('assets/js/ui-components.js');
 assert.match(components, /atd-confirm-dialog/u, 'Shared JavaScript must provide the styled confirmation dialog');
