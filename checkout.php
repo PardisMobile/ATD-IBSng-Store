@@ -82,6 +82,14 @@ if (!$product) {
     http_response_code(404);
 }
 
+$checkoutPriceSnapshot = $product ? [
+    'price_minor_snapshot' => store_price_for_unit((int)$product['price_minor'], $priceDisplayUnit),
+    'price_usdt_snapshot' => $product['price_usdt'] !== null ? (string)$product['price_usdt'] : null,
+    'currency' => $priceDisplayUnit,
+] : [];
+$availablePaymentProviders = $product ? PaymentFlow::availableProviders($pdo, $checkoutPriceSnapshot) : [];
+$selectedPaymentProvider = strtolower(trim((string)($_POST['payment_provider'] ?? ($availablePaymentProviders[0]['code'] ?? ''))));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
     $csrf = (string)($_POST['csrf'] ?? '');
     if (!isset($_SESSION['checkout_csrf']) || !hash_equals((string)$_SESSION['checkout_csrf'], $csrf)) {
@@ -121,7 +129,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
             }
         }
 
-        if ($name === '' || strlen($name) > 150) {
+        $availableProviderCodes = array_column($availablePaymentProviders, 'code');
+        if ($availablePaymentProviders === []) {
+            $error = 'در حال حاضر هیچ درگاه پرداخت سازگار و آماده‌ای برای این سفارش وجود ندارد.';
+        } elseif (!in_array($selectedPaymentProvider, $availableProviderCodes, true)) {
+            $error = 'لطفاً یکی از درگاه‌های پرداخت فعال را انتخاب کنید.';
+        } elseif ($name === '' || strlen($name) > 150) {
             $error = app_message('buyer_name_required');
         } elseif ($phone === '' || strlen($phone) > 40 || !preg_match('/^[+0-9() .-]{7,40}$/', $phone)) {
             $error = app_message('buyer_phone_invalid');
@@ -229,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
             throw new RuntimeException('The persisted checkout order could not be resolved.');
         }
 
-        $payment = PaymentFlow::initiate($pdo, $orderId);
+        $payment = PaymentFlow::initiate($pdo, $orderId, $selectedPaymentProvider);
         header('Location: ' . $payment['redirect_url'], true, 303);
         exit;
     } catch (Throwable $e) {
@@ -324,8 +337,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز عبور به‌صورت خودکار ایجاد می‌شوند و پس از تأیید پرداخت، در صفحه جزئیات سفارش نمایش داده خواهند شد.</p>
 <?php endif; ?>
 </fieldset><?php endif; ?>
+<fieldset class="form-section payment-method-section"><legend data-ui-text="checkout_payment_method">روش پرداخت</legend>
+<?php if ($availablePaymentProviders === []): ?>
+<p class="notice error" data-ui-text="checkout_no_payment_methods">در حال حاضر درگاه پرداخت آماده‌ای برای این سفارش وجود ندارد. لطفاً با پشتیبانی تماس بگیرید.</p>
+<?php else: ?>
+<p class="muted" data-ui-text="checkout_choose_payment_method">یکی از درگاه‌های پرداخت را انتخاب کنید.</p>
+<div class="field">
+<?php foreach ($availablePaymentProviders as $paymentChoice): ?>
+<label><input type="radio" name="payment_provider" value="<?= e($paymentChoice['code']) ?>"<?= $selectedPaymentProvider === $paymentChoice['code'] ? ' checked' : '' ?> required>
+<span><?= e($paymentChoice['label']) ?> — <?= e($paymentChoice['currency']) ?></span></label>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+</fieldset>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
-<button class="button primary" type="submit" data-ui-text="checkout_submit">ثبت سفارش</button>
+<button class="button primary" type="submit" data-ui-text="checkout_submit"<?= $availablePaymentProviders === [] ? ' disabled' : '' ?>>ثبت سفارش و پرداخت</button>
 </form>
 <script>(function(){const field=document.getElementById("checkout-site-language");const form=field&&field.form;if(!form)return;const sync=()=>{field.value=document.documentElement.lang==="en"?"en":"fa";};sync();form.addEventListener("submit",sync);document.addEventListener("atd:language-change",sync);})();</script>
 <?php endif; ?>
