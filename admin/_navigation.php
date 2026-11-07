@@ -4,9 +4,9 @@ declare(strict_types=1);
 $adminCurrentPage = basename((string)($_SERVER['SCRIPT_NAME'] ?? 'index.php'));
 $adminNavEntries = [
     ['index.php', 'dashboard', 'داشبورد', 'Dashboard'],
-    ['ibsng-servers.php', 'servers', 'مدیریت سرورها', 'IBSng Servers'],
+    ['ibsng-servers.php', 'servers', 'مدیریت سرورها', 'Server Management'],
     ['ibsng-groups.php', 'groups', 'تعریف پلن و گروه', 'Plan & Group Setup'],
-    ['ibsng-users.php', 'users', 'مدیریت اکانت ها', 'IBSng Accounts'],
+    ['ibsng-users.php', 'users', 'مدیریت اکانت ها', 'Account Management'],
     ['products.php', 'products', 'مدیریت محصولات', 'Products'],
     ['guide.php', 'guide', 'راهنمای کاربران', 'Account Guide'],
     ['provisioning.php', 'provisioning', 'صف فعال‌سازی', 'Activation Queue'],
