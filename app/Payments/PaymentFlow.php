@@ -88,6 +88,13 @@ final class PaymentFlow
                         break;
                     }
                 }
+                if ($provider === 'zarinpal') {
+                    $sandbox = ($providerConfig['sandbox_mode'] ?? '0') === '1';
+                    $requiredMerchantKey = $sandbox ? 'sandbox_merchant_id' : 'merchant_id';
+                    if (trim((string)($providerConfig[$requiredMerchantKey] ?? '')) === '') {
+                        $complete = false;
+                    }
+                }
                 if (!$complete) {
                     continue;
                 }
@@ -149,11 +156,18 @@ final class PaymentFlow
         $manager = new PaymentManager($provider);
         $amount = ['amount_minor' => $choice['amount_minor'], 'currency' => $choice['currency']];
         $transactions = new PaymentTransactionService($pdo);
+        $transactionMetadata = [];
+        if ($provider === 'zarinpal') {
+            $transactionMetadata['gateway_environment'] = [
+                'sandbox' => (($all['payment_zarinpal_sandbox_mode'] ?? '0') === '1'),
+            ];
+        }
         $transactionId = $transactions->create(
             $orderId,
             $provider,
             $amount['amount_minor'],
-            $amount['currency']
+            $amount['currency'],
+            $transactionMetadata
         );
 
         try {
