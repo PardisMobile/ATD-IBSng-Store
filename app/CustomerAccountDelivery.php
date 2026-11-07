@@ -17,7 +17,7 @@ final class CustomerAccountDelivery
 
         $pdo->beginTransaction();
         try {
-            $orderStmt = $pdo->prepare('SELECT id, public_id, buyer_name, buyer_email, username, password_ciphertext, payment_status FROM orders WHERE id=? FOR UPDATE');
+            $orderStmt = $pdo->prepare('SELECT id, public_id, buyer_name, buyer_email, language, username, password_ciphertext, payment_status FROM orders WHERE id=? FOR UPDATE');
             $orderStmt->execute([$orderId]);
             $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
             if (!$order || $order['payment_status'] !== 'paid' || trim((string)$order['buyer_email']) === '') {
@@ -69,6 +69,8 @@ final class CustomerAccountDelivery
         }
 
         try {
+            $language = (string)($order['language'] ?? 'fa') === 'en' ? 'en' : 'fa';
+            $isEnglish = $language === 'en';
             $password = app_decrypt_secret((string)$order['password_ciphertext']);
             $siteStmt = $pdo->prepare("SELECT setting_value FROM app_settings WHERE setting_key='site_title' LIMIT 1");
             $siteStmt->execute();
@@ -79,16 +81,20 @@ final class CustomerAccountDelivery
             $destinationsText = '';
             foreach ($successful as $destination) {
                 $name = trim((string)$destination['service_name']);
-                if ($name === '') $name = 'سرویس فعال';
+                if ($name === '') $name = $isEnglish ? 'Active service' : 'سرویس فعال';
                 $destinations .= '<li>' . htmlspecialchars($name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
                 $destinationsText .= '- ' . $name . "\n";
             }
-            $detailsHtml = '<section><h3>اطلاعات اکانت</h3><p>نام کاربری: <strong>' . htmlspecialchars((string)$order['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>رمز عبور: <strong>' . htmlspecialchars($password, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>مقصدهای فعال:</p><ul>' . $destinations . '</ul></section>';
-            $detailsText = "اطلاعات اکانت\nنام کاربری: " . $order['username'] . "\nرمز عبور: " . $password . "\nمقصدهای فعال:\n" . $destinationsText;
-            $template = EmailTemplates::get($pdo, 'purchase_success');
+            $detailsHtml = $isEnglish
+                ? '<section dir="ltr" style="direction:ltr;text-align:left"><h3>Account details</h3><p>Username: <strong>' . htmlspecialchars((string)$order['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>Password: <strong>' . htmlspecialchars($password, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>Active destinations:</p><ul>' . $destinations . '</ul></section>'
+                : '<section dir="rtl" style="direction:rtl;text-align:right"><h3>اطلاعات اکانت</h3><p>نام کاربری: <strong dir="ltr">' . htmlspecialchars((string)$order['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>رمز عبور: <strong dir="ltr">' . htmlspecialchars($password, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</strong></p><p>مقصدهای فعال:</p><ul>' . $destinations . '</ul></section>';
+            $detailsText = $isEnglish
+                ? "Account details\nUsername: " . $order['username'] . "\nPassword: " . $password . "\nActive destinations:\n" . $destinationsText
+                : "اطلاعات اکانت\nنام کاربری: " . $order['username'] . "\nرمز عبور: " . $password . "\nمقصدهای فعال:\n" . $destinationsText;
+            $template = EmailTemplates::get($pdo, 'purchase_success', $language);
             $vars = [
                 'site_name' => $siteName,
-                'customer_name' => trim((string)$order['buyer_name']) ?: 'مشتری',
+                'customer_name' => trim((string)$order['buyer_name']) ?: ($isEnglish ? 'Customer' : 'مشتری'),
                 'order_id' => (string)$order['public_id'],
                 'order_url' => $orderUrl,
                 'guide_url' => $guideUrl,
