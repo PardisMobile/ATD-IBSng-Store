@@ -44,8 +44,9 @@ $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 $paymentProvider = support_setting($pdo, 'payment_provider');
 $enabledProvidersRaw = support_setting($pdo, 'payment_enabled_providers');
-$enabledProviders = $enabledProvidersRaw !== ''
-    ? (json_decode($enabledProvidersRaw, true) ?: [])
+$decodedEnabledProviders = $enabledProvidersRaw !== '' ? json_decode($enabledProvidersRaw, true) : null;
+$enabledProviders = is_array($decodedEnabledProviders)
+    ? array_values(array_filter($decodedEnabledProviders, 'is_string'))
     : ($paymentProvider !== '' ? [$paymentProvider] : []);
 $gatewayPaymentTypes = [];
 $gatewayCodes = PaymentManager::registeredCodes();
