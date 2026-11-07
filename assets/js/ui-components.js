@@ -250,6 +250,10 @@
       trigger.append(value, arrow);
 
       const labels = Array.from(select.labels || []);
+      if (!labels.length) {
+        const fallbackLabel = select.closest('.field')?.querySelector('label');
+        if (fallbackLabel) labels.push(fallbackLabel);
+      }
       const labelIds = [];
       labels.forEach((label) => {
         if (!label.id) label.id = nextId('atd-select-label');
