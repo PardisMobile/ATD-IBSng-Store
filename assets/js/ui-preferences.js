@@ -793,8 +793,8 @@
   }
   // Convert standalone Gregorian date strings for display only. Keep the original
   // text on each node so language changes never convert an already converted date.
-  const formatStandaloneDates = () => {
-    const language = root.lang === 'en' ? 'en' : 'fa';
+  const formatStandaloneDates = (requestedLanguage) => {
+    const language = requestedLanguage === 'en' ? 'en' : requestedLanguage === 'fa' ? 'fa' : root.lang === 'en' ? 'en' : 'fa';
     const locale = language === 'en' ? 'en-GB' : 'fa-IR-u-ca-persian';
     const datePattern = /^(\\d{4})-(\\d{2})-(\\d{2})(?:[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?)?$/;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -829,7 +829,7 @@
       node.nodeValue = new Intl.DateTimeFormat(locale, options).format(date);
     }
   };
-  document.addEventListener('atd:language-change', formatStandaloneDates);
+  document.addEventListener('atd:language-change', (event) => formatStandaloneDates(event.detail?.language));
 
   apply();
   formatStandaloneDates();
