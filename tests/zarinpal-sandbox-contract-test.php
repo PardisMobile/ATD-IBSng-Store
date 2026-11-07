@@ -15,6 +15,7 @@ $transactions = file_get_contents($root . '/app/Payments/PaymentTransactionServi
 $settings = file_get_contents($root . '/admin/settings.php');
 $css = file_get_contents($root . '/assets/css/app.css');
 $account = file_get_contents($root . '/customer-account.php');
+$orders = file_get_contents($root . '/admin/orders.php');
 
 zarinpal_sandbox_assert(is_string($adapter) && str_contains($adapter, 'https://sandbox.zarinpal.com/pg/v4/payment'), 'Zarinpal adapter must use the v4 sandbox API host.');
 zarinpal_sandbox_assert(str_contains($adapter, 'https://sandbox.zarinpal.com/pg/StartPay/'), 'Sandbox payment must redirect to the sandbox hosted payment page.');
@@ -23,6 +24,9 @@ zarinpal_sandbox_assert(str_contains($adapter, "raw_result_json") && str_contain
 zarinpal_sandbox_assert(is_string($flow) && str_contains($flow, "payment_zarinpal_sandbox_mode") && str_contains($flow, "'gateway_environment'"), 'Payment initiation must snapshot Zarinpal environment.');
 zarinpal_sandbox_assert(is_string($transactions) && str_contains($transactions, 'raw_result_json') && str_contains($transactions, '$metadata'), 'Payment transaction creation must persist environment metadata before provider initiation.');
 zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, "['type'] ?? '') === 'checkbox'") && str_contains($settings, 'sandbox_merchant_id'), 'Admin settings must expose sandbox mode and sandbox merchant credentials.');
+zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, 'support_uuid_v4') && str_contains($settings, 'support_is_uuid_v4') && str_contains($settings, 'readonly dir="ltr"'), 'Admin settings must automatically generate and retain a UUID v4 for Sandbox Merchant ID.');
+zarinpal_sandbox_assert(is_string($orders) && str_contains($orders, 't.raw_result_json') && str_contains($orders, '$isSandboxPayment'), 'Admin sales report must read the stored transaction environment.');
+zarinpal_sandbox_assert(str_contains($orders, 'data-fa="آزمایشی" data-en="Sandbox"') && str_contains($orders, 'if ($isSandboxPayment)'), 'Admin sales report must show only the Sandbox label for sandbox transactions.');
 zarinpal_sandbox_assert(is_string($css) && !str_contains($css, 'fonts.googleapis.com') && str_contains($css, 'Vazirmatn-Variable.woff2'), 'Vazirmatn must load from the locally hosted assets/fonts directory, not Google Fonts.');
 zarinpal_sandbox_assert(is_string($account) && str_contains($account, 'مشاهده مشخصات اکانت') && str_contains($account, 'font-size:clamp(1.65rem,3.2vw,2.25rem)'), 'Customer account title text and typography must follow the shared heading scale.');
 
