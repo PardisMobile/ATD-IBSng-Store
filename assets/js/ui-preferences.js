@@ -643,9 +643,12 @@
     document.querySelectorAll('[data-ui-password-toggle]').forEach((button) => {
       const value = button.previousElementSibling;
       const shown = value && value.textContent !== '••••••••';
-      button.textContent = language === 'en'
+      const label = language === 'en'
         ? (shown ? pageCopy.customer_account_page.customer_hide_password : pageCopy.customer_account_page.customer_show_password)
-        : (shown ? 'مخفی کردن' : 'نمایش رمز');
+        : (shown ? 'مخفی کردن رمز' : 'نمایش رمز');
+      // Keep the SVG eye icon intact; language changes update accessible text only.
+      button.setAttribute('aria-label', label);
+      button.title = label;
     });
     document.querySelectorAll('[data-ui-event]').forEach((element) => {
       const key = 'email_event_' + element.dataset.uiEvent;
