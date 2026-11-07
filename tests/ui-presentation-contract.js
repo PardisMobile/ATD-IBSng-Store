@@ -94,8 +94,8 @@ assert.match(ibsngUsers, /app_url\('admin\/upgrade\.php'\)/u, 'IBSng users must 
 assert.doesNotMatch(ibsngUsers, /ibsng-renewal-migrate\.php/u, 'IBSng users must not link to the retired upgrade path');
 for (const [source, translated] of [
   ['First Login', 'اولین ورود'],
-  ['Relative Expiration', 'انقضای نسبی'],
-  ['Creation Date', 'تاریخ ایجاد'],
+  ['Relative Expiration', 'مدت (انقضای نسبی)'],
+  ['Creation Date', 'زمان ساخت اکانت'],
 ]) {
   assert.ok(ibsngUsers.includes(source) && ibsngUsers.includes(translated), `IBSng account detail label is missing: ${source}`);
 }
