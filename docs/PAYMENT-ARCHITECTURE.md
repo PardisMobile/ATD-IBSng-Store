@@ -17,7 +17,7 @@ Checkout creates an order snapshot
   └─ server_targets_snapshot (captured IBSng destinations)
           |
           v
-Admin-selected provider + per-provider payment type
+Customer-selected enabled provider + per-provider payment type
   ├─ fiat   -> order's fiat snapshot
   └─ crypto -> order's USDT snapshot
           |
@@ -57,7 +57,7 @@ Best-effort immediate queue dispatch (request-time; no worker)
 | `app/Payments/PaymentTransactionService.php` | Durable transaction/order state transitions, amount consistency checks, and atomic queue creation after verified payment. |
 | `payment-callback.php` | Customer-facing provider return endpoint. |
 | `webhook/ircrypto.php` | IRCrypto signed POST delivery validation; then calls PaymentFlow for server-side invoice verification. Kept outside `app/Payments/gateways/` so automatic adapter discovery cannot load it as a gateway module. |
-| `admin/settings.php` | Provider selection, module-provided configuration fields, and supported currency-mode selection. |
+| `admin/settings.php` | Consistent settings cards, multi-provider activation, module-provided credentials, and per-provider currency-mode selection. |
 | `admin/provisioning.php` | Recovery/reconciliation for provisioning states; does not undo verified payment. |
 | `admin/payment-reconciliation.php` | Manual review of gateway-initiation transactions with no persisted provider reference; records a required operator note before releasing the order for another attempt. |
 
@@ -67,17 +67,18 @@ Best-effort immediate queue dispatch (request-time; no worker)
 - Fiat payment uses `orders.price_minor_snapshot` and the order's `currency` (`IRR` or `IRT`).
 - Crypto payment uses the independent `orders.price_usdt_snapshot`; it is not an FX conversion from the fiat price.
 - New installs include `price_usdt_snapshot` in `database/schema.sql`. Existing installs must apply `database/migrations/2026-11-02-order-usdt-price-snapshot.sql`. Legacy orders without a snapshot remain NULL; crypto payment initiation fails closed for them.
-- The `crypto_gateway_enabled` setting controls storefront visibility of USDT prices. It is not a payment-provider selector and does not activate a gateway.
+- The `crypto_gateway_enabled` setting controls storefront visibility of USDT prices. It is not a payment-provider selector and does not activate a gateway. USDT checkout choices additionally require an enabled provider configured for crypto mode and a valid USDT order snapshot.
 
 ## Admin configuration model
 
 There are three distinct layers:
 
-1. `payment_provider`: which discovered adapter is currently selected.
-2. `payment_<provider>_<field>`: adapter-defined credentials/configuration fields. The adapter's `configurationFields()` metadata creates the admin form; the admin supplies values, not field definitions.
-3. `payment_<provider>_type`: admin-selected `fiat` or `crypto` mode for that provider.
+1. `payment_enabled_providers`: JSON list of enabled, discovered adapter codes. When this key is absent, the legacy `payment_provider` value is treated as the sole enabled provider so existing installations keep working.
+2. `payment_provider`: retained as a legacy compatibility value and updated to the first enabled provider; it is no longer the multi-gateway selector.
+3. `payment_<provider>_<field>`: adapter-defined credentials/configuration fields. The adapter's `configurationFields()` metadata creates each provider card; the admin supplies values, not field definitions.
+4. `payment_<provider>_type`: admin-selected `fiat` or `crypto` mode for that provider.
 
-The adapter's `supportedCurrencies()` declares capabilities. Admin only renders fiat when `IRR` or `IRT` is supported and USDT when `USDT` is supported. Saving settings and starting a payment both validate compatibility. The mode is a single admin configuration per provider; customer-side selection between multiple currencies on one provider is not implemented.
+The adapter's `supportedCurrencies()` declares capabilities. Each enabled provider is checked independently for supported currency and required credentials. Checkout derives the choices from enabled, configured adapters and the immutable order price snapshot; the customer selects one provider. The chosen provider, amount, and currency are persisted in the payment transaction before the provider request. Callback verification continues to resolve the adapter from that persisted transaction, so changing enabled providers cannot affect existing payments.
 
 Current adapters:
 - `zarinpal`: `IRR`, `IRT`; fiat only.
