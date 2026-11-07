@@ -23,7 +23,6 @@ function ibsng_validate_server_fields(): array
     $serviceName = ibsng_server_input('service_name');
     $host = ibsng_server_input('host');
     $port = (int)($_POST['port'] ?? 80);
-    $isp = ibsng_server_input('isp_name', 'Main') ?: 'Main';
     $username = ibsng_server_input('username');
     $password = (string)($_POST['password'] ?? '');
     $utcOffset = IBSngRenewalState::normalizeUtcOffset(ibsng_server_input('utc_offset'));
@@ -34,7 +33,7 @@ function ibsng_validate_server_fields(): array
     if (!in_array($port, [80, 443], true)) {
         throw new InvalidArgumentException('پورت باید 80 یا 443 باشد.');
     }
-    return compact('name', 'serviceName', 'host', 'port', 'isp', 'username', 'password', 'utcOffset');
+    return compact('name', 'serviceName', 'host', 'port', 'username', 'password', 'utcOffset');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -55,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $remoteError;
                 }
 
-                $stmt = $pdo->prepare('INSERT INTO ibsng_servers (name, service_name, host, port, utc_offset, scheme, isp_name, username, password_ciphertext, is_active, is_default, last_test_at, last_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NOW(), NULL)');
+                $stmt = $pdo->prepare('INSERT INTO ibsng_servers (name, service_name, host, port, utc_offset, scheme, username, password_ciphertext, is_active, is_default, last_test_at, last_error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0, NOW(), NULL)');
                 $stmt->execute([
                     $fields['name'], ($fields['serviceName'] !== '' ? $fields['serviceName'] : null), $fields['host'], $fields['port'], $fields['utcOffset'], 'http',
-                    $fields['isp'], $fields['username'], app_encrypt_secret($fields['password'])
+                    $fields['username'], app_encrypt_secret($fields['password'])
                 ]);
                 $message = 'اتصال IBSng با موفقیت تأیید و سرور ذخیره شد.';
             } elseif ($action === 'update') {
@@ -73,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $serviceName = ibsng_server_input('service_name');
                 $host = ibsng_server_input('host');
                 $port = (int)($_POST['port'] ?? 80);
-                $isp = ibsng_server_input('isp_name') ?: (string)$existing['isp_name'];
                 $username = ibsng_server_input('username') ?: (string)$existing['username'];
                 $password = (string)($_POST['password'] ?? '');
                 $password = $password !== '' ? $password : app_decrypt_secret((string)$existing['password_ciphertext']);
@@ -89,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw $remoteError;
                 }
 
-                $stmt = $pdo->prepare('UPDATE ibsng_servers SET name=?, service_name=?, host=?, port=?, utc_offset=?, scheme=?, isp_name=?, username=?, password_ciphertext=?, last_test_at=NOW(), last_error=NULL WHERE id=?');
+                $stmt = $pdo->prepare('UPDATE ibsng_servers SET name=?, service_name=?, host=?, port=?, utc_offset=?, scheme=?, username=?, password_ciphertext=?, last_test_at=NOW(), last_error=NULL WHERE id=?');
                 $stmt->execute([
                     $name, ($serviceName !== '' ? $serviceName : null), $host, $port, $utcOffset, 'http', $isp, $username,
                     app_encrypt_secret($password), $id
@@ -192,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,isp_name,username,is_active,is_default,last_test_at,last_error,created_at FROM ibsng_servers ORDER BY is_default DESC, id DESC')->fetchAll();
+$servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,username,is_active,is_default,last_test_at,last_error,created_at FROM ibsng_servers ORDER BY is_default DESC, id DESC')->fetchAll();
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
@@ -208,7 +206,15 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
 .notice{padding:13px 15px;border-radius:var(--ui-radius-md,12px);margin:14px 0;line-height:1.8}.ok{background:color-mix(in srgb,var(--success,var(--green)) 10%,transparent);border:1px solid color-mix(in srgb,var(--success,var(--green)) 30%,transparent)}.err{background:color-mix(in srgb,var(--danger,#ff7180) 10%,transparent);border:1px solid color-mix(in srgb,var(--danger,#ff7180) 30%,transparent)}
 .server{padding:clamp(16px,3vw,22px);margin:14px 0;min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,16px);transition:border-color var(--ui-motion-fast,160ms) ease,background var(--ui-motion-fast,160ms) ease}.server:hover{border-color:color-mix(in srgb,var(--accent) 42%,var(--border));background:color-mix(in srgb,var(--surface-2) 35%,transparent)}.server-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}.server-head h3{margin:0;overflow-wrap:anywhere}.meta{color:var(--muted);line-height:1.9;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.actions form{display:flex;min-width:0}.actions button{white-space:normal}.empty{padding:26px;text-align:center;color:var(--muted)}
-.timezone-field{grid-column:1/-1;max-width:620px}.timezone-field input{direction:ltr;text-align:left;unicode-bidi:isolate;max-width:190px;font-variant-numeric:tabular-nums}.timezone-help{margin:0;color:var(--muted);font-size:.82rem;line-height:1.7}.timezone-command{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:320px;padding:7px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}.timezone-command code{direction:ltr;unicode-bidi:isolate}.timezone-command button{width:34px;height:34px;min-height:34px;padding:7px;display:inline-flex;align-items:center;justify-content:center}.timezone-command svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.timezone-field{grid-column:1/-1;max-width:none;display:grid;grid-template-columns:max-content minmax(120px,180px) max-content;align-items:center;justify-content:start;gap:10px 14px;margin:14px 0}
+.timezone-field>label{margin:0;white-space:nowrap}
+.timezone-field input{direction:ltr;text-align:center;unicode-bidi:isolate;width:100%;min-height:40px;padding:8px 12px;font-variant-numeric:tabular-nums}
+.timezone-command{display:flex;align-items:center;gap:8px;width:max-content;max-width:100%;padding:3px 6px 3px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
+.timezone-command code{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.timezone-command button{width:32px;height:32px;min-height:32px;padding:6px;display:inline-flex;align-items:center;justify-content:center}
+.timezone-command svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.timezone-help{grid-column:1/-1;margin:0;color:var(--muted);font-size:.82rem;line-height:1.7}
+@media(max-width:700px){.timezone-field{grid-template-columns:minmax(0,1fr) auto}.timezone-field>label{grid-column:1/-1}.timezone-field input{max-width:180px}.timezone-command{grid-column:2;grid-row:2}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.admin-shell{width:calc(100% - 24px)}.admin-top{align-items:flex-start;flex-direction:column}.actions>*{flex:1 1 auto}}
 </style>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
@@ -231,7 +237,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <div class="field"><label for="service_name" data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label for="host" data-ui-text="server_host_label">نشانی سرور (دامنه یا IP، بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
 <div class="field"><label for="port" data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
-<div class="field"><label for="isp_name">ISP name</label><input id="isp_name" name="isp_name" value="Main" required></div><div class="field timezone-field">
+<div class="field timezone-field">
 <label for="utc_offset_add" data-fa="اختلاف ساعت سرور IBSng با UTC (اختیاری)" data-en="IBSng Server UTC Offset (optional)">اختلاف ساعت سرور IBSng با UTC (اختیاری)</label>
 <input id="utc_offset_add" name="utc_offset" type="text" inputmode="text" dir="ltr" maxlength="5" pattern="[+-]?[0-9]{4}" placeholder="0330" autocomplete="off">
 <p class="timezone-help" data-fa="دستور زیر را در ترمینال سرور IBSng اجرا کنید و خروجی را اینجا کپی یا دستی وارد کنید. نمونه خروجی سرور شما: +0330" data-en="Run the command below in the IBSng server terminal, then paste or type its output here. Example output for your server: +0330">دستور زیر را در ترمینال سرور IBSng اجرا کنید و خروجی را اینجا کپی یا دستی وارد کنید. نمونه خروجی سرور شما: <bdi dir="ltr">+0330</bdi></p>
@@ -251,7 +257,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <article class="server panel">
 <div class="server-head"><h3><?= e((string)$server['name']) ?> <?= (int)$server['is_default'] === 1 ? '<span data-ui-text="server_default_label">· پیش‌فرض</span>' : '' ?></h3><span class="status-chip" data-ui-status="<?= (int)$server['is_active'] === 1 ? 'active' : 'inactive' ?>"><?= (int)$server['is_active'] === 1 ? 'فعال' : 'غیرفعال' ?></span></div>
 <div class="meta" dir="ltr"><?= e((string)$server['host']) ?>:<?= (int)$server['port'] ?></div>
-<div class="meta">ISP name: <?= e((string)$server['isp_name']) ?> <span data-ui-text="server_username_label">· نام کاربری:</span> <?= e((string)$server['username']) ?></div>
+<div class="meta"><span data-ui-text="server_username_label">نام کاربری:</span> <?= e((string)$server['username']) ?></div>
 <div class="meta"><span data-ui-text="server_last_test_label">آخرین تست:</span> <?php if (($server['last_test_at'] ?? null) === null): ?><span data-ui-text="server_not_tested">تست نشده</span><?php else: ?><?= e((string)$server['last_test_at']) ?><?php endif; ?><?php if (!empty($server['last_error'])): ?> <span data-ui-text="server_error_label">· خطا:</span> <?= e((string)$server['last_error']) ?><?php endif; ?></div>
 <details><summary class="button" data-fa="ویرایش تنظیمات" data-en="Edit settings">ویرایش تنظیمات</summary>
 <form method="post">
@@ -261,7 +267,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <div class="field"><label data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input name="service_name" maxlength="150" value="<?= e((string)($server['service_name'] ?? '')) ?>" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label>Host</label><input name="host" required value="<?= e((string)$server['host']) ?>"></div>
 <div class="field"><label data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select name="port"><option value="80"<?= (int)$server['port'] === 80 ? ' selected' : '' ?>>80 — HTTP</option><option value="443"<?= (int)$server['port'] === 443 ? ' selected' : '' ?>>443 — HTTPS</option></select></div>
-<div class="field"><label>ISP name</label><input name="isp_name" value="<?= e((string)$server['isp_name']) ?>"></div><div class="field timezone-field">
+<div class="field timezone-field">
 <label for="utc_offset_edit_<?= (int)$server['id'] ?>" data-fa="اختلاف ساعت سرور IBSng با UTC (اختیاری)" data-en="IBSng Server UTC Offset (optional)">اختلاف ساعت سرور IBSng با UTC (اختیاری)</label>
 <input id="utc_offset_edit_<?= (int)$server['id'] ?>" name="utc_offset" type="text" inputmode="text" dir="ltr" maxlength="5" pattern="[+-]?[0-9]{4}" value='<?= e((string)($server["utc_offset"] ?? "")) ?>' placeholder="0330" autocomplete="off">
 <p class="timezone-help" data-fa="دستور زیر را در ترمینال سرور IBSng اجرا کنید و خروجی را اینجا کپی یا دستی وارد کنید. نمونه خروجی سرور شما: +0330" data-en="Run the command below in the IBSng server terminal, then paste or type its output here. Example output for your server: +0330">دستور زیر را در ترمینال سرور IBSng اجرا کنید و خروجی را اینجا کپی یا دستی وارد کنید. نمونه خروجی سرور شما: <bdi dir="ltr">+0330</bdi></p>
