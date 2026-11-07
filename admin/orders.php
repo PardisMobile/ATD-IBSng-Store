@@ -243,15 +243,24 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </section>
 </section><?php require __DIR__ . '/_footer.php'; ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 <script>
-document.querySelectorAll('.report-date[data-date]').forEach((node) => {
-  const raw = node.dataset.date;
-  if (!raw) return;
-  const date = new Date(raw.replace(' ', 'T'));
-  if (Number.isNaN(date.getTime())) return;
-  const gregorian = new Intl.DateTimeFormat('en-GB', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(date);
-  const persian = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}).format(date);
-  node.textContent = persian + ' · ' + gregorian;
-  node.title = 'تقویم شمسی و میلادی';
-});
+(() => {
+  const formatReportDates = () => {
+    const language = document.documentElement.lang === 'en' ? 'en' : 'fa';
+    document.querySelectorAll('.report-date[data-date]').forEach((node) => {
+      const raw = node.dataset.date;
+      if (!raw) return;
+      const date = new Date(raw.replace(' ', 'T'));
+      if (Number.isNaN(date.getTime())) return;
+      const locale = language === 'en' ? 'en-GB' : 'fa-IR-u-ca-persian';
+      node.textContent = new Intl.DateTimeFormat(locale, {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(date);
+      node.title = language === 'en' ? 'Gregorian date' : 'تاریخ شمسی';
+    });
+  };
+  document.addEventListener('DOMContentLoaded', formatReportDates, {once:true});
+  document.addEventListener('atd:language-change', formatReportDates);
+})();
 </script>
 </body></html>
