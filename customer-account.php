@@ -50,22 +50,131 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
         $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
         $credentials = $client->getCredentials($username);
         $state = IBSngRenewalState::fromClient($client, $username, isset($server['utc_offset']) ? (string)$server['utc_offset'] : null);
-        // Presentation-only extraction of the Multi Login attribute from IBSng user-info HTML.
-        $multiLogin = '';
+        // Keep the customer parser independent, using the same IBSng HTML extraction method as admin.
         $accountHtml = (string)($credentials['html'] ?? '');
-        if ($accountHtml !== '' && preg_match('/<tr\\b[^>]*>(?:(?!<tr\\b).)*attr_edit_checkbox_[^>]*value=["\\'](?:multi_login|multi_login_instances|multi_login_instance)["\\'](?:(?!<tr\\b).)*<\\/tr>/is', $accountHtml, $multiLoginRow)) {
-            if (preg_match('/<td\\b[^>]*class=["\\'][^"\\']*Form_Content_Row_Right[^"\\']*["\\'][^>]*>(.*?)<\\/td>/is', $multiLoginRow[0], $multiLoginCell)) {
-                $cellHtml = $multiLoginCell[1];
-                if (preg_match('/<option\\b[^>]*selected[^>]*>(.*?)<\\/option>/is', $cellHtml, $selectedOption)) {
-                    $multiLogin = trim(html_entity_decode(strip_tags($selectedOption[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-                } elseif (preg_match('/<input\\b[^>]*value=["\\']([^"\\']*)["\\'][^>]*>/is', $cellHtml, $inputValue)) {
-                    $multiLogin = trim(html_entity_decode($inputValue[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-                } else {
-                    $multiLogin = trim(html_entity_decode(strip_tags($cellHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $cleanAccountText = static function (string $value): string {
+            return trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) ?? '');
+        };
+        /* Pure-PHP IBSng A1.24 HTML parser, transferred from the supplied working test file. */
+        $ibsngHtmlAttrs = static function (string $tag): array {
+            $attrs = [];
+            if (preg_match_all('/([a-zA-Z_:][a-zA-Z0-9_:.-]*)\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))/s', $tag, $m, PREG_SET_ORDER)) {
+                foreach ($m as $a) {
+                    $attrs[strtolower($a[1])] = html_entity_decode($a[2] !== '' ? $a[2] : ($a[3] !== '' ? $a[3] : ($a[4] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 }
             }
+            return $attrs;
+        };
+        $ibsngTagTokens = static function (string $html): array {
+            preg_match_all('/<!--.*?-->|<![^>]*>|<\?[^>]*\?>|<\/?[a-zA-Z][^>]*>/s', $html, $m, PREG_OFFSET_CAPTURE);
+            return $m[0] ?? [];
+        };
+        $ibsngElementBlocks = static function (string $html, string $wantedTag) use (&$ibsngElementBlocks, $ibsngTagTokens, $ibsngHtmlAttrs): array {
+            $tokens = $ibsngTagTokens($html); $stack = []; $blocks = [];
+            foreach ($tokens as [$token, $offset]) {
+                if (!preg_match('/^<\s*(\/?)\s*([a-zA-Z0-9]+)/', $token, $m)) continue;
+                $closing = $m[1] === '/'; $tag = strtolower($m[2]);
+                if ($closing) {
+                    for ($i = count($stack) - 1; $i >= 0; $i--) {
+                        if ($stack[$i]['tag'] === $tag) {
+                            $opened = $stack[$i];
+                            if ($tag === strtolower($wantedTag)) {
+                                $blocks[] = ['attrs'=>$opened['attrs'],'inner'=>substr($html,$opened['inner_start'],$offset-$opened['inner_start']),
+                                    'outer'=>substr($html,$opened['start'],($offset+strlen($token))-$opened['start'])];
+                            }
+                            $stack = array_slice($stack, 0, $i); break;
+                        }
+                    }
+                    continue;
+                }
+                $attrs = $ibsngHtmlAttrs($token);
+                $void = preg_match('/\/\s*>$/', $token) || in_array($tag, ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'], true);
+                if (!$void) $stack[] = ['tag'=>$tag,'attrs'=>$attrs,'start'=>$offset,'inner_start'=>$offset+strlen($token)];
+            }
+            return $blocks;
+        };
+        $ibsngDirectCells = static function (string $rowHtml) use ($ibsngTagTokens, $ibsngHtmlAttrs): array {
+            $tokens = $ibsngTagTokens($rowHtml); $stack = []; $cells = [];
+            foreach ($tokens as [$token, $offset]) {
+                if (!preg_match('/^<\s*(\/?)\s*([a-zA-Z0-9]+)/', $token, $m)) continue;
+                $closing = $m[1] === '/'; $tag = strtolower($m[2]);
+                if ($closing) {
+                    for ($i=count($stack)-1; $i>=0; $i--) {
+                        if ($stack[$i]['tag'] === $tag) {
+                            $opened=$stack[$i];
+                            if ($tag === 'td' && $opened['direct']) {
+                                $cells[]=['attrs'=>$opened['attrs'],'html'=>substr($rowHtml,$opened['inner_start'],$offset-$opened['inner_start'])];
+                            }
+                            $stack=array_slice($stack,0,$i); break;
+                        }
+                    }
+                    continue;
+                }
+                $attrs=$ibsngHtmlAttrs($token); $nearestTr=null;
+                foreach (array_reverse($stack) as $ancestor) if ($ancestor['tag']==='tr') { $nearestTr=$ancestor; break; }
+                $direct=$tag==='td' && $nearestTr!==null && (($nearestTr['depth']??0)+1)===count($stack);
+                $void=preg_match('/\/\s*>$/',$token)||in_array($tag,['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'],true);
+                if (!$void) $stack[]=['tag'=>$tag,'attrs'=>$attrs,'inner_start'=>$offset+strlen($token),'direct'=>$direct,'depth'=>count($stack)];
+            }
+            return $cells;
+        };
+        $ibsngExtractControl = static function (string $cellHtml) use ($cleanAccountText, $ibsngHtmlAttrs): ?string {
+            if (preg_match('/<textarea\b[^>]*>(.*?)<\/textarea\s*>/is',$cellHtml,$m)) return $cleanAccountText($m[1]);
+            if (preg_match('/<select\b[^>]*>(.*?)<\/select\s*>/is',$cellHtml,$m)) {
+                if (preg_match('/<option\b[^>]*\bselected\b[^>]*>(.*?)<\/option\s*>/is',$m[1],$o)) return $cleanAccountText($o[1]);
+                if (preg_match('/<option\b[^>]*>(.*?)<\/option\s*>/is',$m[1],$o)) return $cleanAccountText($o[1]);
+                return $cleanAccountText($m[1]);
+            }
+            if (preg_match('/<input\b(?![^>]*\btype\s*=\s*["\']?(?:checkbox|hidden))[^>]*>/is',$cellHtml,$m)) {
+                $a=$ibsngHtmlAttrs($m[0]); return isset($a['value']) ? trim($a['value']) : '';
+            }
+            return $cleanAccountText($cellHtml);
+        };
+        $ibsngDisplayedValue = static function (string $html, array $labels) use ($ibsngElementBlocks, $ibsngDirectCells, $cleanAccountText, $ibsngExtractControl): ?string {
+            foreach ($ibsngElementBlocks($html,'tr') as $row) {
+                $cells=$ibsngDirectCells($row['outer']);
+                for ($i=0;$i<count($cells);$i++) {
+                    $label=trim($cleanAccountText($cells[$i]['html'])," :");
+                    foreach ($labels as $wanted) {
+                        if (strcasecmp($label,$wanted)===0) {
+                            for ($j=$i+1;$j<count($cells);$j++) {
+                                $class=$cells[$j]['attrs']['class']??'';
+                                if (strpos($class,'Form_Content_Row_Right')!==false || strpos($class,'Form_Content_Row_Right_Textarea')!==false) {
+                                    return $ibsngExtractControl($cells[$j]['html']);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        };
+        $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngElementBlocks, $ibsngDirectCells, $ibsngHtmlAttrs, $ibsngExtractControl): ?string {
+            foreach ($ibsngElementBlocks($html,'tr') as $row) {
+                $cells=$ibsngDirectCells($row['outer']); $checkboxCell=-1;
+                foreach ($cells as $i=>$cell) {
+                    if (!preg_match_all('/<input\b[^>]*>/is',$cell['html'],$inputs)) continue;
+                    foreach ($inputs[0] as $inputTag) {
+                        $a=$ibsngHtmlAttrs($inputTag);
+                        if (strpos(strtolower($a['name']??''),'attr_edit_checkbox_')===0
+                            && in_array(trim($a['value']??''),$names,true)) { $checkboxCell=$i; break 2; }
+                    }
+                }
+                if ($checkboxCell<0) continue;
+                for ($j=$checkboxCell+1;$j<count($cells);$j++) {
+                    $class=$cells[$j]['attrs']['class']??'';
+                    if (strpos($class,'Form_Content_Row_Right')!==false || strpos($class,'Form_Content_Row_Right_Textarea')!==false) {
+                        return $ibsngExtractControl($cells[$j]['html']);
+                    }
+                }
+            }
+            return null;
+        };
+        $multiLoginRaw = $ibsngAttributeValue($accountHtml, ['multi_login', 'multi_login_instances', 'multi_login_instance']);
+        $multiLogin = trim((string)$multiLoginRaw);
+        if ($multiLogin === '' || preg_match('/^-+$/u', $multiLogin)) {
+            $multiLogin = 'تک‌کاربره';
         }
-        if ($multiLogin === '' || preg_match('/^-+$/u', $multiLogin)) $multiLogin = 'نامشخص';
         $groupName = trim((string)($credentials['group'] ?? ''));
         $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
         $planStmt->execute([(int)$server['id'], $groupName]);
