@@ -1105,3 +1105,14 @@ input[type="submit"].primary { color:var(--accent-foreground,#fff); }
 @media(max-width:760px){.atd-admin-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:460px){.atd-admin-header-top{align-items:flex-start;flex-direction:column}.atd-admin-preferences-slot{width:100%;justify-content:flex-start}.atd-admin-nav{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.atd-admin-nav-link{transition:none!important}.atd-admin-nav-link:hover,.atd-admin-nav-link:active{transform:none!important}}
+
+
+/* Persian placeholder presentation only — never changes the direction of typed input. */
+html[lang="fa"] :is(input,textarea):not(#host):not([name="utc_offset"])::placeholder {
+  direction: rtl;
+  text-align: right;
+}
+html[lang="fa"] #host::placeholder {
+  direction: ltr;
+  text-align: left;
+}
