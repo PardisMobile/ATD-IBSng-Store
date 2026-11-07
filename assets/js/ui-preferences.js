@@ -41,7 +41,10 @@
       checkout_renew_notice_before: 'This order is being placed to renew account',
       checkout_renew_notice_after: 'No account password is required to submit the renewal request.',
       checkout_password_storage: 'Password information is stored encrypted in the database.',
-      checkout_submit: 'Place order'
+      checkout_payment_method: 'Payment method',
+      checkout_choose_payment_method: 'Choose one of the available payment gateways.',
+      checkout_no_payment_methods: 'No configured payment gateway is currently available for this order. Please contact support.',
+      checkout_submit: 'Place order and pay'
     },
     orders: {
       orders_back_store: 'Back to store',
