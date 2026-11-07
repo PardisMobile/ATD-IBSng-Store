@@ -299,7 +299,6 @@ $config = app_config();
 </section>
 <div class="actions"><button class="button primary" type="submit" data-ui-text="settings_save">ذخیره تنظیمات</button><a class="button" href="<?= e(app_url('/')) ?>" target="_blank" rel="noopener noreferrer" data-ui-text="settings_visit_store">مشاهده فروشگاه</a></div>
 </form>
-</section>
 <?php require __DIR__ . '/_footer.php'; ?>
 </main>
 </body>
