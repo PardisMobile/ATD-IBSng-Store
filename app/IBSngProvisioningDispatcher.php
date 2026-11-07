@@ -195,6 +195,14 @@ final class IBSngProvisioningDispatcher
             $orderUpdate = $this->pdo->prepare("UPDATE orders SET order_status=? WHERE id=? AND payment_status='paid'");
             $orderUpdate->execute([$orderStatus, (int)$row['order_id']]);
             $this->pdo->commit();
+
+            // A manually confirmed create may now be eligible for account
+            // delivery. Renew attempts are ignored by the delivery service.
+            try {
+                CustomerAccountDelivery::afterProvisioning($this->pdo, (int)$row['order_id']);
+            } catch (Throwable $emailError) {
+                error_log('Account delivery hook failed after manual reconciliation for order ' . (int)$row['order_id'] . ': ' . $emailError->getMessage());
+            }
         } catch (Throwable $e) {
             if ($this->pdo->inTransaction()) $this->pdo->rollBack();
             throw $e;
@@ -240,11 +248,14 @@ final class IBSngProvisioningDispatcher
             if ($ownsTransaction) $this->pdo->commit();
             if ($ownsTransaction) {
                 try {
-                    $operationStmt = $this->pdo->prepare('SELECT operation FROM orders WHERE id=?');
-                    $operationStmt->execute([$orderId]);
-                    if ((string)$operationStmt->fetchColumn() === 'create') CustomerAccountDelivery::afterProvisioning($this->pdo, $orderId);
+                    // CustomerAccountDelivery checks provisioning_attempts for
+                    // create operations itself and safely returns for renewals.
+                    // orders.operation does not exist; operation is recorded per
+                    // destination in provisioning_attempts.
+                    CustomerAccountDelivery::afterProvisioning($this->pdo, $orderId);
+                } catch (Throwable $emailError) {
+                    error_log('Account delivery hook failed for order ' . $orderId . ': ' . $emailError->getMessage());
                 }
-                catch (Throwable $emailError) { error_log('Account delivery hook failed for order ' . $orderId . ': ' . $emailError->getMessage()); }
             }
         } catch (Throwable $e) {
             if ($ownsTransaction && $this->pdo->inTransaction()) $this->pdo->rollBack();
