@@ -177,6 +177,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .account-shell{width:min(900px,calc(100% - 28px));margin:0 auto;padding:clamp(16px,3vw,28px) 0}
 .account-card{padding:clamp(18px,4vw,30px);margin-top:20px;min-width:0}
 .account-card h1,.account-card h2{line-height:1.5;overflow-wrap:anywhere}
+.account-card h1[data-ui-text="customer_view_account"]{font-size:clamp(1.65rem,3.2vw,2.25rem);line-height:1.45}
 .account-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,auto);gap:14px;align-items:end}
 .account-fields{display:grid;gap:12px;min-width:0}
 .field{display:grid;gap:8px;min-width:0}
@@ -214,7 +215,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <?php if ($success !== ''): ?><div class="account-success" role="status" aria-live="polite"><?= e($success) ?></div><?php endif; ?>
 <?php if (!$isLoggedIn): ?>
 <section class="panel account-card">
-<div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات حساب</h1>
+<div class="eyebrow" data-ui-text="customer_panel">پنل مشتری</div><h1 data-ui-text="customer_view_account">مشاهده مشخصات اکانت</h1>
 <p class="muted-note" data-ui-text="customer_intro">نام کاربری و رمز عبور خود را وارد کنید. کد چهاررقمی فقط برای جلوگیری از ورود ربات‌هاست.</p>
 <?php if ($error !== ''): ?><div class="account-error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="post" class="account-form">
