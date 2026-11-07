@@ -157,6 +157,7 @@ if(empty($_SESSION['install_csrf'])) $_SESSION['install_csrf']=bin2hex(random_by
 <html lang="<?= $locale ?>" dir="<?= $rtl?'rtl':'ltr' ?>" data-ui-installer-locale="<?= install_e($locale) ?>">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="<?= install_e(install_asset('assets/icons/atd-app-icon.svg')) ?>"><link rel="apple-touch-icon" href="<?= install_e(install_asset('assets/icons/atd-app-icon.svg')) ?>"><link rel="manifest" href="<?= install_e(install_asset('site.webmanifest')) ?>">
 <title><?= install_e(it('title')) ?></title>
 <link rel="stylesheet" href="<?= install_e(install_asset('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= install_e(install_asset('assets/css/unified.css')) ?>">
 <script>
