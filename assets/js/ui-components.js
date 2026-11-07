@@ -78,6 +78,7 @@
       if (!activeSelect) return;
       activeSelect.setAttribute('aria-expanded', 'false');
       activeSelect.removeAttribute('aria-controls');
+      activeSelect.removeAttribute('aria-activedescendant');
       activeMenu?.remove();
       optionObserver?.disconnect();
       activeSelect = null;
@@ -112,6 +113,7 @@
     const renderOptions = () => {
       if (!activeSelect || !activeMenu) return;
       activeOptions = getVisibleOptions(activeSelect);
+      if (activeSelect.selectedIndex >= 0) selectedIndex = activeSelect.selectedIndex;
       activeMenu.replaceChildren();
       let lastGroup = null;
       activeOptions.forEach(({ option, index }) => {
@@ -125,6 +127,7 @@
         lastGroup = group;
         const item = document.createElement('div');
         item.className = 'atd-select-option';
+        item.id = activeMenu.id + '-option-' + index;
         item.setAttribute('role', 'option');
         item.dataset.optionIndex = String(index);
         item.setAttribute('aria-selected', String(index === activeSelect.selectedIndex));
@@ -134,6 +137,9 @@
         if (index === activeSelect.selectedIndex) item.classList.add('is-selected');
         activeMenu.appendChild(item);
       });
+      const activeItem = activeMenu.querySelector('[data-option-index="' + selectedIndex + '"]');
+      if (activeItem) activeSelect.setAttribute('aria-activedescendant', activeItem.id);
+      else activeSelect.removeAttribute('aria-activedescendant');
       positionMenu();
     };
 
@@ -218,7 +224,10 @@
           const current = Number(item.dataset.optionIndex) === selectedIndex;
           item.classList.toggle('is-active', current);
           item.setAttribute('aria-selected', String(current));
-          if (current) item.scrollIntoView({ block: 'nearest' });
+          if (current) {
+            activeSelect.setAttribute('aria-activedescendant', item.id);
+            item.scrollIntoView({ block: 'nearest' });
+          }
         });
       });
       select.addEventListener('change', () => { if (activeSelect === select) renderOptions(); });
