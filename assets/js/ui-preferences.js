@@ -657,6 +657,28 @@
     });
     applyNoticeCopy(language);
   }
+  function formatEnglishDigits(language) {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    const persianDigits = /[۰-۹٠-٩]/;
+    const toLatin = (value) => value.replace(/[۰-۹٠-٩]/g, (digit) => {
+      const code = digit.charCodeAt(0);
+      return String(code >= 0x06f0 && code <= 0x06f9 ? code - 0x06f0 : code - 0x0660);
+    });
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest('script,style,textarea,input,select,option,code,pre,[contenteditable="true"],[data-preserve-digits]')) continue;
+      if (language === 'en') {
+        if (node.__atdOriginalDigitText === undefined && persianDigits.test(node.nodeValue)) {
+          Object.defineProperty(node, '__atdOriginalDigitText', {value: node.nodeValue, writable: true, configurable: true});
+        }
+        if (node.__atdOriginalDigitText !== undefined) node.nodeValue = toLatin(node.__atdOriginalDigitText);
+      } else if (node.__atdOriginalDigitText !== undefined) {
+        node.nodeValue = node.__atdOriginalDigitText;
+      }
+    }
+  }
+
   function apply() {
     const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
@@ -674,6 +696,7 @@
     root.style.setProperty('--accent-dark', colors[1]);
     root.style.setProperty('--accent', mode === 'light' ? colors[0] : colors[1]);
     applyPageCopy();
+    formatEnglishDigits(root.lang);
   }
   function mount() {
     if (document.querySelector('.atd-preferences')) return;
