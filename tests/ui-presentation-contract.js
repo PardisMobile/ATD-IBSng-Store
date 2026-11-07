@@ -116,9 +116,13 @@ for (const page of adminPages.map((file) => path.join('admin', file))) {
 const sharedComponents = read('assets/js/ui-components.js');
 assert.match(sharedComponents, /initializeSelectMenus/u, 'Shared UI must enhance native selects with the themed option popup');
 assert.match(sharedComponents, /aria-haspopup', 'listbox'/u, 'Enhanced selects must expose listbox semantics');
+assert.match(sharedComponents, /atd-select-native/u, 'The native select must be visually hidden behind the custom trigger');
+assert.match(sharedComponents, /atd-select-trigger/u, 'Every enhanced select must use the shared custom trigger');
+assert.match(sharedComponents, /select\.addEventListener\('invalid'/u, 'Required native select validation must focus the custom trigger');
+assert.match(sharedComponents, /staleWrapper\.remove\(\)/u, 'Cloned enhanced selects must be rebuilt without stale cloned controls');
 assert.match(sharedComponents, /dispatchEvent\(new Event\('change'/u, 'Custom select choices must update the native select change contract');
 assert.match(sharedComponents, /setAttribute\('dir', isTechnicalEntry\(field\) \? 'ltr' : 'auto'\)/u, 'Text fields must use LTR for technical values and auto direction for free text');
-for (const selector of ['.atd-select-menu', '.atd-select-option:hover', '.atd-select-option.is-selected']) {
+for (const selector of ['.atd-select', '.atd-select-trigger', '.atd-select-native', '.atd-select-options', '.atd-select-option:hover', '.atd-select-option.is-selected']) {
   assert.ok(css.includes(selector), `Shared stylesheet is missing ${selector}`);
 }
 
