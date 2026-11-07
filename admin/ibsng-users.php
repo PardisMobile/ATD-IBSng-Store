@@ -225,6 +225,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .ibsng-users-page .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.ibsng-users-page .admin-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:24px 0}.ibsng-users-page .panel-card{padding:24px;margin-top:20px}.ibsng-users-page .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}.ibsng-users-page .field{display:grid;gap:8px;margin:14px 0}.ibsng-users-page .field label{color:var(--muted);font-size:.9rem}.ibsng-users-page .field input,.ibsng-users-page .field select{width:100%;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg);color:var(--text);font:inherit;transition:border-color .18s,box-shadow .18s}.ibsng-users-page .field input:focus-visible,.ibsng-users-page .field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}.ibsng-users-page .field input::placeholder{color:var(--muted)}.ibsng-users-page .field input[name=username],.ibsng-users-page .field input[name=new_password],.ibsng-users-page .field input[name=remote_user_id],.ibsng-users-page .field input[name=credit]{direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums}.ibsng-users-page .notice{padding:13px 15px;border-radius:12px;margin:14px 0;line-height:1.8}.ibsng-users-page .ok{background:#44d6a018;border:1px solid #44d6a044}.ibsng-users-page .err{background:#ff718018;border:1px solid #ff718044}.ibsng-users-page .result{margin-top:16px;padding:18px;overflow-wrap:anywhere}.ibsng-users-page .result .technical-value{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.ibsng-users-page .result code{display:inline-block;max-width:100%;direction:ltr;text-align:left;unicode-bidi:isolate;white-space:pre-wrap;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.ibsng-users-page .actions{display:flex;gap:10px;flex-wrap:wrap}ibsng-users-page .muted{color:var(--muted);line-height:1.8}@media(max-width:600px){.ibsng-users-page .grid{grid-template-columns:1fr}.ibsng-users-page .admin-top{align-items:flex-start;flex-direction:column}.ibsng-users-page .panel-card{padding:18px}}
+.ibsng-users-page .account-result{display:grid;gap:16px}
+.ibsng-users-page .account-result-title{display:block;font-size:1.05rem;line-height:1.6}
+.ibsng-users-page .account-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ibsng-users-page .account-group{min-width:0;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface,transparent)}
+.ibsng-users-page .account-group-title{margin:0 0 12px;font-size:.94rem;font-weight:700}
+.ibsng-users-page .account-group-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ibsng-users-page .account-item{display:grid;align-content:start;gap:7px;min-width:0;margin:0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--control-bg)}
+.ibsng-users-page .account-item-label{color:var(--muted);font-size:.82rem;line-height:1.5}
+.ibsng-users-page .account-item .technical-value{min-width:0;font-size:.94rem;line-height:1.65;overflow-wrap:anywhere}
+@media(max-width:760px){.ibsng-users-page .account-groups{grid-template-columns:1fr}}
+@media(max-width:420px){.ibsng-users-page .account-group-fields{grid-template-columns:1fr}.ibsng-users-page .account-group{padding:13px}}
+
 </style>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
@@ -433,11 +445,47 @@ $accountFieldLabelsFa = [
 ];
 
 ?>
-<div class="result panel">
-<strong data-fa="اطلاعات اکانت IBSng" data-en="IBSng account details">اطلاعات اکانت IBSng</strong>
-<div class="grid">
-<?php foreach ($accountFields as $fieldLabel => $fieldValue): ?>
-<div class="field"><span class="muted" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span><strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong></div>
+<?php
+// Presentation-only grouping. The IBSng values and their extraction remain unchanged.
+$accountFieldGroups = [
+    'identity' => [
+        'title_fa' => 'مشخصات اکانت',
+        'title_en' => 'Account Identity',
+        'fields' => ['Username', 'IBSng User ID', 'Group'],
+    ],
+    'activity' => [
+        'title_fa' => 'وضعیت و ورود',
+        'title_en' => 'Status & Activity',
+        'fields' => ['Status', 'First Login', 'Last Login', 'User Is Locked', 'Creation Date'],
+    ],
+    'validity' => [
+        'title_fa' => 'اعتبار اکانت',
+        'title_en' => 'Account Validity',
+        'fields' => ['Relative Expiration', 'Nearest Expiration Date', 'Absolute Expiration Date'],
+    ],
+    'access' => [
+        'title_fa' => 'ورود هم‌زمان و اطلاعات دسترسی',
+        'title_en' => 'Login & Credentials',
+        'fields' => ['Multi Login raw value', 'Password'],
+    ],
+];
+?>
+<div class="result panel account-result">
+<strong class="account-result-title" data-fa="اطلاعات اکانت IBSng" data-en="IBSng account details">اطلاعات اکانت IBSng</strong>
+<div class="account-groups">
+<?php foreach ($accountFieldGroups as $group): ?>
+<section class="account-group">
+<h3 class="account-group-title" data-fa="<?= e($group['title_fa']) ?>" data-en="<?= e($group['title_en']) ?>"><?= e($group['title_fa']) ?></h3>
+<div class="account-group-fields">
+<?php foreach ($group['fields'] as $fieldLabel): ?>
+<?php $fieldValue = $accountFields[$fieldLabel]; ?>
+<div class="account-item">
+<span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
+<strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
+</div>
+<?php endforeach; ?>
+</div>
+</section>
 <?php endforeach; ?>
 </div>
 </div>
