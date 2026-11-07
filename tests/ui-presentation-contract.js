@@ -142,4 +142,10 @@ assert.match(customerAccountPage, /data-fa="[^"]* کاربره"/u, 'Customer sim
 assert.match(customerAccountPage, /formatCustomerExpiry/u, 'Customer expiry date must use the display-only date/time formatter');
 assert.ok(customerAccountPage.includes("'$2، $1'"), 'Customer expiry display must place the date before the time');
 
+const emailSettingsPage = read('admin/email-settings.php');
+assert.ok(emailSettingsPage.includes('.admin-shell{width:min(1120px,calc(100% - 32px))'), 'Email settings page must use the standard admin content width');
+const adminNavigation = read('admin/_navigation.php');
+assert.ok(adminNavigation.includes("'مدیریت سرورها'"), 'Admin navigation must use the approved server-management label');
+assert.ok(adminNavigation.includes("'مدیریت اکانت ها'"), 'Admin navigation must use the approved account-management label');
+
 console.log('UI presentation contract: PASS');
