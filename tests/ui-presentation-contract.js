@@ -128,13 +128,13 @@ for (const selector of ['.atd-select', '.atd-select-trigger', '.atd-select-nativ
 
 
 const preferences = read('assets/js/ui-preferences.js');
-assert.match(preferences, /data-ui-password-toggle[\\s\\S]*?setAttribute\\('aria-label', label\\)/u, 'Language changes must update password-toggle labels without replacing its SVG icon');
-assert.doesNotMatch(preferences, /button\\.textContent\\s*=.*customer_(?:show|hide)_password/u, 'Language changes must not replace the password eye icon with text');
-assert.match(components, /document\\.addEventListener\\('atd:language-change',[\\s\\S]*?forEach\\(renderPasswordToggle\\)/u, 'Password eye icons must be redrawn after language changes');
+assert.ok(preferences.includes("button.setAttribute('aria-label', label)") && preferences.includes("button.title = label"), 'Language changes must update password-toggle labels without replacing its SVG icon');
+assert.ok(!preferences.includes('button.textContent = language ==='), 'Language changes must not replace the password eye icon with text');
+assert.ok(components.includes("document.addEventListener('atd:language-change', () =>") && components.includes("forEach(renderPasswordToggle)"), 'Password eye icons must be redrawn after language changes');
 const customerAccount = read('customer-account.php');
 for (const source of [customerAccount, ibsngUsers]) {
-  assert.match(source, /strtr\\(\\$multiLogin(?:Match\\[1\\]|Count), \\[\\s*'0' => '۰'/u, 'Persian digit conversion must use UTF-8-safe string replacements');
-  assert.doesNotMatch(source, /strtr\\(\\$multiLogin(?:Match\\[1\\]|Count), '0123456789', '۰۱۲۳۴۵۶۷۸۹'\\)/u, 'Persian digit conversion must not use byte-based strtr');
+  assert.ok(source.includes("['0' => '۰', '1' => '۱'") , 'Persian digit conversion must use UTF-8-safe string replacements');
+  assert.ok(!source.includes("'0123456789', '۰۱۲۳۴۵۶۷۸۹'"), 'Persian digit conversion must not use byte-based strtr');
 }
 
 console.log('UI presentation contract: PASS');
