@@ -90,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $name = trim((string)($_POST['buyer_name'] ?? ''));
         $phone = trim((string)($_POST['buyer_phone'] ?? ''));
         $email = trim((string)($_POST['buyer_email'] ?? ''));
+        $orderLanguage = (($_POST['site_language'] ?? '') === 'en') ? 'en' : 'fa';
         $requestedCredentialMethod = (string)($_POST['credential_method'] ?? 'customer');
         $credentialMethod = $credentialPolicy === 'automatic'
             ? 'automatic'
@@ -191,9 +192,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                         'operation' => $operation,
                         'validity_days' => (int)$target['validity_days'],
                     ], $currentTargets);
-                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,product_id,product_name_snapshot,validity_days_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
+                    $insert = $pdo->prepare('INSERT INTO orders (public_id,tracking_code,buyer_name,buyer_phone,buyer_email,language,product_id,product_name_snapshot,validity_days_snapshot,price_minor_snapshot,price_usdt_snapshot,currency,username,password_ciphertext,server_policy,server_targets_snapshot,payment_status,order_status,idempotency_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,\'pending\',\'pending_payment\',?)');
                     $insert->execute([
-                        $publicId, $trackingCode, $name, $phone, $email, (int)$current['id'], (string)$current['name'],
+                        $publicId, $trackingCode, $name, $phone, $email, $orderLanguage, (int)$current['id'], (string)$current['name'],
                         (int)($currentTargets[0]['validity_days'] ?? 30), store_price_for_unit((int)$current['price_minor'], $priceDisplayUnit), $current['price_usdt'] !== null ? (string)$current['price_usdt'] : null, $priceDisplayUnit,
                         $username, $encryptedPassword, $serverPolicy, json_encode($targetSnapshot, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), (string)$_SESSION['checkout_idempotency'],
                     ]);
@@ -303,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted"><span data-ui-text="checkout_duration">مدت اعتبار:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
-<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
+<input type="hidden" name="site_language" id="checkout-site-language" value="fa"><input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
 <fieldset class="form-section"><legend data-ui-text="checkout_contact_section">اطلاعات خریدار</legend>
 <div class="field"><label for="buyer_name" data-ui-text="checkout_buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_phone" data-ui-text="checkout_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
@@ -326,6 +327,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
 <button class="button primary" type="submit" data-ui-text="checkout_submit">ثبت سفارش</button>
 </form>
+<script>(function(){const field=document.getElementById("checkout-site-language");const form=field&&field.form;if(!form)return;const sync=()=>{field.value=document.documentElement.lang==="en"?"en":"fa";};sync();form.addEventListener("submit",sync);document.addEventListener("atd:language-change",sync);})();</script>
 <?php endif; ?>
 </section>
 <?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
