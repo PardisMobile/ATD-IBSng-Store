@@ -18,7 +18,7 @@ $checks = [
         && str_contains($status, "\$successfulAttempts = array_values(array_filter(\$attempts")
         && str_contains($status, "\$attempt['status'] === 'succeeded'")
         && str_contains($status, "if (is_string(\$accountPassword))")
-        && str_contains($status, 'رمز عبور فقط برای مقصدهایی نمایش داده می‌شود')
+        && str_contains($status, 'رمز عبور فقط برای سرورهایی نمایش داده می‌شود که فعال‌سازی اکانت در آن‌ها با موفقیت تأیید شده است. کد رهگیری سفارش را محرمانه نگه دارید.')
         && !str_contains($status, "!\$isTrackingCode && \$attempt['status'] === 'succeeded'"),
     'empty service name is suppressed without rendering an empty label' => is_string($status)
         && str_contains($status, "if (trim((string)(\$attempt['service_name'] ?? '')) !== ''):")
