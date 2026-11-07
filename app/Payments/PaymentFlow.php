@@ -61,6 +61,7 @@ final class PaymentFlow
             return [];
         }
 
+        $enabled = array_values(array_filter($enabled, 'is_string'));
         $choices = [];
         foreach (array_values(array_unique($enabled)) as $providerValue) {
             $provider = strtolower(trim((string)$providerValue));
