@@ -291,7 +291,7 @@ echo e($quotaAmountForEdit);
  const template=list.querySelector('[data-mapping-row]');
  function filterRow(row){
   const server=row.querySelector('[data-server-select]'),group=row.querySelector('[data-group-select]');
-  Array.from(group.options).forEach(option=>{if(!option.value)return;option.hidden=option.dataset.server!==server.value;if(option.hidden&&option.selected)group.value='';});
+  Array.from(group.options).forEach(option=>{if(!option.value)return;option.hidden=option.dataset.server!==server.value;if(option.hidden&&option.selected){group.value='';group.dispatchEvent(new Event('change',{bubbles:true}));}});
  }
  function bind(row){
   row.querySelector('[data-server-select]').addEventListener('change',()=>filterRow(row));
