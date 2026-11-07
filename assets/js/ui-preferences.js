@@ -667,7 +667,7 @@
     });
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || parent.closest('script,style,textarea,input,select,option,code,pre,[contenteditable="true"],[data-preserve-digits]')) continue;
+      if (!parent || parent.closest('script,style,textarea,input,code,pre,[contenteditable="true"],[data-preserve-digits]')) continue;
       if (language === 'en') {
         if (node.__atdOriginalDigitText === undefined && persianDigits.test(node.nodeValue)) {
           Object.defineProperty(node, '__atdOriginalDigitText', {value: node.nodeValue, writable: true, configurable: true});
