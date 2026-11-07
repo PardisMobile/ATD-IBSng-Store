@@ -119,7 +119,8 @@
     admin_ibsng_groups: {
       groups_add_plan: 'Add plan',
       groups_plan_placeholder: 'For example: One month',
-      groups_group_placeholder: 'IBSng group name'
+      groups_group_placeholder: 'IBSng group name',
+      groups_duration_placeholder: 'Group Duration Days'
     },
     admin_email_templates: {
       email_templates_admin: 'Store administration',
