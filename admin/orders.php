@@ -246,12 +246,12 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 document.querySelectorAll('.report-date[data-date]').forEach((node) => {
   const raw = node.dataset.date;
   if (!raw) return;
-  const date = new Date(raw.replace(' ', 'T') + 'Z');
+  const date = new Date(raw.replace(' ', 'T'));
   if (Number.isNaN(date.getTime())) return;
-  const gregorian = new Intl.DateTimeFormat('en-GB', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}).format(date);
+  const gregorian = new Intl.DateTimeFormat('en-GB', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(date);
   const persian = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}).format(date);
   node.textContent = persian + ' · ' + gregorian;
-  node.title = 'تقویم شمسی و میلادی (UTC)';
+  node.title = 'تقویم شمسی و میلادی';
 });
 </script>
 </body></html>
