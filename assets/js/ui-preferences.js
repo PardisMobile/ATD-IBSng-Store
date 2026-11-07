@@ -475,7 +475,7 @@
     status: {
       pending_payment: 'Awaiting payment',
       paid: 'Payment confirmed',
-      provisioning: 'Activating',
+      provisioning: 'Activating service',
       active: 'Active',
       inactive: 'Inactive',
       partial: 'Partially activated',
