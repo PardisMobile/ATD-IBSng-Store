@@ -58,6 +58,9 @@ final class DatabaseSchemaSync
         if ($this->tableExists('ibsng_servers') && !$this->columnExists('ibsng_servers', 'service_name')) {
             $pending[] = 'افزودن عنوان نمایشی سرویس به سرورهای IBSng';
         }
+        if ($this->tableExists('ibsng_servers') && !$this->columnExists('ibsng_servers', 'utc_offset')) {
+            $pending[] = 'افزودن اختلاف ساعت UTC برای هر سرور IBSng';
+        }
         if ($this->tableExists('products') && !$this->columnExists('products', 'price_usdt')) {
             $pending[] = 'افزودن قیمت مستقل USDT به محصولات';
         }
@@ -126,6 +129,9 @@ final class DatabaseSchemaSync
         if (!$this->columnExists('ibsng_servers', 'service_name')) {
             if (!$this->columnExists('ibsng_servers', 'name')) throw new RuntimeException('ستون ibsng_servers.name وجود ندارد.');
             $this->pdo->exec('ALTER TABLE ibsng_servers ADD COLUMN service_name VARCHAR(150) NULL AFTER name');
+        }
+        if (!$this->columnExists('ibsng_servers', 'utc_offset')) {
+            $this->pdo->exec('ALTER TABLE ibsng_servers ADD COLUMN utc_offset VARCHAR(5) NULL DEFAULT NULL AFTER port');
         }
         if (!$this->columnExists('products', 'price_usdt')) {
             if (!$this->columnExists('products', 'price_minor')) throw new RuntimeException('ستون products.price_minor وجود ندارد.');
