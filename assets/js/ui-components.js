@@ -68,56 +68,72 @@
 
   const initializeSelectMenus = () => {
     const selectSelector = 'select:not([multiple]):not([size]):not([data-native-select])';
+    const initialized = new WeakSet();
     let activeSelect = null;
+    let activeWrapper = null;
+    let activeTrigger = null;
     let activeMenu = null;
     let activeOptions = [];
-    let selectedIndex = 0;
+    let activeIndex = -1;
     let optionObserver = null;
+    let generatedId = 0;
 
-    const close = () => {
+    const nextId = (prefix) => prefix + '-' + (++generatedId);
+    const visibleOptions = (select) => Array.from(select.options)
+      .map((option, index) => ({ option, index, group: option.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null }))
+      .filter(({ option, group }) => !option.hidden && !group?.hidden);
+
+    const close = (returnFocus = false) => {
       if (!activeSelect) return;
-      activeSelect.setAttribute('aria-expanded', 'false');
-      activeSelect.removeAttribute('aria-controls');
-      activeSelect.removeAttribute('aria-activedescendant');
+      activeTrigger?.setAttribute('aria-expanded', 'false');
+      activeTrigger?.removeAttribute('aria-activedescendant');
       activeMenu?.remove();
       optionObserver?.disconnect();
-      activeSelect = null;
-      activeMenu = null;
+      const trigger = activeTrigger;
+      activeSelect = activeWrapper = activeTrigger = activeMenu = null;
       activeOptions = [];
+      activeIndex = -1;
       optionObserver = null;
+      if (returnFocus) trigger?.focus({ preventScroll: true });
     };
 
-    const getVisibleOptions = (select) => Array.from(select.options)
-      .map((option, index) => ({ option, index }))
-      .filter(({ option }) => !option.hidden && option.parentElement?.hidden !== true);
-
     const positionMenu = () => {
-      if (!activeSelect || !activeMenu) return;
-      const rect = activeSelect.getBoundingClientRect();
+      if (!activeTrigger || !activeMenu) return;
+      const rect = activeTrigger.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const viewportHeight = viewport?.height || window.innerHeight;
+      const viewportWidth = viewport?.width || window.innerWidth;
+      const offsetTop = viewport?.offsetTop || 0;
+      const offsetLeft = viewport?.offsetLeft || 0;
       const pad = 8;
       const gap = 5;
-      const below = window.innerHeight - rect.bottom - pad - gap;
-      const above = rect.top - pad - gap;
+      const below = offsetTop + viewportHeight - rect.bottom - pad - gap;
+      const above = rect.top - offsetTop - pad - gap;
       const openAbove = below < 180 && above > below;
       const maxHeight = Math.max(90, Math.min(300, openAbove ? above : below));
-      const width = Math.min(rect.width, window.innerWidth - pad * 2);
-      const left = Math.max(pad, Math.min(rect.left, window.innerWidth - width - pad));
+      const width = Math.min(rect.width, viewportWidth - pad * 2);
+      const left = Math.max(offsetLeft + pad, Math.min(rect.left, offsetLeft + viewportWidth - width - pad));
       activeMenu.style.width = width + 'px';
       activeMenu.style.maxHeight = maxHeight + 'px';
       activeMenu.style.left = left + 'px';
       activeMenu.style.top = (openAbove
-        ? Math.max(pad, rect.top - Math.min(activeMenu.scrollHeight, maxHeight) - gap)
+        ? Math.max(offsetTop + pad, rect.top - Math.min(activeMenu.scrollHeight, maxHeight) - gap)
         : rect.bottom + gap) + 'px';
+    };
+
+    const syncTrigger = (select, trigger) => {
+      const option = select.options[select.selectedIndex];
+      trigger.querySelector('.atd-select-value').textContent = option?.label || option?.textContent?.trim() || '';
+      trigger.disabled = select.disabled;
+      trigger.setAttribute('aria-invalid', String(select.getAttribute('aria-invalid') === 'true'));
     };
 
     const renderOptions = () => {
       if (!activeSelect || !activeMenu) return;
-      activeOptions = getVisibleOptions(activeSelect);
-      if (activeSelect.selectedIndex >= 0) selectedIndex = activeSelect.selectedIndex;
+      activeOptions = visibleOptions(activeSelect);
       activeMenu.replaceChildren();
       let lastGroup = null;
-      activeOptions.forEach(({ option, index }) => {
-        const group = option.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null;
+      activeOptions.forEach(({ option, index, group }) => {
         if (group && group !== lastGroup) {
           const heading = document.createElement('div');
           heading.className = 'atd-select-group';
@@ -131,123 +147,217 @@
         item.setAttribute('role', 'option');
         item.dataset.optionIndex = String(index);
         item.setAttribute('aria-selected', String(index === activeSelect.selectedIndex));
-        item.setAttribute('aria-disabled', String(option.disabled || group?.disabled || false));
-        item.textContent = option.label || option.textContent;
-        if (option.disabled || group?.disabled) item.classList.add('is-disabled');
+        const disabled = option.disabled || Boolean(group?.disabled);
+        item.setAttribute('aria-disabled', String(disabled));
+        item.textContent = option.label || option.textContent.trim();
+        if (disabled) item.classList.add('is-disabled');
         if (index === activeSelect.selectedIndex) item.classList.add('is-selected');
+        if (index === activeIndex) item.classList.add('is-active');
         activeMenu.appendChild(item);
       });
-      const activeItem = activeMenu.querySelector('[data-option-index="' + selectedIndex + '"]');
-      if (activeItem) activeSelect.setAttribute('aria-activedescendant', activeItem.id);
-      else activeSelect.removeAttribute('aria-activedescendant');
+      const current = activeMenu.querySelector('[data-option-index="' + activeIndex + '"]:not(.is-disabled)');
+      if (current) {
+        activeTrigger.setAttribute('aria-activedescendant', current.id);
+        current.scrollIntoView({ block: 'nearest' });
+      } else {
+        activeTrigger.removeAttribute('aria-activedescendant');
+      }
       positionMenu();
     };
 
     const selectOption = (index) => {
       if (!activeSelect) return;
       const option = activeSelect.options[index];
-      if (!option || option.disabled || option.parentElement?.disabled || option.hidden) return;
-      activeSelect.selectedIndex = index;
-      activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
-      activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      const group = option?.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null;
+      if (!option || option.disabled || group?.disabled || option.hidden || group?.hidden) return;
+      const select = activeSelect;
+      const trigger = activeTrigger;
+      select.selectedIndex = index;
+      select.dispatchEvent(new Event('input', { bubbles: true }));
+      select.dispatchEvent(new Event('change', { bubbles: true }));
       close();
+      trigger?.focus({ preventScroll: true });
     };
 
-    const open = (select, edge = 'selected') => {
+    const moveActive = (step) => {
+      const candidates = activeOptions.filter(({ option, group }) => !option.disabled && !group?.disabled);
+      if (!candidates.length) return;
+      const current = candidates.findIndex(({ index }) => index === activeIndex);
+      activeIndex = candidates[(current + step + candidates.length) % candidates.length].index;
+      renderOptions();
+    };
+
+    const open = (select, wrapper, trigger, edge = 'selected') => {
       if (select.disabled || select.options.length === 0) return;
       if (activeSelect === select) { close(); return; }
       close();
       activeSelect = select;
-      selectedIndex = edge === 'last' ? select.options.length - 1 : Math.max(0, select.selectedIndex);
+      activeWrapper = wrapper;
+      activeTrigger = trigger;
+      activeIndex = edge === 'last'
+        ? (visibleOptions(select).filter(({ option, group }) => !option.disabled && !group?.disabled).at(-1)?.index ?? -1)
+        : Math.max(0, select.selectedIndex);
       activeMenu = document.createElement('div');
-      activeMenu.className = 'atd-select-menu';
-      activeMenu.id = 'atd-select-menu-' + Math.random().toString(36).slice(2);
+      activeMenu.className = 'atd-select-options';
+      activeMenu.id = nextId('atd-select-options');
       activeMenu.setAttribute('role', 'listbox');
-      activeMenu.setAttribute('aria-label', select.getAttribute('aria-label') || select.labels?.[0]?.textContent?.trim() || '');
+      activeMenu.setAttribute('aria-label', trigger.getAttribute('aria-label') || trigger.getAttribute('aria-labelledby') || '');
       activeMenu.dir = getComputedStyle(select).direction;
       document.body.appendChild(activeMenu);
-      select.setAttribute('aria-expanded', 'true');
-      select.setAttribute('aria-controls', activeMenu.id);
+      trigger.setAttribute('aria-expanded', 'true');
+      trigger.setAttribute('aria-controls', activeMenu.id);
       renderOptions();
-      activeMenu.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest' });
-      optionObserver = new MutationObserver(renderOptions);
-      optionObserver.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'hidden', 'label', 'selected'] });
+      optionObserver = new MutationObserver(() => {
+        syncTrigger(select, trigger);
+        renderOptions();
+      });
+      optionObserver.observe(select, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['disabled', 'hidden', 'label', 'selected']
+      });
     };
 
     const bindSelect = (select) => {
-      if (select.dataset.atdSelectReady === 'true' || select.multiple || select.hasAttribute('size') || select.hasAttribute('data-native-select')) return;
-      select.dataset.atdSelectReady = 'true';
-      select.setAttribute('aria-haspopup', 'listbox');
-      select.setAttribute('aria-expanded', 'false');
-      select.addEventListener('click', (event) => {
-        event.preventDefault();
-        select.focus({ preventScroll: true });
-        open(select);
+      if (initialized.has(select) || select.multiple || select.hasAttribute('size') || select.hasAttribute('data-native-select')) return;
+
+      // A cloned product-mapping row also clones generated markup and data attributes,
+      // but not event listeners. Unwrap that clone before creating a fresh component.
+      if (select.parentElement?.classList.contains('atd-select') && !initialized.has(select)) {
+        const staleWrapper = select.parentElement;
+        staleWrapper.parentNode.insertBefore(select, staleWrapper);
+        staleWrapper.remove();
+      }
+
+      initialized.add(select);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'atd-select';
+      wrapper.dataset.atdSelectWrapper = 'true';
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'atd-select-trigger';
+      trigger.id = nextId('atd-select-trigger');
+      trigger.setAttribute('role', 'combobox');
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.setAttribute('aria-controls', nextId('atd-select-list'));
+      const value = document.createElement('span');
+      value.className = 'atd-select-value';
+      const arrow = document.createElement('span');
+      arrow.className = 'atd-select-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      trigger.append(value, arrow);
+
+      const labels = Array.from(select.labels || []);
+      const labelIds = [];
+      labels.forEach((label) => {
+        if (!label.id) label.id = nextId('atd-select-label');
+        labelIds.push(label.id);
+        label.htmlFor = trigger.id;
       });
-      select.addEventListener('keydown', (event) => {
+      if (labelIds.length) trigger.setAttribute('aria-labelledby', labelIds.join(' '));
+      else if (select.getAttribute('aria-label')) trigger.setAttribute('aria-label', select.getAttribute('aria-label'));
+      const describedBy = select.getAttribute('aria-describedby');
+      if (describedBy) trigger.setAttribute('aria-describedby', describedBy);
+      if (select.required) trigger.setAttribute('aria-required', 'true');
+
+      select.dataset.atdSelectReady = 'true';
+      select.classList.add('atd-select-native');
+      select.tabIndex = -1;
+      select.setAttribute('aria-hidden', 'true');
+      select.parentNode.insertBefore(wrapper, select);
+      wrapper.append(trigger, select);
+      syncTrigger(select, trigger);
+
+      trigger.addEventListener('click', () => {
+        if (activeSelect === select) close();
+        else open(select, wrapper, trigger);
+      });
+      trigger.addEventListener('keydown', (event) => {
         if (activeSelect !== select) {
-          if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
+          if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            open(select, event.key === 'ArrowUp' ? 'last' : 'selected');
+            open(select, wrapper, trigger, 'selected');
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            open(select, wrapper, trigger, 'last');
           }
           return;
         }
-        if (event.key === 'Escape' || event.key === 'Tab') {
-          if (event.key === 'Escape') event.preventDefault();
-          close();
-          return;
-        }
-        if (event.key === 'Home' || event.key === 'End') {
+        if (event.key === 'Escape') {
           event.preventDefault();
-          const candidates = activeOptions.filter(({ option }) => !option.disabled && !option.parentElement?.disabled);
-          if (candidates.length) selectedIndex = event.key === 'Home' ? candidates[0].index : candidates[candidates.length - 1].index;
+          close(true);
+        } else if (event.key === 'Tab') {
+          close();
         } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
           event.preventDefault();
-          const direction = event.key === 'ArrowDown' ? 1 : -1;
-          const candidates = activeOptions.filter(({ option }) => !option.disabled && !option.parentElement?.disabled);
-          const current = candidates.findIndex(({ index }) => index === selectedIndex);
-          if (candidates.length) selectedIndex = candidates[(current + direction + candidates.length) % candidates.length].index;
-        } else if (event.key === 'Enter' || event.key === ' ') {
+          moveActive(event.key === 'ArrowDown' ? 1 : -1);
+        } else if (event.key === 'Home' || event.key === 'End') {
           event.preventDefault();
-          selectOption(selectedIndex);
-          return;
-        } else if (event.key.length === 1) {
-          const needle = event.key.toLocaleLowerCase();
-          const start = activeSelect.selectedIndex + 1;
-          const match = activeOptions.find(({ option, index }) => index >= start && !option.disabled && option.textContent.trim().toLocaleLowerCase().startsWith(needle))
-            || activeOptions.find(({ option }) => !option.disabled && option.textContent.trim().toLocaleLowerCase().startsWith(needle));
-          if (match) selectedIndex = match.index;
-        } else {
-          return;
-        }
-        activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
-          const current = Number(item.dataset.optionIndex) === selectedIndex;
-          item.classList.toggle('is-active', current);
-          item.setAttribute('aria-selected', String(current));
-          if (current) {
-            activeSelect.setAttribute('aria-activedescendant', item.id);
-            item.scrollIntoView({ block: 'nearest' });
+          const candidates = activeOptions.filter(({ option, group }) => !option.disabled && !group?.disabled);
+          if (candidates.length) {
+            activeIndex = event.key === 'Home' ? candidates[0].index : candidates[candidates.length - 1].index;
+            renderOptions();
           }
-        });
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          selectOption(activeIndex);
+        } else if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
+          const needle = event.key.toLocaleLowerCase();
+          const startAt = activeIndex + 1;
+          const match = activeOptions.find(({ option, group, index }) =>
+            index >= startAt && !option.disabled && !group?.disabled && (option.label || option.textContent).trim().toLocaleLowerCase().startsWith(needle))
+            || activeOptions.find(({ option, group }) =>
+              !option.disabled && !group?.disabled && (option.label || option.textContent).trim().toLocaleLowerCase().startsWith(needle));
+          if (match) {
+            activeIndex = match.index;
+            renderOptions();
+          }
+        }
       });
-      select.addEventListener('change', () => { if (activeSelect === select) renderOptions(); });
+
+      trigger.addEventListener('invalid', (event) => event.preventDefault());
+      select.addEventListener('invalid', (event) => {
+        event.preventDefault();
+        trigger.setAttribute('aria-invalid', 'true');
+        trigger.focus({ preventScroll: true });
+      });
+      select.addEventListener('change', () => {
+        syncTrigger(select, trigger);
+        if (activeSelect === select) renderOptions();
+      });
+      const selectObserver = new MutationObserver(() => syncTrigger(select, trigger));
+      selectObserver.observe(select, { attributes: true, attributeFilter: ['disabled', 'required', 'aria-invalid'] });
     };
 
     document.querySelectorAll(selectSelector).forEach(bindSelect);
-    document.addEventListener('click', (event) => {
-      if (!activeSelect || event.target === activeSelect || activeMenu?.contains(event.target)) return;
+    document.addEventListener('pointerdown', (event) => {
+      if (!activeSelect || activeTrigger?.contains(event.target) || activeMenu?.contains(event.target)) return;
       close();
-    });
-    document.addEventListener('mousedown', (event) => {
-      if (activeMenu?.contains(event.target)) event.preventDefault();
     });
     document.addEventListener('click', (event) => {
       const item = event.target.closest?.('.atd-select-option[data-option-index]');
-      if (!item || !activeSelect || item.classList.contains('is-disabled')) return;
+      if (!item || !activeSelect || !activeMenu?.contains(item) || item.classList.contains('is-disabled')) return;
       selectOption(Number(item.dataset.optionIndex));
+    });
+    document.addEventListener('pointermove', (event) => {
+      const item = event.target.closest?.('.atd-select-option[data-option-index]');
+      if (!item || !activeMenu?.contains(item) || item.classList.contains('is-disabled')) return;
+      const index = Number(item.dataset.optionIndex);
+      if (index !== activeIndex) {
+        activeIndex = index;
+        activeMenu.querySelectorAll('.atd-select-option').forEach((option) => {
+          const active = Number(option.dataset.optionIndex) === activeIndex;
+          option.classList.toggle('is-active', active);
+          if (active) activeTrigger.setAttribute('aria-activedescendant', option.id);
+        });
+      }
     });
     window.addEventListener('resize', positionMenu, { passive: true });
     window.addEventListener('scroll', positionMenu, true);
+    window.visualViewport?.addEventListener('resize', positionMenu, { passive: true });
+    window.visualViewport?.addEventListener('scroll', positionMenu, { passive: true });
 
     const addedObserver = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
       if (node.nodeType !== Node.ELEMENT_NODE) return;
