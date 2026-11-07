@@ -17,6 +17,23 @@ function support_setting(PDO $pdo, string $key): string
     return is_string($value) ? $value : '';
 }
 
+function support_uuid_v4(): string
+{
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+    $hex = bin2hex($bytes);
+    return sprintf('%s-%s-%s-%s-%s',
+        substr($hex, 0, 8), substr($hex, 8, 4), substr($hex, 12, 4),
+        substr($hex, 16, 4), substr($hex, 20, 12)
+    );
+}
+
+function support_is_uuid_v4(string $value): bool
+{
+    return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iD', $value) === 1;
+}
+
 function support_valid_telegram(string $value): bool
 {
     return preg_match('/^[A-Za-z0-9_]{5,32}$/D', $value) === 1;
@@ -118,6 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     : trim((string)($_POST[$inputName] ?? ''));
             }
         }
+        if (($gatewayValues['zarinpal']['sandbox_mode'] ?? '0') === '1') {
+            $sandboxUuid = trim((string)($gatewayValues['zarinpal']['sandbox_merchant_id'] ?? ''));
+            if (!support_is_uuid_v4($sandboxUuid)) {
+                $gatewayValues['zarinpal']['sandbox_merchant_id'] = support_uuid_v4();
+            }
+        }
         if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
             $error = 'واحد نمایش قیمت معتبر نیست.';
         } elseif (array_diff($gatewayPaymentTypes, ['fiat', 'crypto']) !== []) {
@@ -130,10 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $requiredMerchant = $sandboxMode
                     ? ($gatewayValues['zarinpal']['sandbox_merchant_id'] ?? '')
                     : ($gatewayValues['zarinpal']['merchant_id'] ?? '');
-                if (trim((string)$requiredMerchant) === '') {
-                    $error = $sandboxMode
-                        ? 'برای حالت Sandbox زرین‌پال، Sandbox Merchant ID را وارد کنید.'
-                        : 'برای پرداخت واقعی زرین‌پال، Merchant ID را وارد کنید.';
+                if (!$sandboxMode && trim((string)$requiredMerchant) === '') {
+                    $error = 'برای پرداخت زرین‌پال، Merchant ID واقعی را وارد کنید.';
                 }
             }
             foreach ($enabledProviders as $enabledProvider) {
@@ -297,7 +318,7 @@ $config = app_config();
 <div class="field"><label for="<?= e($inputName) ?>"><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="checkbox" value="1"<?= ($gatewayValues[$gatewayCode][$fieldKey] ?? '0') === '1' ? ' checked' : '' ?>> <span<?php if ($gatewayCode === 'zarinpal' && $fieldKey === 'sandbox_mode'): ?> data-ui-text="settings_zarinpal_sandbox_mode"<?php endif; ?>><?= e((string)($field['label'] ?? $fieldKey)) ?></span></label></div>
 <?php if ($gatewayCode === 'zarinpal' && $fieldKey === 'sandbox_mode'): ?><p class="hint" data-ui-text="settings_zarinpal_sandbox_hint">در حالت آزمایشی، درخواست و تأیید پرداخت به محیط Sandbox زرین‌پال ارسال می‌شود و مبلغ واقعی دریافت نمی‌شود. پس از تأیید آزمایشی، فعال‌سازی اکانت روی سرورهای واقعی IBSng انجام خواهد شد.</p><?php endif; ?>
 <?php else: ?>
-<div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"></div>
+<div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"<?= $gatewayCode === 'zarinpal' && $fieldKey === 'sandbox_merchant_id' ? ' readonly dir="ltr"' : '' ?>></div>
 <?php endif; ?>
 <?php endforeach; ?><?php if ($gatewayCode === 'ircrypto'): ?><div class="hint"><strong data-ui-text="settings_webhook_title">راهنمای Webhook:</strong> <span data-ui-text="settings_webhook_intro">این نشانی را در پنل IRCrypto به‌عنوان Webhook ثبت کنید:</span> <code><?= e(app_url('webhook/ircrypto.php')) ?></code>. <span data-ui-text="settings_webhook_validation">آدرس بر اساس دامنه و مسیر نصب تنظیم‌شده فروشگاه ساخته می‌شود. endpoint امضای درخواست را بررسی می‌کند و وضعیت، مبلغ و ارز فاکتور را از سمت سرور اعتبارسنجی می‌کند.</span></div><?php endif; ?></fieldset><?php endforeach; ?></div>
 </section>
