@@ -323,7 +323,7 @@
       settings_charset_digits: 'Numbers only',
       settings_charset_letters: 'Letters only',
       settings_charset_alnum: 'Letters and numbers',
-      settings_renewal_gift_title: 'IBSng renewal gift policy',
+      settings_renewal_gift_title: 'Account Renewal Gift Settings',
       settings_renewal_gift_hint: 'Gift days are configured separately for the first successful renewal and subsequent renewals. Reference defaults: 1 day for the first renewal and 5 days for later renewals.',
       settings_gift_first: 'First renewal gift (days)',
       settings_gift_repeat: 'Subsequent renewal gift (days)',
