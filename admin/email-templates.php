@@ -10,7 +10,8 @@ $event = (string)($_GET['event'] ?? $_POST['event'] ?? 'purchase_success');
 if (!isset(EmailTemplates::EVENTS[$event])) {
     $event = 'purchase_success';
 }
-$language = (($_GET['language'] ?? $_POST['language'] ?? 'fa') === 'en') ? 'en' : 'fa';
+$preferredLanguage = (string)($_COOKIE['atd-ui-language'] ?? $_POST['language'] ?? $_GET['language'] ?? 'fa');
+$language = $preferredLanguage === 'en' ? 'en' : 'fa';
 $template = EmailTemplates::get($pdo, $event, $language);
 $message = '';
 $error = '';
@@ -64,6 +65,11 @@ $config = app_config();
 .admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto;padding-bottom:32px}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:24px 0}.panel-card{padding:clamp(18px,4vw,28px);margin:18px 0}.field{display:grid;gap:8px;margin:16px 0}.field label{color:var(--muted)}.field input,.field textarea,.field select{width:100%;min-width:0;box-sizing:border-box;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md);background:var(--control-bg);color:var(--text);font:inherit;min-height:var(--ui-control-height)}.field input:focus-visible,.field textarea:focus-visible,.field select:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}.field input::placeholder,.field textarea::placeholder{color:var(--muted)}.field textarea{min-height:240px;direction:ltr;text-align:left;font-family:ui-monospace,monospace;font-size:.9rem;line-height:1.65;resize:vertical}.hint{font-size:.85rem;line-height:1.8;color:var(--muted)}.notice{padding:13px 15px;border-radius:12px;margin:14px 0}.ok{background:#44d6a018;border:1px solid #44d6a044}.err{background:#ff718018;border:1px solid #ff718044}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}iframe{display:block;width:100%;max-width:100%;height:clamp(320px,65vh,650px);background:white;border:1px solid var(--border);border-radius:var(--ui-radius-md)}
 </style>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
+<script>
+document.addEventListener('atd:language-change', function () {
+  window.location.reload();
+}, { once: true });
+</script>
 </head>
 <body>
 <main class="admin-shell">
@@ -73,7 +79,7 @@ $config = app_config();
 <p class="hint" data-ui-text="email_templates_variables">قالب‌ها مستقل از روش ارسال هستند. متغیرهای قابل استفاده در قالب: {{site_name}}، {{customer_name}}، {{order_id}}، {{order_url}}، {{verification_code}}، {{expires_in}}، {{verification_url}}، {{expiration_date}} و {{service_url}}. متغیرهای نامرتبط با یک رویداد در آن رویداد مقدار ندارند.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<form method="get" class="field"><label for="event" data-ui-text="email_templates_event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select><label for="template-language" data-fa="زبان قالب" data-en="Template language">زبان قالب</label><select id="template-language" name="language" onchange="this.form.submit()"><option value="fa" <?= $language === 'fa' ? 'selected' : '' ?>>فارسی</option><option value="en" <?= $language === 'en' ? 'selected' : '' ?>>English</option></select></form>
+<form method="get" class="field"><label for="event" data-ui-text="email_templates_event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select></form>
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="event" value="<?= e($event) ?>"><input type="hidden" name="language" value="<?= e($language) ?>">
 <div class="field"><label for="subject" data-ui-text="email_templates_subject">موضوع ایمیل</label><input id="subject" name="subject" maxlength="250" required value="<?= e($template['subject']) ?>"></div>
