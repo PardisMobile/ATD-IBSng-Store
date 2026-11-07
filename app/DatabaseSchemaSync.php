@@ -32,6 +32,15 @@ final class DatabaseSchemaSync
         return (int)$stmt->fetchColumn() > 0;
     }
 
+    private function columnIsNullable(string $table, string $column): bool
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT is_nullable FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?'
+        );
+        $stmt->execute([$table, $column]);
+        return strtoupper((string)$stmt->fetchColumn()) === 'YES';
+    }
+
     private function indexExists(string $table, string $index): bool
     {
         $stmt = $this->pdo->prepare(
@@ -60,8 +69,14 @@ final class DatabaseSchemaSync
         }
         if ($this->tableExists('orders') && !$this->columnExists('orders', 'tracking_code')) {
             $pending[] = 'افزودن کد پیگیری یکتای سفارش‌ها';
-        } elseif ($this->tableExists('orders') && !$this->indexExists('orders', 'uq_order_tracking_code')) {
-            $pending[] = 'تکمیل شاخص یکتای کد پیگیری سفارش‌ها';
+        } elseif ($this->tableExists('orders')) {
+            $missingTrackingValues = (int)$this->pdo->query('SELECT COUNT(*) FROM orders WHERE tracking_code IS NULL OR tracking_code = ""')->fetchColumn();
+            if ($this->columnIsNullable('orders', 'tracking_code') || $missingTrackingValues > 0) {
+                $pending[] = 'تکمیل مقادیر کد پیگیری سفارش‌ها';
+            }
+            if (!$this->indexExists('orders', 'uq_order_tracking_code')) {
+                $pending[] = 'تکمیل شاخص یکتای کد پیگیری سفارش‌ها';
+            }
         }
         if ($this->tableExists('provisioning_attempts')) {
             $status = $this->columnType('provisioning_attempts', 'status');
