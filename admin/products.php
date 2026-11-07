@@ -202,8 +202,8 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 .product-row .actions .button{min-height:44px;white-space:normal}
 .mapping-row{padding:14px;margin:12px 0;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);align-items:end!important}
 .mapping-row .field{margin:6px 0;min-width:0}
-.mapping-row .field>div{min-width:0;flex-wrap:wrap}
-.mapping-row select{min-width:0;flex:1 1 180px}
+.mapping-row .field>div{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.mapping-row .atd-select{min-width:0;flex:1 1 180px;width:auto}
 #add-mapping{margin-top:8px;min-height:44px}
 @media(max-width:680px){.grid{grid-template-columns:minmax(0,1fr)}.mapping-row{grid-template-columns:minmax(0,1fr)!important}.mapping-row .field>div{align-items:stretch}.mapping-row .field>div .button{flex:0 0 auto}.product-row .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.product-row .actions form,.product-row .actions form .button{width:100%}}
 @media(prefers-reduced-motion:reduce){.product-row{transition:none}.product-row:hover{transform:none}}
