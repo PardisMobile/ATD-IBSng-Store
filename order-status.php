@@ -159,8 +159,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <section class="status-card panel">
 <div class="eyebrow" data-ui-text="status_page_heading">پیگیری سفارش</div>
 <?php if ($notFound || !$order): ?>
-<h1 data-ui-text="status_not_found">سفارش پیدا نشد</h1>
-<p class="muted" data-ui-text="status_not_found_help">شناسه پیگیری معتبر نیست یا سفارش در دسترس نیست. لینک پیگیری را از صفحه نتیجه پرداخت باز کنید.</p>
+<h1 data-ui-text="status_not_found">سفارش یافت نشد</h1>
+<p class="muted" data-ui-text="status_not_found_help">کد رهگیری یا شناسه سفارش معتبر نیست، یا سفارشی با این مشخصات پیدا نشد. لطفاً اطلاعات واردشده را بررسی کنید.</p>
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
 <div class="purchase-summary">
