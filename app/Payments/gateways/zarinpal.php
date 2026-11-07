@@ -13,8 +13,8 @@ require_once dirname(__DIR__) . '/PaymentGateway.php';
  */
 final class ZarinpalGateway implements PaymentGateway
 {
-    private const REQUEST_URL = 'https://api.zarinpal.com/pg/v4/payment/request.json';
-    private const VERIFY_URL = 'https://api.zarinpal.com/pg/v4/payment/verify.json';
+    private const LIVE_BASE_URL = 'https://api.zarinpal.com/pg/v4/payment';
+    private const SANDBOX_BASE_URL = 'https://sandbox.zarinpal.com/pg/v4/payment';
 
     public function code(): string
     {
@@ -34,12 +34,18 @@ final class ZarinpalGateway implements PaymentGateway
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(): array
     {
-        return ['merchant_id' => ['label' => 'Merchant ID', 'required' => true, 'secret' => true]];
+        return [
+            'merchant_id' => ['label' => 'Merchant ID (Live)', 'required' => false, 'secret' => true],
+            'sandbox_merchant_id' => ['label' => 'Sandbox Merchant ID', 'required' => false, 'secret' => true],
+            'sandbox_mode' => ['label' => 'حالت آزمایشی Sandbox', 'required' => false, 'type' => 'checkbox'],
+        ];
     }
 
     public function initiate(array $order, array $settings): array
     {
-        $merchantId = trim((string)($settings['merchant_id'] ?? ''));
+        $sandbox = ($settings['sandbox_mode'] ?? '0') === '1';
+        $merchantKey = $sandbox ? 'sandbox_merchant_id' : 'merchant_id';
+        $merchantId = trim((string)($settings[$merchantKey] ?? ''));
         $callbackUrl = trim((string)($settings['callback_url'] ?? ''));
         $amount = filter_var($order['amount_minor'] ?? null, FILTER_VALIDATE_INT);
         $currency = strtoupper(trim((string)($order['currency'] ?? '')));
@@ -64,7 +70,8 @@ final class ZarinpalGateway implements PaymentGateway
             ], static fn(string $value): bool => $value !== ''),
         ];
 
-        $response = $this->postJson(self::REQUEST_URL, $payload);
+        $baseUrl = $sandbox ? self::SANDBOX_BASE_URL : self::LIVE_BASE_URL;
+        $response = $this->postJson($baseUrl . '/request.json', $payload);
         $data = $response['data'] ?? [];
         $authority = trim((string)($data['authority'] ?? ''));
         if ((int)($data['code'] ?? 0) !== 100 || $authority === '') {
@@ -72,7 +79,7 @@ final class ZarinpalGateway implements PaymentGateway
         }
 
         return [
-            'redirect_url' => 'https://www.zarinpal.com/pg/StartPay/' . rawurlencode($authority),
+            'redirect_url' => ($sandbox ? 'https://sandbox.zarinpal.com/pg/StartPay/' : 'https://www.zarinpal.com/pg/StartPay/') . rawurlencode($authority),
             'provider_reference' => $authority,
             'request_data' => $response,
         ];
@@ -80,7 +87,12 @@ final class ZarinpalGateway implements PaymentGateway
 
     public function verify(array $callback, array $transaction, array $settings): array
     {
-        $merchantId = trim((string)($settings['merchant_id'] ?? ''));
+        $metadata = json_decode((string)($transaction['raw_result_json'] ?? ''), true);
+        $environment = is_array($metadata['gateway_environment'] ?? null) ? $metadata['gateway_environment'] : [];
+        // Old transactions have no environment snapshot and remain on live verification.
+        $sandbox = ($environment['sandbox'] ?? false) === true;
+        $merchantKey = $sandbox ? 'sandbox_merchant_id' : 'merchant_id';
+        $merchantId = trim((string)($settings[$merchantKey] ?? ''));
         $authority = trim((string)($callback['Authority'] ?? ''));
         $expectedAuthority = trim((string)($transaction['provider_reference'] ?? ''));
         $amount = filter_var($transaction['amount_minor'] ?? null, FILTER_VALIDATE_INT);
@@ -93,7 +105,8 @@ final class ZarinpalGateway implements PaymentGateway
             return ['verified' => false];
         }
 
-        $response = $this->postJson(self::VERIFY_URL, [
+        $baseUrl = $sandbox ? self::SANDBOX_BASE_URL : self::LIVE_BASE_URL;
+        $response = $this->postJson($baseUrl . '/verify.json', [
             'merchant_id' => $merchantId,
             'amount' => $amount,
             'authority' => $authority,
