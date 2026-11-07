@@ -100,7 +100,7 @@ $credentialValues = [
     'credential_mode' => support_setting($pdo, 'credential_mode') ?: 'customer',
     'username_prefix' => support_setting($pdo, 'username_prefix') ?: 'atd',
     'username_suffix_length' => support_setting($pdo, 'username_suffix_length') ?: '5',
-    'password_length' => support_setting($pdo, 'password_length') ?: '5',
+    'password_length' => support_setting($pdo, 'password_length') ?: '4',
     'password_charset' => in_array(support_setting($pdo, 'password_charset'), ['digits', 'letters', 'alphanumeric'], true) ? support_setting($pdo, 'password_charset') : 'alphanumeric',
 ];
 
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'credential_mode' => trim((string)($_POST['credential_mode'] ?? 'customer')),
             'username_prefix' => trim((string)($_POST['username_prefix'] ?? 'atd')),
             'username_suffix_length' => trim((string)($_POST['username_suffix_length'] ?? '6')),
-            'password_length' => trim((string)($_POST['password_length'] ?? '12')),
+            'password_length' => trim((string)($_POST['password_length'] ?? '4')),
             'password_charset' => trim((string)($_POST['password_charset'] ?? 'mixed')),
         ];
         $values = [
@@ -269,7 +269,7 @@ if ($error !== '') {
         $renewalValues[$key] = support_setting($pdo, $key) ?: ($key === 'ibsng_gift_days_first' ? '1' : '5');
     }
     foreach ($credentialValues as $key => $value) {
-        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'password_length' => '12', default => 'mixed' };
+        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'password_length' => '4', default => 'mixed' };
     }
 }
 $config = app_config();
@@ -333,7 +333,7 @@ $config = app_config();
 <div class="field"><label for="credential_mode" data-ui-text="settings_credential_method">روش ورود اطلاعات</label><select id="credential_mode" name="credential_mode" class="form-control"><option value="customer"<?= $credentialValues['credential_mode'] === 'customer' ? ' selected' : '' ?> data-ui-text="settings_customer_credentials">مشتری نام کاربری و رمز را وارد کند</option><option value="automatic"<?= $credentialValues['credential_mode'] === 'automatic' ? ' selected' : '' ?> data-ui-text="settings_auto_credentials">تولید خودکار توسط فروشگاه</option><option value="choice"<?= $credentialValues['credential_mode'] === 'choice' ? ' selected' : '' ?> data-ui-text="settings_choose_credentials">مشتری بین خودکار و دستی انتخاب کند</option></select></div>
 <div class="field"><label for="username_prefix" data-ui-text="settings_username_prefix">پیشوند نام کاربری</label><input id="username_prefix" name="username_prefix" maxlength="24" pattern="[A-Za-z0-9_.-]+" required value="<?= e($credentialValues['username_prefix']) ?>"><div class="hint" data-ui-text="settings_username_prefix_hint">فقط حروف لاتین، عدد و . _ -؛ برای مثال atd</div></div>
 <div class="field"><label for="username_suffix_length" data-ui-text="settings_username_suffix">طول بخش تصادفی نام کاربری</label><input id="username_suffix_length" name="username_suffix_length" type="number" min="4" max="12" required value="<?= e($credentialValues['username_suffix_length']) ?>"></div>
-<div class="field"><label for="password_length" data-ui-text="settings_password_length">طول رمز تولیدشده</label><input id="password_length" name="password_length" type="number" min="4" max="11" required value="<?= e($credentialValues['password_length']) ?>"></div>
+<div class="field"><label for="password_length" data-ui-text="settings_password_length">طول رمز تولیدشده (۴ تا ۱۱ کاراکتر)</label><input id="password_length" name="password_length" type="number" min="4" max="11" required value="<?= e($credentialValues['password_length']) ?>"></div>
 <div class="field"><label for="password_charset" data-ui-text="settings_password_charset">ترکیب کاراکتر رمز</label><select id="password_charset" name="password_charset" class="form-control"><option value="digits"<?= $credentialValues['password_charset'] === 'digits' ? ' selected' : '' ?> data-ui-text="settings_charset_digits">فقط اعداد</option><option value="letters"<?= $credentialValues['password_charset'] === 'letters' ? ' selected' : '' ?> data-ui-text="settings_charset_letters">فقط حروف</option><option value="alphanumeric"<?= $credentialValues['password_charset'] === 'alphanumeric' ? ' selected' : '' ?> data-ui-text="settings_charset_alnum">ترکیب حروف و اعداد</option></select></div>
 </section>
 <section class="panel panel-card settings-section">
