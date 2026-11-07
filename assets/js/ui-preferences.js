@@ -796,7 +796,7 @@
   const formatStandaloneDates = (requestedLanguage) => {
     const language = requestedLanguage === 'en' ? 'en' : requestedLanguage === 'fa' ? 'fa' : root.lang === 'en' ? 'en' : 'fa';
     const locale = language === 'en' ? 'en-GB' : 'fa-IR-u-ca-persian';
-    const datePattern = /^(\\d{4})-(\\d{2})-(\\d{2})(?:[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?)?$/;
+    const datePattern = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let node;
     while ((node = walker.nextNode())) {
