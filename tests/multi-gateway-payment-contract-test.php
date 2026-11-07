@@ -26,4 +26,4 @@ multi_gateway_contract_assert(is_string($checkout) && str_contains($checkout, 'n
 multi_gateway_contract_assert(str_contains($checkout, 'PaymentFlow::initiate($pdo, $orderId, $selectedPaymentProvider)'), 'Checkout must pass the selected provider to payment initiation.');
 multi_gateway_contract_assert(is_string($manager) && str_contains($manager, 'glob($directory . \'/*.php\')'), 'Future trusted gateway adapters must remain discoverable without checkout-specific provider branches.');
 
-echo "Multi-gateway payment contract tests passed.\\n";
+echo "Multi-gateway payment contract tests passed.\n";
