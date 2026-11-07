@@ -87,7 +87,39 @@ final class EmailTemplates
             $value = $stmt->fetchColumn();
             if (is_string($value) && $value !== '') $result[$field] = $value;
         }
+        $result['html'] = self::applyDocumentDirection($result['html'], $language);
         return $result;
+    }
+
+    private static function applyDocumentDirection(string $html, string $language): string
+    {
+        $direction = $language === 'en' ? 'ltr' : 'rtl';
+        $alignment = $language === 'en' ? 'left' : 'right';
+        return preg_replace_callback('/<(html|body|main)\\b([^>]*)>/i', static function (array $match) use ($language, $direction, $alignment): string {
+            $tag = strtolower($match[1]);
+            $attributes = $match[2];
+            if (preg_match('/\\sdir\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes)) {
+                $attributes = preg_replace('/\\sdir\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' dir="' . $direction . '"', $attributes, 1) ?? $attributes;
+            } else {
+                $attributes .= ' dir="' . $direction . '"';
+            }
+            if ($tag === 'html') {
+                if (preg_match('/\\slang\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes)) {
+                    $attributes = preg_replace('/\\slang\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' lang="' . $language . '"', $attributes, 1) ?? $attributes;
+                } else {
+                    $attributes .= ' lang="' . $language . '"';
+                }
+            }
+            if ($tag !== 'html') {
+                $css = 'direction:' . $direction . ';text-align:' . $alignment . ';';
+                if (preg_match('/\\sstyle\\s*=\\s*([\\"\\\'])(.*?)\\1/i', $attributes, $style)) {
+                    $attributes = preg_replace('/\\sstyle\\s*=\\s*([\\"\\\'])(.*?)\\1/i', ' style="' . htmlspecialchars(rtrim($style[2], ';') . ';' . $css, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"', $attributes, 1) ?? $attributes;
+                } else {
+                    $attributes .= ' style="' . $css . '"';
+                }
+            }
+            return '<' . $tag . $attributes . '>';
+        }, $html) ?? $html;
     }
 
     public static function render(string $template, array $variables): string
