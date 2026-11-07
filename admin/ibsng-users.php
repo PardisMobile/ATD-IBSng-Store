@@ -427,7 +427,6 @@ $accountFields = [
     'Group' => (string)($userResult['group'] ?? 'نامشخص'),
     'Status' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Status', 'User Status'])),
     'First Login' => $accountDisplay($ibsngAttributeValue($accountHtml, ['first_login'])),
-    'Last Login' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Last Login', 'Last Login Date'])),
     'Relative Expiration' => $accountDisplay($ibsngAttributeValue($accountHtml, ['rel_exp'])),
     'Nearest Expiration Date' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Nearest Expiration Date'])),
     'Absolute Expiration Date' => $accountDisplay($ibsngAttributeValue($accountHtml, ['abs_exp', 'absolute_exp', 'absolute_expiration']) ?? $ibsngDisplayedValue($accountHtml, ['Absolute Expiration Date'])),
@@ -437,6 +436,14 @@ $accountFields = [
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
 ];
 
+// Presentation-only localization for the IBSng lock flag; retain the raw value above.
+$lockedRaw = strtolower(trim((string)($accountFields['User Is Locked'] ?? '')));
+$lockedPresentation = match ($lockedRaw) {
+    'no', '0', 'false' => ['fa' => 'قفل نیست', 'en' => 'Not locked'],
+    'yes', '1', 'true' => ['fa' => 'قفل است', 'en' => 'Locked'],
+    default => null,
+};
+
 // Translate field labels only. IBSng values remain exactly as received.
 $accountFieldLabelsFa = [
     'Username' => 'نام کاربری',
@@ -444,7 +451,6 @@ $accountFieldLabelsFa = [
     'Group' => 'گروه',
     'Status' => 'وضعیت',
     'First Login' => 'اولین ورود',
-    'Last Login' => 'آخرین ورود',
     'Relative Expiration' => 'مدت (انقضای نسبی)',
     'Nearest Expiration Date' => 'تاریخ انقضا (نزدیک‌ترین)',
     'Absolute Expiration Date' => 'تاریخ انقضا (مطلق)',
@@ -466,7 +472,7 @@ $accountFieldGroups = [
     'activity' => [
         'title_fa' => 'وضعیت اکانت',
         'title_en' => 'Account Status',
-        'fields' => ['Status', 'First Login', 'Last Login', 'User Is Locked', 'Creation Date', 'Multi Login raw value'],
+        'fields' => ['Status', 'First Login', 'User Is Locked', 'Creation Date', 'Multi Login raw value'],
     ],
     'validity' => [
         'title_fa' => 'اطلاعات انقضا',
@@ -486,7 +492,7 @@ $accountFieldGroups = [
 <?php $fieldValue = $accountFields[$fieldLabel]; ?>
 <div class="account-item">
 <span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel === 'Multi Login raw value' ? 'Multi Login' : $fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
-<strong class="technical-value"><?php if ($fieldLabel === 'Multi Login raw value'): ?><span data-fa="<?= e($multiLoginDisplayFa) ?>" data-en="<?= e($multiLoginDisplayEn) ?>"><?= e($multiLoginDisplayFa) ?></span><?php elseif ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
+<strong class="technical-value"><?php if ($fieldLabel === 'Multi Login raw value'): ?><span data-fa="<?= e($multiLoginDisplayFa) ?>" data-en="<?= e($multiLoginDisplayEn) ?>"><?= e($multiLoginDisplayFa) ?></span><?php elseif ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldLabel === 'User Is Locked' && $lockedPresentation !== null): ?><span data-fa="<?= e($lockedPresentation['fa']) ?>" data-en="<?= e($lockedPresentation['en']) ?>"><?= e($lockedPresentation['fa']) ?></span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
 </div>
 <?php endforeach; ?>
 </div>
