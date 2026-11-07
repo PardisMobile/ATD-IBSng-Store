@@ -131,7 +131,7 @@ $esc = static fn($value): string => e((string)$value);
 <section class="panel panel-card">
 <div class="eyebrow" data-fa="محتوای عمومی مشتریان" data-en="Customer-facing general content">محتوای عمومی مشتریان</div>
 <h1 data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</h1>
-<p class="guide-admin-note" data-fa="یک راهنمای واحد برای همه اکانت‌هاست. روش‌های اتصال را تعریف کنید و برای هرکدام، آموزش سیستم‌عامل‌های موردنظر را وارد کنید. هیچ راهنمایی به محصول یا نوع سرویس فروشگاه متصل نمی‌شود." data-en="One shared guide for all accounts. Define connection methods and add instructions for the operating systems you need. Guides are not linked to products or store service types.">یک راهنمای واحد برای همه اکانت‌هاست. روش‌های اتصال را تعریف کنید و برای هرکدام، آموزش سیستم‌عامل‌های موردنظر را وارد کنید. هیچ راهنمایی به محصول یا نوع سرویس فروشگاه متصل نمی‌شود.</p>
+<p class="guide-admin-note" data-fa="این راهنما برای همه اکانت‌های فروشگاه مشترک است. روش‌های اتصال را تعریف کنید و برای هرکدام، آموزش سیستم‌عامل‌های موردنظر را وارد کنید. هیچ راهنمایی به محصول یا نوع سرویس فروشگاه متصل نمی‌شود." data-en="This guide is shared by all Store accounts. Define connection methods and add instructions for the operating systems you need. Guides are not linked to products or store service types.">یک راهنمای واحد برای همه اکانت‌هاست. روش‌های اتصال را تعریف کنید و برای هرکدام، آموزش سیستم‌عامل‌های موردنظر را وارد کنید. هیچ راهنمایی به محصول یا نوع سرویس فروشگاه متصل نمی‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice" role="status"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice" role="alert"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
