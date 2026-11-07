@@ -495,10 +495,10 @@ final class IBSngClient
     }
 
     /** Read the account's expiry state using the reference-aligned parser. */
-    public function getRenewalState(string $username): array
+    public function getRenewalState(string $username, ?string $utcOffset = null): array
     {
         require_once __DIR__ . '/IBSngRenewalState.php';
-        return IBSngRenewalState::fromClient($this, $username);
+        return IBSngRenewalState::fromClient($this, $username, $utcOffset);
     }
 
     /**

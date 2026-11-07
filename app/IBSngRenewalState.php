@@ -7,7 +7,29 @@ declare(strict_types=1);
  */
 final class IBSngRenewalState
 {
-    public static function fromClient(IBSngClient $client, string $username): array
+    public static function normalizeUtcOffset(?string $value): ?string
+    {
+        $value = trim((string)$value);
+        if ($value === '') return null;
+        if (!preg_match('/^([+-]?)([0-9]{4})$/D', $value, $match)) {
+            throw new InvalidArgumentException('IBSng UTC offset must contain four English digits with an optional sign.');
+        }
+        $hours = (int)substr($match[2], 0, 2);
+        $minutes = (int)substr($match[2], 2, 2);
+        if ($minutes > 59 || $hours > 14 || ($hours === 14 && $minutes !== 0)) {
+            throw new InvalidArgumentException('IBSng UTC offset is outside the supported range.');
+        }
+        return ($match[1] === '-' ? '-' : '+') . $match[2];
+    }
+
+    private static function offsetDateTimeZone(?string $utcOffset): DateTimeZone
+    {
+        $normalized = self::normalizeUtcOffset($utcOffset);
+        if ($normalized === null) return new DateTimeZone('UTC');
+        return new DateTimeZone(substr($normalized, 0, 3) . ':' . substr($normalized, 3, 2));
+    }
+
+    public static function fromClient(IBSngClient $client, string $username, ?string $utcOffset = null): array
     {
         $user = $client->lookupUser($username);
         $html = (string)($user['html'] ?? '');
@@ -17,7 +39,7 @@ final class IBSngRenewalState
         $firstLogin = self::attributeValue($html, 'first_login');
         $relativeExpiration = self::attributeValue($html, 'rel_exp');
         $nearestExpiration = self::displayedLabelValue($html, 'Nearest Expiration Date');
-        $state = self::normalize((string)$user['user_id'], $firstLogin, $relativeExpiration, $nearestExpiration);
+        $state = self::normalize((string)$user['user_id'], $firstLogin, $relativeExpiration, $nearestExpiration, null, $utcOffset);
         $state['group'] = trim((string)($user['group'] ?? ''));
         if ($state['group'] === '') {
             throw new RuntimeException('IBSng account group could not be verified; renewal stopped safely.');
@@ -25,7 +47,7 @@ final class IBSngRenewalState
         return $state;
     }
 
-    public static function normalize(string $userId, ?string $firstLogin, ?string $relativeExpiration, ?string $nearestExpiration, ?int $now = null): array
+    public static function normalize(string $userId, ?string $firstLogin, ?string $relativeExpiration, ?string $nearestExpiration, ?int $now = null, ?string $utcOffset = null): array
     {
         if (trim($userId) === '') {
             throw new RuntimeException('IBSng user ID is missing.');
@@ -47,9 +69,12 @@ final class IBSngRenewalState
         if ($nearestValue === null) {
             throw new RuntimeException('IBSng nearest expiration date is missing; renewal stopped safely.');
         }
-        $expiry = strtotime($nearestValue);
-        if ($expiry === false) {
-            throw new RuntimeException('IBSng nearest expiration date could not be parsed; renewal stopped safely.');
+        try {
+            // IBSng displays a wall-clock date in its own configured UTC offset.
+            $expiryDate = new DateTimeImmutable($nearestValue, self::offsetDateTimeZone($utcOffset));
+            $expiry = $expiryDate->getTimestamp();
+        } catch (Throwable $parseError) {
+            throw new RuntimeException('IBSng nearest expiration date could not be parsed; renewal stopped safely.', 0, $parseError);
         }
         $seconds = $expiry - $now;
         return [

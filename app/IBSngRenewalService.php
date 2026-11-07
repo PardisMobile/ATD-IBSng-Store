@@ -32,7 +32,8 @@ final class IBSngRenewalService
         int $giftDaysRepeat,
         string $idempotencyKey,
         ?int $productId = null,
-        string $comment = ''
+        string $comment = '',
+        ?string $serverUtcOffset = null
     ): array {
         $username = trim($username);
         $groupName = trim($groupName);
@@ -57,7 +58,7 @@ final class IBSngRenewalService
             }
 
             // Read and normalize remote state before reserving the mutation.
-            $state = $this->client->getRenewalState($username);
+            $state = $this->client->getRenewalState($username, $serverUtcOffset);
             if (!isset($state['user_id'], $state['expired'], $state['remaining_days'], $state['group'])
                 || !is_bool($state['expired'])
                 || !is_int($state['remaining_days'])
