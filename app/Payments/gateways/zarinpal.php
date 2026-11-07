@@ -36,7 +36,7 @@ final class ZarinpalGateway implements PaymentGateway
     {
         return [
             'merchant_id' => ['label' => 'Merchant ID (Live)', 'required' => false, 'secret' => true],
-            'sandbox_merchant_id' => ['label' => 'Sandbox Merchant ID', 'required' => false, 'secret' => true],
+            'sandbox_merchant_id' => ['label' => 'Sandbox Merchant ID', 'required' => false, 'secret' => false],
             'sandbox_mode' => ['label' => 'حالت آزمایشی Sandbox', 'required' => false, 'type' => 'checkbox'],
         ];
     }
