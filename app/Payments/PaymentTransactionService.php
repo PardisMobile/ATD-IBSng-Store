@@ -22,7 +22,7 @@ final class PaymentTransactionService
      *
      * @return int Transaction ID
      */
-    public function create(int $orderId, string $provider, int $amountMinor, string $currency): int
+    public function create(int $orderId, string $provider, int $amountMinor, string $currency, array $metadata = []): int
     {
         $provider = strtolower(trim($provider));
         $currency = strtoupper(trim($currency));
@@ -63,11 +63,14 @@ final class PaymentTransactionService
                 throw new RuntimeException('Order already has an active payment transaction.');
             }
 
+            $rawMetadata = $metadata !== []
+                ? json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)
+                : null;
             $insert = $this->pdo->prepare(
-                "INSERT INTO payment_transactions (order_id, provider, amount_minor, currency, status)
-                 VALUES (?, ?, ?, ?, 'initiated')"
+                "INSERT INTO payment_transactions (order_id, provider, amount_minor, currency, status, raw_result_json)
+                 VALUES (?, ?, ?, ?, 'initiated', ?)"
             );
-            $insert->execute([$orderId, $provider, $amountMinor, $currency]);
+            $insert->execute([$orderId, $provider, $amountMinor, $currency, $rawMetadata]);
             $id = (int)$this->pdo->lastInsertId();
             $this->pdo->commit();
             return $id;
