@@ -13,6 +13,7 @@ $settings = file_get_contents($root . '/admin/settings.php');
 $checkout = file_get_contents($root . '/checkout.php');
 $flow = file_get_contents($root . '/app/Payments/PaymentFlow.php');
 $manager = file_get_contents($root . '/app/Payments/PaymentManager.php');
+$catalog = file_get_contents($root . '/index.php');
 
 multi_gateway_contract_assert(is_string($settings) && str_contains($settings, 'name="enabled_providers[]"'), 'Admin settings must allow multiple enabled gateway codes.');
 multi_gateway_contract_assert(str_contains($settings, 'payment_enabled_providers'), 'Admin settings must persist the enabled gateway list.');
@@ -25,5 +26,6 @@ multi_gateway_contract_assert(str_contains($flow, '$provider,') && str_contains(
 multi_gateway_contract_assert(is_string($checkout) && str_contains($checkout, 'name="payment_provider"'), 'Checkout must present a customer-selectable payment provider.');
 multi_gateway_contract_assert(str_contains($checkout, 'PaymentFlow::initiate($pdo, $orderId, $selectedPaymentProvider)'), 'Checkout must pass the selected provider to payment initiation.');
 multi_gateway_contract_assert(is_string($manager) && str_contains($manager, 'glob($directory . \'/*.php\')'), 'Future trusted gateway adapters must remain discoverable without checkout-specific provider branches.');
+multi_gateway_contract_assert(is_string($catalog) && str_contains($catalog, 'payment_enabled_providers') && str_contains($catalog, 'array_unique(array_filter($enabledProviders'), 'USDT catalog visibility must consider every enabled configured crypto gateway, not only the legacy single provider.');
 
 echo "Multi-gateway payment contract tests passed.\n";
