@@ -138,7 +138,7 @@ $esc = static fn($value): string => e((string)$value);
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field field-full">
 <label for="guide-intro" data-fa="توضیح ابتدای راهنما" data-en="Guide introduction">توضیح ابتدای راهنما</label>
-<textarea id="guide-intro" name="intro" rows="3"><?= $esc($guide['intro'] ?? '') ?></textarea>
+<textarea id="guide-intro" name="intro" rows="3" placeholder="Enter a short introduction for customers." data-ui-placeholder="guide_intro_placeholder"><?= $esc($guide['intro'] ?? '') ?></textarea>
 </div>
 <div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
 <div id="guide-method-list">
