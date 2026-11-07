@@ -13,25 +13,42 @@ $cryptoDisplayEnabled = false;
 try {
     $pdoForSettings = Database::connection();
     $priceDisplayUnit = store_price_display_unit($pdoForSettings);
-    $settingsQuery = $pdoForSettings->prepare(
-        "SELECT setting_key, setting_value FROM app_settings
-         WHERE setting_key IN ('crypto_gateway_enabled', 'payment_provider')"
-    );
-    $settingsQuery->execute();
+    $settingsQuery = $pdoForSettings->query('SELECT setting_key, setting_value FROM app_settings');
     $storePaymentSettings = [];
     foreach ($settingsQuery->fetchAll(PDO::FETCH_ASSOC) as $settingRow) {
         $storePaymentSettings[(string)$settingRow['setting_key']] = (string)$settingRow['setting_value'];
     }
-    $selectedProvider = strtolower(trim((string)($storePaymentSettings['payment_provider'] ?? '')));
     $showCryptoPrice = ($storePaymentSettings['crypto_gateway_enabled'] ?? '') === '1';
-    $selectedTypeQuery = $pdoForSettings->prepare(
-        'SELECT setting_value FROM app_settings WHERE setting_key = ? LIMIT 1'
-    );
-    if ($showCryptoPrice && $selectedProvider !== '') {
-        $selectedTypeQuery->execute(['payment_' . $selectedProvider . '_type']);
-        $selectedType = strtolower(trim((string)$selectedTypeQuery->fetchColumn()));
-        if ($selectedType === 'crypto' && in_array($selectedProvider, PaymentManager::registeredCodes(), true)) {
-            $cryptoDisplayEnabled = in_array('USDT', (new PaymentManager($selectedProvider))->supportedCurrencies(), true);
+    $enabledRaw = trim((string)($storePaymentSettings['payment_enabled_providers'] ?? ''));
+    $enabledProviders = $enabledRaw !== ''
+        ? json_decode($enabledRaw, true)
+        : (trim((string)($storePaymentSettings['payment_provider'] ?? '')) !== ''
+            ? [(string)$storePaymentSettings['payment_provider']]
+            : []);
+    if ($showCryptoPrice && is_array($enabledProviders)) {
+        foreach (array_values(array_unique(array_filter($enabledProviders, 'is_string'))) as $providerCode) {
+            try {
+                $providerCode = strtolower(trim($providerCode));
+                $manager = new PaymentManager($providerCode);
+                if (strtolower(trim((string)($storePaymentSettings['payment_' . $providerCode . '_type'] ?? 'fiat'))) !== 'crypto'
+                    || !in_array('USDT', $manager->supportedCurrencies(), true)) {
+                    continue;
+                }
+                $complete = true;
+                foreach ($manager->configurationFields($providerCode) as $fieldKey => $field) {
+                    if (($field['required'] ?? false)
+                        && trim((string)($storePaymentSettings['payment_' . $providerCode . '_' . $fieldKey] ?? '')) === '') {
+                        $complete = false;
+                        break;
+                    }
+                }
+                if ($complete) {
+                    $cryptoDisplayEnabled = true;
+                    break;
+                }
+            } catch (Throwable) {
+                continue;
+            }
         }
     }
 } catch (Throwable $e) {
