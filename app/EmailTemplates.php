@@ -113,7 +113,7 @@ final class EmailTemplates
             if ($tag !== 'html') {
                 $css = 'direction:' . $direction . ';text-align:' . $alignment . ';';
                 if (preg_match('~\\sstyle\\s*=\\s*"([^"]*)"~i', $attributes, $style)) {
-                    $attributes = preg_replace('~\\sstyle\\s*=\\s*"([^"]*)"~i', ' style="' . htmlspecialchars(rtrim($style[2], ';') . ';' . $css, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"', $attributes, 1) ?? $attributes;
+                    $attributes = preg_replace('~\\sstyle\\s*=\\s*"([^"]*)"~i', ' style="' . htmlspecialchars(rtrim($style[1], ';') . ';' . $css, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"', $attributes, 1) ?? $attributes;
                 } else {
                     $attributes .= ' style="' . $css . '"';
                 }
