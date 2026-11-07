@@ -412,39 +412,66 @@ if ($multiLoginDisplay === '' || preg_match('/^-+$/u', $multiLoginDisplay)) {
     $multiLoginDisplay = 'تک‌کاربره';
 }
 
-// Store quota is resolved through the exact active IBSng group mapping.
-// Multiple active products on one group make the quota ambiguous, so do not guess.
+// Management traffic is based only on the Daily Traffic values shown by IBSng.
+// User Value takes precedence; when it is blank, use the corresponding Group Value.
+// This parser is read-only and never submits IBSng attribute checkboxes or Edit User forms.
+$trafficLimitValues = static function (string $html) use ($ibsngElementBlocks, $ibsngDirectCells, $cleanAccountText, $ibsngExtractControl): array {
+    foreach ($ibsngElementBlocks($html, 'tr') as $row) {
+        $cells = $ibsngDirectCells($row['outer']);
+        foreach ($cells as $i => $cell) {
+            $label = trim($cleanAccountText($cell['html']), " :");
+            if (strcasecmp($label, 'Traffic Limit') !== 0) {
+                continue;
+            }
+            $userValue = null;
+            $groupValue = null;
+            for ($j = $i + 1; $j < count($cells); $j++) {
+                $class = $cells[$j]['attrs']['class'] ?? '';
+                if ($userValue === null && strpos($class, 'Form_Content_Row_Right') !== false) {
+                    $userValue = $ibsngExtractControl($cells[$j]['html']);
+                } elseif ($groupValue === null && strpos($class, 'Form_Content_Row_groupinfo') !== false) {
+                    $groupValue = $cleanAccountText($cells[$j]['html']);
+                }
+            }
+            return ['user' => $userValue, 'group' => $groupValue];
+        }
+    }
+    return ['user' => null, 'group' => null];
+};
+$parseTrafficBytes = static function (?string $raw): ?int {
+    $value = trim((string)$raw);
+    if ($value === '' || preg_match('/^(?:-+|not applicable)$/iu', $value)) {
+        return null;
+    }
+    if (!preg_match('/^([0-9]+(?:\.[0-9]+)?)\s*([KMGT])(?:i?B)?$/i', $value, $match)) {
+        return null;
+    }
+    $power = ['K' => 1, 'M' => 2, 'G' => 3, 'T' => 4][strtoupper($match[2])] ?? 0;
+    return (int)round((float)$match[1] * (1024 ** $power));
+};
+
 $quotaBytes = null;
 $consumedBytes = null;
 $remainingBytes = null;
-if ($accountHtml !== '' && trim((string)($userResult['group'] ?? '')) !== '') {
-    $quotaStmt = $pdo->prepare(
-        'SELECT p.quota_bytes
-         FROM ibsng_groups g
-         JOIN product_server_groups m ON m.ibsng_group_id=g.id AND m.server_id=g.server_id
-         JOIN products p ON p.id=m.product_id AND p.is_active=1
-         WHERE g.server_id=? AND g.group_name=? AND g.is_active=1
-         ORDER BY p.id'
-    );
-    $quotaStmt->execute([$selectedServerId, trim((string)$userResult['group'])]);
-    $quotaRows = $quotaStmt->fetchAll(PDO::FETCH_COLUMN);
-    if (count($quotaRows) === 1 && $quotaRows[0] !== null && (int)$quotaRows[0] > 0) {
-        $quotaBytes = (int)$quotaRows[0];
-    }
-    // This attribute identifies Daily Traffic usage. Do not use Traffic Limit,
-    // Monthly Traffic, period length, reset date or any Edit User form submission.
-    $trafficRaw = trim((string)($ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']) ?? ''));
-    if ($trafficRaw !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $trafficRaw)
-        && preg_match('/^([0-9]+(?:\\.[0-9]+)?)\\s*([KMGT])(?:i?B)?$/i', $trafficRaw, $trafficMatch)) {
-        $trafficPower = ['K'=>1,'M'=>2,'G'=>3,'T'=>4][strtoupper($trafficMatch[2])] ?? 0;
-        $consumedBytes = (int)round((float)$trafficMatch[1] * (1024 ** $trafficPower));
-    }
+if ($accountHtml !== '') {
+    $trafficLimitValuesFound = $trafficLimitValues($accountHtml);
+    $trafficLimitUser = trim((string)($trafficLimitValuesFound['user'] ?? ''));
+    $trafficLimitGroup = trim((string)($trafficLimitValuesFound['group'] ?? ''));
+    $trafficLimitRaw = $trafficLimitUser !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $trafficLimitUser)
+        ? $trafficLimitUser
+        : $trafficLimitGroup;
+    $quotaBytes = $parseTrafficBytes($trafficLimitRaw);
+
+    // Usage is the actual Daily Traffic "This Period Usage" value from IBSng.
+    $trafficRaw = $ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']);
+    $consumedBytes = $parseTrafficBytes($trafficRaw);
+
     if ($quotaBytes !== null && $consumedBytes !== null) {
         $remainingBytes = max(0, $quotaBytes - $consumedBytes);
     }
 }
 $formatTrafficBytes = static function (?int $bytes): string {
-    if ($bytes === null) return 'نامحدود';
+    if ($bytes === null) return 'نامشخص';
     $bytes = max(0, $bytes);
     $value = $bytes / 1048576;
     $unit = 'MB';
