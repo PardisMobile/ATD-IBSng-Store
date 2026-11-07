@@ -298,7 +298,7 @@
       settings_multi_gateway_intro: 'Enable any number of fully configured gateways. Customers choose one of the enabled gateways during checkout.',
       settings_gateway_enable: 'Enable this gateway',
       settings_zarinpal_sandbox_mode: 'Enable Zarinpal Sandbox mode',
-      settings_zarinpal_sandbox_hint: 'Test payments are requested and verified through Zarinpal Sandbox without charging real money. After a successful test payment, account provisioning will still run on the configured IBSng servers.',
+      settings_zarinpal_sandbox_hint: 'Test payments are requested and verified through Zarinpal Sandbox without charging real money. If the Sandbox Merchant ID is left empty, it is generated and saved automatically when you save the settings. After a successful test payment, account provisioning will still run on the configured IBSng servers.',
       settings_active_gateway: 'Active gateway',
       settings_disabled: 'Disabled',
       settings_currency_type: 'Gateway currency type',
