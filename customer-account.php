@@ -288,6 +288,16 @@ if (is_array($auth) && $account === null && $action !== 'logout') {
         $account = null;
     }
 }
+$formatCustomerExpiry = static function (string $value): string {
+    // IBSng may return its expiration timestamp as "HH:MM[:SS], YYYY/MM/DD".
+    // Keep the raw value for all IBSng logic; only reorder its customer-facing presentation.
+    return preg_replace(
+        '/(?<time>[۰-۹0-9]{1,2}:[۰-۹0-9]{2}(?::[۰-۹0-9]{2})?)\\s*[,،]?\\s*(?<date>[۰-۹0-9]{4}[\\/.-][۰-۹0-9]{1,2}[\\/.-][۰-۹0-9]{1,2})/u',
+        '$2، $1',
+        $value
+    ) ?? $value;
+};
+
 $isLoggedIn = is_array($auth) && is_array($account) && $account !== [];
 $config = app_config();
 $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
@@ -363,9 +373,9 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_username">نام کاربری</small><strong dir="ltr"><?= e($item['username']) ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_service">سرویس</small><strong><?= e($item['server']) ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_plan">پلن</small><strong><?= e($item['plan']) ?></strong></div>
-                <div class="account-item"><small data-fa="تعداد کاربران هم‌زمان" data-en="Simultaneous Users">تعداد کاربران هم‌زمان</small><strong><?php if ($item['multi_login'] === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif (preg_match('/^([0-9]+)\\s+instances?$/i', $item['multi_login'], $multiLoginMatch)): ?><span data-fa="<?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربر" data-en="<?= e($multiLoginMatch[1]) ?> users"><?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربر</span><?php else: ?><?= e($item['multi_login']) ?><?php endif; ?></strong></div>
+                <div class="account-item"><small data-fa="تعداد کاربران هم‌زمان" data-en="Simultaneous Users">تعداد کاربران هم‌زمان</small><strong><?php if ($item['multi_login'] === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif (preg_match('/^([0-9]+)\\s+instances?$/i', $item['multi_login'], $multiLoginMatch)): ?><span data-fa="<?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره" data-en="<?= e($multiLoginMatch[1]) ?> users"><?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره</span><?php else: ?><?= e($item['multi_login']) ?><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($item['expiry']) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($formatCustomerExpiry((string)$item['expiry'])) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
 <div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
 </div>
