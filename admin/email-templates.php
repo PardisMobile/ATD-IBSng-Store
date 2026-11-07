@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $save->execute([$templatePrefix . '_subject', $subject]);
             $save->execute([$templatePrefix . '_html', $html]);
             $save->execute([$templatePrefix . '_text', $plain]);
-            $template = ['subject' => $subject, 'html' => $html, 'text' => $plain];
+            $template = EmailTemplates::get($pdo, $event, $language);
             $message = 'قالب ایمیل ذخیره شد.';
         }
     }
