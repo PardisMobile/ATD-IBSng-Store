@@ -208,7 +208,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <?php if (!$orders): ?><p class="muted" data-ui-text="orders_none_for_email">سفارشی برای این ایمیل پیدا نشد.</p><?php else: ?>
 <div class="orders-list"><?php foreach ($orders as $order): ?>
 <article class="order-row"><div><strong><?= e((string)$order['product_name_snapshot']) ?></strong>
-<p class="muted"><span data-ui-text="orders_tracking_id">شناسه پیگیری:</span> <code><?= e((string)$order['tracking_code']) ?></code><br><span data-ui-text="orders_purchase_date">تاریخ خرید:</span> <?= e((string)$order['created_at']) ?></p>
+<p class="muted"><span data-ui-text="orders_tracking_id">کد رهگیری:</span> <code><?= e((string)$order['tracking_code']) ?></code><br><span data-ui-text="orders_purchase_date">تاریخ خرید:</span> <?= e((string)$order['created_at']) ?></p>
 <div class="history-facts"><span><small data-ui-text="orders_paid_amount">مبلغ پرداخت‌شده</small><strong class="history-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></span><span><small data-ui-text="orders_status">وضعیت سفارش</small><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($statusLabels[(string)$order['order_status']] ?? 'در حال بررسی') ?></strong></span></div>
 </div><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode((string)$order['tracking_code']))) ?>" data-ui-text="orders_details">جزئیات سفارش</a></article>
 <?php endforeach; ?></div><?php endif; ?>
