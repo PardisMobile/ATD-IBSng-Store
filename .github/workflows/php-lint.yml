@@ -53,3 +53,6 @@ jobs:
 
       - name: Run UI presentation contract test
         run: node tests/ui-presentation-contract.js
+
+      - name: Run bilingual email and presentation contract test
+        run: php tests/email-language-presentation-contract-test.php
