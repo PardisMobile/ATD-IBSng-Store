@@ -233,7 +233,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="add">
 <div class="grid">
-<div class="field"><label for="name" data-fa="نام سرور" data-en="Server Name">نام سرور</label><input id="name" name="name" class="ltr-input" dir="ltr" required maxlength="120" placeholder="e.g. Iran Server, Hetzner VPS, My IBSng" data-ui-placeholder="server_name_placeholder"></div>
+<div class="field"><label for="name" data-fa="نام سرور" data-en="Server Name">نام سرور</label><input id="name" name="name" class="ltr-input" dir="ltr" required maxlength="120" placeholder="مثلاً: سرور ایران، VPS هتزنر، IBSng من" data-ui-placeholder="server_name_placeholder"></div>
 <div class="field"><label for="service_name" data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" class="ltr-input" dir="ltr" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label for="host" data-ui-text="server_host_label">نشانی سرور (دامنه یا IP، بدون http و مسیر)</label><input id="host" name="host" class="ltr-input" dir="ltr" required placeholder="ibsng.example.com"></div>
 <div class="field"><label for="port" data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
@@ -263,7 +263,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>">
 <div class="grid">
-<div class="field"><label data-fa="نام سرور" data-en="Server Name">نام سرور</label><input name="name" class="ltr-input" dir="ltr" required value="<?= e((string)$server['name']) ?>" placeholder="e.g. Iran Server, Hetzner VPS, My IBSng" data-ui-placeholder="server_name_placeholder"></div>
+<div class="field"><label data-fa="نام سرور" data-en="Server Name">نام سرور</label><input name="name" class="ltr-input" dir="ltr" required value="<?= e((string)$server['name']) ?>" placeholder="مثلاً: سرور ایران، VPS هتزنر، IBSng من" data-ui-placeholder="server_name_placeholder"></div>
 <div class="field"><label data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input name="service_name" class="ltr-input" dir="ltr" maxlength="150" value="<?= e((string)($server['service_name'] ?? '')) ?>" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label>Host</label><input name="host" class="ltr-input" dir="ltr" required value="<?= e((string)$server['host']) ?>"></div>
 <div class="field"><label data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select name="port"><option value="80"<?= (int)$server['port'] === 80 ? ' selected' : '' ?>>80 — HTTP</option><option value="443"<?= (int)$server['port'] === 443 ? ' selected' : '' ?>>443 — HTTPS</option></select></div>
