@@ -9,7 +9,10 @@ $servers = file_get_contents($root . '/admin/ibsng-servers.php');
 $checks = [
     'service name is optional in fresh schema' => is_string($schema) && str_contains($schema, 'service_name VARCHAR(150) NULL'),
     'admin form accepts service name on create and update' => is_string($servers) && substr_count($servers, 'name="service_name"') === 2,
-    'server name and customer service label are distinct' => is_string($servers) && str_contains($servers, 'نام سرور (داخلی)') && str_contains($servers, 'service_name'),
+    'server name and customer service label are distinct' => is_string($servers)
+        && str_contains($servers, 'data-fa="نام سرور"')
+        && str_contains($servers, 'data-en="Server Name"')
+        && str_contains($servers, 'service_name'),
     'customer status loads service name' => is_string($status) && str_contains($status, 's.service_name') && str_contains($status, "['service_name']"),
     'tracking page includes purchase amount, payment status, and timestamp' => is_string($status) && str_contains($status, 'price_minor_snapshot') && str_contains($status, 'price_usdt_snapshot') && str_contains($status, 'payment_status') && str_contains($status, 'created_at'),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
