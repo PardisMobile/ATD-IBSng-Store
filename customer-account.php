@@ -420,11 +420,6 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($formatCustomerExpiry((string)$item['expiry'])) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
 <div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-</div>
-</section>
-<section class="panel account-card">
-<h2 data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</h2>
-<div class="account-grid">
 <div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?php $remainingTrafficDisplay = $formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null); ?><?php if ($remainingTrafficDisplay === 'نامحدود'): ?><span data-fa="نامحدود" data-en="Unlimited">نامحدود</span><?php else: ?><?= e($remainingTrafficDisplay) ?><?php endif; ?></strong></div>
 </div>
 </section>
