@@ -112,4 +112,14 @@ for (const page of adminPages.map((file) => path.join('admin', file))) {
   assert.match(source, /assets\/css\/unified\.css/u, `${page} must load shared component styles`);
 }
 
+
+const sharedComponents = read('assets/js/ui-components.js');
+assert.match(sharedComponents, /initializeSelectMenus/u, 'Shared UI must enhance native selects with the themed option popup');
+assert.match(sharedComponents, /aria-haspopup', 'listbox'/u, 'Enhanced selects must expose listbox semantics');
+assert.match(sharedComponents, /dispatchEvent\(new Event\('change'/u, 'Custom select choices must update the native select change contract');
+assert.match(sharedComponents, /setAttribute\('dir', isTechnicalEntry\(field\) \? 'ltr' : 'auto'\)/u, 'Text fields must use LTR for technical values and auto direction for free text');
+for (const selector of ['.atd-select-menu', '.atd-select-option:hover', '.atd-select-option.is-selected']) {
+  assert.ok(css.includes(selector), `Shared stylesheet is missing ${selector}`);
+}
+
 console.log('UI presentation contract: PASS');
