@@ -81,7 +81,7 @@ There are three distinct layers:
 The adapter's `supportedCurrencies()` declares capabilities. Each enabled provider is checked independently for supported currency and required credentials. Checkout derives the choices from enabled, configured adapters and the immutable order price snapshot; the customer selects one provider. The chosen provider, amount, and currency are persisted in the payment transaction before the provider request. Callback verification continues to resolve the adapter from that persisted transaction, so changing enabled providers cannot affect existing payments.
 
 Current adapters:
-- `zarinpal`: `IRR`, `IRT`; fiat only.
+- `zarinpal`: `IRR`, `IRT`; fiat only. Live and Sandbox are selected independently in the adapter configuration. Sandbox mode uses the Zarinpal v4 sandbox request/verify endpoints and sandbox StartPay host. The selected environment is snapshotted in `payment_transactions.raw_result_json` at transaction creation, so a later admin toggle cannot send an existing callback to the wrong environment. Sandbox transactions use the separate Sandbox Merchant ID setting.
 - `ircrypto`: `IRR`, `IRT`, `USDT`; admin may configure one mode at a time.
 
 ## Ambiguous gateway initiation
@@ -94,7 +94,7 @@ Current adapters:
 ## Verification and idempotency guarantees
 
 - Provider callbacks are untrusted input. The adapter verifies the persisted provider reference and amount/currency using provider-side verification. IRCrypto webhook HMAC authenticates the webhook delivery but does not replace invoice lookup.
-- The transaction stores provider, amount, currency, provider reference, status, callback ID, verification timestamp, and provider result data.
+- The transaction stores provider, amount, currency, provider reference, status, callback ID, verification timestamp, and provider result data. Zarinpal's environment selection is persisted with the transaction before the outbound request and remains authoritative for its callback.
 - Confirmation is transactional and guarded by persisted state. Repeated callbacks cannot pay the order a second time or recreate already-keyed provisioning attempts.
 - Provisioning attempts use an order/server/operation idempotency key. Remote IBSng create outcomes that cannot be confirmed are marked `needs_review`; they are not blindly replayed because IBSng may have committed despite a lost response.
 - Provisioning dispatch currently runs best-effort synchronously after payment confirmation. This is not a background worker or scheduled retry mechanism. A verified payment remains verified if provisioning needs review.
@@ -110,4 +110,4 @@ Current adapters:
 
 ## Deployment validation still required
 
-Source/CI checks do not prove live merchant configuration. Before enabling live payment, verify credentials, HTTPS callback/webhook URLs, actual provider payloads, provider sandbox or low-value payment, callback replay/concurrency behavior, and end-to-end IBSng provisioning/reconciliation in the target environment.
+Source/CI checks do not prove live merchant configuration. Before enabling live payment, verify live credentials, HTTPS callback/webhook URLs, actual provider payloads, sandbox request/return/server-side verification, callback replay/concurrency behavior, and end-to-end IBSng provisioning/reconciliation in the target environment. Sandbox payment avoids a real charge; it does not sandbox the configured IBSng servers, so a verified sandbox payment will still execute provisioning against those servers.
