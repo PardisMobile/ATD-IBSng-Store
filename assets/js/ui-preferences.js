@@ -420,7 +420,7 @@
       status_page_heading: 'Order tracking',
       status_not_found: 'Order not found',
       status_not_found_help: 'The tracking code or order ID is invalid, or no matching order was found. Please check the information you entered.',
-      status_tracking_id: 'Tracking ID',
+      status_tracking_id: 'Tracking code',
       status_order_state: 'Order status',
       status_paid_amount: 'Amount paid',
       status_purchase_date: 'Purchase date',
