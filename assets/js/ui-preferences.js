@@ -336,6 +336,8 @@
       products_base_price: 'Base price (smallest unit of selected currency)',
       products_usdt_price: 'Independent USDT price (optional)',
       products_usdt_hint: 'This price is stored separately and is not calculated from an exchange rate. It will not appear in the store until crypto payment is enabled.',
+      products_currency_unit_hint: 'The toman/rial currency unit is determined by Site Settings.',
+      products_quota_unit_hint: 'MB, GB and TB are converted using a base of 1024. Existing stored quota values remain unchanged when editing a product.',
       products_currency: 'ISO currency code (e.g. IRR)',
       products_quota: 'Data limit (bytes; blank means unknown/unlimited)',
       products_sort: 'Display order',
