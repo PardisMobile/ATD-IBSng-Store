@@ -330,7 +330,8 @@ $formatCustomerExpiry = static function (string $value): string {
 };
 
 $formatTrafficBytes = static function (?int $bytes): string {
-    if ($bytes === null || $bytes <= 0) return 'نامحدود';
+    if ($bytes === null) return 'نامحدود';
+    $bytes = max(0, $bytes);
     $units = ['MB','GB','TB'];
     $value = $bytes / 1048576;
     $unit = 'MB';
