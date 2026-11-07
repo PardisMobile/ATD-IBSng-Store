@@ -450,23 +450,18 @@ $accountFieldLabelsFa = [
 $accountFieldGroups = [
     'identity' => [
         'title_fa' => 'مشخصات اکانت',
-        'title_en' => 'Account Identity',
-        'fields' => ['Username', 'IBSng User ID', 'Group'],
+        'title_en' => 'Account Details',
+        'fields' => ['Username', 'IBSng User ID', 'Group', 'Password'],
     ],
     'activity' => [
-        'title_fa' => 'وضعیت و ورود',
-        'title_en' => 'Status & Activity',
-        'fields' => ['Status', 'First Login', 'Last Login', 'User Is Locked', 'Creation Date'],
+        'title_fa' => 'وضعیت اکانت',
+        'title_en' => 'Account Status',
+        'fields' => ['Status', 'First Login', 'Last Login', 'User Is Locked', 'Creation Date', 'Multi Login raw value'],
     ],
     'validity' => [
-        'title_fa' => 'اعتبار اکانت',
-        'title_en' => 'Account Validity',
+        'title_fa' => 'اطلاعات انقضا',
+        'title_en' => 'Expiration Details',
         'fields' => ['Relative Expiration', 'Nearest Expiration Date', 'Absolute Expiration Date'],
-    ],
-    'access' => [
-        'title_fa' => 'ورود هم‌زمان و اطلاعات دسترسی',
-        'title_en' => 'Login & Credentials',
-        'fields' => ['Multi Login raw value', 'Password'],
     ],
 ];
 ?>
