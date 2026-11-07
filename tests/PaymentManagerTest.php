@@ -54,6 +54,7 @@ $ircryptoFields = $ircrypto->configurationFields('ircrypto');
 payment_manager_assert(($ircryptoFields['api_key']['required'] ?? false) === true, 'IRCrypto API key must be required in provider settings.');
 payment_manager_assert(($ircryptoFields['webhook_secret']['secret'] ?? false) === true, 'IRCrypto webhook secret must be marked secret.');
 $zarinpalFields = (new PaymentManager('zarinpal'))->configurationFields('zarinpal');
-payment_manager_assert(($zarinpalFields['merchant_id']['required'] ?? false) === true, 'Adapter configuration metadata must expose required provider settings.');
+payment_manager_assert(array_key_exists('merchant_id', $zarinpalFields) && array_key_exists('sandbox_merchant_id', $zarinpalFields), 'Zarinpal must expose separate live and sandbox merchant credentials.');
+payment_manager_assert(($zarinpalFields['sandbox_mode']['type'] ?? '') === 'checkbox', 'Zarinpal must expose a persistent Sandbox mode toggle.');
 
 echo "PaymentManager tests passed.\\n";
