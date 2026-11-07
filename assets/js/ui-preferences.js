@@ -829,9 +829,9 @@
       node.nodeValue = new Intl.DateTimeFormat(locale, options).format(date);
     }
   };
-  formatStandaloneDates();
   document.addEventListener('atd:language-change', formatStandaloneDates);
 
   apply();
+  formatStandaloneDates();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
