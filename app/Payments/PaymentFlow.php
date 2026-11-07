@@ -45,18 +45,82 @@ final class PaymentFlow
     }
 
     /**
-     * Initiate checkout using the selected gateway's configured currency type.
+     * Return configured, credential-complete payment choices compatible with
+     * the immutable price snapshot supplied by checkout.
+     *
+     * @return list<array{code:string,label:string,currency:string,amount_minor:int,type:string}>
+     */
+    public static function availableProviders(PDO $pdo, array $order): array
+    {
+        $all = self::settings($pdo);
+        $raw = trim((string)($all['payment_enabled_providers'] ?? ''));
+        $enabled = $raw !== ''
+            ? json_decode($raw, true)
+            : (trim((string)($all['payment_provider'] ?? '')) !== '' ? [(string)$all['payment_provider']] : []);
+        if (!is_array($enabled)) {
+            return [];
+        }
+
+        $choices = [];
+        foreach (array_values(array_unique($enabled)) as $providerValue) {
+            $provider = strtolower(trim((string)$providerValue));
+            if ($provider === '') {
+                continue;
+            }
+            try {
+                $manager = new PaymentManager($provider);
+                $type = strtolower(trim((string)($all['payment_' . $provider . '_type'] ?? 'fiat')));
+                if (!in_array($type, ['fiat', 'crypto'], true)) {
+                    continue;
+                }
+                $currencies = $manager->supportedCurrencies();
+                $currency = $type === 'crypto' ? 'USDT' : strtoupper(trim((string)($order['currency'] ?? '')));
+                if (!in_array($currency, $currencies, true)) {
+                    continue;
+                }
+                $providerConfig = self::providerSettings($all, $provider);
+                $fields = $manager->configurationFields($provider);
+                $complete = true;
+                foreach ($fields as $key => $field) {
+                    if (($field['required'] ?? false) && trim((string)($providerConfig[$key] ?? '')) === '') {
+                        $complete = false;
+                        break;
+                    }
+                }
+                if (!$complete) {
+                    continue;
+                }
+                $amount = $type === 'crypto'
+                    ? PaymentAmount::resolve('crypto', $order)
+                    : PaymentAmount::resolve('fiat', [
+                        'price_minor_snapshot' => $order['price_minor_snapshot'] ?? null,
+                        'currency' => $order['currency'] ?? null,
+                    ]);
+                if ($amount['currency'] !== $currency) {
+                    continue;
+                }
+                $choices[] = [
+                    'code' => $provider,
+                    'label' => ucfirst($provider),
+                    'currency' => $currency,
+                    'amount_minor' => $amount['amount_minor'],
+                    'type' => $type,
+                ];
+            } catch (Throwable) {
+                continue;
+            }
+        }
+        return $choices;
+    }
+
+    /**
+     * Initiate checkout using the customer's selected, currently enabled gateway.
      *
      * @return array{redirect_url:string,transaction_id:int}
      */
-    public static function initiate(PDO $pdo, int $orderId): array
+    public static function initiate(PDO $pdo, int $orderId, string $selectedProvider): array
     {
         $all = self::settings($pdo);
-        $provider = strtolower(trim((string)($all['payment_provider'] ?? '')));
-        if ($provider === '') {
-            throw new RuntimeException('No payment provider is configured.');
-        }
-
         $stmt = $pdo->prepare(
             'SELECT id, public_id, buyer_name, buyer_phone, buyer_email,
                     product_id, product_name_snapshot, price_minor_snapshot, price_usdt_snapshot, currency,
@@ -69,25 +133,20 @@ final class PaymentFlow
             throw new RuntimeException('Order is not awaiting payment.');
         }
 
-        $paymentType = strtolower(trim((string)($all['payment_' . $provider . '_type'] ?? 'fiat')));
-        if (!in_array($paymentType, ['fiat', 'crypto'], true)) {
-            throw new RuntimeException('Configured payment gateway type is invalid.');
+        $provider = strtolower(trim($selectedProvider));
+        $available = self::availableProviders($pdo, $order);
+        $choice = null;
+        foreach ($available as $candidate) {
+            if ($candidate['code'] === $provider) {
+                $choice = $candidate;
+                break;
+            }
         }
-
+        if ($choice === null) {
+            throw new RuntimeException('The selected payment gateway is unavailable or incompatible with this order.');
+        }
         $manager = new PaymentManager($provider);
-        $requestedCurrency = $paymentType === 'crypto' ? 'USDT' : strtoupper(trim((string)$order['currency']));
-        if (!in_array($requestedCurrency, $manager->supportedCurrencies(), true)) {
-            throw new RuntimeException('The selected payment gateway does not support the configured payment currency.');
-        }
-
-        if ($paymentType === 'crypto') {
-            $amount = PaymentAmount::resolve('crypto', $order);
-        } else {
-            $amount = PaymentAmount::resolve('fiat', [
-                'price_minor_snapshot' => $order['price_minor_snapshot'],
-                'currency' => $order['currency'],
-            ]);
-        }
+        $amount = ['amount_minor' => $choice['amount_minor'], 'currency' => $choice['currency']];
         $transactions = new PaymentTransactionService($pdo);
         $transactionId = $transactions->create(
             $orderId,
