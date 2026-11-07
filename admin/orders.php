@@ -34,57 +34,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Aggregate paid sales in PHP rather than using MySQL JSON_EXTRACT.
-// This keeps the report compatible with supported MySQL/MariaDB variants
-// while reading the exact same immutable order snapshot.
-$paidOrders = $pdo->query(
-    "SELECT product_name_snapshot, server_targets_snapshot, order_status,
-            price_minor_snapshot, currency
-     FROM orders
-     WHERE payment_status = 'paid'"
-);
-$aggregates = [];
-while ($order = $paidOrders->fetch(PDO::FETCH_ASSOC)) {
-    $operation = 'create';
-    $snapshot = $order['server_targets_snapshot'] ?? null;
-    if (is_string($snapshot) && trim($snapshot) !== '') {
-        $targets = json_decode($snapshot, true);
-        if (is_array($targets) && isset($targets[0]) && is_array($targets[0])) {
-            $candidate = (string)($targets[0]['operation'] ?? 'create');
-            if (in_array($candidate, ['create', 'renew'], true)) {
-                $operation = $candidate;
-            }
-        }
-    }
-
-    $serviceName = (string)($order['product_name_snapshot'] ?? '');
-    $currency = (string)($order['currency'] ?? '');
-    $key = json_encode([$serviceName, $currency, $operation], JSON_UNESCAPED_UNICODE);
-    if (!isset($aggregates[$key])) {
-        $aggregates[$key] = [
-            'service_name' => $serviceName,
-            'operation_label' => $operation === 'renew' ? 'تمدید' : 'خرید',
-            'paid_orders' => 0,
-            'active_sales' => 0,
-            'partial_sales' => 0,
-            'gross_amount' => 0,
-            'currency' => $currency,
-        ];
-    }
-    $aggregates[$key]['paid_orders']++;
-    if (($order['order_status'] ?? '') === 'active') {
-        $aggregates[$key]['active_sales']++;
-    }
-    if (($order['order_status'] ?? '') === 'partial') {
-        $aggregates[$key]['partial_sales']++;
-    }
-    $aggregates[$key]['gross_amount'] += (int)($order['price_minor_snapshot'] ?? 0);
-}
-$rows = array_values($aggregates);
-usort($rows, static function (array $a, array $b): int {
-    return ($b['paid_orders'] <=> $a['paid_orders'])
-        ?: strcmp($a['service_name'], $b['service_name']);
-});
+// Aggregate paid sales in MySQL. Group by the complete operation-label
+// expression so ONLY_FULL_GROUP_BY can validate the selected expression.
+$sql = "SELECT
+            product_name_snapshot AS service_name,
+            CASE
+                WHEN COALESCE(
+                    JSON_UNQUOTE(JSON_EXTRACT(server_targets_snapshot, '$[0].operation')),
+                    'create'
+                ) = 'renew'
+                THEN 'تمدید'
+                ELSE 'خرید'
+            END AS operation_label,
+            COUNT(*) AS paid_orders,
+            SUM(CASE WHEN order_status = 'active' THEN 1 ELSE 0 END) AS active_sales,
+            SUM(CASE WHEN order_status = 'partial' THEN 1 ELSE 0 END) AS partial_sales,
+            SUM(price_minor_snapshot) AS gross_amount,
+            currency
+        FROM orders
+        WHERE payment_status = 'paid'
+        GROUP BY
+            product_name_snapshot,
+            currency,
+            CASE
+                WHEN COALESCE(
+                    JSON_UNQUOTE(JSON_EXTRACT(server_targets_snapshot, '$[0].operation')),
+                    'create'
+                ) = 'renew'
+                THEN 'تمدید'
+                ELSE 'خرید'
+            END
+        ORDER BY paid_orders DESC, service_name ASC";
+$rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 $totalPaid = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='paid'")->fetchColumn();
 $totalPending = (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE payment_status='pending'")->fetchColumn();
 
