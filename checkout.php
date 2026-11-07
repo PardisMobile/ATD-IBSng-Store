@@ -299,18 +299,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
 <div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted"><span data-ui-text="checkout_duration">مدت:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
+<?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted"><span data-ui-text="checkout_duration">مدت اعتبار:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
 <fieldset class="form-section"><legend data-ui-text="checkout_contact_section">اطلاعات خریدار</legend>
 <div class="field"><label for="buyer_name" data-ui-text="checkout_buyer_name">نام خریدار</label><input id="buyer_name" name="buyer_name" maxlength="150" required value="<?= e((string)($_POST['buyer_name'] ?? '')) ?>"></div>
 <div class="field"><label for="buyer_phone" data-ui-text="checkout_phone">شماره تماس</label><input id="buyer_phone" name="buyer_phone" maxlength="40" type="tel" required value="<?= e((string)($_POST['buyer_phone'] ?? '')) ?>"></div>
-<div class="field"><label for="buyer_email" data-ui-text="checkout_email_optional">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted" data-ui-text="checkout_email_help">با ثبت ایمیل، پس از پرداخت موفق اطلاعات سفارش برای شما ارسال می‌شود. اگر بدون ایمیل خرید کنید، بازیابی از طریق ایمیل ممکن نیست؛ کد پیگیری سفارش را حتماً نگه دارید.</p>
+<div class="field"><label for="buyer_email" data-ui-text="checkout_email_optional">ایمیل (اختیاری)</label><input id="buyer_email" name="buyer_email" maxlength="190" type="email" value="<?= e((string)($_POST['buyer_email'] ?? '')) ?>"></div><p class="muted" data-ui-text="checkout_email_help">در صورت ثبت ایمیل، اطلاعات سفارش پس از پرداخت موفق برای شما ارسال می‌شود. اگر ایمیل وارد نکنید، امکان بازیابی سفارش از طریق ایمیل وجود ندارد؛ بنابراین کد رهگیری را حتماً نگه دارید.</p>
 </fieldset>
-<?php if ($operation === 'renew'): ?><div class="notice">این سفارش برای تمدید حساب <strong dir="ltr"><?= e($username) ?></strong> ثبت می‌شود؛ نیازی به واردکردن رمز عبور نیست.</div><?php else: ?><fieldset class="form-section"><legend data-ui-text="checkout_credentials_section">اطلاعات ورود اکانت</legend>
+<?php if ($operation === 'renew'): ?><div class="notice" data-ui-text="checkout_renew_notice">این سفارش برای تمدید اکانت <strong dir="ltr"><?= e($username) ?></strong> ثبت می‌شود. برای ثبت درخواست تمدید، نیازی به واردکردن رمز اکانت نیست.</div><?php else: ?><fieldset class="form-section"><legend data-ui-text="checkout_credentials_section">اطلاعات ورود اکانت</legend>
 <?php if ($credentialPolicy === 'choice'): ?>
-<div class="field"><label data-ui-text="checkout_credentials_method">روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> <span data-ui-text="checkout_custom_credentials">نام کاربری و رمز عبور دلخواه</span></label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> <span data-ui-text="checkout_auto_credentials">نام کاربری و رمز عبور اتوماتیک</span></label></div>
+<div class="field"><label data-ui-text="checkout_credentials_method">روش دریافت اطلاعات اکانت</label><label><input type="radio" name="credential_method" value="customer"<?= (($_POST['credential_method'] ?? 'automatic') === 'customer') ? ' checked' : '' ?>> <span data-ui-text="checkout_custom_credentials">نام کاربری و رمز عبور دلخواه</span></label><label><input type="radio" name="credential_method" value="automatic"<?= (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? ' checked' : '' ?>> <span data-ui-text="checkout_auto_credentials">تولید خودکار نام کاربری و رمز عبور</span></label></div>
 <?php endif; ?>
 <?php if ($credentialPolicy !== 'automatic'): ?>
 <div id="manual-credentials" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') === 'automatic') ? 'display:none' : '' ?>">
@@ -319,7 +319,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 </div>
 <?php endif; ?>
 <?php if ($credentialPolicy === 'automatic' || $credentialPolicy === 'choice'): ?>
-<p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز اکانت به‌صورت امن و خودکار تولید می‌شوند و پس از پرداخت موفق در اطلاعات سفارش نمایش داده می‌شوند.</p>
+<p id="automatic-credentials-note" class="notice" data-ui-text="checkout_auto_note" style="<?= $credentialPolicy === 'choice' && (($_POST['credential_method'] ?? 'automatic') !== 'automatic') ? 'display:none' : '' ?>">نام کاربری و رمز عبور به‌صورت خودکار ایجاد می‌شوند و پس از تأیید پرداخت، در صفحه جزئیات سفارش نمایش داده خواهند شد.</p>
 <?php endif; ?>
 </fieldset><?php endif; ?>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
