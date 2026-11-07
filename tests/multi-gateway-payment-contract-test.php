@@ -19,7 +19,7 @@ multi_gateway_contract_assert(str_contains($settings, 'payment_enabled_providers
 multi_gateway_contract_assert(str_contains($settings, 'gateway-grid'), 'Gateway configuration cards must use the shared settings card layout.');
 multi_gateway_contract_assert(is_string($flow) && str_contains($flow, 'public static function availableProviders'), 'Payment flow must expose configured compatible payment choices.');
 multi_gateway_contract_assert(str_contains($flow, 'payment_enabled_providers'), 'Payment flow must read the enabled gateway list.');
-multi_gateway_contract_assert(str_contains($flow, "($all['payment_provider'] ?? '')"), 'Payment flow must retain legacy single-provider settings fallback.');
+multi_gateway_contract_assert(str_contains($flow, '($all[\'payment_provider\'] ?? \'\')'), 'Payment flow must retain legacy single-provider settings fallback.');
 multi_gateway_contract_assert(str_contains($flow, 'public static function initiate(PDO $pdo, int $orderId, string $selectedProvider)'), 'Payment initiation must receive the customer-selected provider.');
 multi_gateway_contract_assert(str_contains($flow, "$provider,
             $amount['amount_minor']"), 'The selected provider must be persisted on the payment transaction.');
