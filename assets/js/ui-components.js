@@ -433,24 +433,32 @@
     const eyeIcon = '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
     const eyeOffIcon = '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c5.2 0 8.8 4.8 9.5 7-.3 1-1.1 2.2-2.3 3.3"/><path d="M6.2 6.2C3.8 7.7 2.8 10.1 2.5 12c.5 1.8 4.1 7 9.5 7 1 0 2-.2 2.9-.6"/></svg>';
 
+    const renderPasswordToggle = (button) => {
+      const value = button.previousElementSibling;
+      if (!value) return;
+      const shown = value.textContent !== '••••••••';
+      button.innerHTML = shown ? eyeOffIcon : eyeIcon;
+      button.setAttribute('aria-pressed', String(shown));
+      button.setAttribute('aria-label', language() === 'en'
+        ? (shown ? 'Hide password' : 'Show password')
+        : (shown ? 'مخفی کردن رمز' : 'نمایش رمز'));
+      button.title = language() === 'en'
+        ? (shown ? 'Hide password' : 'Show password')
+        : (shown ? 'مخفی کردن رمز' : 'نمایش رمز');
+    };
+
     document.querySelectorAll('[data-ui-password-toggle]').forEach((button) => {
       const value = button.previousElementSibling;
       if (!value) return;
-      const initiallyVisible = value.textContent !== '••••••••';
-      button.innerHTML = initiallyVisible ? eyeOffIcon : eyeIcon;
-      button.setAttribute('aria-pressed', String(initiallyVisible));
-      button.setAttribute('aria-label', language() === 'en'
-        ? (initiallyVisible ? 'Hide password' : 'Show password')
-        : (initiallyVisible ? 'مخفی کردن رمز' : 'نمایش رمز'));
+      renderPasswordToggle(button);
       button.addEventListener('click', () => {
         const show = value.textContent === '••••••••';
         value.textContent = show ? value.dataset.password || '' : '••••••••';
-        button.innerHTML = show ? eyeOffIcon : eyeIcon;
-        button.setAttribute('aria-label', language() === 'en'
-          ? (show ? 'Hide password' : 'Show password')
-          : (show ? 'مخفی کردن رمز' : 'نمایش رمز'));
-        button.setAttribute('aria-pressed', String(show));
+        renderPasswordToggle(button);
       });
+    });
+    document.addEventListener('atd:language-change', () => {
+      document.querySelectorAll('[data-ui-password-toggle]').forEach(renderPasswordToggle);
     });
 
     document.querySelectorAll('[data-toggle-password-form]').forEach((button) => {
