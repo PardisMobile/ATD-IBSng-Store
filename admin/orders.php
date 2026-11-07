@@ -172,7 +172,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش">
 <label>از تاریخ <input type="date" name="from_date" value="<?= e($fromDate) ?>"></label>
 <label>تا تاریخ <input type="date" name="to_date" value="<?= e($toDate) ?>"></label>
-<div class="filter-actions"><button class="button" type="submit">اعمال بازه</button><a class="button button-secondary" href="<?= e(app_url('admin/orders.php')) ?>">حذف فیلتر</a></div>
+<div class="filter-actions"><button class="button" type="submit">اعمال بازه</button><a class="button button-secondary" href="<?= e('orders.php') ?>">حذف فیلتر</a></div>
 </form>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
