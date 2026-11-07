@@ -10,7 +10,8 @@ $event = (string)($_GET['event'] ?? $_POST['event'] ?? 'purchase_success');
 if (!isset(EmailTemplates::EVENTS[$event])) {
     $event = 'purchase_success';
 }
-$template = EmailTemplates::get($pdo, $event);
+$language = (($_GET['language'] ?? $_POST['language'] ?? 'fa') === 'en') ? 'en' : 'fa';
+$template = EmailTemplates::get($pdo, $event, $language);
 $message = '';
 $error = '';
 $previewHtml = '';
@@ -28,9 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'حجم موضوع یا محتوای قالب بیش از حد مجاز است.';
         } else {
             $save = $pdo->prepare('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
-            $save->execute(['email_template_' . $event . '_subject', $subject]);
-            $save->execute(['email_template_' . $event . '_html', $html]);
-            $save->execute(['email_template_' . $event . '_text', $plain]);
+            $templatePrefix = 'email_template_' . $event . ($language === 'en' ? '_en' : '');
+            $save->execute([$templatePrefix . '_subject', $subject]);
+            $save->execute([$templatePrefix . '_html', $html]);
+            $save->execute([$templatePrefix . '_text', $plain]);
             $template = ['subject' => $subject, 'html' => $html, 'text' => $plain];
             $message = 'قالب ایمیل ذخیره شد.';
         }
@@ -38,13 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['preview'])) {
         $previewHtml = EmailTemplates::render((string)($template['html'] ?? ''), [
             'site_name' => 'نمونه فروشگاه',
-            'customer_name' => 'مشتری نمونه',
+            'customer_name' => $language === 'en' ? 'Sample Customer' : 'مشتری نمونه',
             'order_id' => '0123456789abcdef0123456789abcdef',
             'order_url' => '#',
             'verification_code' => '123456',
-            'expires_in' => '۱۰ دقیقه',
+            'expires_in' => $language === 'en' ? '10 minutes' : '۱۰ دقیقه',
             'verification_url' => '#',
-            'expiration_date' => '۱۴۰۵/۰۹/۱۰',
+            'expiration_date' => $language === 'en' ? '2026/11/30' : '۱۴۰۵/۰۹/۱۰',
             'service_url' => '#',
         ]);
     }
@@ -71,9 +73,9 @@ $config = app_config();
 <p class="hint" data-ui-text="email_templates_variables">قالب‌ها مستقل از روش ارسال هستند. متغیرهای قابل استفاده در قالب: {{site_name}}، {{customer_name}}، {{order_id}}، {{order_url}}، {{verification_code}}، {{expires_in}}، {{verification_url}}، {{expiration_date}} و {{service_url}}. متغیرهای نامرتبط با یک رویداد در آن رویداد مقدار ندارند.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<form method="get" class="field"><label for="event" data-ui-text="email_templates_event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select></form>
+<form method="get" class="field"><label for="event" data-ui-text="email_templates_event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select><label for="template-language" data-ui-text="email_templates_language">زبان قالب</label><select id="template-language" name="language" onchange="this.form.submit()"><option value="fa" <?= $language === 'fa' ? 'selected' : '' ?>>فارسی</option><option value="en" <?= $language === 'en' ? 'selected' : '' ?>>English</option></select></form>
 <form method="post">
-<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="event" value="<?= e($event) ?>">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="event" value="<?= e($event) ?>"><input type="hidden" name="language" value="<?= e($language) ?>">
 <div class="field"><label for="subject" data-ui-text="email_templates_subject">موضوع ایمیل</label><input id="subject" name="subject" maxlength="250" required value="<?= e($template['subject']) ?>"></div>
 <div class="field"><label for="html" data-ui-text="email_templates_html">قالب HTML</label><textarea id="html" name="html" required><?= e($template['html']) ?></textarea><div class="hint" data-ui-text="email_templates_html_hint">HTML ایمیل را ویرایش کنید. پیش‌نمایش با داده‌های نمونه در همین صفحه ارائه می‌شود.</div></div>
 <div class="field"><label for="text" data-ui-text="email_templates_text">نسخه متنی جایگزین (Plain text)</label><textarea id="text" name="text" required><?= e($template['text']) ?></textarea></div>
