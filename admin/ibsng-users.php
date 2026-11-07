@@ -525,12 +525,14 @@ $accountFieldGroups = [
         'title_en' => 'Expiration Details',
         'fields' => ['Relative Expiration', 'Nearest Expiration Date', 'Absolute Expiration Date'],
     ],
-    'capacity' => [
+];
+if ($accountHtml !== '') {
+    $accountFieldGroups['capacity'] = [
         'title_fa' => 'حجم سرویس',
         'title_en' => 'Data Usage',
         'fields' => ['Consumed Traffic', 'Remaining Traffic'],
-    ],
-];
+    ];
+}
 ?>
 <div class="result panel account-result">
 <strong class="account-result-title" data-fa="اطلاعات اکانت IBSng" data-en="IBSng account details">اطلاعات اکانت IBSng</strong>
