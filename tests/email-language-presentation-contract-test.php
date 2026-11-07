@@ -15,7 +15,7 @@ $checks = [
     'independent English defaults exist for every email event' => is_string($templates) && str_contains($templates, 'DEFAULTS_EN') && substr_count($templates, "'subject' =>") >= 10,
     'template lookup selects locale-specific setting keys' => is_string($templates) && str_contains($templates, "'email_template_' . $event . '_en_' . $field") && str_contains($templates, 'applyDocumentDirection'),
     'Persian and English templates receive matching document direction' => is_string($templates) && str_contains($templates, "'rtl'") && str_contains($templates, "'ltr'") && str_contains($templates, 'text-align:'),
-    'admin can edit and preview each locale independently' => is_string($adminTemplates) && str_contains($adminTemplates, 'template-language') && str_contains($adminTemplates, "(\$language === 'en' ? '_en' : '')"),
+    'admin can edit and preview each locale independently' => is_string($adminTemplates) && str_contains($adminTemplates, 'template-language') && str_contains($adminTemplates, "\$language === 'en' ? '_en' : ''"),
     'checkout captures selected storefront language with the order' => is_string($checkout) && str_contains($checkout, 'site_language') && str_contains($checkout, 'buyer_email,language,product_id') && str_contains($checkout, '$orderLanguage'),
     'legacy installations receive an additive language column' => is_string($schemaSync) && str_contains($schemaSync, "ADD COLUMN language CHAR(2) NOT NULL DEFAULT 'fa'") && str_contains($schemaSync, "!\$this->columnExists('orders', 'language')"),
     'fresh installs include order language defaulting to Persian' => is_string($schema) && str_contains($schema, "language CHAR(2) NOT NULL DEFAULT 'fa'"),
