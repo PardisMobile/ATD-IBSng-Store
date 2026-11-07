@@ -233,7 +233,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="add">
 <div class="grid">
-<div class="field"><label for="name" data-fa="نام سرور (داخلی)" data-en="Internal server name">نام سرور (داخلی)</label><input id="name" name="name" required maxlength="120"></div>
+<div class="field"><label for="name" data-fa="نام سرور" data-en="Server Name">نام سرور</label><input id="name" name="name" required maxlength="120" placeholder="e.g. Iran Server, Hetzner VPS, My IBSng"></div>
 <div class="field"><label for="service_name" data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label for="host" data-ui-text="server_host_label">نشانی سرور (دامنه یا IP، بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
 <div class="field"><label for="port" data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
@@ -244,8 +244,8 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <div class="timezone-command"><code dir="ltr">date '+%z'</code><button type="button" data-copy-ibsng-command aria-label="کپی دستور" title="کپی دستور"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg></button></div>
 <p class="timezone-help" data-fa="علامت + اختیاری است؛ برای منطقه‌های غرب UTC علامت منفی را حفظ کنید. خالی گذاشتن فیلد یعنی UTC. این تنظیم فقط برای محاسبه تاریخ انقضا استفاده می‌شود." data-en="The plus sign is optional; keep the minus sign for locations west of UTC. Leave blank to use UTC. This setting is used only to calculate expiration dates.">علامت + اختیاری است؛ برای منطقه‌های غرب UTC علامت منفی را حفظ کنید. خالی گذاشتن فیلد یعنی UTC. این تنظیم فقط برای محاسبه تاریخ انقضا استفاده می‌شود.</p>
 </div>
-<div class="field"><label for="username" data-ui-text="server_admin_username">نام کاربری مدیر IBSng</label><input id="username" name="username" required autocomplete="off"></div>
-<div class="field"><label for="password" data-ui-text="server_admin_password">رمز عبور مدیر IBSng</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
+<div class="field"><label for="username" data-fa="نام کاربری مدیر IBSNG" data-en="IBSNG Admin Username">IBSNG Admin Username</label><input id="username" name="username" required autocomplete="off"></div>
+<div class="field"><label for="password" data-fa="رمز عبور مدیر IBSNG" data-en="IBSNG Admin Password">IBSNG Admin Password</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
 </div>
 <button class="button primary" type="submit" data-ui-text="server_save_test">تست اتصال و ذخیره سرور</button>
 </form>
@@ -263,7 +263,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="update"><input type="hidden" name="id" value="<?= (int)$server['id'] ?>">
 <div class="grid">
-<div class="field"><label data-fa="نام سرور (داخلی)" data-en="Internal server name">نام سرور (داخلی)</label><input name="name" required value="<?= e((string)$server['name']) ?>"></div>
+<div class="field"><label data-fa="نام سرور" data-en="Server Name">نام سرور</label><input name="name" required value="<?= e((string)$server['name']) ?>" placeholder="e.g. Iran Server, Hetzner VPS, My IBSng"></div>
 <div class="field"><label data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input name="service_name" maxlength="150" value="<?= e((string)($server['service_name'] ?? '')) ?>" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
 <div class="field"><label>Host</label><input name="host" required value="<?= e((string)$server['host']) ?>"></div>
 <div class="field"><label data-fa="پورت پنل وب" data-en="Web Panel Port (IBSng Default Port: 80 - HTTP)">Web Panel Port (IBSng Default Port: 80 - HTTP)</label><select name="port"><option value="80"<?= (int)$server['port'] === 80 ? ' selected' : '' ?>>80 — HTTP</option><option value="443"<?= (int)$server['port'] === 443 ? ' selected' : '' ?>>443 — HTTPS</option></select></div>
@@ -274,8 +274,8 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <div class="timezone-command"><code dir="ltr">date '+%z'</code><button type="button" data-copy-ibsng-command aria-label="کپی دستور" title="کپی دستور"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg></button></div>
 <p class="timezone-help" data-fa="علامت + اختیاری است؛ برای منطقه‌های غرب UTC علامت منفی را حفظ کنید. خالی گذاشتن فیلد یعنی UTC. این تنظیم فقط برای محاسبه تاریخ انقضا استفاده می‌شود." data-en="The plus sign is optional; keep the minus sign for locations west of UTC. Leave blank to use UTC. This setting is used only to calculate expiration dates.">علامت + اختیاری است؛ برای منطقه‌های غرب UTC علامت منفی را حفظ کنید. خالی گذاشتن فیلد یعنی UTC. این تنظیم فقط برای محاسبه تاریخ انقضا استفاده می‌شود.</p>
 </div>
-<div class="field"><label data-fa="نام کاربری جدید (خالی = حفظ قبلی)" data-en="New username (blank = keep current)">نام کاربری جدید (خالی = حفظ قبلی)</label><input name="username" autocomplete="off"></div>
-<div class="field"><label data-fa="رمز جدید (خالی = حفظ قبلی)" data-en="New password (blank = keep current)">رمز جدید (خالی = حفظ قبلی)</label><input name="password" type="password" autocomplete="new-password"></div>
+<div class="field"><label data-fa="نام کاربری جدید (خالی = حفظ قبلی)" data-en="IBSNG Admin Username (blank = keep current)">IBSNG Admin Username (blank = keep current)</label><input name="username" autocomplete="off"></div>
+<div class="field"><label data-fa="رمز جدید (خالی = حفظ قبلی)" data-en="IBSNG Admin Password (blank = keep current)">IBSNG Admin Password (blank = keep current)</label><input name="password" type="password" autocomplete="new-password"></div>
 </div><button class="button primary" type="submit" data-fa="تست اتصال و ذخیره تغییرات" data-en="Test connection and save changes">تست اتصال و ذخیره تغییرات</button>
 </form></details>
 <div class="actions">
