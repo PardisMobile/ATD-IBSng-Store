@@ -23,7 +23,261 @@
 
   window.ATDUI = Object.assign(window.ATDUI || {}, { toast });
 
+
+  const isTextEntry = (element) => {
+    if (!(element instanceof HTMLInputElement) && !(element instanceof HTMLTextAreaElement)) return false;
+    if (element instanceof HTMLTextAreaElement) return true;
+    return ['text', 'search', 'email', 'url', 'tel', 'password', 'number', 'date', 'time', 'datetime-local', 'month', 'week'].includes((element.type || 'text').toLowerCase());
+  };
+
+  const isTechnicalEntry = (element) => {
+    if (element instanceof HTMLInputElement) {
+      const type = (element.type || 'text').toLowerCase();
+      if (['email', 'url', 'tel', 'password', 'number', 'date', 'time', 'datetime-local', 'month', 'week'].includes(type)) return true;
+      if (element.hasAttribute('data-numeric') || element.inputMode === 'numeric' || element.inputMode === 'decimal') return true;
+    }
+
+    const identity = [element.id, element.name, element.getAttribute('autocomplete'), element.getAttribute('placeholder')]
+      .filter(Boolean).join(' ').toLowerCase();
+    const technicalIdentity = /(?:^|[\\s_\\-])(email|e-mail|username|user_name|account|tracking|order|lookup|code|captcha|otp|host|domain|ip|port|url|uri|token|secret|api[_-]?key|merchant|terminal|telegram|whatsapp|phone|mobile|credit|price|quota|sort|length|prefix|remote[_-]?user[_-]?id)(?:$|[\\s_\\-])/i;
+    if (technicalIdentity.test(identity)) return true;
+
+    const label = element.id
+      ? document.querySelector('label[for="' + CSS.escape(element.id) + '"]')
+      : element.closest('.field')?.querySelector('label');
+    const labelText = (label?.textContent || '').toLowerCase();
+    return /ایمیل|کد رهگیری|شناسه سفارش|نام کاربری|رمز عبور|رمز اکانت|شماره تماس|شماره تلفن|آدرس|نشانی|دامنه|پورت|آی.?پی|کد چهاررقمی|توکن|کلید|قیمت|حجم|اعتبار|ترتیب نمایش|طول .*نام کاربری/i.test(labelText);
+  };
+
+  const applyTextDirection = (scope = document) => {
+    const fields = [];
+    if (scope.matches?.('input,textarea')) fields.push(scope);
+    scope.querySelectorAll?.('input,textarea').forEach((field) => fields.push(field));
+    fields.forEach((field) => {
+      if (!isTextEntry(field) || field.hasAttribute('dir')) return;
+      field.setAttribute('dir', isTechnicalEntry(field) ? 'ltr' : 'auto');
+    });
+  };
+
+  const initializeTextDirection = () => {
+    applyTextDirection();
+    const observer = new MutationObserver((records) => {
+      records.forEach((record) => record.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) applyTextDirection(node);
+      }));
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  };
+
+  const initializeSelectMenus = () => {
+    const selectSelector = 'select:not([multiple]):not([size]):not([data-native-select])';
+    let activeSelect = null;
+    let activeMenu = null;
+    let activeOptions = [];
+    let selectedIndex = 0;
+    let mutationObserver = null;
+
+    const close = () => {
+      if (!activeSelect) return;
+      activeSelect.setAttribute('aria-expanded', 'false');
+      activeSelect.removeAttribute('aria-controls');
+      activeMenu?.remove();
+      mutationObserver?.disconnect();
+      activeSelect = null;
+      activeMenu = null;
+      activeOptions = [];
+      mutationObserver = null;
+    };
+
+    const visibleOptions = (select) => Array.from(select.options)
+      .map((option, index) => ({ option, index }))
+      .filter(({ option }) => !option.hidden && option.parentElement?.hidden !== true);
+
+    const positionMenu = () => {
+      if (!activeSelect || !activeMenu) return;
+      const rect = activeSelect.getBoundingClientRect();
+      const gap = 5;
+      const viewportPadding = 8;
+      const availableBelow = window.innerHeight - rect.bottom - viewportPadding - gap;
+      const availableAbove = rect.top - viewportPadding - gap;
+      const openAbove = availableBelow < 180 && availableAbove > availableBelow;
+      const maxHeight = Math.max(90, Math.min(300, openAbove ? availableAbove : availableBelow));
+      activeMenu.style.width = Math.min(rect.width, window.innerWidth - viewportPadding * 2) + 'px';
+      activeMenu.style.maxHeight = maxHeight + 'px';
+      activeMenu.style.left = Math.max(viewportPadding, Math.min(rect.left, window.innerWidth - rect.width - viewportPadding)) + 'px';
+      activeMenu.style.top = (openAbove
+        ? Math.max(viewportPadding, rect.top - Math.min(activeMenu.scrollHeight, maxHeight) - gap)
+        : rect.bottom + gap) + 'px';
+    };
+
+    const renderOptions = () => {
+      if (!activeSelect || !activeMenu) return;
+      activeOptions = visibleOptions(activeSelect);
+      activeMenu.replaceChildren();
+      let lastGroup = null;
+      activeOptions.forEach(({ option, index }) => {
+        const group = option.parentElement instanceof HTMLOptGroupElement ? option.parentElement : null;
+        if (group && group !== lastGroup) {
+          const heading = document.createElement('div');
+          heading.className = 'atd-select-group';
+          heading.textContent = group.label;
+          activeMenu.appendChild(heading);
+        }
+        lastGroup = group;
+        const item = document.createElement('div');
+        item.className = 'atd-select-option';
+        item.setAttribute('role', 'option');
+        item.dataset.optionIndex = String(index);
+        item.setAttribute('aria-selected', String(index === activeSelect.selectedIndex));
+        item.setAttribute('aria-disabled', String(option.disabled || group?.disabled || false));
+        item.textContent = option.label || option.textContent;
+        if (option.disabled || group?.disabled) item.classList.add('is-disabled');
+        if (index === activeSelect.selectedIndex) item.classList.add('is-selected');
+        activeMenu.appendChild(item);
+      });
+      positionMenu();
+    };
+
+    const open = (select) => {
+      if (select.disabled || select.options.length === 0) return;
+      if (activeSelect === select) { close(); return; }
+      close();
+      activeSelect = select;
+      selectedIndex = Math.max(0, select.selectedIndex);
+      activeMenu = document.createElement('div');
+      activeMenu.className = 'atd-select-menu';
+      activeMenu.id = 'atd-select-menu-' + Math.random().toString(36).slice(2);
+      activeMenu.setAttribute('role', 'listbox');
+      activeMenu.setAttribute('aria-label', select.getAttribute('aria-label') || select.labels?.[0]?.textContent?.trim() || '');
+      activeMenu.dir = getComputedStyle(select).direction;
+      document.body.appendChild(activeMenu);
+      select.setAttribute('aria-expanded', 'true');
+      select.setAttribute('aria-controls', activeMenu.id);
+      renderOptions();
+      const selected = activeMenu.querySelector('.is-selected');
+      if (selected) selected.scrollIntoView({ block: 'nearest' });
+      mutationObserver = new MutationObserver(renderOptions);
+      mutationObserver.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'hidden', 'label', 'selected'] });
+    };
+
+    document.querySelectorAll(selectSelector).forEach((select) => {
+      if (select.dataset.atdSelectReady === 'true') return;
+      select.dataset.atdSelectReady = 'true';
+      select.setAttribute('aria-haspopup', 'listbox');
+      select.setAttribute('aria-expanded', 'false');
+      select.addEventListener('click', (event) => {
+        event.preventDefault();
+        select.focus({ preventScroll: true });
+        open(select);
+      });
+      select.addEventListener('keydown', (event) => {
+        if (!activeSelect || activeSelect !== select) {
+          if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+            event.preventDefault();
+            open(select);
+          }
+          return;
+        }
+        if (event.key === 'Escape' || event.key === 'Tab') {
+          if (event.key === 'Escape') event.preventDefault();
+          close();
+          return;
+        }
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          const step = event.key === 'ArrowDown' ? 1 : -1;
+          let next = selectedIndex;
+          for (let count = 0; count < activeOptions.length; count++) {
+            next = (next + step + activeSelect.options.length) % activeSelect.options.length;
+            const candidate = activeSelect.options[next];
+            if (!candidate.disabled && !candidate.parentElement?.disabled && !candidate.hidden) break;
+          }
+          selectedIndex = next;
+          activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
+            const selected = Number(item.dataset.optionIndex) === selectedIndex;
+            item.classList.toggle('is-active', selected);
+            item.setAttribute('aria-selected', String(selected));
+            if (selected) item.scrollIntoView({ block: 'nearest' });
+          });
+          return;
+        }
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          const candidate = activeSelect.options[selectedIndex];
+          if (candidate && !candidate.disabled && !candidate.parentElement?.disabled) {
+            activeSelect.selectedIndex = selectedIndex;
+            activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
+            activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          close();
+          return;
+        }
+        if (event.key.length === 1) {
+          const start = activeSelect.selectedIndex + 1;
+          const needle = event.key.toLocaleLowerCase();
+          const options = Array.from(activeSelect.options);
+          for (let offset = 0; offset < options.length; offset++) {
+            const index = (start + offset) % options.length;
+            if (!options[index].disabled && options[index].textContent.trim().toLocaleLowerCase().startsWith(needle)) {
+              selectedIndex = index;
+              activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
+                const selected = Number(item.dataset.optionIndex) === index;
+                item.classList.toggle('is-active', selected);
+                item.setAttribute('aria-selected', String(selected));
+                if (selected) item.scrollIntoView({ block: 'nearest' });
+              });
+              break;
+            }
+          }
+        }
+      });
+      select.addEventListener('change', () => {
+        if (activeSelect === select) renderOptions();
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!activeSelect) return;
+      if (event.target === activeSelect || activeMenu?.contains(event.target)) return;
+      close();
+    });
+    document.addEventListener('mousedown', (event) => {
+      if (activeMenu?.contains(event.target)) event.preventDefault();
+    });
+    document.addEventListener('click', (event) => {
+      const item = event.target.closest?.('.atd-select-option[data-option-index]');
+      if (!item || !activeSelect || item.classList.contains('is-disabled')) return;
+      const index = Number(item.dataset.optionIndex);
+      if (!Number.isInteger(index) || !activeSelect.options[index]) return;
+      activeSelect.selectedIndex = index;
+      activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
+      activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      close();
+    });
+    window.addEventListener('resize', positionMenu, { passive: true });
+    window.addEventListener('scroll', positionMenu, true);
+    const observer = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (node.matches?.(selectSelector)) initializeSelectMenusForNode(node);
+      node.querySelectorAll?.(selectSelector).forEach((select) => initializeSelectMenusForNode(select));
+    })));
+    const initializeSelectMenusForNode = (select) => {
+      if (select.dataset.atdSelectReady === 'true') return;
+      select.dataset.atdSelectReady = 'true';
+      select.setAttribute('aria-haspopup', 'listbox');
+      select.setAttribute('aria-expanded', 'false');
+      select.addEventListener('click', (event) => { event.preventDefault(); select.focus({ preventScroll: true }); open(select); });
+      select.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(select); }
+      });
+      select.addEventListener('change', () => { if (activeSelect === select) renderOptions(); });
+    };
+    observer.observe(document.body, { childList: true, subtree: true });
+  };
+
   const mount = () => {
+    initializeTextDirection();
+    initializeSelectMenus();
     const dialog = document.createElement('dialog');
     dialog.className = 'atd-confirm-dialog';
     dialog.innerHTML = '<form method="dialog" class="atd-confirm-card">'
