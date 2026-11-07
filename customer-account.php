@@ -179,11 +179,42 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
         $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
         $planStmt->execute([(int)$server['id'], $groupName]);
         $planName = (string)($planStmt->fetchColumn() ?: '');
+
+        // A volume quota belongs to a Store product mapping, not to an IBSng accounting attribute.
+        // If the group maps to multiple active products, its exact product quota is ambiguous.
+        $quotaStmt = $pdo->prepare(
+            'SELECT p.quota_bytes
+             FROM ibsng_groups g
+             JOIN product_server_groups m ON m.ibsng_group_id=g.id AND m.server_id=g.server_id
+             JOIN products p ON p.id=m.product_id AND p.is_active=1
+             WHERE g.server_id=? AND g.group_name=? AND g.is_active=1
+             ORDER BY p.id'
+        );
+        $quotaStmt->execute([(int)$server['id'], $groupName]);
+        $quotaRows = $quotaStmt->fetchAll(PDO::FETCH_COLUMN);
+        $quotaBytes = count($quotaRows) === 1 && $quotaRows[0] !== null && (int)$quotaRows[0] > 0
+            ? (int)$quotaRows[0] : null;
+
+        // Read only the actual Daily Traffic "This Period Usage" value.
+        // Dashes, empty values and Not Applicable are unavailable, never zero.
+        $trafficRaw = trim((string)($ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']) ?? ''));
+        $consumedBytes = null;
+        if ($trafficRaw !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $trafficRaw)
+            && preg_match('/^([0-9]+(?:\\.[0-9]+)?)\\s*([KMGT])(?:i?B)?$/i', $trafficRaw, $trafficMatch)) {
+            $trafficPower = ['K'=>1,'M'=>2,'G'=>3,'T'=>4][strtoupper($trafficMatch[2])] ?? 0;
+            $consumedBytes = (int)round((float)$trafficMatch[1] * (1024 ** $trafficPower));
+        }
+        $remainingBytes = $quotaBytes !== null && $consumedBytes !== null
+            ? max(0, $quotaBytes - $consumedBytes) : null;
+
         $accounts[] = [
             'server_id' => (int)$server['id'],
             'server' => (string)($server['service_name'] ?: $server['name']),
             'username' => $username,
             'plan' => $planName !== '' ? $planName : 'نامشخص',
+            'quota_bytes' => $quotaBytes,
+            'consumed_bytes' => $consumedBytes,
+            'remaining_bytes' => $remainingBytes,
             'multi_login' => $multiLogin,
             'expiry' => (string)($state['nearest_exp_date'] ?? ''),
             'remaining' => (int)($state['remaining_days'] ?? 0),
@@ -298,6 +329,16 @@ $formatCustomerExpiry = static function (string $value): string {
     ) ?? $value;
 };
 
+$formatTrafficBytes = static function (?int $bytes): string {
+    if ($bytes === null || $bytes <= 0) return 'نامحدود';
+    $units = ['MB','GB','TB'];
+    $value = $bytes / 1048576;
+    $unit = 'MB';
+    foreach (['GB','TB'] as $nextUnit) {
+        if ($value >= 1024) { $value /= 1024; $unit = $nextUnit; } else break;
+    }
+    return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.') . ' ' . $unit;
+};
 $isLoggedIn = is_array($auth) && is_array($account) && $account !== [];
 $config = app_config();
 $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
@@ -378,6 +419,12 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($formatCustomerExpiry((string)$item['expiry'])) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
 <div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+</div>
+</section>
+<section class="panel account-card">
+<h2 data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</h2>
+<div class="account-grid">
+<div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?= e($formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null)) ?></strong></div>
 </div>
 </section>
 <section class="panel account-card account-actions-card">
