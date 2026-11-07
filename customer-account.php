@@ -50,6 +50,22 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
         $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
         $credentials = $client->getCredentials($username);
         $state = IBSngRenewalState::fromClient($client, $username, isset($server['utc_offset']) ? (string)$server['utc_offset'] : null);
+        // Presentation-only extraction of the Multi Login attribute from IBSng user-info HTML.
+        $multiLogin = '';
+        $accountHtml = (string)($credentials['html'] ?? '');
+        if ($accountHtml !== '' && preg_match('/<tr\\b[^>]*>(?:(?!<tr\\b).)*attr_edit_checkbox_[^>]*value=["\\'](?:multi_login|multi_login_instances|multi_login_instance)["\\'](?:(?!<tr\\b).)*<\\/tr>/is', $accountHtml, $multiLoginRow)) {
+            if (preg_match('/<td\\b[^>]*class=["\\'][^"\\']*Form_Content_Row_Right[^"\\']*["\\'][^>]*>(.*?)<\\/td>/is', $multiLoginRow[0], $multiLoginCell)) {
+                $cellHtml = $multiLoginCell[1];
+                if (preg_match('/<option\\b[^>]*selected[^>]*>(.*?)<\\/option>/is', $cellHtml, $selectedOption)) {
+                    $multiLogin = trim(html_entity_decode(strip_tags($selectedOption[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                } elseif (preg_match('/<input\\b[^>]*value=["\\']([^"\\']*)["\\'][^>]*>/is', $cellHtml, $inputValue)) {
+                    $multiLogin = trim(html_entity_decode($inputValue[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                } else {
+                    $multiLogin = trim(html_entity_decode(strip_tags($cellHtml), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                }
+            }
+        }
+        if ($multiLogin === '' || preg_match('/^-+$/u', $multiLogin)) $multiLogin = 'نامشخص';
         $groupName = trim((string)($credentials['group'] ?? ''));
         $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
         $planStmt->execute([(int)$server['id'], $groupName]);
@@ -59,6 +75,7 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
             'server' => (string)($server['service_name'] ?: $server['name']),
             'username' => $username,
             'plan' => $planName !== '' ? $planName : 'نامشخص',
+            'multi_login' => $multiLogin,
             'expiry' => (string)($state['nearest_exp_date'] ?? ''),
             'remaining' => (int)($state['remaining_days'] ?? 0),
             'expired' => (bool)($state['expired'] ?? false),
@@ -237,6 +254,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-item"><small data-ui-text="customer_username">نام کاربری</small><strong dir="ltr"><?= e($item['username']) ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_service">سرویس</small><strong><?= e($item['server']) ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_plan">پلن</small><strong><?= e($item['plan']) ?></strong></div>
+                <div class="account-item"><small data-fa="تعداد کاربران هم‌زمان" data-en="Simultaneous Users">تعداد کاربران هم‌زمان</small><strong><?php if ($item['multi_login'] === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif (preg_match('/^([0-9]+)\\s+instances?$/i', $item['multi_login'], $multiLoginMatch)): ?><span data-fa="<?= e(strtr($multiLoginMatch[1], '0123456789', '۰۱۲۳۴۵۶۷۸۹')) ?> کاربر" data-en="<?= e($multiLoginMatch[1]) ?> users"><?= e(strtr($multiLoginMatch[1], '0123456789', '۰۱۲۳۴۵۶۷۸۹')) ?> کاربر</span><?php else: ?><?= e($item['multi_login']) ?><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($item['expiry']) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
