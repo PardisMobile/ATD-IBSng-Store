@@ -4,8 +4,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#000817",
-  "theme_color": "#00dfcc",
+  "background_color": "#000000",
+  "theme_color": "#01f6da",
   "icons": [
     {
       "src": "assets/icons/atd-app-icon.svg",
