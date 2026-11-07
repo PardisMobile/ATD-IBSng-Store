@@ -234,7 +234,7 @@ $products = $pdo->query("SELECT p.*,GROUP_CONCAT(CONCAT(s.name, ' / ', g.plan_na
 </fieldset>
 <fieldset class="form-section"><legend data-ui-text="products_section_capacity">حجم و ترتیب نمایش</legend>
 <div class="grid">
-<div class="field"><label for="quota_amount" data-fa="سقف حجم (خالی یا صفر = نامحدود)" data-en="Quota limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(110px,.55fr);gap:8px"><input id="quota_amount" name="quota_amount" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="9" placeholder="مثلاً 100 یا 5" value="<?php
+<div class="field"><label for="quota_amount" data-fa="محدودیت حجم (خالی یا صفر = نامحدود)" data-en="Data limit (blank or zero = unlimited)">سقف حجم (خالی یا صفر = نامحدود)</label><div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(110px,.55fr);gap:8px"><input id="quota_amount" name="quota_amount" type="text" inputmode="decimal" autocomplete="off" data-numeric="decimal" data-max-decimals="9" placeholder="مثلاً 100 یا 5" value="<?php
 $quotaBytesForEdit = isset($product['quota_bytes']) && $product['quota_bytes'] !== null ? (int)$product['quota_bytes'] : null;
 $quotaUnitForEdit = 'GB';
 $quotaAmountForEdit = '';
@@ -254,7 +254,7 @@ if ($quotaBytesForEdit !== null && $quotaBytesForEdit > 0) {
     }
 }
 echo e($quotaAmountForEdit);
-?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-fa="واحدهای MB، GB و TB با مبنای ۱۰۲۴ محاسبه می‌شوند." data-en="MB, GB and TB use a 1024-based conversion.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
+?>"><select id="quota_unit" name="quota_unit" aria-label="واحد حجم"><option value="MB"<?= $quotaUnitForEdit === 'MB' ? ' selected' : '' ?>>MB</option><option value="GB"<?= $quotaUnitForEdit === 'GB' ? ' selected' : '' ?>>GB</option><option value="TB"<?= $quotaUnitForEdit === 'TB' ? ' selected' : '' ?>>TB</option></select></div><div class="hint" data-fa="تبدیل واحدهای MB، GB و TB بر مبنای ۱۰۲۴ انجام می‌شود." data-en="MB, GB and TB are converted using a base of 1024.">واحد MB و GB با مبنای ۱۰۲۴ محاسبه می‌شود. در ویرایش، مقدارهای قبلی بدون تغییر در حجم ذخیره‌شده حفظ می‌شوند.</div></div>
 <div class="field"><label for="sort_order" data-ui-text="products_sort">ترتیب نمایش</label><input id="sort_order" name="sort_order" type="text" inputmode="numeric" autocomplete="off" data-numeric="integer" value="<?= e((string)($product['sort_order'] ?? 0)) ?>"></div>
 </div>
 </fieldset>
