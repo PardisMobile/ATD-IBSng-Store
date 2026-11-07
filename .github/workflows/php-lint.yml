@@ -36,6 +36,9 @@ jobs:
       - name: Run multi-gateway payment contract test
         run: php tests/multi-gateway-payment-contract-test.php
 
+      - name: Run Zarinpal sandbox and local font contract test
+        run: php tests/zarinpal-sandbox-contract-test.php
+
       - name: Run customer order account display contract test
         run: php tests/order-status-account-contract-test.php
 
