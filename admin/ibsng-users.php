@@ -412,6 +412,47 @@ if ($multiLoginDisplay === '' || preg_match('/^-+$/u', $multiLoginDisplay)) {
     $multiLoginDisplay = 'تک‌کاربره';
 }
 
+// Store quota is resolved through the exact active IBSng group mapping.
+// Multiple active products on one group make the quota ambiguous, so do not guess.
+$quotaBytes = null;
+$consumedBytes = null;
+$remainingBytes = null;
+if ($accountHtml !== '' && trim((string)($userResult['group'] ?? '')) !== '') {
+    $quotaStmt = $pdo->prepare(
+        'SELECT p.quota_bytes
+         FROM ibsng_groups g
+         JOIN product_server_groups m ON m.ibsng_group_id=g.id AND m.server_id=g.server_id
+         JOIN products p ON p.id=m.product_id AND p.is_active=1
+         WHERE g.server_id=? AND g.group_name=? AND g.is_active=1
+         ORDER BY p.id'
+    );
+    $quotaStmt->execute([$selectedServerId, trim((string)$userResult['group'])]);
+    $quotaRows = $quotaStmt->fetchAll(PDO::FETCH_COLUMN);
+    if (count($quotaRows) === 1 && $quotaRows[0] !== null && (int)$quotaRows[0] > 0) {
+        $quotaBytes = (int)$quotaRows[0];
+    }
+    // This attribute identifies Daily Traffic usage. Do not use Traffic Limit,
+    // Monthly Traffic, period length, reset date or any Edit User form submission.
+    $trafficRaw = trim((string)($ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']) ?? ''));
+    if ($trafficRaw !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $trafficRaw)
+        && preg_match('/^([0-9]+(?:\\.[0-9]+)?)\\s*([KMGT])(?:i?B)?$/i', $trafficRaw, $trafficMatch)) {
+        $trafficPower = ['K'=>1,'M'=>2,'G'=>3,'T'=>4][strtoupper($trafficMatch[2])] ?? 0;
+        $consumedBytes = (int)round((float)$trafficMatch[1] * (1024 ** $trafficPower));
+    }
+    if ($quotaBytes !== null && $consumedBytes !== null) {
+        $remainingBytes = max(0, $quotaBytes - $consumedBytes);
+    }
+}
+$formatTrafficBytes = static function (?int $bytes): string {
+    if ($bytes === null || $bytes <= 0) return 'نامحدود';
+    $value = $bytes / 1048576;
+    $unit = 'MB';
+    foreach (['GB','TB'] as $nextUnit) {
+        if ($value >= 1024) { $value /= 1024; $unit = $nextUnit; } else break;
+    }
+    return rtrim(rtrim(number_format($value, 2, '.', ''), '0'), '.') . ' ' . $unit;
+};
+
 // Store-owned presentation title only; keep the extracted IBSng value untouched.
 $multiLoginDisplayFa = $multiLoginDisplay;
 $multiLoginDisplayEn = $multiLoginDisplay;
@@ -434,6 +475,8 @@ $accountFields = [
     'Creation Date' => $accountDisplay($ibsngDisplayedValue($accountHtml, ['Creation Date', 'Create Date'])),
     'Multi Login raw value' => $multiLoginDisplay,
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
+    'Consumed Traffic' => $formatTrafficBytes($consumedBytes),
+    'Remaining Traffic' => $formatTrafficBytes($remainingBytes),
 ];
 
 // Presentation-only localization for the IBSng lock flag; retain the raw value above.
@@ -458,6 +501,8 @@ $accountFieldLabelsFa = [
     'Creation Date' => 'زمان ساخت اکانت',
     'Multi Login raw value' => 'تعداد کاربران هم‌زمان',
     'Password' => 'رمز عبور',
+    'Consumed Traffic' => 'حجم مصرف‌شده',
+    'Remaining Traffic' => 'حجم باقی‌مانده',
 ];
 
 ?>
@@ -478,6 +523,11 @@ $accountFieldGroups = [
         'title_fa' => 'اطلاعات انقضا',
         'title_en' => 'Expiration Details',
         'fields' => ['Relative Expiration', 'Nearest Expiration Date', 'Absolute Expiration Date'],
+    ],
+    'capacity' => [
+        'title_fa' => 'حجم سرویس',
+        'title_en' => 'Data Usage',
+        'fields' => ['Consumed Traffic', 'Remaining Traffic'],
     ],
 ];
 ?>
