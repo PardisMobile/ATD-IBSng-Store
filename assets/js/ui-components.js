@@ -24,6 +24,7 @@
   window.ATDUI = Object.assign(window.ATDUI || {}, { toast });
 
 
+
   const isTextEntry = (element) => {
     if (!(element instanceof HTMLInputElement) && !(element instanceof HTMLTextAreaElement)) return false;
     if (element instanceof HTMLTextAreaElement) return true;
@@ -36,17 +37,14 @@
       if (['email', 'url', 'tel', 'password', 'number', 'date', 'time', 'datetime-local', 'month', 'week'].includes(type)) return true;
       if (element.hasAttribute('data-numeric') || element.inputMode === 'numeric' || element.inputMode === 'decimal') return true;
     }
-
     const identity = [element.id, element.name, element.getAttribute('autocomplete'), element.getAttribute('placeholder')]
       .filter(Boolean).join(' ').toLowerCase();
     const technicalIdentity = /(?:^|[\\s_\\-])(email|e-mail|username|user_name|account|tracking|order|lookup|code|captcha|otp|host|domain|ip|port|url|uri|token|secret|api[_-]?key|merchant|terminal|telegram|whatsapp|phone|mobile|credit|price|quota|sort|length|prefix|remote[_-]?user[_-]?id)(?:$|[\\s_\\-])/i;
     if (technicalIdentity.test(identity)) return true;
-
     const label = element.id
       ? document.querySelector('label[for="' + CSS.escape(element.id) + '"]')
       : element.closest('.field')?.querySelector('label');
-    const labelText = (label?.textContent || '').toLowerCase();
-    return /ایمیل|کد رهگیری|شناسه سفارش|نام کاربری|رمز عبور|رمز اکانت|شماره تماس|شماره تلفن|آدرس|نشانی|دامنه|پورت|آی.?پی|کد چهاررقمی|توکن|کلید|قیمت|حجم|اعتبار|ترتیب نمایش|طول .*نام کاربری/i.test(labelText);
+    return /ایمیل|کد رهگیری|شناسه سفارش|نام کاربری|رمز عبور|رمز اکانت|شماره تماس|شماره تلفن|آدرس|نشانی|دامنه|پورت|آی.?پی|کد چهاررقمی|توکن|کلید|قیمت|حجم|اعتبار|ترتیب نمایش|طول .*نام کاربری/i.test(label?.textContent || '');
   };
 
   const applyTextDirection = (scope = document) => {
@@ -54,18 +52,17 @@
     if (scope.matches?.('input,textarea')) fields.push(scope);
     scope.querySelectorAll?.('input,textarea').forEach((field) => fields.push(field));
     fields.forEach((field) => {
-      if (!isTextEntry(field) || field.hasAttribute('dir')) return;
-      field.setAttribute('dir', isTechnicalEntry(field) ? 'ltr' : 'auto');
+      if (isTextEntry(field) && !field.hasAttribute('dir')) {
+        field.setAttribute('dir', isTechnicalEntry(field) ? 'ltr' : 'auto');
+      }
     });
   };
 
   const initializeTextDirection = () => {
     applyTextDirection();
-    const observer = new MutationObserver((records) => {
-      records.forEach((record) => record.addedNodes.forEach((node) => {
-        if (node.nodeType === Node.ELEMENT_NODE) applyTextDirection(node);
-      }));
-    });
+    const observer = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) applyTextDirection(node);
+    })));
     observer.observe(document.body, { childList: true, subtree: true });
   };
 
@@ -75,44 +72,46 @@
     let activeMenu = null;
     let activeOptions = [];
     let selectedIndex = 0;
-    let mutationObserver = null;
+    let optionObserver = null;
 
     const close = () => {
       if (!activeSelect) return;
       activeSelect.setAttribute('aria-expanded', 'false');
       activeSelect.removeAttribute('aria-controls');
       activeMenu?.remove();
-      mutationObserver?.disconnect();
+      optionObserver?.disconnect();
       activeSelect = null;
       activeMenu = null;
       activeOptions = [];
-      mutationObserver = null;
+      optionObserver = null;
     };
 
-    const visibleOptions = (select) => Array.from(select.options)
+    const getVisibleOptions = (select) => Array.from(select.options)
       .map((option, index) => ({ option, index }))
       .filter(({ option }) => !option.hidden && option.parentElement?.hidden !== true);
 
     const positionMenu = () => {
       if (!activeSelect || !activeMenu) return;
       const rect = activeSelect.getBoundingClientRect();
+      const pad = 8;
       const gap = 5;
-      const viewportPadding = 8;
-      const availableBelow = window.innerHeight - rect.bottom - viewportPadding - gap;
-      const availableAbove = rect.top - viewportPadding - gap;
-      const openAbove = availableBelow < 180 && availableAbove > availableBelow;
-      const maxHeight = Math.max(90, Math.min(300, openAbove ? availableAbove : availableBelow));
-      activeMenu.style.width = Math.min(rect.width, window.innerWidth - viewportPadding * 2) + 'px';
+      const below = window.innerHeight - rect.bottom - pad - gap;
+      const above = rect.top - pad - gap;
+      const openAbove = below < 180 && above > below;
+      const maxHeight = Math.max(90, Math.min(300, openAbove ? above : below));
+      const width = Math.min(rect.width, window.innerWidth - pad * 2);
+      const left = Math.max(pad, Math.min(rect.left, window.innerWidth - width - pad));
+      activeMenu.style.width = width + 'px';
       activeMenu.style.maxHeight = maxHeight + 'px';
-      activeMenu.style.left = Math.max(viewportPadding, Math.min(rect.left, window.innerWidth - rect.width - viewportPadding)) + 'px';
+      activeMenu.style.left = left + 'px';
       activeMenu.style.top = (openAbove
-        ? Math.max(viewportPadding, rect.top - Math.min(activeMenu.scrollHeight, maxHeight) - gap)
+        ? Math.max(pad, rect.top - Math.min(activeMenu.scrollHeight, maxHeight) - gap)
         : rect.bottom + gap) + 'px';
     };
 
     const renderOptions = () => {
       if (!activeSelect || !activeMenu) return;
-      activeOptions = visibleOptions(activeSelect);
+      activeOptions = getVisibleOptions(activeSelect);
       activeMenu.replaceChildren();
       let lastGroup = null;
       activeOptions.forEach(({ option, index }) => {
@@ -138,12 +137,22 @@
       positionMenu();
     };
 
-    const open = (select) => {
+    const selectOption = (index) => {
+      if (!activeSelect) return;
+      const option = activeSelect.options[index];
+      if (!option || option.disabled || option.parentElement?.disabled || option.hidden) return;
+      activeSelect.selectedIndex = index;
+      activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
+      activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      close();
+    };
+
+    const open = (select, edge = 'selected') => {
       if (select.disabled || select.options.length === 0) return;
       if (activeSelect === select) { close(); return; }
       close();
       activeSelect = select;
-      selectedIndex = Math.max(0, select.selectedIndex);
+      selectedIndex = edge === 'last' ? select.options.length - 1 : Math.max(0, select.selectedIndex);
       activeMenu = document.createElement('div');
       activeMenu.className = 'atd-select-menu';
       activeMenu.id = 'atd-select-menu-' + Math.random().toString(36).slice(2);
@@ -154,14 +163,13 @@
       select.setAttribute('aria-expanded', 'true');
       select.setAttribute('aria-controls', activeMenu.id);
       renderOptions();
-      const selected = activeMenu.querySelector('.is-selected');
-      if (selected) selected.scrollIntoView({ block: 'nearest' });
-      mutationObserver = new MutationObserver(renderOptions);
-      mutationObserver.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'hidden', 'label', 'selected'] });
+      activeMenu.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest' });
+      optionObserver = new MutationObserver(renderOptions);
+      optionObserver.observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'hidden', 'label', 'selected'] });
     };
 
-    document.querySelectorAll(selectSelector).forEach((select) => {
-      if (select.dataset.atdSelectReady === 'true') return;
+    const bindSelect = (select) => {
+      if (select.dataset.atdSelectReady === 'true' || select.multiple || select.hasAttribute('size') || select.hasAttribute('data-native-select')) return;
       select.dataset.atdSelectReady = 'true';
       select.setAttribute('aria-haspopup', 'listbox');
       select.setAttribute('aria-expanded', 'false');
@@ -171,10 +179,10 @@
         open(select);
       });
       select.addEventListener('keydown', (event) => {
-        if (!activeSelect || activeSelect !== select) {
-          if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+        if (activeSelect !== select) {
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            open(select);
+            open(select, event.key === 'ArrowUp' ? 'last' : 'selected');
           }
           return;
         }
@@ -183,62 +191,42 @@
           close();
           return;
         }
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (event.key === 'Home' || event.key === 'End') {
           event.preventDefault();
-          const step = event.key === 'ArrowDown' ? 1 : -1;
-          let next = selectedIndex;
-          for (let count = 0; count < activeOptions.length; count++) {
-            next = (next + step + activeSelect.options.length) % activeSelect.options.length;
-            const candidate = activeSelect.options[next];
-            if (!candidate.disabled && !candidate.parentElement?.disabled && !candidate.hidden) break;
-          }
-          selectedIndex = next;
-          activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
-            const selected = Number(item.dataset.optionIndex) === selectedIndex;
-            item.classList.toggle('is-active', selected);
-            item.setAttribute('aria-selected', String(selected));
-            if (selected) item.scrollIntoView({ block: 'nearest' });
-          });
-          return;
-        }
-        if (event.key === 'Enter' || event.key === ' ') {
+          const candidates = activeOptions.filter(({ option }) => !option.disabled && !option.parentElement?.disabled);
+          if (candidates.length) selectedIndex = event.key === 'Home' ? candidates[0].index : candidates[candidates.length - 1].index;
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
           event.preventDefault();
-          const candidate = activeSelect.options[selectedIndex];
-          if (candidate && !candidate.disabled && !candidate.parentElement?.disabled) {
-            activeSelect.selectedIndex = selectedIndex;
-            activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
-            activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-          close();
+          const direction = event.key === 'ArrowDown' ? 1 : -1;
+          const candidates = activeOptions.filter(({ option }) => !option.disabled && !option.parentElement?.disabled);
+          const current = candidates.findIndex(({ index }) => index === selectedIndex);
+          if (candidates.length) selectedIndex = candidates[(current + direction + candidates.length) % candidates.length].index;
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          selectOption(selectedIndex);
           return;
-        }
-        if (event.key.length === 1) {
-          const start = activeSelect.selectedIndex + 1;
+        } else if (event.key.length === 1) {
           const needle = event.key.toLocaleLowerCase();
-          const options = Array.from(activeSelect.options);
-          for (let offset = 0; offset < options.length; offset++) {
-            const index = (start + offset) % options.length;
-            if (!options[index].disabled && options[index].textContent.trim().toLocaleLowerCase().startsWith(needle)) {
-              selectedIndex = index;
-              activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
-                const selected = Number(item.dataset.optionIndex) === index;
-                item.classList.toggle('is-active', selected);
-                item.setAttribute('aria-selected', String(selected));
-                if (selected) item.scrollIntoView({ block: 'nearest' });
-              });
-              break;
-            }
-          }
+          const start = activeSelect.selectedIndex + 1;
+          const match = activeOptions.find(({ option, index }) => index >= start && !option.disabled && option.textContent.trim().toLocaleLowerCase().startsWith(needle))
+            || activeOptions.find(({ option }) => !option.disabled && option.textContent.trim().toLocaleLowerCase().startsWith(needle));
+          if (match) selectedIndex = match.index;
+        } else {
+          return;
         }
+        activeMenu.querySelectorAll('[role="option"]').forEach((item) => {
+          const current = Number(item.dataset.optionIndex) === selectedIndex;
+          item.classList.toggle('is-active', current);
+          item.setAttribute('aria-selected', String(current));
+          if (current) item.scrollIntoView({ block: 'nearest' });
+        });
       });
-      select.addEventListener('change', () => {
-        if (activeSelect === select) renderOptions();
-      });
-    });
+      select.addEventListener('change', () => { if (activeSelect === select) renderOptions(); });
+    };
 
+    document.querySelectorAll(selectSelector).forEach(bindSelect);
     document.addEventListener('click', (event) => {
-      if (!activeSelect) return;
-      if (event.target === activeSelect || activeMenu?.contains(event.target)) return;
+      if (!activeSelect || event.target === activeSelect || activeMenu?.contains(event.target)) return;
       close();
     });
     document.addEventListener('mousedown', (event) => {
@@ -247,32 +235,17 @@
     document.addEventListener('click', (event) => {
       const item = event.target.closest?.('.atd-select-option[data-option-index]');
       if (!item || !activeSelect || item.classList.contains('is-disabled')) return;
-      const index = Number(item.dataset.optionIndex);
-      if (!Number.isInteger(index) || !activeSelect.options[index]) return;
-      activeSelect.selectedIndex = index;
-      activeSelect.dispatchEvent(new Event('input', { bubbles: true }));
-      activeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-      close();
+      selectOption(Number(item.dataset.optionIndex));
     });
     window.addEventListener('resize', positionMenu, { passive: true });
     window.addEventListener('scroll', positionMenu, true);
-    const observer = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
+
+    const addedObserver = new MutationObserver((records) => records.forEach((record) => record.addedNodes.forEach((node) => {
       if (node.nodeType !== Node.ELEMENT_NODE) return;
-      if (node.matches?.(selectSelector)) initializeSelectMenusForNode(node);
-      node.querySelectorAll?.(selectSelector).forEach((select) => initializeSelectMenusForNode(select));
+      if (node.matches?.(selectSelector)) bindSelect(node);
+      node.querySelectorAll?.(selectSelector).forEach(bindSelect);
     })));
-    const initializeSelectMenusForNode = (select) => {
-      if (select.dataset.atdSelectReady === 'true') return;
-      select.dataset.atdSelectReady = 'true';
-      select.setAttribute('aria-haspopup', 'listbox');
-      select.setAttribute('aria-expanded', 'false');
-      select.addEventListener('click', (event) => { event.preventDefault(); select.focus({ preventScroll: true }); open(select); });
-      select.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp' || event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(select); }
-      });
-      select.addEventListener('change', () => { if (activeSelect === select) renderOptions(); });
-    };
-    observer.observe(document.body, { childList: true, subtree: true });
+    addedObserver.observe(document.body, { childList: true, subtree: true });
   };
 
   const mount = () => {
