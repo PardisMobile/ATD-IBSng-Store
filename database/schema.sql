@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS ibsng_servers (
     service_name VARCHAR(150) NULL,
     host VARCHAR(255) NOT NULL,
     port SMALLINT UNSIGNED NOT NULL DEFAULT 80,
+    utc_offset VARCHAR(5) NULL DEFAULT NULL,
     scheme ENUM('http','https') NOT NULL DEFAULT 'http',
     isp_name VARCHAR(120) NOT NULL DEFAULT 'Main',
     username VARCHAR(150) NOT NULL,

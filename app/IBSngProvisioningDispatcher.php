@@ -29,7 +29,7 @@ final class IBSngProvisioningDispatcher
             $stmt = $this->pdo->prepare(
                 "SELECT a.*, o.username, o.password_ciphertext, o.server_targets_snapshot,
                         o.product_id,
-                        s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
+                        s.host, s.port, s.utc_offset, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN orders o ON o.id = a.order_id
                  JOIN ibsng_servers s ON s.id = a.server_id
@@ -98,7 +98,8 @@ final class IBSngProvisioningDispatcher
                     max(0, $giftSettings['ibsng_gift_days_repeat'] ?? 5),
                     (string)$row['idempotency_key'],
                     (int)$row['product_id'],
-                    'ATD Store renewal order'
+                    'ATD Store renewal order',
+                    isset($row['utc_offset']) ? (string)$row['utc_offset'] : null
                 );
                 if (($result['status'] ?? '') !== 'completed') {
                     $this->finish($attemptId, 'needs_review', $existingId, 'renewal_not_confirmed', 'IBSng renewal did not return a completed result.');

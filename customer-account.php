@@ -43,13 +43,13 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
     $serverIds = array_values(array_unique(array_filter(array_map('intval', $serverIds), static fn($id) => $id > 0)));
     if ($serverIds === []) return [];
     $marks = implode(',', array_fill(0, count($serverIds), '?'));
-    $stmt = $pdo->prepare("SELECT id,name,service_name,host,port,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 AND id IN ($marks) ORDER BY is_default DESC,id DESC");
+    $stmt = $pdo->prepare("SELECT id,name,service_name,host,port,utc_offset,username,password_ciphertext FROM ibsng_servers WHERE is_active=1 AND id IN ($marks) ORDER BY is_default DESC,id DESC");
     $stmt->execute($serverIds);
     $accounts = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $server) {
         $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
         $credentials = $client->getCredentials($username);
-        $state = IBSngRenewalState::fromClient($client, $username);
+        $state = IBSngRenewalState::fromClient($client, $username, isset($server['utc_offset']) ? (string)$server['utc_offset'] : null);
         $groupName = trim((string)($credentials['group'] ?? ''));
         $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
         $planStmt->execute([(int)$server['id'], $groupName]);
