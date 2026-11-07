@@ -791,6 +791,47 @@
       if(event.key==='Escape') closePalette();
     });
   }
+  // Convert standalone Gregorian date strings for display only. Keep the original
+  // text on each node so language changes never convert an already converted date.
+  const formatStandaloneDates = () => {
+    const language = root.lang === 'en' ? 'en' : 'fa';
+    const locale = language === 'en' ? 'en-GB' : 'fa-IR-u-ca-persian';
+    const datePattern = /^(\\d{4})-(\\d{2})-(\\d{2})(?:[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?)?$/;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest('script,style,textarea,input,select,option,code,.report-date,[data-no-date-format]')) continue;
+      if (!Object.prototype.hasOwnProperty.call(node, '__atdOriginalDateText')) {
+        const candidate = node.nodeValue.trim();
+        if (!datePattern.test(candidate)) continue;
+        Object.defineProperty(node, '__atdOriginalDateText', {value: node.nodeValue, writable: true, configurable: true});
+      }
+      const original = node.__atdOriginalDateText;
+      const value = original.trim();
+      const match = value.match(datePattern);
+      if (!match) continue;
+      const [, year, month, day, hour, minute, second] = match;
+      const parts = [Number(year), Number(month), Number(day)];
+      const date = new Date(parts[0], parts[1] - 1, parts[2], Number(hour || 0), Number(minute || 0), Number(second || 0));
+      if (date.getFullYear() !== parts[0] || date.getMonth() !== parts[1] - 1 || date.getDate() !== parts[2]
+          || (hour !== undefined && (date.getHours() !== Number(hour) || date.getMinutes() !== Number(minute) || date.getSeconds() !== Number(second || 0)))) {
+        node.nodeValue = original;
+        continue;
+      }
+      const options = {year: 'numeric', month: '2-digit', day: '2-digit'};
+      if (hour !== undefined) {
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+        if (second !== undefined) options.second = '2-digit';
+        options.hourCycle = 'h23';
+      }
+      node.nodeValue = new Intl.DateTimeFormat(locale, options).format(date);
+    }
+  };
+  formatStandaloneDates();
+  document.addEventListener('atd:language-change', formatStandaloneDates);
+
   apply();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});else mount();
 })();
