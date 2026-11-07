@@ -68,6 +68,9 @@ foreach ($gatewayFields as $gatewayCode => $fields) {
     foreach ($fields as $fieldKey => $field) {
         $settingKey = 'payment_' . $gatewayCode . '_' . $fieldKey;
         $gatewayValues[$gatewayCode][$fieldKey] = support_setting($pdo, $settingKey);
+        if (($field['type'] ?? '') === 'checkbox' && $gatewayValues[$gatewayCode][$fieldKey] === '') {
+            $gatewayValues[$gatewayCode][$fieldKey] = '0';
+        }
     }
 }
 
@@ -110,7 +113,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($gatewayFields as $gatewayCode => $fields) {
             foreach ($fields as $fieldKey => $field) {
                 $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey;
-                $gatewayValues[$gatewayCode][$fieldKey] = trim((string)($_POST[$inputName] ?? ''));
+                $gatewayValues[$gatewayCode][$fieldKey] = ($field['type'] ?? '') === 'checkbox'
+                    ? (isset($_POST[$inputName]) && (string)$_POST[$inputName] === '1' ? '1' : '0')
+                    : trim((string)($_POST[$inputName] ?? ''));
             }
         }
         if (!in_array($priceDisplayUnit, ['IRT', 'IRR'], true)) {
@@ -120,6 +125,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (array_diff($enabledProviders, $gatewayCodes) !== []) {
             $error = 'فهرست درگاه‌های فعال معتبر نیست.';
         } else {
+            if (in_array('zarinpal', $enabledProviders, true)) {
+                $sandboxMode = ($gatewayValues['zarinpal']['sandbox_mode'] ?? '0') === '1';
+                $requiredMerchant = $sandboxMode
+                    ? ($gatewayValues['zarinpal']['sandbox_merchant_id'] ?? '')
+                    : ($gatewayValues['zarinpal']['merchant_id'] ?? '');
+                if (trim((string)$requiredMerchant) === '') {
+                    $error = $sandboxMode
+                        ? 'برای حالت Sandbox زرین‌پال، Sandbox Merchant ID را وارد کنید.'
+                        : 'برای پرداخت واقعی زرین‌پال، Merchant ID را وارد کنید.';
+                }
+            }
             foreach ($enabledProviders as $enabledProvider) {
                 $configuredType = $gatewayPaymentTypes[$enabledProvider] ?? 'fiat';
                 $supportedCurrencies = $gatewayManager?->supportedCurrencies($enabledProvider) ?? [];
@@ -276,7 +292,13 @@ $config = app_config();
 <h2 data-ui-text="settings_payment_title">درگاه پرداخت</h2>
 <p class="hint" data-ui-text="settings_payment_intro">درگاه‌ها از ماژول‌های ثبت‌شده در سیستم دریافت می‌شوند؛ هیچ ارائه‌دهنده‌ای به‌صورت پیش‌فرض فعال نیست. تغییر درگاه روی تراکنش‌های قبلی اثر نمی‌گذارد.</p>
 <p class="hint" data-ui-text="settings_multi_gateway_intro">هر تعداد درگاه که پیکربندی معتبر دارند می‌توانند هم‌زمان فعال باشند. مشتری هنگام ثبت سفارش یکی از درگاه‌های فعال را انتخاب می‌کند.</p>
-<div class="gateway-grid"><?php foreach ($gatewayFields as $gatewayCode => $fields): ?><fieldset class="panel-card"><legend><?= e(ucfirst($gatewayCode)) ?></legend><div class="field"><label><input type="checkbox" name="enabled_providers[]" value="<?= e($gatewayCode) ?>"<?= in_array($gatewayCode, $enabledProviders, true) ? ' checked' : '' ?>> <span data-ui-text="settings_gateway_enable">فعال‌سازی این درگاه</span></label></div><div class="field"><label for="gateway_<?= e($gatewayCode) ?>_type" data-ui-text="settings_currency_type">نوع ارز درگاه</label><select id="gateway_<?= e($gatewayCode) ?>_type" name="gateway_<?= e($gatewayCode) ?>_type" class="form-control"><?php if (array_intersect(['IRR', 'IRT'], $gatewaySupportedCurrencies[$gatewayCode] ?? []) !== []): ?><option value="fiat"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'fiat' ? ' selected' : '' ?> data-ui-text="settings_fiat_type">ریالی / تومانی</option><?php endif; ?><?php if (in_array('USDT', $gatewaySupportedCurrencies[$gatewayCode] ?? [], true)): ?><option value="crypto"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'crypto' ? ' selected' : '' ?> data-ui-text="settings_crypto_type">کریپتو (USDT)</option><?php endif; ?></select><div class="hint" data-ui-text="settings_currency_type_hint">این گزینه فقط نوع ارز و قیمت ارسالی به همین درگاه را تعیین می‌کند. سازگاری نوع انتخاب‌شده با درگاه باید رعایت شود.</div></div><?php foreach ($fields as $fieldKey => $field): $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey; ?><div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"></div><?php endforeach; ?><?php if ($gatewayCode === 'ircrypto'): ?><div class="hint"><strong data-ui-text="settings_webhook_title">راهنمای Webhook:</strong> <span data-ui-text="settings_webhook_intro">این نشانی را در پنل IRCrypto به‌عنوان Webhook ثبت کنید:</span> <code><?= e(app_url('webhook/ircrypto.php')) ?></code>. <span data-ui-text="settings_webhook_validation">آدرس بر اساس دامنه و مسیر نصب تنظیم‌شده فروشگاه ساخته می‌شود. endpoint امضای درخواست را بررسی می‌کند و وضعیت، مبلغ و ارز فاکتور را از سمت سرور اعتبارسنجی می‌کند.</span></div><?php endif; ?></fieldset><?php endforeach; ?></div>
+<div class="gateway-grid"><?php foreach ($gatewayFields as $gatewayCode => $fields): ?><fieldset class="panel-card"><legend><?= e(ucfirst($gatewayCode)) ?></legend><div class="field"><label><input type="checkbox" name="enabled_providers[]" value="<?= e($gatewayCode) ?>"<?= in_array($gatewayCode, $enabledProviders, true) ? ' checked' : '' ?>> <span data-ui-text="settings_gateway_enable">فعال‌سازی این درگاه</span></label></div><div class="field"><label for="gateway_<?= e($gatewayCode) ?>_type" data-ui-text="settings_currency_type">نوع ارز درگاه</label><select id="gateway_<?= e($gatewayCode) ?>_type" name="gateway_<?= e($gatewayCode) ?>_type" class="form-control"><?php if (array_intersect(['IRR', 'IRT'], $gatewaySupportedCurrencies[$gatewayCode] ?? []) !== []): ?><option value="fiat"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'fiat' ? ' selected' : '' ?> data-ui-text="settings_fiat_type">ریالی / تومانی</option><?php endif; ?><?php if (in_array('USDT', $gatewaySupportedCurrencies[$gatewayCode] ?? [], true)): ?><option value="crypto"<?= ($gatewayPaymentTypes[$gatewayCode] ?? 'fiat') === 'crypto' ? ' selected' : '' ?> data-ui-text="settings_crypto_type">کریپتو (USDT)</option><?php endif; ?></select><div class="hint" data-ui-text="settings_currency_type_hint">این گزینه فقط نوع ارز و قیمت ارسالی به همین درگاه را تعیین می‌کند. سازگاری نوع انتخاب‌شده با درگاه باید رعایت شود.</div></div><?php foreach ($fields as $fieldKey => $field): $inputName = 'gateway_' . $gatewayCode . '_' . $fieldKey; ?>
+<?php if (($field['type'] ?? '') === 'checkbox'): ?>
+<div class="field"><label for="<?= e($inputName) ?>"><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="checkbox" value="1"<?= ($gatewayValues[$gatewayCode][$fieldKey] ?? '0') === '1' ? ' checked' : '' ?>> <span><?= e((string)($field['label'] ?? $fieldKey)) ?></span></label></div>
+<?php else: ?>
+<div class="field"><label for="<?= e($inputName) ?>"><?= e((string)($field['label'] ?? $fieldKey)) ?></label><input id="<?= e($inputName) ?>" name="<?= e($inputName) ?>" type="<?= !empty($field['secret']) ? 'password' : 'text' ?>" value="<?= e((string)($gatewayValues[$gatewayCode][$fieldKey] ?? '')) ?>" maxlength="2048" autocomplete="off"></div>
+<?php endif; ?>
+<?php endforeach; ?><?php if ($gatewayCode === 'ircrypto'): ?><div class="hint"><strong data-ui-text="settings_webhook_title">راهنمای Webhook:</strong> <span data-ui-text="settings_webhook_intro">این نشانی را در پنل IRCrypto به‌عنوان Webhook ثبت کنید:</span> <code><?= e(app_url('webhook/ircrypto.php')) ?></code>. <span data-ui-text="settings_webhook_validation">آدرس بر اساس دامنه و مسیر نصب تنظیم‌شده فروشگاه ساخته می‌شود. endpoint امضای درخواست را بررسی می‌کند و وضعیت، مبلغ و ارز فاکتور را از سمت سرور اعتبارسنجی می‌کند.</span></div><?php endif; ?></fieldset><?php endforeach; ?></div>
 </section>
 <section class="panel panel-card settings-section">
 <h2 data-ui-text="settings_crypto_display_title">نمایش قیمت کریپتو</h2>
