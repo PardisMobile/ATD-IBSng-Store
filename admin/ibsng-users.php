@@ -411,6 +411,16 @@ $multiLoginDisplay = trim((string)$multiLoginRaw);
 if ($multiLoginDisplay === '' || preg_match('/^-+$/u', $multiLoginDisplay)) {
     $multiLoginDisplay = 'تک‌کاربره';
 }
+
+// Store-owned presentation title only; keep the extracted IBSng value untouched.
+$multiLoginDisplayFa = $multiLoginDisplay;
+$multiLoginDisplayEn = $multiLoginDisplay;
+if (preg_match('/^([0-9]+)\\s+instances?$/i', $multiLoginDisplay, $multiLoginMatch)) {
+    $multiLoginCount = $multiLoginMatch[1];
+    $persianDigits = strtr($multiLoginCount, '0123456789', '۰۱۲۳۴۵۶۷۸۹');
+    $multiLoginDisplayFa = $persianDigits . ' کاربره';
+    $multiLoginDisplayEn = $multiLoginCount . ' users';
+}
 $accountFields = [
     'Username' => (string)($userResult['username'] ?? 'نامشخص'),
     'IBSng User ID' => (string)($userResult['user_id'] ?? 'نامشخص'),
@@ -440,7 +450,7 @@ $accountFieldLabelsFa = [
     'Absolute Expiration Date' => 'تاریخ انقضای مطلق',
     'User Is Locked' => 'وضعیت قفل اکانت',
     'Creation Date' => 'تاریخ ایجاد',
-    'Multi Login raw value' => 'مقدار خام ورود هم‌زمان',
+    'Multi Login raw value' => 'ورود هم‌زمان',
     'Password' => 'رمز عبور',
 ];
 
@@ -475,8 +485,8 @@ $accountFieldGroups = [
 <?php foreach ($group['fields'] as $fieldLabel): ?>
 <?php $fieldValue = $accountFields[$fieldLabel]; ?>
 <div class="account-item">
-<span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
-<strong class="technical-value"><?php if ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
+<span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel === 'Multi Login raw value' ? 'Multi Login' : $fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
+<strong class="technical-value"><?php if ($fieldLabel === 'Multi Login raw value'): ?><span data-fa="<?= e($multiLoginDisplayFa) ?>" data-en="<?= e($multiLoginDisplayEn) ?>"><?= e($multiLoginDisplayFa) ?></span><?php elseif ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
 </div>
 <?php endforeach; ?>
 </div>
