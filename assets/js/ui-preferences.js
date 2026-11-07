@@ -114,7 +114,8 @@
       server_last_test_label: 'Last test:',
       server_not_tested: 'Not tested',
       server_error_label: '· Error:',
-      server_service_placeholder: 'For example: Multi-location service'
+      server_service_placeholder: 'For example: Multi-location service',
+      server_name_placeholder: 'e.g. Iran Server, Hetzner VPS, My IBSng'
     },
     admin_ibsng_groups: {
       groups_add_plan: 'Add plan',
