@@ -1,0 +1,17 @@
+{
+  "name": "ATD IBSng Store",
+  "short_name": "ATD Store",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000817",
+  "theme_color": "#00dfcc",
+  "icons": [
+    {
+      "src": "assets/icons/atd-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
