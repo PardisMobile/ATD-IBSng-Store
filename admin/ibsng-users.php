@@ -453,21 +453,34 @@ $parseTrafficBytes = static function (?string $raw): ?int {
 $quotaBytes = null;
 $consumedBytes = null;
 $remainingBytes = null;
+$remainingTrafficDisplay = null;
 if ($accountHtml !== '') {
     $trafficLimitValuesFound = $trafficLimitValues($accountHtml);
     $trafficLimitUser = trim((string)($trafficLimitValuesFound['user'] ?? ''));
     $trafficLimitGroup = trim((string)($trafficLimitValuesFound['group'] ?? ''));
-    $trafficLimitRaw = $trafficLimitUser !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $trafficLimitUser)
-        ? $trafficLimitUser
-        : $trafficLimitGroup;
-    $quotaBytes = $parseTrafficBytes($trafficLimitRaw);
+    $isDashValue = static fn(string $value): bool => preg_match('/^-+$/u', trim($value)) === 1;
 
-    // Usage is the actual Daily Traffic "This Period Usage" value from IBSng.
-    $trafficRaw = $ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']);
+    // IBSng semantics confirmed from the supplied test and non-volume account samples:
+    // a dash at User Value inherits the Group Value; dashes at BOTH levels mean unlimited.
+    $isUnlimitedTraffic = $isDashValue($trafficLimitUser) && $isDashValue($trafficLimitGroup);
+
+    // This Period Usage is the actual consumed amount, not the configured limit.
+    $trafficRaw = trim((string)($ibsngAttributeValue($accountHtml, ['daily_traffic_paccounting_usage']) ?? ''));
     $consumedBytes = $parseTrafficBytes($trafficRaw);
 
-    if ($quotaBytes !== null && $consumedBytes !== null) {
-        $remainingBytes = max(0, $quotaBytes - $consumedBytes);
+    if ($isUnlimitedTraffic) {
+        // Never infer a numeric quota from another IBSng field in the unlimited case.
+        $remainingTrafficDisplay = 'نامحدود';
+    } else {
+        // User Value takes precedence; a dash/blank user value falls back to Group Value.
+        $trafficLimitRaw = $trafficLimitUser !== '' && !$isDashValue($trafficLimitUser)
+            && !preg_match('/^not applicable$/iu', $trafficLimitUser)
+            ? $trafficLimitUser
+            : $trafficLimitGroup;
+        $quotaBytes = $parseTrafficBytes($trafficLimitRaw);
+        if ($quotaBytes !== null && $consumedBytes !== null) {
+            $remainingBytes = max(0, $quotaBytes - $consumedBytes);
+        }
     }
 }
 $formatTrafficBytes = static function (?int $bytes): string {
@@ -504,7 +517,7 @@ $accountFields = [
     'Multi Login raw value' => $multiLoginDisplay,
     'Password' => (string)($userResult['password'] ?? 'نامشخص'),
     'Consumed Traffic' => $formatTrafficBytes($consumedBytes),
-    'Remaining Traffic' => $formatTrafficBytes($remainingBytes),
+    'Remaining Traffic' => $remainingTrafficDisplay ?? $formatTrafficBytes($remainingBytes),
 ];
 
 // Presentation-only localization for the IBSng lock flag; retain the raw value above.
