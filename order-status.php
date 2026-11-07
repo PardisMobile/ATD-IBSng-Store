@@ -172,9 +172,9 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <div class="purchase-fact"><span data-ui-text="status_product">محصول</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
 </div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
-<p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است؛ تا پیش از تأیید پرداخت، حسابی در IBSng ایجاد نمی‌شود.</p>
+<p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است. تا زمان تأیید پرداخت، سرویس خریداری شده ایجاد نخواهد شد.</p>
 <?php elseif (!$attempts): ?>
-<p class="muted" data-ui-text="status_waiting_provision">پرداخت ثبت شده است، اما هنوز نتیجه‌ای برای مقصدهای فعال‌سازی در دسترس نیست. لطفاً کمی بعد دوباره بررسی کنید.</p>
+<p class="muted" data-ui-text="status_waiting_provision">پرداخت ثبت شده است، اما نتیجه فعال‌سازی هنوز آماده نیست. لطفاً چند دقیقه دیگر وضعیت سفارش را بررسی کنید.</p>
 <?php else: ?>
 <h2 data-ui-text="status_account_heading">مشخصات اکانت</h2>
 <div class="target-list">
@@ -210,9 +210,9 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <?php endforeach; ?>
 </div>
-<p class="muted" data-ui-text="status_support_review">اگر مقصدی نیازمند بررسی باشد، پشتیبانی نتیجه را از پنل IBSng تطبیق می‌دهد. وضعیت هر سرور مستقل ثبت می‌شود.</p>
+<p class="muted" data-ui-text="status_support_review">اگر فعال‌سازی روی یکی از سرورها نیازمند بررسی باشد، پشتیبانی سایت وضعیت آن را در سرور بررسی می‌کند. نتیجه هر سرور جداگانه نمایش داده می‌شود.</p>
 <?php endif; ?>
-<p class="muted" data-ui-text="status_keep_tracking_private">رمز عبور فقط برای مقصدهایی نمایش داده می‌شود که فعال‌سازی آن‌ها با موفقیت تأیید شده است. کد پیگیری را محرمانه نگه دارید.</p>
+<p class="muted" data-ui-text="status_keep_tracking_private">رمز عبور فقط برای سرورهایی نمایش داده می‌شود که فعال‌سازی اکانت در آن‌ها با موفقیت تأیید شده است. کد رهگیری سفارش را محرمانه نگه دارید.</p>
 <?php endif; ?>
 
 </section>
