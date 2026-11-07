@@ -22,7 +22,7 @@ zarinpal_sandbox_assert(str_contains($adapter, "sandbox_merchant_id"), 'Sandbox 
 zarinpal_sandbox_assert(str_contains($adapter, "raw_result_json") && str_contains($adapter, "gateway_environment"), 'Zarinpal verification must recover the environment snapshot from the transaction.');
 zarinpal_sandbox_assert(is_string($flow) && str_contains($flow, "payment_zarinpal_sandbox_mode") && str_contains($flow, "'gateway_environment'"), 'Payment initiation must snapshot Zarinpal environment.');
 zarinpal_sandbox_assert(is_string($transactions) && str_contains($transactions, 'raw_result_json') && str_contains($transactions, '$metadata'), 'Payment transaction creation must persist environment metadata before provider initiation.');
-zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, "'type' => 'checkbox'") && str_contains($settings, 'sandbox_merchant_id'), 'Admin settings must expose sandbox mode and sandbox merchant credentials.');
+zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, "['type'] ?? '') === 'checkbox'") && str_contains($settings, 'sandbox_merchant_id'), 'Admin settings must expose sandbox mode and sandbox merchant credentials.');
 zarinpal_sandbox_assert(is_string($css) && !str_contains($css, 'fonts.googleapis.com') && str_contains($css, 'Vazirmatn-Variable.woff2'), 'Vazirmatn must load from the locally hosted assets/fonts directory, not Google Fonts.');
 zarinpal_sandbox_assert(is_string($account) && str_contains($account, 'مشاهده مشخصات اکانت') && str_contains($account, 'font-size:clamp(1.65rem,3.2vw,2.25rem)'), 'Customer account title text and typography must follow the shared heading scale.');
 
