@@ -448,15 +448,15 @@ $lockedPresentation = match ($lockedRaw) {
 $accountFieldLabelsFa = [
     'Username' => 'نام کاربری',
     'IBSng User ID' => 'شناسه اکانت',
-    'Group' => 'گروه',
+    'Group' => 'نام گروه',
     'Status' => 'وضعیت',
     'First Login' => 'اولین ورود',
     'Relative Expiration' => 'مدت (انقضای نسبی)',
     'Nearest Expiration Date' => 'تاریخ انقضا (نزدیک‌ترین)',
     'Absolute Expiration Date' => 'تاریخ انقضا (مطلق)',
     'User Is Locked' => 'وضعیت قفل اکانت',
-    'Creation Date' => 'تاریخ ایجاد',
-    'Multi Login raw value' => 'ورود هم‌زمان',
+    'Creation Date' => 'زمان ساخت اکانت',
+    'Multi Login raw value' => 'تعداد کاربران هم‌زمان',
     'Password' => 'رمز عبور',
 ];
 
@@ -491,7 +491,7 @@ $accountFieldGroups = [
 <?php foreach ($group['fields'] as $fieldLabel): ?>
 <?php $fieldValue = $accountFields[$fieldLabel]; ?>
 <div class="account-item">
-<span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e($fieldLabel === 'Multi Login raw value' ? 'Multi Login' : $fieldLabel) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
+<span class="account-item-label" data-fa="<?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?>" data-en="<?= e(match ($fieldLabel) { 'Group' => 'Group Name', 'Creation Date' => 'Account Created', 'Multi Login raw value' => 'Simultaneous Users', default => $fieldLabel }) ?>"><?= e($accountFieldLabelsFa[$fieldLabel] ?? $fieldLabel) ?></span>
 <strong class="technical-value"><?php if ($fieldLabel === 'Multi Login raw value'): ?><span data-fa="<?= e($multiLoginDisplayFa) ?>" data-en="<?= e($multiLoginDisplayEn) ?>"><?= e($multiLoginDisplayFa) ?></span><?php elseif ($fieldValue === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif ($fieldLabel === 'User Is Locked' && $lockedPresentation !== null): ?><span data-fa="<?= e($lockedPresentation['fa']) ?>" data-en="<?= e($lockedPresentation['en']) ?>"><?= e($lockedPresentation['fa']) ?></span><?php elseif ($fieldValue === 'تک‌کاربره'): ?><span data-fa="تک‌کاربره" data-en="Single-user">تک‌کاربره</span><?php else: ?><?= e($fieldValue) ?><?php endif; ?></strong>
 </div>
 <?php endforeach; ?>
