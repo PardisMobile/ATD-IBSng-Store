@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS orders (
     buyer_name VARCHAR(150) NOT NULL DEFAULT '',
     buyer_phone VARCHAR(40) NOT NULL DEFAULT '',
     buyer_email VARCHAR(190) NOT NULL DEFAULT '',
+    language CHAR(2) NOT NULL DEFAULT 'fa',
     product_id BIGINT UNSIGNED NULL,
     product_name_snapshot VARCHAR(180) NOT NULL,
     validity_days_snapshot INT UNSIGNED NOT NULL,
