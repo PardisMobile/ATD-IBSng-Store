@@ -137,4 +137,9 @@ for (const source of [customerAccount, ibsngUsers]) {
   assert.ok(!source.includes("'0123456789', '۰۱۲۳۴۵۶۷۸۹'"), 'Persian digit conversion must not use byte-based strtr');
 }
 
+const customerAccountPage = read('customer-account.php');
+assert.match(customerAccountPage, /data-fa="[^"]* کاربره"/u, 'Customer simultaneous-user count must use the Persian suffix کاربره');
+assert.match(customerAccountPage, /formatCustomerExpiry/u, 'Customer expiry date must use the display-only date/time formatter');
+assert.ok(customerAccountPage.includes("'$2، $1'"), 'Customer expiry display must place the date before the time');
+
 console.log('UI presentation contract: PASS');
