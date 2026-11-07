@@ -337,7 +337,7 @@ $config = app_config();
 <div class="field"><label for="password_charset" data-ui-text="settings_password_charset">ترکیب کاراکتر رمز</label><select id="password_charset" name="password_charset" class="form-control"><option value="digits"<?= $credentialValues['password_charset'] === 'digits' ? ' selected' : '' ?> data-ui-text="settings_charset_digits">فقط اعداد</option><option value="letters"<?= $credentialValues['password_charset'] === 'letters' ? ' selected' : '' ?> data-ui-text="settings_charset_letters">فقط حروف</option><option value="alphanumeric"<?= $credentialValues['password_charset'] === 'alphanumeric' ? ' selected' : '' ?> data-ui-text="settings_charset_alnum">ترکیب حروف و اعداد</option></select></div>
 </section>
 <section class="panel panel-card settings-section">
-<h2 data-ui-text="settings_renewal_gift_title">سیاست هدیهٔ تمدید IBSng</h2>
+<h2 data-ui-text="settings_renewal_gift_title">تنظیمات هدیه تمدید اکانت</h2>
 <p class="hint" data-ui-text="settings_renewal_gift_hint">روزهای هدیه برای اولین تمدید موفق و تمدیدهای بعدی جداگانه تنظیم می‌شوند. مقدار پیش‌فرض مطابق مرجع: ۱ روز برای اولین و ۵ روز برای تمدیدهای بعدی.</p>
 <div class="field"><label for="ibsng_gift_days_first" data-ui-text="settings_gift_first">هدیهٔ اولین تمدید (روز)</label><input id="ibsng_gift_days_first" name="ibsng_gift_days_first" type="number" min="0" max="3650" required value="<?= e($renewalValues['ibsng_gift_days_first']) ?>"></div>
 <div class="field"><label for="ibsng_gift_days_repeat" data-ui-text="settings_gift_repeat">هدیهٔ تمدیدهای بعدی (روز)</label><input id="ibsng_gift_days_repeat" name="ibsng_gift_days_repeat" type="number" min="0" max="3650" required value="<?= e($renewalValues['ibsng_gift_days_repeat']) ?>"></div>
