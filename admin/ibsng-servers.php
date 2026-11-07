@@ -224,7 +224,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,scheme,isp_name,us
 <div class="grid">
 <div class="field"><label for="name" data-fa="نام سرور (داخلی)" data-en="Internal server name">نام سرور (داخلی)</label><input id="name" name="name" required maxlength="120"></div>
 <div class="field"><label for="service_name" data-fa="نام سرویس (اختیاری؛ برای نمایش به مشتری)" data-en="Service name (optional; customer-facing)">نام سرویس (اختیاری؛ برای نمایش به مشتری)</label><input id="service_name" name="service_name" maxlength="150" placeholder="مثلاً: سرویس مولتی لوکیشن" data-ui-placeholder="server_service_placeholder"></div>
-<div class="field"><label for="host" data-ui-text="server_host_label">Host یا IP (بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
+<div class="field"><label for="host" data-ui-text="server_host_label">نشانی سرور (دامنه یا IP، بدون http و مسیر)</label><input id="host" name="host" required placeholder="ibsng.example.com"></div>
 <div class="field"><label for="port" data-ui-text="server_web_panel_port">پورت Web Panel</label><select id="port" name="port"><option value="80">80 — HTTP</option><option value="443">443 — HTTPS</option></select></div>
 <div class="field"><label for="isp_name">ISP name</label><input id="isp_name" name="isp_name" value="Main" required></div>
 <div class="field"><label for="username" data-ui-text="server_admin_username">نام کاربری مدیر IBSng</label><input id="username" name="username" required autocomplete="off"></div>
