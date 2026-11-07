@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
+require_once dirname(__DIR__) . '/app/DatabaseSchemaSync.php';
 require_admin();
 
 $pdo = Database::connection();
@@ -46,9 +47,24 @@ function atd_ibsng_renewal_schema_ready(PDO $pdo): bool
 }
 
 $ready = atd_ibsng_renewal_schema_ready($pdo);
+$schemaSync = new DatabaseSchemaSync($pdo);
+$schemaPending = $schemaSync->pendingChanges();
+$schemaSyncSucceeded = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+    } elseif ((string)($_POST['action'] ?? '') === 'sync_database') {
+        try {
+            $schemaSync->apply();
+            $schemaPending = $schemaSync->pendingChanges();
+            $schemaSyncSucceeded = ($schemaPending === []);
+            if (!$schemaSyncSucceeded) throw new RuntimeException('Database schema verification failed after sync.');
+            $message = 'همگام‌سازی دیتابیس با موفقیت انجام شد.';
+        } catch (Throwable $e) {
+            error_log('Database schema synchronization failed: ' . $e->getMessage());
+            $error = 'همگام‌سازی دیتابیس انجام نشد. جزئیات خطا در گزارش خطای سرور ثبت شد؛ هیچ تغییر مخربی به‌صورت خودکار انجام نمی‌شود.';
+            $schemaPending = $schemaSync->pendingChanges();
+        }
     } else {
         try {
             if (!atd_ibsng_validity_column_exists($pdo)) $pdo->exec('ALTER TABLE ibsng_groups ADD COLUMN validity_days INT UNSIGNED NOT NULL DEFAULT 30');
@@ -94,13 +110,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$ready) {
                 throw new RuntimeException('Renewal schema verification did not pass.');
             }
-            $message = 'ارتقای ساختار دیتابیس با موفقیت انجام شد.';
+            $message = 'ارتقای ساختار تمدید IBSng با موفقیت انجام شد.';
         } catch (Throwable $e) {
             error_log('IBSng renewal schema upgrade failed: ' . $e->getMessage());
             $error = 'ارتقای دیتابیس انجام نشد. دسترسی‌های لازم برای تغییر ساختار و ثبت تنظیمات را بررسی کنید.';
         }
     }
 }
+$ready = atd_ibsng_renewal_schema_ready($pdo);
+$schemaPending = $schemaSync->pendingChanges();
 $config = app_config();
 ?>
 <!doctype html>
@@ -121,7 +139,7 @@ $config = app_config();
 <div class="eyebrow" data-fa="پایگاه داده · ارتقا" data-en="Database · Upgrade">پایگاه داده · ارتقا</div>
 <h1 data-ui-text="upgrade_title">ارتقای ساختار تمدید IBSng</h1>
 <p class="muted" data-ui-text="upgrade_intro">این صفحه ساختار دیتابیس موردنیاز برای تمدید حساب‌های IBSng را بررسی و به‌روزرسانی می‌کند. این عملیات تنظیم مدت اعتبار گروه‌ها، جدول سوابق تمدید و مقادیر پیش‌فرض هدیه را آماده می‌کند. ابتدا وضعیت دیتابیس بررسی می‌شود و فقط در صورت نیاز، تغییرات لازم اعمال خواهند شد. اجرای مجدد این عملیات نیز ایمن است.</p>
-<?php if ($message !== ''): ?><div class="notice ok" data-fa="ارتقای دیتابیس با موفقیت انجام شد." data-en="The database upgrade completed successfully."><?= e($message) ?></div><?php endif; ?>
+<?php if ($message !== ''): ?><div class="notice ok" data-fa="<?= e($message) ?>" data-en="<?= $schemaSyncSucceeded ? 'Database synchronization completed successfully.' : 'The IBSng renewal schema upgrade completed successfully.' ?>"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" data-fa="ارتقای دیتابیس انجام نشد. دسترسی‌های لازم برای تغییر ساختار و ثبت تنظیمات را بررسی کنید." data-en="The database upgrade failed. Check the database permissions required to alter the schema and save settings."><?= e($error) ?></div><?php endif; ?>
 <?php if ($ready): ?>
 <div class="notice ok" data-ui-text="upgrade_ready">ساختار دیتابیس موردنیاز تمدید IBSng به‌روز است.</div>
@@ -132,6 +150,17 @@ $config = app_config();
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <button class="button primary" type="submit" data-ui-text="upgrade_apply">اعمال ارتقای دیتابیس</button>
 </form>
+<?php endif; ?>
+<?php if ($schemaPending !== []): ?>
+<div class="notice err" data-fa="ساختار دیتابیس نیاز به همگام‌سازی دارد." data-en="The database schema needs synchronization.">ساختار دیتابیس نیاز به همگام‌سازی دارد.</div>
+<ul class="muted" style="margin:8px 0 14px;padding-right:22px"><?php foreach ($schemaPending as $change): ?><li><?= e($change) ?></li><?php endforeach; ?></ul>
+<form method="post" data-confirm-fa="تغییرات ساختاری شناسایی‌شده روی دیتابیس اعمال شود؟ قبل از ادامه، نسخهٔ پشتیبان دیتابیس تهیه کنید." data-confirm-en="Apply the detected database schema updates? Make sure you have a database backup first.">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
+<input type="hidden" name="action" value="sync_database">
+<button class="button primary" type="submit" data-fa="همگام‌سازی دیتابیس" data-en="Synchronize database">همگام‌سازی دیتابیس</button>
+</form>
+<?php elseif (!$schemaSyncSucceeded): ?>
+<div class="notice ok" data-fa="همگام‌سازی دیتابیس به‌روز است." data-en="Database synchronization is up to date.">همگام‌سازی دیتابیس به‌روز است.</div>
 <?php endif; ?>
 </section>
 <?php require __DIR__ . '/_footer.php'; ?>
