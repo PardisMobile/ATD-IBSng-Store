@@ -254,7 +254,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="field"><label for="current-password-<?= (int)$item['server_id'] ?>">رمز عبور فعلی</label><input id="current-password-<?= (int)$item['server_id'] ?>" name="current_password" type="password" dir="ltr" autocomplete="current-password" required></div>
 <div class="field"><label for="new-password-<?= (int)$item['server_id'] ?>">رمز عبور جدید</label><input id="new-password-<?= (int)$item['server_id'] ?>" name="new_password" type="password" dir="ltr" autocomplete="new-password" maxlength="128" required></div>
 <div class="field"><label for="confirm-password-<?= (int)$item['server_id'] ?>">تکرار رمز عبور جدید</label><input id="confirm-password-<?= (int)$item['server_id'] ?>" name="confirm_password" type="password" dir="ltr" autocomplete="new-password" maxlength="128" required></div>
-<button class="button primary" type="submit">ثبت رمز جدید</button>
+<button class="button primary" type="submit">ذخیره رمز عبور جدید</button>
 </form>
 </section>
 <?php endforeach; ?>
