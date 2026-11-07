@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt = $pdo->prepare('UPDATE ibsng_servers SET name=?, service_name=?, host=?, port=?, utc_offset=?, scheme=?, username=?, password_ciphertext=?, last_test_at=NOW(), last_error=NULL WHERE id=?');
                 $stmt->execute([
-                    $name, ($serviceName !== '' ? $serviceName : null), $host, $port, $utcOffset, 'http', $isp, $username,
+                    $name, ($serviceName !== '' ? $serviceName : null), $host, $port, $utcOffset, 'http', $username,
                     app_encrypt_secret($password), $id
                 ]);
                 $message = 'تنظیمات سرور به‌روزرسانی شد و تست اتصال موفق بود.';
