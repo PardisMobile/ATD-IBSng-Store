@@ -425,7 +425,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section class="panel account-card">
 <h2 data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</h2>
 <div class="account-grid">
-<div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?= e($formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null)) ?></strong></div>
+<div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?php $remainingTrafficDisplay = $formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null); ?><?php if ($remainingTrafficDisplay === 'نامحدود'): ?><span data-fa="نامحدود" data-en="Unlimited">نامحدود</span><?php else: ?><?= e($remainingTrafficDisplay) ?><?php endif; ?></strong></div>
 </div>
 </section>
 <section class="panel account-card account-actions-card">
