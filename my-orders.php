@@ -57,8 +57,9 @@ if (isset($_POST['action'])) {
                             $insert = $pdo->prepare('INSERT INTO customer_order_recovery_codes (email_normalized, code_hash, request_ip_hash, expires_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))');
                             $insert->execute([$email, $hash, $ipHash]);
                             $challengeId = (int)$pdo->lastInsertId();
-                            $template = EmailTemplates::get($pdo, 'order_recovery');
-                            $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => '۱۰ دقیقه'];
+                            $language = (($_POST['site_language'] ?? '') === 'en') ? 'en' : 'fa';
+                            $template = EmailTemplates::get($pdo, 'order_recovery', $language);
+                            $vars = ['site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'), 'verification_code' => $code, 'expires_in' => $language === 'en' ? '10 minutes' : '۱۰ دقیقه'];
                             $sent = EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $vars), EmailTemplates::render($template['html'], $vars), EmailTemplates::render($template['text'], $vars));
                             if ($sent) {
                                 $_SESSION['my_orders_email_pending'] = $email;
@@ -192,7 +193,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 <?php if ($stage === 'verify'): ?>
 <p class="muted"><span data-ui-text="orders_verification_sent_to">کد تأیید به این ایمیل ارسال شده است:</span> <strong dir="ltr"><?= e((string)($_SESSION['my_orders_email_pending'] ?? '')) ?></strong></p>
 <form method="post" class="orders-email-change-form">
-<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="action" value="request">
+<input type="hidden" name="csrf" value="<?= e($csrf) ?>"><input type="hidden" name="site_language" value="fa" data-ui-language-field><input type="hidden" name="action" value="request">
 <label for="email" data-ui-text="orders_change_email">ارسال کد به ایمیل دیگر یا ارسال مجدد</label>
 <input class="form-field" type="email" id="email" name="email" maxlength="190" required autocomplete="email" value="<?= e((string)($_SESSION['my_orders_email_pending'] ?? '')) ?>">
 <button class="button primary" type="submit" data-ui-text="orders_resend_code">ارسال مجدد / تغییر ایمیل</button>
