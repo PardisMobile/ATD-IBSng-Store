@@ -496,7 +496,7 @@
       customer_account: 'Customer account',
       order_tracking: 'Track & recover orders',
       storefront_status: 'Account services',
-      catalog_hero_title: 'Choose the service you need',
+      catalog_hero_title: 'Fast, easy, and reliable purchases and renewals',
       catalog_hero_intro: 'Browse the available plans. Details are shown according to the store configuration.',
       catalog_view_services: 'Browse services',
       catalog_no_registration: 'No store registration required',
