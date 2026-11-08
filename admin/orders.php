@@ -181,13 +181,13 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <div class="table-wrap"><table><thead><tr><th data-ui-text="orders_service">سرویس</th><th data-fa="نوع سفارش" data-en="Order type">نوع سفارش</th><th data-ui-text="orders_paid_count">تعداد سفارش پرداخت‌شده</th><th data-ui-text="orders_gross_amount">مبلغ فروش</th></tr></thead><tbody>
 <?php if (!$rows): ?><tr><td colspan="4" data-ui-text="orders_no_paid_sales">هنوز فروش پرداخت‌شده‌ای ثبت نشده است.</td></tr><?php endif; ?>
-<?php foreach ($rows as $row): ?><tr><td><?= e((string)$row['service_name']) ?></td><td><?= e((string)$row['operation_label']) ?></td><td><?= number_format((int)$row['paid_orders']) ?></td><td><strong><?= number_format((int)$row['paid_amount']) ?></strong> <?= e((string)$row['currency']) ?></td></tr><?php endforeach; ?>
+<?php foreach ($rows as $row): ?><tr><td><?= e((string)$row['service_name']) ?></td><td><span data-fa="<?= e((string)$row['operation_label']) ?>" data-en="<?= $row['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$row['operation_label']) ?></span></td><td><?= number_format((int)$row['paid_orders']) ?></td><td><strong><?= number_format((int)$row['paid_amount']) ?></strong> <?= e((string)$row['currency']) ?></td></tr><?php endforeach; ?>
 </tbody></table></div>
 
 <section class="section-gap" aria-labelledby="individual-orders-title">
 <h2 id="individual-orders-title" data-ui-text="orders_order_details_title">جزئیات سفارش‌های پرداخت‌شده</h2>
 <p class="muted" data-ui-text="orders_order_details_intro">مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید. حداکثر ۱۰۰ سفارش آخر نمایش داده می‌شود.</p>
-<div class="table-wrap"><table class="orders-detail-table"><thead><tr><th>سفارش</th><th>سرویس</th><th>مبلغ پرداختی</th><th>وضعیت</th><th>جزئیات</th></tr></thead><tbody>
+<div class="table-wrap"><table class="orders-detail-table"><thead><tr><th data-ui-text="orders_table_order">سفارش</th><th data-ui-text="orders_table_service">سرویس</th><th data-ui-text="orders_table_paid_amount">مبلغ پرداختی</th><th data-ui-text="orders_table_status">وضعیت</th><th data-ui-text="orders_table_details">جزئیات</th></tr></thead><tbody>
 <?php if (!$orderRows): ?><tr><td colspan="5" data-ui-text="orders_empty_paid_orders">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($orderRows as $order): ?>
 <?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); ?>
@@ -199,11 +199,11 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <td><details class="order-details"><summary data-ui-text="orders_view_details">مشاهده جزئیات</summary>
 <div class="order-detail-grid">
 <div><span class="muted" data-ui-text="orders_username">نام کاربری</span><strong class="numeric-value"><?= e((string)$order['username']) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_order_type">نوع سفارش</span><strong><?= e((string)$order['operation_label']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_order_type">نوع سفارش</span><strong><span data-fa="<?= e((string)$order['operation_label']) ?>" data-en="<?= $order['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$order['operation_label']) ?></span></strong></div>
 <div><span class="muted" data-ui-text="orders_order_created">زمان ثبت سفارش</span><strong class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></strong></div>
 <div><span class="muted" data-ui-text="orders_buyer_name">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_phone">تلفن</span><strong class="numeric-value"><?= e((string)$order['buyer_phone'] ?: 'بدون تلفن') ?></strong></div>
-<div><span class="muted" data-ui-text="orders_email">ایمیل</span><strong><?= e((string)$order['buyer_email'] ?: 'بدون ایمیل') ?></strong></div>
+<div><span class="muted" data-ui-text="orders_phone">تلفن</span><?php if ((string)$order['buyer_phone'] !== ''): ?><strong class="numeric-value"><?= e((string)$order['buyer_phone']) ?></strong><?php else: ?><strong data-fa="بدون تلفن" data-en="No phone">بدون تلفن</strong><?php endif; ?></div>
+<div><span class="muted" data-ui-text="orders_email">ایمیل</span><?php if ((string)$order['buyer_email'] !== ''): ?><strong><?= e((string)$order['buyer_email']) ?></strong><?php else: ?><strong data-fa="بدون ایمیل" data-en="No email">بدون ایمیل</strong><?php endif; ?></div>
 <div><span class="muted" data-ui-text="orders_order_snapshot_amount">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
 <div><span class="muted" data-fa="درگاه پرداخت" data-en="Payment gateway">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
 <?php if ($isSandboxPayment): ?><div><span class="muted" data-fa="محیط پرداخت" data-en="Payment environment">محیط پرداخت</span><strong><span data-fa="آزمایشی" data-en="Sandbox">آزمایشی</span></strong></div><?php endif; ?>
@@ -213,7 +213,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <?php if (!empty($attemptsByOrder[(int)$order['id']])): ?>
 <div class="order-attempts"><strong data-ui-text="orders_ibsng_operation_result">نتیجه عملیات IBSng</strong>
 <?php foreach ($attemptsByOrder[(int)$order['id']] as $attempt): ?>
-<div class="attempt-line"><span><?= e((string)($attempt['server_name'] ?: 'سرور')) ?> · <?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?></span><strong><?= e((string)$attempt['status']) ?></strong>
+<div class="attempt-line"><span><?= e((string)($attempt['server_name'] ?: 'سرور')) ?> · <span data-fa="<?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?>" data-en="<?= $attempt['operation'] === 'renew' ? 'Renewal' : 'Purchase' ?>"><?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?></span></span><strong data-ui-status="<?= e((string)$attempt['status']) ?>"><?= e((string)$attempt['status']) ?></strong>
 <?php if (!empty($attempt['remote_user_id'])): ?><small><span data-ui-text="orders_ibsng_user_id">شناسه کاربر IBSng:</span> <span class="numeric-value"><?= e((string)$attempt['remote_user_id']) ?></span></small><?php endif; ?>
 <?php if (!empty($attempt['error_message'])): ?><small class="muted"><?= e((string)$attempt['error_message']) ?></small><?php endif; ?>
 </div>
