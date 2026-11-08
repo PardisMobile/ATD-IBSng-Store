@@ -323,9 +323,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
             }
             if ($matchedIds === []) throw new RuntimeException('customer_account_not_found');
             $_SESSION['customer_account_auth'] = ['username' => $username, 'server_ids' => $matchedIds, 'created_at' => time()];
-            $auth = $_SESSION['customer_account_auth'];
-            $account = $loadAccountDetails($pdo, $username, $matchedIds);
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
+            header('Location: ' . app_url('customer-account.php'), true, 303);
+            exit;
         } catch (Throwable $e) {
             $error = app_message($e->getMessage() && isset($GLOBALS['app_message_catalog']['fa'][$e->getMessage()]) ? $e->getMessage() : 'customer_account_lookup_failed');
         }
