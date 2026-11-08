@@ -258,10 +258,22 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
             $dailyTrafficLimitBytes = (int)round((float)$limitMatch[1] * (1024 ** $limitPower));
         }
 
-        $remainingBytes = $quotaBytes !== null && $consumedBytes !== null
-            ? max(0, $quotaBytes - $consumedBytes) : null;
-        if ($consumedBytes === null && $dailyTrafficLimitBytes !== null) {
+        // Prefer the Store product quota when one unambiguous active product is mapped.
+        // For groups without a Store plan mapping, use IBSng's own Daily Traffic limit.
+        if ($quotaBytes !== null && $consumedBytes !== null) {
+            $remainingBytes = max(0, $quotaBytes - $consumedBytes);
+        } elseif ($dailyTrafficLimitBytes !== null && $consumedBytes !== null) {
+            $remainingBytes = max(0, $dailyTrafficLimitBytes - $consumedBytes);
+        } elseif ($consumedBytes === null && $dailyTrafficLimitBytes !== null) {
             $remainingBytes = $dailyTrafficLimitBytes;
+        } else {
+            $remainingBytes = null;
+        }
+
+        // The card is also meaningful for groups that have not been mapped to a Store plan:
+        // a present Daily Traffic row with an empty/dash limit represents an unlimited group.
+        if (!$quotaAvailable && $dailyTrafficLimitRaw !== null) {
+            $quotaAvailable = true;
         }
 
         $accounts[] = [
