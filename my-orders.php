@@ -231,6 +231,8 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 .orders-page-heading h1{line-height:1.45;margin:8px 0 12px}
 .orders-page-heading p{max-width:78ch;margin-bottom:0}
 .orders-card{box-sizing:border-box;width:100%;padding:clamp(20px,4vw,34px);margin:20px 0}
+/* Keep the first tracking card aligned with the 24px header-to-card spacing used on other storefront pages. */
+.order-tracking-card{margin-top:24px}
 .orders-card h2{font-size:clamp(1.12rem,2.5vw,1.4rem);line-height:1.55;margin:0 0 10px}
 .orders-card form>label{display:block;margin-top:8px;color:var(--muted);font-size:.9rem;font-weight:600;line-height:1.6}
 .orders-card .form-field{box-sizing:border-box;width:100%;max-width:100%;min-height:var(--ui-control-height,46px);padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);margin:8px 0 16px;background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}
