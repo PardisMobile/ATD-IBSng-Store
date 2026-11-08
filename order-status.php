@@ -80,7 +80,7 @@ if (!$notFound) {
             }
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
-                'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.name AS server_name, s.service_name, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
+                'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.order_id = ?
