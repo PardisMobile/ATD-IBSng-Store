@@ -13,7 +13,10 @@ $checks = [
         && str_contains($servers, 'data-fa="نام سرور"')
         && str_contains($servers, 'data-en="Server Name"')
         && str_contains($servers, 'service_name'),
-    'customer status loads service name' => is_string($status) && str_contains($status, 's.service_name') && str_contains($status, "['service_name']"),
+    'customer status displays the plan mapped to the primary IBSng group, not the server name' => is_string($status)
+        && str_contains($status, "SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1")
+        && str_contains($status, "\$data['group']")
+        && !str_contains($status, "['service_name']"),
     'tracking page includes purchase amount, payment status, and timestamp' => is_string($status) && str_contains($status, 'price_minor_snapshot') && str_contains($status, 'price_usdt_snapshot') && str_contains($status, 'payment_status') && str_contains($status, 'created_at'),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
     'credentials are shown only for succeeded attempts' => is_string($status) && str_contains($status, "['status'] === 'succeeded'") && str_contains($status, 'نمایش رمز عبور'),
