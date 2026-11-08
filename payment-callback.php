@@ -125,7 +125,6 @@ if ($success && $orderReference !== '') {
 <?php endforeach; ?>
 <?php endif; ?>
 <p data-ui-text="payment_provisioning_note">نتیجه فعال‌سازی سرویس جداگانه ثبت و پیگیری می‌شود.</p>
-<p><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($orderReference))) ?>" data-ui-text="payment_track_activation">پیگیری وضعیت فعال‌سازی</a></p>
 <?php else: ?>
 <h1 data-ui-text="payment_result_title">نتیجه پرداخت</h1>
 <div class="notice fail"><?= e($errorMessage) ?></div>
