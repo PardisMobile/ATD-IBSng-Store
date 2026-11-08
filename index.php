@@ -113,6 +113,7 @@ try {
   <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
   <style>
 /* ATD Files Portal-inspired hero motion; storefront palette remains inherited. */
+.store-shell{padding-top:24px}
 .storefront-hero{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;align-items:center}
 .storefront-hero-content{position:relative;z-index:2;max-width:min(66%,680px)}
 .storefront-hero-art{position:absolute;z-index:1;inset-block:0;inset-inline-end:3%;width:min(38%,340px);min-width:230px;pointer-events:none}
