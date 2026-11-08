@@ -162,6 +162,10 @@ final class PaymentFlow
                 'sandbox' => (($all['payment_zarinpal_sandbox_mode'] ?? '0') === '1'),
             ];
         }
+        // Resolve the absolute callback before persisting an initiation attempt.
+        // This prevents path-only base_url configurations from leaving an
+        // unpayable 'initiated' transaction when the adapter rejects the URL.
+        $callbackUrl = app_absolute_url('payment-callback.php?provider=' . rawurlencode($provider));
         $transactionId = $transactions->create(
             $orderId,
             $provider,
@@ -171,7 +175,6 @@ final class PaymentFlow
         );
 
         try {
-            $callbackUrl = app_url('payment-callback.php?provider=' . rawurlencode($provider));
             $providerSettings = [$provider => self::providerSettings($all, $provider)];
             $providerSettings[$provider]['callback_url'] = $callbackUrl;
             $started = $manager->initiate([
@@ -195,7 +198,8 @@ final class PaymentFlow
             // safely failed and the same pending order may be retried.
             // Network/timeout/unknown outcomes remain active for reconciliation.
             if ($provider === 'zarinpal'
-                && str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')) {
+                && ($e instanceof InvalidArgumentException
+                    || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:'))) {
                 try {
                     $transactions->failInitiation($transactionId);
                 } catch (Throwable $stateError) {

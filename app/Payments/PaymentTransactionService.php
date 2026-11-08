@@ -111,7 +111,8 @@ final class PaymentTransactionService
     public function resolveAmbiguousInitiationAsFailed(int $transactionId, string $note): bool
     {
         $note = trim($note);
-        if ($transactionId < 1 || $note === '' || mb_strlen($note) > 2000) {
+        $noteLength = preg_match_all('/./us', $note, $noteCharacters);
+        if ($transactionId < 1 || $note === '' || $noteLength === false || $noteLength > 2000) {
             throw new InvalidArgumentException('A transaction ID and reconciliation note are required.');
         }
 

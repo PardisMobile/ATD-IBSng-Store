@@ -23,6 +23,7 @@ $retryAvailable = false;
 $retryProvider = '';
 $retryMode = '';
 $retryAuthority = '';
+$retrySandbox = false;
 $retryError = '';
 if (empty($_SESSION['order_payment_retry_csrf'])) $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
 $productQuotaBytes = null;
@@ -42,7 +43,7 @@ if (!$notFound) {
         if (!$order) {
             $notFound = true;
         } elseif ($order['payment_status'] === 'pending' && $order['order_status'] === 'pending_payment') {
-            $paymentStmt = $pdo->prepare('SELECT provider,status,provider_reference FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
+            $paymentStmt = $pdo->prepare('SELECT provider,status,provider_reference,raw_result_json FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
             $paymentStmt->execute([(int)$order['id']]);
             $lastPayment = $paymentStmt->fetch(PDO::FETCH_ASSOC) ?: null;
             if ($lastPayment && (string)$lastPayment['provider'] === 'zarinpal') {
@@ -57,6 +58,24 @@ if (!$notFound) {
                     $retryAvailable = true;
                     $retryMode = 'resume';
                     $retryAuthority = trim((string)$lastPayment['provider_reference']);
+                    $transactionMetadata = json_decode((string)($lastPayment['raw_result_json'] ?? ''), true);
+                    $gatewayEnvironment = is_array($transactionMetadata['gateway_environment'] ?? null)
+                        ? $transactionMetadata['gateway_environment'] : [];
+                    $retrySandbox = ($gatewayEnvironment['sandbox'] ?? false) === true;
+                }
+            } elseif (!$lastPayment) {
+                // If the order was saved but payment initiation never created a
+                // transaction, allow a fresh attempt only when Zarinpal is the
+                // single configured provider. Never guess between gateways.
+                $available = PaymentFlow::availableProviders($pdo, [
+                    'price_minor_snapshot' => $order['price_minor_snapshot'],
+                    'price_usdt_snapshot' => $order['price_usdt_snapshot'],
+                    'currency' => $order['currency'],
+                ]);
+                if (count($available) === 1 && ($available[0]['code'] ?? '') === 'zarinpal') {
+                    $retryProvider = 'zarinpal';
+                    $retryAvailable = true;
+                    $retryMode = 'new';
                 }
             }
         } elseif ($order['payment_status'] === 'paid') {
@@ -124,7 +143,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_payment']) && $
     } else {
         try {
             if ($retryMode === 'resume' && $retryProvider === 'zarinpal' && $retryAuthority !== '') {
-                header('Location: https://payment.zarinpal.com/pg/StartPay/' . rawurlencode($retryAuthority), true, 303);
+                $paymentHost = $retrySandbox ? 'https://sandbox.zarinpal.com' : 'https://payment.zarinpal.com';
+                header('Location: ' . $paymentHost . '/pg/StartPay/' . rawurlencode($retryAuthority), true, 303);
                 exit;
             }
             if ($retryMode !== 'new') {
