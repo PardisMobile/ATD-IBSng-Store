@@ -167,17 +167,17 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <body><main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارش‌ها</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش سفارش‌های پرداخت‌شده بر اساس مبلغ ثابت‌شده هنگام ثبت سفارش محاسبه می‌شود؛ تغییر قیمت محصول روی سفارش‌های قبلی اثری ندارد.</p>
-<form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش">
-<label>از تاریخ <input type="date" name="from_date" value="<?= e($fromDate) ?>"></label>
-<label>تا تاریخ <input type="date" name="to_date" value="<?= e($toDate) ?>"></label>
-<div class="filter-actions"><button class="button" type="submit">اعمال بازه</button><a class="button button-secondary" href="<?= e('orders.php') ?>">حذف فیلتر</a></div>
+<form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش" data-ui-aria="orders_date_filter_aria">
+<label><span data-ui-text="orders_from_date">از تاریخ</span> <input type="date" name="from_date" value="<?= e($fromDate) ?>"></label>
+<label><span data-ui-text="orders_to_date">تا تاریخ</span> <input type="date" name="to_date" value="<?= e($toDate) ?>"></label>
+<div class="filter-actions"><button class="button" type="submit" data-ui-text="orders_apply_range">اعمال بازه</button><a class="button button-secondary" href="<?= e('orders.php') ?>" data-ui-text="orders_clear_filter">حذف فیلتر</a></div>
 </form>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="stats">
 <div class="panel stat"><span class="muted" data-ui-text="orders_total_paid">کل سفارش‌های پرداخت‌شده</span><strong><?= number_format($totalPaid) ?></strong></div>
 <div class="panel stat"><span class="muted" data-ui-text="orders_total_pending">سفارش‌های در انتظار پرداخت</span><strong><?= number_format($totalPending) ?></strong></div>
-<div class="panel stat sales-total"><span class="muted">کل مبلغ فروش</span><strong><?php if (!$totalSalesRows): ?>۰<?php else: ?><?php foreach ($totalSalesRows as $totalRow): ?><span class="sales-total-line"><?= number_format((int)$totalRow['total_amount']) ?> <small><?= e((string)$totalRow['currency']) ?></small></span><?php endforeach; ?><?php endif; ?></strong></div>
+<div class="panel stat sales-total"><span class="muted" data-ui-text="orders_total_sales">کل مبلغ فروش</span><strong><?php if (!$totalSalesRows): ?>۰<?php else: ?><?php foreach ($totalSalesRows as $totalRow): ?><span class="sales-total-line"><?= number_format((int)$totalRow['total_amount']) ?> <small><?= e((string)$totalRow['currency']) ?></small></span><?php endforeach; ?><?php endif; ?></strong></div>
 </div>
 <div class="table-wrap"><table><thead><tr><th data-ui-text="orders_service">سرویس</th><th data-fa="نوع سفارش" data-en="Order type">نوع سفارش</th><th data-ui-text="orders_paid_count">تعداد سفارش پرداخت‌شده</th><th data-ui-text="orders_gross_amount">مبلغ فروش</th></tr></thead><tbody>
 <?php if (!$rows): ?><tr><td colspan="4" data-ui-text="orders_no_paid_sales">هنوز فروش پرداخت‌شده‌ای ثبت نشده است.</td></tr><?php endif; ?>
@@ -185,40 +185,40 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </tbody></table></div>
 
 <section class="section-gap" aria-labelledby="individual-orders-title">
-<h2 id="individual-orders-title">جزئیات سفارش‌های پرداخت‌شده</h2>
-<p class="muted">مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید. حداکثر ۱۰۰ سفارش آخر نمایش داده می‌شود.</p>
+<h2 id="individual-orders-title" data-ui-text="orders_order_details_title">جزئیات سفارش‌های پرداخت‌شده</h2>
+<p class="muted" data-ui-text="orders_order_details_intro">مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید. حداکثر ۱۰۰ سفارش آخر نمایش داده می‌شود.</p>
 <div class="table-wrap"><table class="orders-detail-table"><thead><tr><th>سفارش</th><th>سرویس</th><th>مبلغ پرداختی</th><th>وضعیت</th><th>جزئیات</th></tr></thead><tbody>
-<?php if (!$orderRows): ?><tr><td colspan="5">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
+<?php if (!$orderRows): ?><tr><td colspan="5" data-ui-text="orders_empty_paid_orders">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($orderRows as $order): ?>
 <?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); ?>
 <tr>
 <td><span class="order-reference"><?= e((string)$order['public_id']) ?></span><br><small class="muted"><?= e((string)$order['tracking_code']) ?></small></td>
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
 <td><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></td>
-<td><?= e(match ((string)$order['order_status']) { 'active' => 'فعال', 'partial' => 'فعال‌سازی ناقص', 'failed' => 'ناموفق', 'provisioning' => 'در حال فعال‌سازی', 'paid' => 'پرداخت‌شده', default => (string)$order['order_status'] }) ?></td>
-<td><details class="order-details"><summary>مشاهده جزئیات</summary>
+<td><span data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e(match ((string)$order['order_status']) { 'active' => 'فعال', 'partial' => 'فعال‌سازی ناقص', 'failed' => 'ناموفق', 'provisioning' => 'در حال فعال‌سازی', 'paid' => 'پرداخت‌شده', default => (string)$order['order_status'] }) ?></span></td>
+<td><details class="order-details"><summary data-ui-text="orders_view_details">مشاهده جزئیات</summary>
 <div class="order-detail-grid">
-<div><span class="muted">نام کاربری</span><strong class="numeric-value"><?= e((string)$order['username']) ?></strong></div>
-<div><span class="muted">نوع سفارش</span><strong><?= e((string)$order['operation_label']) ?></strong></div>
-<div><span class="muted">زمان ثبت سفارش</span><strong class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></strong></div>
-<div><span class="muted">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
-<div><span class="muted">تلفن</span><strong class="numeric-value"><?= e((string)$order['buyer_phone'] ?: 'بدون تلفن') ?></strong></div>
-<div><span class="muted">ایمیل</span><strong><?= e((string)$order['buyer_email'] ?: 'بدون ایمیل') ?></strong></div>
-<div><span class="muted">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_username">نام کاربری</span><strong class="numeric-value"><?= e((string)$order['username']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_order_type">نوع سفارش</span><strong><?= e((string)$order['operation_label']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_order_created">زمان ثبت سفارش</span><strong class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_buyer_name">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_phone">تلفن</span><strong class="numeric-value"><?= e((string)$order['buyer_phone'] ?: 'بدون تلفن') ?></strong></div>
+<div><span class="muted" data-ui-text="orders_email">ایمیل</span><strong><?= e((string)$order['buyer_email'] ?: 'بدون ایمیل') ?></strong></div>
+<div><span class="muted" data-ui-text="orders_order_snapshot_amount">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
 <div><span class="muted" data-fa="درگاه پرداخت" data-en="Payment gateway">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
 <?php if ($isSandboxPayment): ?><div><span class="muted" data-fa="محیط پرداخت" data-en="Payment environment">محیط پرداخت</span><strong><span data-fa="آزمایشی" data-en="Sandbox">آزمایشی</span></strong></div><?php endif; ?>
-<div><span class="muted">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
-<div><span class="muted">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_gateway_transaction_id">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
+<div><span class="muted" data-ui-text="orders_payment_verified_at">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
 </div>
 <?php if (!empty($attemptsByOrder[(int)$order['id']])): ?>
-<div class="order-attempts"><strong>نتیجه عملیات IBSng</strong>
+<div class="order-attempts"><strong data-ui-text="orders_ibsng_operation_result">نتیجه عملیات IBSng</strong>
 <?php foreach ($attemptsByOrder[(int)$order['id']] as $attempt): ?>
 <div class="attempt-line"><span><?= e((string)($attempt['server_name'] ?: 'سرور')) ?> · <?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?></span><strong><?= e((string)$attempt['status']) ?></strong>
-<?php if (!empty($attempt['remote_user_id'])): ?><small>شناسه کاربر IBSng: <span class="numeric-value"><?= e((string)$attempt['remote_user_id']) ?></span></small><?php endif; ?>
+<?php if (!empty($attempt['remote_user_id'])): ?><small><span data-ui-text="orders_ibsng_user_id">شناسه کاربر IBSng:</span> <span class="numeric-value"><?= e((string)$attempt['remote_user_id']) ?></span></small><?php endif; ?>
 <?php if (!empty($attempt['error_message'])): ?><small class="muted"><?= e((string)$attempt['error_message']) ?></small><?php endif; ?>
 </div>
 <?php endforeach; ?></div>
-<?php else: ?><p class="muted">هنوز جزئیات عملیات IBSng برای این سفارش ثبت نشده است.</p><?php endif; ?>
+<?php else: ?><p class="muted" data-ui-text="orders_no_ibsng_details">هنوز جزئیات عملیات IBSng برای این سفارش ثبت نشده است.</p><?php endif; ?>
 </details></td>
 </tr>
 <?php endforeach; ?>
@@ -226,7 +226,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </section>
 
 <section class="section-gap" aria-labelledby="ambiguous-payments-title">
-<h2 id="ambiguous-payments-title" data-ui-text="orders_ambiguous_title">بررسی موردی پرداخت‌های نامشخص</h2>
+<h2 id="ambiguous-payments-title" data-ui-text="orders_ambiguous_section_title">بررسی موردی پرداخت‌های نامشخص</h2>
 <p class="muted" data-ui-text="orders_ambiguous_intro">این بخش فقط در موارد نادر پرداخت‌هایی را نشان می‌دهد که شروع آن‌ها در درگاه نتیجهٔ قطعی نداشته است. پیش از آزاد کردن سفارش برای تلاش مجدد، در پنل درگاه بررسی کنید که فاکتور قابل پرداختی برای آن ایجاد نشده باشد. این اقدام درگاه را لغو نمی‌کند و صرفاً وضعیت داخلی سفارش را تغییر می‌دهد.</p>
 <div class="table-wrap"><table><thead><tr><th data-ui-text="orders_transaction">تراکنش</th><th data-ui-text="orders_order">سفارش</th><th data-ui-text="orders_gateway">درگاه</th><th data-ui-text="orders_amount">مبلغ</th><th data-ui-text="orders_buyer">خریدار</th><th data-ui-text="orders_created_at">زمان ثبت</th><th data-ui-text="orders_action">اقدام</th></tr></thead><tbody>
 <?php if (!$ambiguousRows): ?><tr><td colspan="7" data-ui-text="orders_no_ambiguous">پرداخت مبهمی برای بررسی وجود ندارد.</td></tr><?php endif; ?>
@@ -236,8 +236,8 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <td><?= e((string)$row['buyer_name']) ?><br><span class="numeric-value"><?= e((string)$row['buyer_phone']) ?></span></td><td><span class="numeric-value"><?= e((string)$row['created_at']) ?></span></td>
 <td class="review-action"><form method="post" data-confirm-fa="آیا در پنل درگاه بررسی کردید که فاکتور قابل پرداختی برای این سفارش وجود ندارد؟" data-confirm-en="Did you check the gateway dashboard and confirm that no payable invoice exists for this order?">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="transaction_id" value="<?= (int)$row['id'] ?>">
-<label for="note-<?= (int)$row['id'] ?>" data-ui-text="orders_review_note">یادداشت بررسی (الزامی)</label><textarea id="note-<?= (int)$row['id'] ?>" name="resolution_note" required maxlength="2000" placeholder="نتیجه بررسی درگاه را بنویسید" data-ui-placeholder="orders_review_placeholder"></textarea>
-<button class="button" type="submit" data-ui-text="orders_mark_failed_retry">ثبت ناموفق و امکان تلاش مجدد</button></form></td>
+<label for="note-<?= (int)$row['id'] ?>" data-ui-text="orders_review_action_note">یادداشت بررسی (الزامی)</label><textarea id="note-<?= (int)$row['id'] ?>" name="resolution_note" required maxlength="2000" placeholder="نتیجه بررسی درگاه را بنویسید" data-ui-placeholder="orders_review_action_placeholder"></textarea>
+<button class="button" type="submit" data-ui-text="orders_mark_failed_and_retry">ثبت ناموفق و امکان تلاش مجدد</button></form></td>
 </tr><?php endforeach; ?>
 </tbody></table></div>
 </section>
