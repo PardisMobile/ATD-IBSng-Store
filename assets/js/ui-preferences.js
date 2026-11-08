@@ -443,7 +443,7 @@
       status_paid_amount: 'Amount paid',
       status_purchase_date: 'Purchase date',
       status_payment_state: 'Payment status',
-      status_product: 'Product',
+      status_product: 'Service',
       status_payment_unconfirmed: 'Payment for this order has not been confirmed yet. The purchased service will not be created until payment is confirmed.',
       status_waiting_provision: 'Payment has been recorded, but the activation result is not ready yet. Please check the order status again in a few minutes.',
       status_account_heading: 'Account details',
