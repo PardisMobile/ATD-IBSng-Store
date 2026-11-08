@@ -309,7 +309,12 @@
       orders_status_provisioning: 'Activating',
       orders_status_paid: 'Paid',
       orders_operation_purchase: 'Purchase',
-      orders_operation_renewal: 'Renewal'
+      orders_operation_renewal: 'Renewal',
+      orders_table_order: 'Order',
+      orders_table_service: 'Service',
+      orders_table_paid_amount: 'Paid amount',
+      orders_table_status: 'Status',
+      orders_table_details: 'Details'
     },
     admin_settings: {
       settings_admin: 'Store administration',
