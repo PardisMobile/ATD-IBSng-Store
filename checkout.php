@@ -355,9 +355,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 </fieldset>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
 <?php $checkoutRules = ''; try { $rulesQuery = $pdo->prepare('SELECT setting_value FROM app_settings WHERE setting_key=? LIMIT 1'); $rulesQuery->execute(['storefront_rules']); $checkoutRules = trim((string)$rulesQuery->fetchColumn()); } catch (Throwable) {} ?>
-<?php if ($checkoutRules !== ''): ?><a class="store-rules-checkout-link" href="<?= e(app_url('store-rules.php')) ?>" target="_blank" rel="noopener noreferrer"><?= storefront_info_icon('guide') ?><span data-fa="قوانین خرید و تمدید" data-en="Purchase and renewal terms">قوانین خرید و تمدید</span></a><?php endif; ?>
+<?php if ($checkoutRules !== ''): ?><button class="store-rules-checkout-link" type="button" id="open-store-rules" aria-haspopup="dialog" aria-controls="store-rules-dialog"><?= storefront_info_icon('guide') ?><span data-fa="مطالعه قوانین خرید و تمدید" data-en="Read purchase and renewal terms">مطالعه قوانین خرید و تمدید</span></button><?php endif; ?>
 <button class="button primary" type="submit" data-ui-text="checkout_submit"<?= $availablePaymentProviders === [] ? ' disabled' : '' ?>>ثبت سفارش و پرداخت</button>
 </form>
+<?php if ($checkoutRules !== ''): ?>
+<dialog class="store-rules-dialog" id="store-rules-dialog" aria-labelledby="store-rules-dialog-title">
+  <div class="store-rules-dialog__panel">
+    <header class="store-rules-dialog__header">
+      <h2 id="store-rules-dialog-title" data-fa="قوانین خرید و تمدید" data-en="Purchase and renewal terms">قوانین خرید و تمدید</h2>
+      <button class="store-rules-dialog__close" type="button" aria-label="بستن پنجره" data-fa-aria="بستن پنجره" data-en-aria="Close dialog" data-ui-aria="store_rules_close" id="close-store-rules" autofocus>&times;</button>
+    </header>
+    <div class="store-rules-dialog__body"><?= nl2br(e($checkoutRules)) ?></div>
+    <footer class="store-rules-dialog__footer">
+      <button class="button primary" type="button" id="dismiss-store-rules" data-fa="متوجه شدم، بستن" data-en="Got it, close">متوجه شدم، بستن</button>
+    </footer>
+  </div>
+</dialog>
+<style>
+.store-rules-checkout-link{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0 16px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--surface-2);color:var(--text);font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.store-rules-checkout-link:hover{border-color:var(--accent);color:var(--accent)}
+.store-rules-checkout-link .store-info-icon{width:20px;height:20px;flex:0 0 20px}
+.store-rules-dialog{width:min(620px,calc(100% - 28px));max-width:620px;max-height:min(82dvh,760px);padding:0;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:20px;background:var(--surface);color:var(--text);box-shadow:0 24px 80px #0009;overflow:hidden}
+.store-rules-dialog::backdrop{background:rgba(2,6,23,.72);backdrop-filter:blur(5px)}
+.store-rules-dialog__panel{display:flex;flex-direction:column;max-height:min(82dvh,760px)}
+.store-rules-dialog__header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.store-rules-dialog__header h2{margin:0;font-size:1.08rem;line-height:1.6}
+.store-rules-dialog__close{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--text);font-size:25px;line-height:1;cursor:pointer}
+.store-rules-dialog__body{padding:20px;overflow:auto;white-space:normal;overflow-wrap:anywhere;line-height:2}
+.store-rules-dialog__footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+.store-rules-dialog__footer .button{min-width:140px}
+@media(max-width:560px){.store-rules-dialog{width:calc(100% - 20px);border-radius:16px}.store-rules-dialog__header,.store-rules-dialog__body{padding:16px}.store-rules-dialog__footer{padding:12px 16px}}
+</style>
+<script>
+(function(){
+  const dialog=document.getElementById('store-rules-dialog');
+  const open=document.getElementById('open-store-rules');
+  if(!dialog||!open||typeof dialog.showModal!=='function')return;
+  const close=()=>{if(dialog.open)dialog.close();};
+  open.addEventListener('click',()=>{if(!dialog.open)dialog.showModal();});
+  document.getElementById('close-store-rules')?.addEventListener('click',close);
+  document.getElementById('dismiss-store-rules')?.addEventListener('click',close);
+  dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
+  dialog.addEventListener('close',()=>open.focus());
+})();
+</script>
+<?php endif; ?>
 <script>(function(){const field=document.getElementById("checkout-site-language");const form=field&&field.form;if(!form)return;const sync=()=>{field.value=document.documentElement.lang==="en"?"en":"fa";};sync();form.addEventListener("submit",sync);document.addEventListener("atd:language-change",sync);})();</script>
 <?php endif; ?>
 </section>
