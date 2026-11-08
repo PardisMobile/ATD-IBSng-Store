@@ -118,7 +118,7 @@ if ($success && $orderReference !== '') {
 <div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($paidAccountPassword) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
 <?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
 </div>
-<div class="account-item"><small data-ui-text="status_plan">سرویس</small><strong><?= e(trim((string)($accountCard['plan'] ?? '')) !== '' ? (string)$accountCard['plan'] : 'در حال حاضر قابل دریافت نیست') ?></strong></div>
+<div class="account-item"><small data-fa="سرویس" data-en="Service">سرویس</small><strong><?= e(trim((string)($accountCard['plan'] ?? '')) !== '' ? (string)$accountCard['plan'] : 'در حال حاضر قابل دریافت نیست') ?></strong></div>
 <div class="account-item"><small data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
 </div>
 </section>
