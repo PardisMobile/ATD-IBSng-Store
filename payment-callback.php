@@ -32,7 +32,7 @@ $paidAccountCards = [];
 if ($success && $orderReference !== '') {
     try {
         $pdo = Database::connection();
-        $orderStmt = $pdo->prepare('SELECT id,public_id,username,password_ciphertext FROM orders WHERE public_id=? LIMIT 1');
+        $orderStmt = $pdo->prepare('SELECT o.id,o.public_id,o.product_id,o.username,o.password_ciphertext,o.validity_days_snapshot,o.server_targets_snapshot,p.quota_bytes FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE o.public_id=? LIMIT 1');
         $orderStmt->execute([$orderReference]);
         $paidOrder = $orderStmt->fetch(PDO::FETCH_ASSOC) ?: null;
         if ($paidOrder) {
@@ -48,6 +48,16 @@ if ($success && $orderReference !== '') {
             );
             $attemptStmt->execute([(int)$paidOrder['id']]);
             foreach ($attemptStmt->fetchAll(PDO::FETCH_ASSOC) as $attempt) {
+                $serverId = (int)$attempt['server_id'];
+                $accountCard = [
+                    'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
+                    'plan' => '',
+                    'validity' => max(0, (int)$paidOrder['validity_days_snapshot']),
+                    'quota_bytes' => $paidOrder['quota_bytes'] === null ? null : (int)$paidOrder['quota_bytes'],
+                    'expiry' => '',
+                    'remaining' => null,
+                    'expired' => null,
+                ];
                 try {
                     $client = new IBSngClient(
                         (string)$attempt['host'],
@@ -57,23 +67,27 @@ if ($success && $orderReference !== '') {
                     );
                     $user = $client->lookupUser((string)$paidOrder['username']);
                     $groupName = trim((string)($user['group'] ?? ''));
-                    $planName = '';
                     if ($groupName !== '') {
-                        $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
-                        $planStmt->execute([(int)$attempt['server_id'], $groupName]);
-                        $planName = (string)($planStmt->fetchColumn() ?: '');
+                        try {
+                            $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
+                            $planStmt->execute([$serverId, $groupName]);
+                            $accountCard['plan'] = trim((string)($planStmt->fetchColumn() ?: ''));
+                        } catch (Throwable $planError) {
+                            error_log('Payment success plan lookup failed for server ' . $serverId . ': ' . $planError->getMessage());
+                        }
                     }
-                    $paidAccountCards[] = [
-                        'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
-                        'plan' => $planName,
-                    ];
+                    try {
+                        $state = IBSngRenewalState::fromClient($client, (string)$paidOrder['username']);
+                        $accountCard['expiry'] = trim((string)($state['nearest_exp_date'] ?? ''));
+                        $accountCard['remaining'] = isset($state['remaining_days']) ? (int)$state['remaining_days'] : null;
+                        $accountCard['expired'] = isset($state['expired']) ? (bool)$state['expired'] : null;
+                    } catch (Throwable $stateError) {
+                        error_log('Payment success optional expiry lookup failed for server ' . $serverId . ': ' . $stateError->getMessage());
+                    }
                 } catch (Throwable $detailError) {
-                    error_log('Payment success account detail lookup failed for server ' . (int)$attempt['server_id'] . ': ' . $detailError->getMessage());
-                    $paidAccountCards[] = [
-                        'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
-                        'plan' => '',
-                    ];
+                    error_log('Payment success IBSng detail lookup failed for server ' . $serverId . ': ' . $detailError->getMessage());
                 }
+                $paidAccountCards[] = $accountCard;
             }
         }
     } catch (Throwable $accountLoadError) {
@@ -127,7 +141,11 @@ if ($success && $orderReference !== '') {
 <div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($paidAccountPassword) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
 <?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
 </div>
-<div class="account-item"><small data-fa="سرویس" data-en="Service">سرویس</small><strong><?= e(trim((string)($accountCard['plan'] ?? '')) !== '' ? (string)$accountCard['plan'] : 'در حال حاضر قابل دریافت نیست') ?></strong></div>
+<?php if (trim((string)($accountCard['plan'] ?? '')) !== ''): ?><div class="account-item"><small data-fa="سرویس" data-en="Service">سرویس</small><strong><?= e((string)$accountCard['plan']) ?></strong></div><?php endif; ?>
+<?php if ((int)($accountCard['validity'] ?? 0) > 0): ?><div class="account-item"><small data-ui-text="status_validity">مدت اعتبار</small><strong><?= e((string)$accountCard['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div><?php endif; ?>
+<?php if (array_key_exists('quota_bytes', $accountCard)): ?><div class="account-item"><small data-ui-text="status_quota">محدودیت حجم</small><strong><?php if ($accountCard['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php elseif ((int)$accountCard['quota_bytes'] > 0): ?><?= e(number_format((int)$accountCard['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div><?php endif; ?>
+<?php if (trim((string)($accountCard['expiry'] ?? '')) !== ''): ?><div class="account-item"><small data-ui-text="status_expiry">تاریخ انقضا</small><strong><?= e((string)$accountCard['expiry']) ?></strong></div><?php endif; ?>
+<?php if (is_bool($accountCard['expired'] ?? null)): ?><div class="account-item"><small data-ui-text="status_validity_state">وضعیت اعتبار</small><strong data-ui-status="<?= $accountCard['expired'] ? 'expired' : 'active' ?>"><?= $accountCard['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
 <div class="account-item"><small data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
 </div>
 </section>
