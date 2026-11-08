@@ -290,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 .checkout-card .topbar{gap:12px}
 @media(max-width:560px){
  .checkout-shell{width:calc(100% - 20px)}
- .checkout-card{margin:14px 0;padding:clamp(16px,5vw,22px);border-radius:16px}
+ .checkout-card{margin:24px 0;padding:clamp(16px,5vw,22px);border-radius:16px}
  .checkout-card .notice{padding:12px 14px}
  .checkout-card form>.button[type=submit]{min-height:48px}
 }
