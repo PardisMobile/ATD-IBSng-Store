@@ -17,6 +17,27 @@ body {
   min-width:0;
   margin-inline:auto;
 }
+
+/* Accent edge for primary customer-facing cards only; nested cards are excluded. */
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero) {
+  position:relative;
+  overflow:hidden;
+}
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero)::before {
+  content:"";
+  position:absolute;
+  inset-block-start:0;
+  inset-inline:0;
+  height:3px;
+  background:var(--accent);
+  opacity:.72;
+  pointer-events:none;
+  z-index:0;
+}
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero) > * {
+  position:relative;
+  z-index:1;
+}
 :root[data-theme="dark"],
 :root[data-mode="dark"] {
   --accent-foreground:#10182a;
