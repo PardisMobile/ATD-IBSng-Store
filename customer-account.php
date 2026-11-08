@@ -250,7 +250,8 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
         // Daily Traffic Limit is shown in IBSng's Group Value column (e.g. 10G).
         // If This Period Usage is not available yet, show the configured limit itself
         // instead of incorrectly formatting a null remaining value as Unlimited.
-        $dailyTrafficLimitRaw = trim((string)($ibsngGroupValue($accountHtml, 'Traffic Limit') ?? ''));
+        $dailyTrafficLimitValue = $ibsngGroupValue($accountHtml, 'Traffic Limit');
+        $dailyTrafficLimitRaw = trim((string)($dailyTrafficLimitValue ?? ''));
         $dailyTrafficLimitBytes = null;
         if ($dailyTrafficLimitRaw !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $dailyTrafficLimitRaw)
             && preg_match('/^([0-9]+(?:\\.[0-9]+)?)\\s*([KMGT])(?:i?B)?$/i', $dailyTrafficLimitRaw, $limitMatch)) {
@@ -272,7 +273,7 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
 
         // The card is also meaningful for groups that have not been mapped to a Store plan:
         // a present Daily Traffic row with an empty/dash limit represents an unlimited group.
-        if (!$quotaAvailable && $dailyTrafficLimitRaw !== null) {
+        if (!$quotaAvailable && $dailyTrafficLimitValue !== null) {
             $quotaAvailable = true;
         }
 
