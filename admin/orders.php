@@ -250,18 +250,18 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
   const jalaliLocale = 'fa-IR-u-ca-persian';
   const fmt = new Intl.DateTimeFormat(jalaliLocale, {year:'numeric',month:'numeric',day:'numeric'});
   const parts = (date) => Object.fromEntries(fmt.formatToParts(date).map(p=>[p.type,p.value]));
-  const jParts = (date) => { const p=parts(date); return {year:Number(p.year.replace(/[^0-9]/g,'')),month:Number(p.month.replace(/[^0-9]/g,'')),day:Number(p.day.replace(/[^0-9]/g,''))}; };
+  const latin = value => value.replace(/[۰-۹٠-٩]/g, ch => String(ch.charCodeAt(0)>=0x06f0&&ch.charCodeAt(0)<=0x06f9?ch.charCodeAt(0)-0x06f0:ch.charCodeAt(0)-0x0660));\n  const jParts = (date) => { const p=parts(date); return {year:Number(latin(p.year)),month:Number(latin(p.month)),day:Number(latin(p.day))}; };
   const toGregorian = (jy,jm,jd) => {
-    const start = Date.UTC(jy+621,2,19);
+    const start = Date.UTC(jy+621,2,19,12);
     let first = null;
     for(let n=0;n<6;n++){const d=new Date(start+n*86400000);const p=jParts(d);if(p.year===jy&&p.month===1&&p.day===1){first=d;break;}}
     if(!first) throw new Error('Invalid Jalali year');
-    const offset = (jm-1)* (jm<=7?31:30) - (jm>7?6:0) + jd-1;
+    const offset = (jm<=7 ? (jm-1)*31 : 186+(jm-8)*30) + jd-1;
     return new Date(first.getTime()+offset*86400000);
   };
   const monthLength = (y,m) => m<=6?31:m<=11?30:(jParts(toGregorian(y+1,1,1)).year===y+1?Math.round((toGregorian(y+1,1,1)-toGregorian(y,1,1))/86400000)-336:29);
   const toIso = d => d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
-  const parseIso = value => {const m=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null;};
+  const parseIso = value => {const m=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12)):null;};
   const dayNames = ['ش','ی','د','س','چ','پ','ج'];
   const monthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
   const setupJalaliFilters = () => {
