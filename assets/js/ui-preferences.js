@@ -102,7 +102,7 @@
       server_intro: 'Connection testing performs a real login to the Web Panel over HTTP. The password is stored encrypted in the database.',
       server_add_heading: 'Add server',
       server_default_label: '· Default',
-      server_management_title: 'IBSng server management',
+      server_management_title: 'Manage IBSng Servers',
       server_host_label: 'Server address (domain or IP, without http or path)',
       server_web_panel_port: 'Web Panel port',
       server_admin_username: 'IBSng administrator username',

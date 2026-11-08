@@ -224,6 +224,7 @@ $servers = $pdo->query('SELECT id,name,service_name,host,port,utc_offset,scheme,
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel panel-card">
 <div class="eyebrow">IBSng Server</div>
+<h2 data-ui-text="server_management_title">مدیریت سرورهای IBSng</h2>
 <p class="muted" data-ui-text="server_intro">در این مرحله، تست اتصال با ورود واقعی به Web Panel انجام می‌شود. رمز عبور در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</p>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
