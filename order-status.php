@@ -192,8 +192,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <title data-ui-title-key="title_order_status">وضعیت سفارش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.status-shell{width:min(820px,calc(100% - 28px));margin:0 auto}
-.status-card{padding:clamp(18px,4vw,30px);margin:24px 0 36px;min-width:0}
+.status-shell{width:min(820px,calc(100% - 28px));margin:0 auto;padding-top:24px}
+.status-card{padding:clamp(18px,4vw,30px);margin:0 0 36px;min-width:0}
 .status-card h1{font-size:clamp(1.45rem,4vw,2rem);line-height:1.5;margin:8px 0 14px;overflow-wrap:anywhere}
 .status-card h2{font-size:clamp(1.1rem,3vw,1.35rem);line-height:1.6;margin:24px 0 12px}
 .notice{padding:16px;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);margin:14px 0;line-height:1.95;background:var(--surface-2);color:var(--text);overflow-wrap:anywhere}
