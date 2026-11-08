@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
+require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/StorefrontView.php';
 $config = app_config();
 $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
@@ -39,6 +40,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section><h2 data-ui-text="guide_step_app_title">۲. برنامه یا روش اتصال مناسب را انتخاب کنید</h2><p data-ui-text="guide_step_app_body">برنامه، سیستم‌عامل و روش اتصال باید با مشخصات سرویس خریداری‌شده مطابقت داشته باشد. از تنظیمات یا راهنمای اختصاصی ارائه‌دهنده سرویس استفاده کنید؛ این صفحه اطلاعات سرور یا پروتکل را حدس نمی‌زند.</p></section>
 <section><h2 data-ui-text="guide_step_troubleshoot_title">۳. اتصال و عیب‌یابی اولیه</h2><ul><li data-ui-text="guide_troubleshoot_credentials">نام کاربری و رمز عبور را دوباره بررسی کنید.</li><li data-ui-text="guide_troubleshoot_expiry">مطمئن شوید سرویس هنوز فعال و منقضی نشده است.</li><li data-ui-text="guide_troubleshoot_destination">اگر اطلاعات مقصد یا روش اتصال در ایمیل مشخص شده، همان مورد را انتخاب کنید.</li><li data-ui-text="guide_troubleshoot_support">اگر مشکل برطرف نشد، کد رهگیری، شناسه سفارش یا نام کاربری را هنگام تماس با پشتیبانی اعلام کنید. رمز عبور خود را در پیام‌های عمومی ارسال نکنید.</li></ul></section>
 <section><h2 data-ui-text="guide_tracking_title">پیگیری سفارش</h2><p data-ui-text="guide_tracking_body">برای مشاهده وضعیت پرداخت، فعال‌سازی سرویس و جزئیات حساب، از صفحه پیگیری سفارش استفاده کنید.</p><p><a href="<?= e(app_url('order-status.php')) ?>" data-ui-text="guide_tracking_link">رفتن به پیگیری سفارش</a></p></section>
+<?php if (isset($_SESSION['my_orders_email']) && (int)($_SESSION['my_orders_verified_until'] ?? 0) > time()) storefront_support_card(Database::connection()); ?>
 <?php storefront_footer($siteTitle); ?>
 </main>
 </body>
