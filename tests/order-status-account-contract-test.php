@@ -26,10 +26,14 @@ $checks = [
         && str_contains($status, "if (is_string(\$accountPassword))")
         && str_contains($status, 'رمز عبور فقط برای سرورهایی نمایش داده می‌شود که فعال‌سازی اکانت در آن‌ها با موفقیت تأیید شده است. کد رهگیری سفارش را محرمانه نگه دارید.')
         && !str_contains($status, "!\$isTrackingCode && \$attempt['status'] === 'succeeded'"),
-    'empty service name is suppressed without rendering an empty label' => is_string($status)
-        && str_contains($status, "if (trim((string)(\$attempt['service_name'] ?? '')) !== ''):")
-        && str_contains($status, "<strong><?= e((string)\$attempt['service_name']) ?></strong>")
-        && !str_contains($status, "? (string)\$attempt['service_name'] : ''"),
+    'account card contains only username, password, mapped service, and usage guide' => is_string($status)
+        && str_contains($status, 'data-ui-password-toggle')
+        && str_contains($status, 'data-fa="سرویس" data-en="Service"')
+        && str_contains($status, "app_url('userguide.php')")
+        && !str_contains($status, "['service_name']")
+        && !str_contains($status, 'status_validity')
+        && !str_contains($status, 'status_quota')
+        && !str_contains($status, 'status_expiry'),
 ];
 
 foreach ($checks as $label => $passed) {
