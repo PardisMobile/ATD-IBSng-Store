@@ -13,7 +13,7 @@ require_once dirname(__DIR__) . '/PaymentGateway.php';
  */
 final class ZarinpalGateway implements PaymentGateway
 {
-    private const LIVE_BASE_URL = 'https://api.zarinpal.com/pg/v4/payment';
+    private const LIVE_BASE_URL = 'https://payment.zarinpal.com/pg/v4/payment';
     private const SANDBOX_BASE_URL = 'https://sandbox.zarinpal.com/pg/v4/payment';
 
     public function code(): string
@@ -75,11 +75,15 @@ final class ZarinpalGateway implements PaymentGateway
         $data = $response['data'] ?? [];
         $authority = trim((string)($data['authority'] ?? ''));
         if ((int)($data['code'] ?? 0) !== 100 || $authority === '') {
-            throw new RuntimeException('Zarinpal did not issue a payment authority.');
+            $diagnostic = json_encode([
+                'data' => $data,
+                'errors' => $response['errors'] ?? [],
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            throw new RuntimeException('Zarinpal did not issue a payment authority. Response: ' . (is_string($diagnostic) ? substr($diagnostic, 0, 2000) : 'unavailable'));
         }
 
         return [
-            'redirect_url' => ($sandbox ? 'https://sandbox.zarinpal.com/pg/StartPay/' : 'https://www.zarinpal.com/pg/StartPay/') . rawurlencode($authority),
+            'redirect_url' => ($sandbox ? 'https://sandbox.zarinpal.com/pg/StartPay/' : 'https://payment.zarinpal.com/pg/StartPay/') . rawurlencode($authority),
             'provider_reference' => $authority,
             'request_data' => $response,
         ];
