@@ -19,11 +19,11 @@ body {
 }
 
 /* Accent edge for primary customer-facing cards only; nested cards are excluded. */
-:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero) {
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero,.customer-support-card) {
   position:relative;
   overflow:hidden;
 }
-:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero)::before {
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero,.customer-support-card)::before {
   content:"";
   position:absolute;
   inset-block-start:0;
@@ -34,7 +34,7 @@ body {
   pointer-events:none;
   z-index:0;
 }
-:where(.orders-card,.status-card,.checkout-card,.account-card,.guide) > * {
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.customer-support-card) > * {
   position:relative;
   z-index:1;
 }
