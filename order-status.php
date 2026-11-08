@@ -80,7 +80,7 @@ if (!$notFound) {
             }
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
-                'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
+                'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.name AS server_name, s.service_name, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
                  FROM provisioning_attempts a
                  JOIN ibsng_servers s ON s.id = a.server_id
                  WHERE a.order_id = ?
@@ -114,7 +114,10 @@ if (!$notFound) {
                         $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
                         $planStmt->execute([(int)$attempt['server_id'], $groupName]);
                         $planName = (string)($planStmt->fetchColumn() ?: '');
-                        $accountDetails[(int)$attempt['server_id']] = ['plan' => $planName];
+                        $accountDetails[(int)$attempt['server_id']] = [
+                            'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
+                            'plan' => $planName,
+                        ];
                     } catch (Throwable $detailError) {
                         error_log('Customer order account detail lookup failed for server ' . (int)$attempt['server_id'] . ': ' . $detailError->getMessage());
                     }
@@ -186,6 +189,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 .target strong{display:block;overflow-wrap:anywhere}
 .target small{display:block;color:var(--muted);margin-top:4px}
 .account-details{display:grid;gap:12px;margin-top:12px;min-width:0}
+.account-server-title{display:flex;align-items:center;gap:9px;margin:0;padding:0 2px 10px;font-size:1.05rem;line-height:1.6;overflow-wrap:anywhere}.account-server-title .ui-icon{width:21px;height:21px;flex:0 0 21px;color:var(--accent,var(--blue))}
 .account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .account-item{padding:clamp(13px,2.5vw,17px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);min-width:0}
 .account-item small{display:block;color:var(--muted);margin-bottom:8px;line-height:1.6}
@@ -254,6 +258,8 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php if ($attempt['status'] === 'succeeded'): ?>
 <?php $details = $accountDetails[(int)$attempt['server_id']] ?? null; ?>
 <div class="account-details">
+<?php $serverTitle = is_array($details) ? trim((string)($details['server'] ?? '')) : ''; ?>
+<?php if ($serverTitle !== ''): ?><h3 class="account-server-title"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg><?= e($serverTitle) ?></h3><?php endif; ?>
 <div class="account-grid">
 <div class="account-item"><small data-ui-text="status_username">نام کاربری</small><strong dir="ltr"><?= e((string)$order['username']) ?></strong></div>
 <div class="account-item"><small data-ui-text="status_password">رمز عبور</small>
