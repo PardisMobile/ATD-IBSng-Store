@@ -262,7 +262,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
 </div>
 <div class="account-item"><small data-ui-text="status_plan">سرویس</small><strong><?= e(is_array($details) && trim((string)($details['plan'] ?? '')) !== '' ? (string)$details['plan'] : 'در حال حاضر قابل دریافت نیست') ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
+<div class="account-item"><small data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
 </div>
 </div>
 <?php endif; ?>
