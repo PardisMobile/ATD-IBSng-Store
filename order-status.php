@@ -21,6 +21,8 @@ $accountPassword = null;
 $accountDetails = [];
 $retryAvailable = false;
 $retryProvider = '';
+$retryMode = '';
+$retryAuthority = '';
 $retryError = '';
 if (empty($_SESSION['order_payment_retry_csrf'])) $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
 $productQuotaBytes = null;
@@ -40,13 +42,22 @@ if (!$notFound) {
         if (!$order) {
             $notFound = true;
         } elseif ($order['payment_status'] === 'pending' && $order['order_status'] === 'pending_payment') {
-            $paymentStmt = $pdo->prepare('SELECT provider,status FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
+            $paymentStmt = $pdo->prepare('SELECT provider,status,provider_reference FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
             $paymentStmt->execute([(int)$order['id']]);
             $lastPayment = $paymentStmt->fetch(PDO::FETCH_ASSOC) ?: null;
-            if ($lastPayment && $lastPayment['status'] === 'failed'
-                && in_array((string)$lastPayment['provider'], ['zarinpal', 'ircrypto'], true)) {
-                $retryAvailable = true;
-                $retryProvider = (string)$lastPayment['provider'];
+            if ($lastPayment && (string)$lastPayment['provider'] === 'zarinpal') {
+                $retryProvider = 'zarinpal';
+                if ($lastPayment['status'] === 'failed') {
+                    // A definitive failed attempt can safely create a new gateway request.
+                    $retryAvailable = true;
+                    $retryMode = 'new';
+                } elseif ($lastPayment['status'] === 'pending'
+                    && trim((string)($lastPayment['provider_reference'] ?? '')) !== '') {
+                    // Resume the already-issued Zarinpal authority; never create a second invoice.
+                    $retryAvailable = true;
+                    $retryMode = 'resume';
+                    $retryAuthority = trim((string)$lastPayment['provider_reference']);
+                }
             }
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
@@ -112,6 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_payment']) && $
         $retryError = 'درخواست نامعتبر است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.';
     } else {
         try {
+            if ($retryMode === 'resume' && $retryProvider === 'zarinpal' && $retryAuthority !== '') {
+                header('Location: https://payment.zarinpal.com/pg/StartPay/' . rawurlencode($retryAuthority), true, 303);
+                exit;
+            }
+            if ($retryMode !== 'new') {
+                throw new RuntimeException('This payment attempt cannot be safely retried.');
+            }
             $payment = PaymentFlow::initiate($pdo, (int)$order['id'], $retryProvider);
             header('Location: ' . $payment['redirect_url'], true, 303);
             exit;
@@ -199,19 +217,19 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <div class="purchase-fact"><span data-ui-text="status_order_state">وضعیت سفارش</span><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
 <div class="purchase-fact"><span data-ui-text="status_paid_amount">مبلغ پرداخت‌شده</span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
 <div class="purchase-fact"><span data-ui-text="status_purchase_date">تاریخ خرید</span><strong><?= e((string)$order['created_at']) ?></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_payment_state">وضعیت پرداخت</span><strong data-ui-status="<?= e((string)$order['payment_status']) ?>"><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_product">محصول</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
+<div class="purchase-fact"><span data-ui-text="status_payment_state">وضعیت پرداخت</span><strong data-ui-status="<?= e((string)$order['payment_status']) ?>"><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong>
+<?php if ($retryAvailable && $order['payment_status'] !== 'paid'): ?>
+<form method="post" style="display:grid;gap:8px;margin-top:12px">
+<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['order_payment_retry_csrf']) ?>">
+<button class="button button-primary" type="submit" name="retry_payment" value="1">تلاش مجدد برای پرداخت</button>
+</form>
+<?php endif; ?>
+<?php if ($retryError !== ''): ?><p class="muted" role="alert"><?= e($retryError) ?></p><?php endif; ?>
+</div>
+<div class="purchase-fact"><span data-ui-text="status_product">سرویس</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
 </div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
 <p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است. تا زمان تأیید پرداخت، سرویس خریداری شده ایجاد نخواهد شد.</p>
-<?php if ($retryAvailable): ?>
-<form method="post" class="notice" style="display:grid;gap:12px">
-<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['order_payment_retry_csrf']) ?>">
-<button class="button button-primary" type="submit" name="retry_payment" value="1">تلاش مجدد برای پرداخت</button>
-<p class="muted">با انتخاب این گزینه، درخواست پرداخت جدید برای همین سفارش ایجاد می‌شود. سفارش یا اکانت جدیدی ساخته نخواهد شد.</p>
-</form>
-<?php endif; ?>
-<?php if ($retryError !== ''): ?><div class="notice error" role="alert"><?= e($retryError) ?></div><?php endif; ?>
 <?php elseif (!$attempts): ?>
 <p class="muted" data-ui-text="status_waiting_provision">پرداخت ثبت شده است، اما نتیجه فعال‌سازی هنوز آماده نیست. لطفاً چند دقیقه دیگر وضعیت سفارش را بررسی کنید.</p>
 <?php else: ?>
