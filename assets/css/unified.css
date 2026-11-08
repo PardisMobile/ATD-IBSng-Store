@@ -34,10 +34,12 @@ body {
   pointer-events:none;
   z-index:0;
 }
-:where(.orders-card,.status-card,.checkout-card,.account-card,.guide,.storefront-hero) > * {
+:where(.orders-card,.status-card,.checkout-card,.account-card,.guide) > * {
   position:relative;
   z-index:1;
 }
+/* Keep the hero's absolutely positioned illustration and content layers intact. */
+.storefront-hero::before { z-index:3; }
 :root[data-theme="dark"],
 :root[data-mode="dark"] {
   --accent-foreground:#10182a;
