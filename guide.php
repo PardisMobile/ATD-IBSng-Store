@@ -13,7 +13,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <title data-ui-title-key="title_guide">راهنمای استفاده | <?= e($siteTitle) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.guide{width:min(850px,calc(100% - 28px));margin:24px auto 0;padding:clamp(20px,4.5vw,38px);min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--ui-radius-lg,20px)}
+.guide{width:min(900px,calc(100% - 28px));margin:24px auto 0;padding:clamp(20px,4.5vw,38px);min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--ui-radius-lg,20px)}
 .guide h1{margin:8px 0 14px;font-size:clamp(1.65rem,4vw,2.35rem);line-height:1.45;overflow-wrap:anywhere}
 .guide>p{line-height:1.95}
 .guide .muted{color:var(--muted)}
