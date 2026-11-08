@@ -223,6 +223,7 @@ $statusLabels = ['pending_payment' => 'در انتظار پرداخت', 'paid' =
 </form>
 <?php endif; ?>
 </section>
+<?php if ($stage === 'orders') storefront_support_card(Database::connection()); ?>
 </main>
 <?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 <style>
