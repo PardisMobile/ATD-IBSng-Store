@@ -512,6 +512,7 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </section>
 <?php endforeach; ?>
 <?php endif; ?>
+<?php if ($isLoggedIn) storefront_support_card(Database::connection()); ?>
 <?php storefront_footer($title); ?>
 </main>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
