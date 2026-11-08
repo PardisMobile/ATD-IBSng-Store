@@ -105,25 +105,16 @@ if (!$notFound) {
                             app_decrypt_secret((string)$attempt['server_password'])
                         );
                         $data = $client->lookupUser((string)$order['username']);
-                        $state = IBSngRenewalState::fromClient($client, (string)$order['username']);
                         $groupName = trim((string)($data['group'] ?? ''));
-                        $planStmt = $pdo->prepare('SELECT g.plan_name FROM product_server_groups psg JOIN ibsng_groups g ON g.id=psg.ibsng_group_id AND g.server_id=psg.server_id WHERE psg.product_id=? AND psg.server_id=? AND g.group_name=? AND g.is_active=1 LIMIT 1');
-                        $planStmt->execute([(int)$order['product_id'], (int)$attempt['server_id'], $groupName]);
-                        $planName = (string)($planStmt->fetchColumn() ?: 'نامشخص');
-                        $targetSnapshots = json_decode((string)($order['server_targets_snapshot'] ?? '[]'), true);
-                        $targetValidity = (int)$order['validity_days_snapshot'];
-                        if (is_array($targetSnapshots)) foreach ($targetSnapshots as $targetSnapshot) {
-                            if ((int)($targetSnapshot['server_id'] ?? 0) === (int)$attempt['server_id'] && (int)($targetSnapshot['validity_days'] ?? 0) > 0) { $targetValidity = (int)$targetSnapshot['validity_days']; break; }
+                        if ($groupName === '') {
+                            throw new RuntimeException('IBSng account group could not be identified.');
                         }
-                        $accountDetails[(int)$attempt['server_id']] = [
-                            'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)$attempt['server_name'],
-                            'plan' => $planName,
-                            'validity' => $targetValidity,
-                            'quota_bytes' => $order['quota_bytes'] === null ? null : (int)$order['quota_bytes'],
-                            'expiry' => (string)($state['nearest_exp_date'] ?? ''),
-                            'remaining' => (int)($state['remaining_days'] ?? 0),
-                            'expired' => (bool)($state['expired'] ?? false),
-                        ];
+                        // The customer-facing service name is the Store plan mapped to
+                        // the account's actual primary IBSng group, not the server name.
+                        $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
+                        $planStmt->execute([(int)$attempt['server_id'], $groupName]);
+                        $planName = (string)($planStmt->fetchColumn() ?: '');
+                        $accountDetails[(int)$attempt['server_id']] = ['plan' => $planName];
                     } catch (Throwable $detailError) {
                         error_log('Customer order account detail lookup failed for server ' . (int)$attempt['server_id'] . ': ' . $detailError->getMessage());
                     }
@@ -194,16 +185,18 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 .target:hover{border-color:color-mix(in srgb,var(--accent,var(--blue)) 30%,var(--border))}
 .target strong{display:block;overflow-wrap:anywhere}
 .target small{display:block;color:var(--muted);margin-top:4px}
-.account-details{display:grid;gap:8px;margin-top:10px;min-width:0}
-.account-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
-.account-spec{padding:13px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface);min-width:0}
-.account-spec span{display:block;color:var(--muted);font-size:.85rem}
-.account-spec strong{display:block;margin-top:6px;overflow-wrap:anywhere;line-height:1.7}
-.account-specs .full{grid-column:1/-1}
+.account-details{display:grid;gap:12px;margin-top:12px;min-width:0}
+.account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.account-item{padding:clamp(13px,2.5vw,17px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);min-width:0}
+.account-item small{display:block;color:var(--muted);margin-bottom:8px;line-height:1.6}
+.account-item strong{overflow-wrap:anywhere;line-height:1.7}
+.account-item strong[dir="ltr"],.password-value[dir="ltr"]{direction:ltr;unicode-bidi:isolate;text-align:left;display:inline-block;max-width:100%}
+.password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.password-line button{font:inherit;cursor:pointer;min-height:40px}
+.icon-button{width:42px;height:42px;padding:8px;flex:0 0 42px;display:inline-flex;align-items:center;justify-content:center}
+.icon-button .ui-icon{width:21px;height:21px}
 .account-details code{overflow-wrap:anywhere;word-break:break-word}
-.account-details details{padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-sm,10px);background:var(--surface);min-width:0}
-.account-details summary{cursor:pointer;line-height:1.7}
-.account-details summary:focus-visible{outline:2px solid var(--accent,var(--blue));outline-offset:3px;border-radius:4px}
+@media(max-width:560px){.account-grid{grid-template-columns:1fr}}
 .state{white-space:nowrap;font-weight:700;padding:7px 12px;border-radius:999px;background:color-mix(in srgb,var(--success,var(--green)) 12%,transparent);color:var(--success,var(--green));border:1px solid color-mix(in srgb,var(--success,var(--green)) 28%,transparent);flex:0 0 auto}
 .purchase-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
 .purchase-fact{padding:15px 16px;border:1px solid var(--border);border-radius:var(--ui-radius-md,16px);background:var(--surface-2);min-width:0}
@@ -257,29 +250,20 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <div class="target-list">
 <?php foreach ($attempts as $attempt): ?>
 <div class="target">
-<div><?php if (trim((string)($attempt['service_name'] ?? '')) !== ''): ?><strong><?= e((string)$attempt['service_name']) ?></strong><?php endif; ?><small><?= e((string)$attempt['operation']) ?></small>
+<div>
 <?php if ($attempt['status'] === 'succeeded'): ?>
 <?php $details = $accountDetails[(int)$attempt['server_id']] ?? null; ?>
-<div class="account-details credential-panel">
-<div class="account-specs">
-<div class="account-spec"><span data-ui-text="status_username">نام کاربری</span><strong><?= e((string)$order['username']) ?></strong></div>
-<?php if (is_array($details)): ?>
-<div class="account-spec"><span data-ui-text="status_plan">پلن</span><strong><?= e((string)$details['plan']) ?></strong></div>
-<div class="account-spec"><span data-ui-text="status_server">سرور</span><strong><?= e((string)$details['server']) ?></strong></div>
-<div class="account-spec"><span data-ui-text="status_validity">مدت اعتبار</span><strong><?= e((string)$details['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div>
-<div class="account-spec"><span data-ui-text="status_quota">محدودیت حجم</span><strong><?php if ($details['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php else: ?><?= e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div>
-<div class="account-spec"><span data-ui-text="status_expiry">تاریخ انقضا</span><strong><?= e((string)$details['expiry'] ?: 'نامشخص') ?></strong></div>
-<div class="account-spec"><span data-ui-text="status_validity_state">وضعیت اعتبار</span><strong data-ui-status="<?= $details['expired'] ? 'expired' : 'active' ?>"><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
-<?php else: ?>
-<div class="account-spec"><span data-ui-text="status_service_details">مشخصات سرویس</span><strong data-ui-text="status_unavailable">در حال حاضر قابل دریافت نیست</strong></div>
-<?php endif; ?>
-</div>
+<div class="account-details">
+<div class="account-grid">
+<div class="account-item"><small data-ui-text="status_username">نام کاربری</small><strong dir="ltr"><?= e((string)$order['username']) ?></strong></div>
+<div class="account-item"><small data-ui-text="status_password">رمز عبور</small>
 <?php if (is_string($accountPassword)): ?>
-<div class="credential-row"><span data-ui-text="status_password">رمز عبور</span><details><summary data-ui-text="status_show_password">نمایش رمز عبور</summary><code><?= e($accountPassword) ?></code></details></div>
-<?php else: ?>
-<div class="credential-row"><span data-ui-text="status_password">رمز عبور</span><span data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</span></div>
-<?php endif; ?>
-<p><a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></p>
+<div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($accountPassword) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+<?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
+</div>
+<div class="account-item"><small data-ui-text="status_plan">سرویس</small><strong><?= e(is_array($details) && trim((string)($details['plan'] ?? '')) !== '' ? (string)$details['plan'] : 'در حال حاضر قابل دریافت نیست') ?></strong></div>
+<div class="account-item"><small data-ui-text="customer_guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
+</div>
 </div>
 <?php endif; ?>
 </div>
