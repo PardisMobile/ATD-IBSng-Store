@@ -63,6 +63,20 @@ if (!$notFound) {
                         ? $transactionMetadata['gateway_environment'] : [];
                     $retrySandbox = ($gatewayEnvironment['sandbox'] ?? false) === true;
                 }
+            } elseif (!$lastPayment) {
+                // If the order was saved but payment initiation never created a
+                // transaction, allow a fresh attempt only when Zarinpal is the
+                // single configured provider. Never guess between gateways.
+                $available = PaymentFlow::availableProviders($pdo, [
+                    'price_minor_snapshot' => $order['price_minor_snapshot'],
+                    'price_usdt_snapshot' => $order['price_usdt_snapshot'],
+                    'currency' => $order['currency'],
+                ]);
+                if (count($available) === 1 && ($available[0]['code'] ?? '') === 'zarinpal') {
+                    $retryProvider = 'zarinpal';
+                    $retryAvailable = true;
+                    $retryMode = 'new';
+                }
             }
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
