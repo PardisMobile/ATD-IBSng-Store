@@ -302,6 +302,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php endif; ?>
 
 </section>
+<?php if ($order) storefront_support_card(Database::connection()); ?>
 <?php storefront_footer((string)($config['site_title'] ?? 'ATD IBSng Store')); ?>
 </main>
 </body>
