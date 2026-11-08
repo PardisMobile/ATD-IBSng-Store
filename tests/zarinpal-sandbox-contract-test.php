@@ -20,7 +20,7 @@ $orders = file_get_contents($root . '/admin/orders.php');
 zarinpal_sandbox_assert(is_string($adapter) && str_contains($adapter, 'https://sandbox.zarinpal.com/pg/v4/payment'), 'Zarinpal adapter must use the v4 sandbox API host.');
 zarinpal_sandbox_assert(str_contains($adapter, "https://payment.zarinpal.com/pg/v4/payment"), 'Zarinpal live API must use the official payment.zarinpal.com host.');
 zarinpal_sandbox_assert(str_contains($adapter, "https://payment.zarinpal.com/pg/StartPay/"), 'Zarinpal live payment must redirect to the official hosted payment page.');
-zarinpal_sandbox_assert(str_contains($adapter, "'Response: '") && str_contains($adapter, "\$response['errors'] ?? []"), 'Zarinpal API rejection details must be retained for server-side diagnostics.');
+zarinpal_sandbox_assert(str_contains($adapter, 'Response: ') && str_contains($adapter, "'errors' => \$response['errors'] ?? []"), 'Zarinpal API rejection details must be retained for server-side diagnostics.');
 zarinpal_sandbox_assert(str_contains($adapter, 'https://sandbox.zarinpal.com/pg/StartPay/'), 'Sandbox payment must redirect to the sandbox hosted payment page.');
 zarinpal_sandbox_assert(str_contains($adapter, "sandbox_merchant_id"), 'Sandbox verification and request must use the separate sandbox merchant ID.');
 zarinpal_sandbox_assert(str_contains($adapter, "raw_result_json") && str_contains($adapter, "gateway_environment"), 'Zarinpal verification must recover the environment snapshot from the transaction.');
