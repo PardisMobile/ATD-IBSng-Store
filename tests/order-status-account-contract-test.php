@@ -36,8 +36,8 @@ $checks = [
         && str_contains($status, "status_validity")
         && str_contains($status, "status_quota")
         && str_contains($status, "status_expiry")
-        && str_contains($status, "if (trim((string)(\$details['plan'] ?? '')) !== '')")
-        && str_contains($status, "if (trim((string)(\$details['expiry'] ?? '')) !== '')"),
+        && str_contains($status, "if (is_array(\$details) && trim((string)(\$details['plan'] ?? '')) !== '')")
+        && str_contains($status, "if (is_array(\$details) && trim((string)(\$details['expiry'] ?? '')) !== '')"),
 ];
 
 foreach ($checks as $label => $passed) {
