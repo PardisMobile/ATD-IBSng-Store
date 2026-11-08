@@ -95,3 +95,56 @@ function storefront_footer(string $siteTitle): void
     </footer>
     <?php
 }
+
+
+function storefront_support_card(PDO $pdo): void
+{
+    $stmt = $pdo->prepare('SELECT setting_key, setting_value FROM app_settings WHERE setting_key IN (?, ?, ?, ?)');
+    $stmt->execute(['support_telegram_id', 'support_whatsapp_target', 'support_custom_label', 'support_custom_url']);
+    $settings = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_KEY_PAIR) as $key => $value) {
+        $settings[$key] = trim((string)$value);
+    }
+
+    $links = [];
+    $telegram = $settings['support_telegram_id'] ?? '';
+    if ($telegram !== '') {
+        $links[] = ['label' => 'پشتیبانی تلگرام', 'url' => 'https://t.me/' . rawurlencode(ltrim($telegram, '@')), 'icon' => '<path d="m21 3-7.2 18-4-7.1L3 10l18-7Z"/><path d="M9.8 13.9 21 3"/>'];
+    }
+    $whatsapp = $settings['support_whatsapp_target'] ?? '';
+    if ($whatsapp !== '') {
+        $target = preg_replace('/[^A-Za-z0-9._+-]/', '', $whatsapp);
+        $links[] = ['label' => 'پشتیبانی واتساپ', 'url' => 'https://wa.me/' . rawurlencode($target), 'icon' => '<path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8.5 8.5c.5 2.5 2 4 4.5 5"/>'];
+    }
+    $customLabel = $settings['support_custom_label'] ?? '';
+    $customUrl = $settings['support_custom_url'] ?? '';
+    if ($customLabel !== '' && filter_var($customUrl, FILTER_VALIDATE_URL) && strtolower((string)parse_url($customUrl, PHP_URL_SCHEME)) === 'https') {
+        $links[] = ['label' => $customLabel, 'url' => $customUrl, 'icon' => '<circle cx="12" cy="12" r="9"/><path d="M10 14 14 10M9 10h5v5"/>'];
+    }
+    if ($links === []) return;
+    ?>
+    <section class="panel customer-support-card" aria-label="پشتیبانی مشتریان">
+      <h2>پشتیبانی مشتریان</h2>
+      <p>اگر درباره سفارش یا سرویس خود سؤالی دارید، از راه‌های زیر با ما در ارتباط باشید.</p>
+      <div class="customer-support-links">
+        <?php foreach ($links as $link): ?>
+          <a class="customer-support-link" href="<?= e($link['url']) ?>" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= $link['icon'] ?></svg>
+            <span><?= e($link['label']) ?></span>
+            <span class="support-external" aria-hidden="true">↗</span>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    </section>
+    <style>
+    .customer-support-card{margin:18px 0;padding:clamp(18px,3vw,26px);border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface)}
+    .customer-support-card h2{margin:0 0 6px;font-size:1.15rem;color:var(--text)}
+    .customer-support-card>p{margin:0 0 16px;color:var(--muted);line-height:1.8}
+    .customer-support-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px}
+    .customer-support-link{display:flex;align-items:center;gap:11px;min-width:0;padding:13px 15px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);color:var(--text);text-decoration:none;font-weight:700;transition:border-color .18s ease,background .18s ease}
+    .customer-support-link:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--surface-2))}
+    .customer-support-link svg{width:23px;height:23px;flex:0 0 23px;color:var(--accent)}
+    .customer-support-link .support-external{margin-inline-start:auto;color:var(--accent)}
+    </style>
+    <?php
+}
