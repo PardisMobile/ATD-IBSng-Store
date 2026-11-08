@@ -26,8 +26,15 @@ zarinpal_sandbox_assert(str_contains($adapter, 'https://sandbox.zarinpal.com/pg/
 zarinpal_sandbox_assert(str_contains($adapter, "sandbox_merchant_id"), 'Sandbox verification and request must use the separate sandbox merchant ID.');
 zarinpal_sandbox_assert(str_contains($adapter, "raw_result_json") && str_contains($adapter, "gateway_environment"), 'Zarinpal verification must recover the environment snapshot from the transaction.');
 zarinpal_sandbox_assert(is_string($flow) && str_contains($flow, "payment_zarinpal_sandbox_mode") && str_contains($flow, "'gateway_environment'"), 'Payment initiation must snapshot Zarinpal environment.');
+$bootstrap = file_get_contents($root . '/app/bootstrap.php');
+zarinpal_sandbox_assert(is_string($bootstrap) && str_contains($bootstrap, 'function app_absolute_url') && str_contains($bootstrap, 'FILTER_VALIDATE_DOMAIN'), 'Payment callbacks must use a validated absolute origin without changing installer base_url storage.');
+zarinpal_sandbox_assert(str_contains($flow, "app_absolute_url('payment-callback.php?provider='") && !str_contains($flow, "app_url('payment-callback.php?provider='"), 'Payment initiation must provide an absolute callback URL.');
+zarinpal_sandbox_assert(str_contains($flow, '$e instanceof InvalidArgumentException') && str_contains($flow, '$transactions->failInitiation($transactionId)'), 'Definitive local Zarinpal validation failures must release the initiation for retry.');
+
 zarinpal_sandbox_assert(str_contains($flow, 'Zarinpal did not issue a payment authority. Response:') && str_contains($flow, '$transactions->failInitiation($transactionId)'), 'A definitive Zarinpal rejection without authority must release the transaction for safe retry.');
 zarinpal_sandbox_assert(is_string($orderStatus) && str_contains($orderStatus, 'retry_payment') && str_contains($orderStatus, "\$lastPayment['status'] === 'failed'") && str_contains($orderStatus, 'PaymentFlow::initiate'), 'Pending orders with a failed payment must offer retry through the same provider.');
+zarinpal_sandbox_assert(str_contains($orderStatus, 'raw_result_json') && str_contains($orderStatus, '$retrySandbox') && str_contains($orderStatus, 'sandbox.zarinpal.com'), 'Resuming an existing Zarinpal authority must use the original Sandbox/Live environment snapshot.');
+
 zarinpal_sandbox_assert(is_string($transactions) && str_contains($transactions, 'raw_result_json') && str_contains($transactions, '$metadata'), 'Payment transaction creation must persist environment metadata before provider initiation.');
 zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, "['type'] ?? '') === 'checkbox'") && str_contains($settings, 'sandbox_merchant_id'), 'Admin settings must expose sandbox mode and sandbox merchant credentials.');
 zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, 'support_uuid_v4') && str_contains($settings, 'support_is_uuid_v4') && str_contains($settings, 'readonly dir="ltr"'), 'Admin settings must automatically generate and retain a UUID v4 for Sandbox Merchant ID.');
