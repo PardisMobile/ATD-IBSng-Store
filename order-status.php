@@ -8,6 +8,7 @@ require_once __DIR__ . '/app/OrderTrackingCode.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/IBSngRenewalState.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/Payments/PaymentFlow.php';
 
 $config = app_config();
 $orderLookupValue = trim((string)($_GET['order'] ?? ''));
@@ -18,6 +19,10 @@ $order = null;
 $attempts = [];
 $accountPassword = null;
 $accountDetails = [];
+$retryAvailable = false;
+$retryProvider = '';
+$retryError = '';
+if (empty($_SESSION['order_payment_retry_csrf'])) $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
 $productQuotaBytes = null;
 $notFound = !$isTrackingCode && !preg_match('/^[a-f0-9]{32}$/D', $orderPublicId);
 
@@ -34,6 +39,15 @@ if (!$notFound) {
         $order = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
         if (!$order) {
             $notFound = true;
+        } elseif ($order['payment_status'] === 'pending' && $order['order_status'] === 'pending_payment') {
+            $paymentStmt = $pdo->prepare('SELECT provider,status FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
+            $paymentStmt->execute([(int)$order['id']]);
+            $lastPayment = $paymentStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+            if ($lastPayment && $lastPayment['status'] === 'failed'
+                && in_array((string)$lastPayment['provider'], ['zarinpal', 'ircrypto'], true)) {
+                $retryAvailable = true;
+                $retryProvider = (string)$lastPayment['provider'];
+            }
         } elseif ($order['payment_status'] === 'paid') {
             $attemptStmt = $pdo->prepare(
                 'SELECT a.server_id, a.operation, a.status, a.remote_user_id, s.name AS server_name, s.service_name, s.host, s.port, s.username AS admin_username, s.password_ciphertext AS server_password
@@ -89,6 +103,22 @@ if (!$notFound) {
     } catch (Throwable $e) {
         error_log('Customer order status lookup failed: ' . $e->getMessage());
         http_response_code(503);
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_payment']) && $order && $retryAvailable) {
+    $submittedCsrf = (string)($_POST['csrf'] ?? '');
+    if (!hash_equals((string)$_SESSION['order_payment_retry_csrf'], $submittedCsrf)) {
+        $retryError = 'درخواست نامعتبر است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.';
+    } else {
+        try {
+            $payment = PaymentFlow::initiate($pdo, (int)$order['id'], $retryProvider);
+            header('Location: ' . $payment['redirect_url'], true, 303);
+            exit;
+        } catch (Throwable $retryException) {
+            error_log('Order payment retry failed for order ' . (int)$order['id'] . ': ' . $retryException->getMessage());
+            $retryError = 'شروع مجدد پرداخت انجام نشد. لطفاً کمی بعد دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.';
+        }
     }
 }
 
@@ -174,6 +204,14 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 </div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
 <p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است. تا زمان تأیید پرداخت، سرویس خریداری شده ایجاد نخواهد شد.</p>
+<?php if ($retryAvailable): ?>
+<form method="post" class="notice" style="display:grid;gap:12px">
+<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['order_payment_retry_csrf']) ?>">
+<button class="button button-primary" type="submit" name="retry_payment" value="1">تلاش مجدد برای پرداخت</button>
+<p class="muted">با انتخاب این گزینه، درخواست پرداخت جدید برای همین سفارش ایجاد می‌شود. سفارش یا اکانت جدیدی ساخته نخواهد شد.</p>
+</form>
+<?php endif; ?>
+<?php if ($retryError !== ''): ?><div class="notice error" role="alert"><?= e($retryError) ?></div><?php endif; ?>
 <?php elseif (!$attempts): ?>
 <p class="muted" data-ui-text="status_waiting_provision">پرداخت ثبت شده است، اما نتیجه فعال‌سازی هنوز آماده نیست. لطفاً چند دقیقه دیگر وضعیت سفارش را بررسی کنید.</p>
 <?php else: ?>
