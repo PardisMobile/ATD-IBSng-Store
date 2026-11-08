@@ -190,10 +190,18 @@ final class PaymentFlow
             }
             return ['redirect_url' => $redirect, 'transaction_id' => $transactionId];
         } catch (Throwable $e) {
-            // Once the outbound initiation call has started, its outcome may be
-            // ambiguous (for example, a provider created an invoice but its
-            // response timed out). Keep the transaction active and let an
-            // administrator reconcile it; do not release the order for retry.
+            // A structured Zarinpal API rejection with no authority is definitive:
+            // no payable gateway session was issued, so this transaction can be
+            // safely failed and the same pending order may be retried.
+            // Network/timeout/unknown outcomes remain active for reconciliation.
+            if ($provider === 'zarinpal'
+                && str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')) {
+                try {
+                    $transactions->failInitiation($transactionId);
+                } catch (Throwable $stateError) {
+                    error_log('Unable to mark rejected Zarinpal initiation as failed: ' . $stateError->getMessage());
+                }
+            }
             throw $e;
         }
     }
