@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_admin();
+require_once dirname(__DIR__) . '/app/GuideIcons.php';
 
 $config = app_config();
 $pdo = Database::connection();
 $settingKey = 'general_account_guide';
 $systems = [
     'android' => ['fa' => 'Android', 'en' => 'Android'],
-    'ios' => ['fa' => 'iPhone / iOS', 'en' => 'iPhone / iOS'],
+    'ios' => ['fa' => 'iPhone / iPad (iOS)', 'en' => 'iPhone / iPad (iOS)'],
     'windows' => ['fa' => 'Windows', 'en' => 'Windows'],
     'macos' => ['fa' => 'macOS', 'en' => 'macOS'],
     'linux' => ['fa' => 'Linux', 'en' => 'Linux'],
@@ -86,8 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ];
                     }
                 }
+                $icon = strtolower(trim((string)($rawMethod['icon'] ?? '')));
+                if (!in_array($icon, ['openvpn', 'v2ray', 'wireguard', 'generic'], true)) $icon = guide_method_icon_key(['name' => $name]);
                 $methods[] = [
                     'name' => $name,
+                    'icon' => $icon,
                     'active' => isset($rawMethod['active']) ? 1 : 0,
                     'systems' => $methodSystems,
                 ];
@@ -145,13 +149,13 @@ $esc = static fn($value): string => e((string)$value);
 <?php foreach ($guideMethods as $index => $method): $method = is_array($method) ? $method : []; ?>
 <article class="guide-admin-method" data-guide-method>
 <div class="guide-admin-method-head">
-<div class="field" style="flex:1;min-width:220px"><label data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"></div>
+<div class="field guide-method-name-field"><label><span class="guide-icon-slot" data-method-icon-preview><?= guide_icon_svg(guide_method_icon_key($method)) ?></span><span data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</span></label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"><div class="guide-method-icon-picker"><label data-fa="آیکون روش" data-en="Method icon" for="guide-method-icon-<?= (int)$index ?>">آیکون روش</label><select id="guide-method-icon-<?= (int)$index ?>" name="methods[<?= (int)$index ?>][icon]" data-method-icon-select><?php foreach (['openvpn' => 'OpenVPN', 'v2ray' => 'V2Ray', 'wireguard' => 'WireGuard', 'generic' => 'Generic'] as $iconKey => $iconLabel): ?><option value="<?= e($iconKey) ?>"<?= guide_method_icon_key($method) === $iconKey ? ' selected' : '' ?>><?= e($iconLabel) ?></option><?php endforeach; ?></select></div></div>
 <label class="check-toggle"><input type="checkbox" name="methods[<?= (int)$index ?>][active]" value="1"<?= !empty($method['active']) ? ' checked' : '' ?>> <span data-fa="فعال و قابل نمایش برای مشتری" data-en="Enabled and visible to customers">فعال و قابل نمایش برای مشتری</span></label>
 <button class="button danger" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
 </div>
 <?php foreach ($systems as $systemKey => $labels): $system = is_array($method['systems'][$systemKey] ?? null) ? $method['systems'][$systemKey] : []; ?>
 <fieldset class="form-section">
-<legend><?= e($labels['fa']) ?></legend>
+<legend><?= guide_icon_svg($systemKey) ?><span data-fa="<?= e($labels['fa']) ?>" data-en="<?= e($labels['en']) ?>"><?= e($labels['fa']) ?></span></legend>
 <div class="system-fields">
 <div class="field field-full"><label data-fa="مراحل و توضیحات" data-en="Instructions">مراحل و توضیحات</label><textarea name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][content]" rows="5"><?= $esc($system['content'] ?? '') ?></textarea></div>
 <div class="field"><label data-fa="نشانی تصویر آموزشی (اختیاری)" data-en="Instruction image URL (optional)">نشانی تصویر آموزشی (اختیاری)</label><input type="url" name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][image_url]" value="<?= $esc($system['image_url'] ?? '') ?>" placeholder="https://..."></div>
@@ -171,49 +175,21 @@ $esc = static fn($value): string => e((string)$value);
 </main>
 <script>
 (function(){
- const list=document.getElementById('guide-method-list');
- const add=document.getElementById('add-guide-method');
+ const list=document.getElementById('guide-method-list'),add=document.getElementById('add-guide-method');
  if(!list||!add)return;
  let nextIndex=<?= count($guideMethods) ?>;
- const systems=[
-  ['android','Android'],['ios','iPhone / iOS'],['windows','Windows'],['macos','macOS'],['linux','Linux']
- ];
- function field(label,name,type){
-  const wrap=document.createElement('div');wrap.className='field';
-  const caption=document.createElement('label');caption.textContent=label;
-  const input=document.createElement(type==='textarea'?'textarea':'input');
-  if(type!=='textarea')input.type=type||'text';
-  input.name=name;
-  wrap.append(caption,input);return wrap;
- }
+ const icons={openvpn:<?= json_encode(guide_icon_svg('openvpn')) ?>,v2ray:<?= json_encode(guide_icon_svg('v2ray')) ?>,wireguard:<?= json_encode(guide_icon_svg('wireguard')) ?>,generic:<?= json_encode(guide_icon_svg('generic')) ?>};
+ function refresh(card){const select=card.querySelector('[data-method-icon-select]'),preview=card.querySelector('[data-method-icon-preview]');if(select&&preview)preview.innerHTML=icons[select.value]||icons.generic}
+ list.addEventListener('change',event=>{if(event.target.matches('[data-method-icon-select]'))refresh(event.target.closest('[data-guide-method]'))});
+ list.querySelectorAll('[data-guide-method]').forEach(refresh);
  add.addEventListener('click',()=>{
-  const i=nextIndex++;
-  const article=document.createElement('article');article.className='guide-admin-method';article.dataset.guideMethod='';
-  const head=document.createElement('div');head.className='guide-admin-method-head';
-  const name=field('نام روش اتصال','methods['+i+'][name]','text');name.style.flex='1';name.style.minWidth='220px';
-  const label=document.createElement('label');label.className='check-toggle';
-  const check=document.createElement('input');check.type='checkbox';check.name='methods['+i+'][active]';check.value='1';
-  const labelText=document.createElement('span');labelText.textContent='فعال و قابل نمایش برای مشتری';label.append(check,labelText);
-  const remove=document.createElement('button');remove.type='button';remove.className='button danger';remove.textContent='حذف روش';remove.dataset.removeGuideMethod='';
-  head.append(name,label,remove);article.append(head);
-  systems.forEach(([key,title])=>{
-   const fs=document.createElement('fieldset');fs.className='form-section';
-   const legend=document.createElement('legend');legend.textContent=title;fs.append(legend);
-   const grid=document.createElement('div');grid.className='system-fields';
-   const body=field('مراحل و توضیحات','methods['+i+'][systems]['+key+'][content]','textarea');body.classList.add('field-full');body.querySelector('textarea').rows=5;
-   grid.append(body,
-    field('نشانی تصویر آموزشی (اختیاری)','methods['+i+'][systems]['+key+'][image_url]','url'),
-    field('لینک دریافت نرم‌افزار (اختیاری)','methods['+i+'][systems]['+key+'][software_url]','url'),
-    field('لینک فایل راهنما (اختیاری)','methods['+i+'][systems]['+key+'][download_url]','url'),
-    field('عنوان لینک فایل','methods['+i+'][systems]['+key+'][download_label]','text'));
-   fs.append(grid);article.append(fs);
-  });
-  list.append(article);
+  const source=list.querySelector('[data-guide-method]');if(!source)return;
+  const clone=source.cloneNode(true);
+  clone.querySelectorAll('[name]').forEach(field=>{field.name=field.name.replace(/methods\[\d+\]/,'methods['+nextIndex+']');if(field.matches('input[type="checkbox"]'))field.checked=false;else if(field.matches('input,textarea'))field.value='';else if(field.matches('select'))field.value='generic'});
+  clone.querySelectorAll('[id],[for]').forEach(field=>{if(field.id)field.id=field.id.replace(/guide-method-icon-\d+/,'guide-method-icon-'+nextIndex);if(field.htmlFor)field.htmlFor=field.htmlFor.replace(/guide-method-icon-\d+/,'guide-method-icon-'+nextIndex)});
+  refresh(clone);list.append(clone);nextIndex++;
  });
- list.addEventListener('click',event=>{
-  const button=event.target.closest('[data-remove-guide-method]');
-  if(button)button.closest('[data-guide-method]')?.remove();
- });
+ list.addEventListener('click',event=>{const button=event.target.closest('[data-remove-guide-method]');if(button)button.closest('[data-guide-method]')?.remove()});
 })();
 </script>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>

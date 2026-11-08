@@ -149,3 +149,17 @@ assert.ok(adminNavigation.includes("'مدیریت سرورها'"), 'Admin naviga
 assert.ok(adminNavigation.includes("'مدیریت اکانت ها'"), 'Admin navigation must use the approved account-management label');
 
 console.log('UI presentation contract: PASS');
+
+const guideIcons = read('app/GuideIcons.php');
+assert.match(guideIcons, /function guide_icon_svg/u);
+assert.match(guideIcons, /function guide_method_icon_key/u);
+const adminGuide = read(path.join('admin', 'guide.php'));
+assert.match(adminGuide, /data-method-icon-select/u);
+assert.match(adminGuide, /guide_icon_svg\(\$systemKey\)/u);
+assert.match(adminGuide, /iPhone \/ iPad \(iOS\)/u);
+const customerGuide = read('userguide.php');
+assert.match(customerGuide, /guide-method-icon/u);
+assert.match(customerGuide, /guide-system-icon/u);
+assert.match(customerGuide, /data\.icons\[key\]/u);
+assert.match(customerGuide, /iPhone \/ iPad \(iOS\)/u);
+assert.match(css, /\.guide-icon-slot/u);

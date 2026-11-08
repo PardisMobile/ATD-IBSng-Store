@@ -3,12 +3,13 @@ declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/GuideIcons.php';
 
 $config = app_config();
 $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 $systems = [
     'android' => ['fa' => 'Android', 'en' => 'Android'],
-    'ios' => ['fa' => 'iPhone / iOS', 'en' => 'iPhone / iOS'],
+    'ios' => ['fa' => 'iPhone / iPad (iOS)', 'en' => 'iPhone / iPad (iOS)'],
     'windows' => ['fa' => 'Windows', 'en' => 'Windows'],
     'macos' => ['fa' => 'macOS', 'en' => 'macOS'],
     'linux' => ['fa' => 'Linux', 'en' => 'Linux'],
@@ -74,22 +75,23 @@ $validUrl = static function ($value): string {
 <div class="guide-empty" data-fa="راهنمای اتصال هنوز توسط مدیریت منتشر نشده است." data-en="Connection instructions have not been published yet.">راهنمای اتصال هنوز توسط مدیریت منتشر نشده است.</div>
 <?php else: ?>
 <div class="guide-selectors">
-<div class="field"><label for="guide-method" data-fa="روش اتصال" data-en="Connection method">روش اتصال</label><select id="guide-method"><option value="" data-fa="انتخاب روش اتصال" data-en="Select a connection method">انتخاب روش اتصال</option><?php foreach ($methods as $index => $method): ?><option value="<?= (int)$index ?>"><?= e((string)$method['name']) ?></option><?php endforeach; ?></select></div>
-<div class="field"><label for="guide-system" data-fa="سیستم‌عامل یا دستگاه" data-en="Operating system or device">سیستم‌عامل یا دستگاه</label><select id="guide-system" disabled><option value="" data-fa="ابتدا روش اتصال را انتخاب کنید" data-en="Select a method first">ابتدا روش اتصال را انتخاب کنید</option></select></div>
+<div class="field"><label for="guide-method"><span class="guide-icon-slot" id="guide-method-icon"><?= guide_icon_svg("generic") ?></span><span data-fa="روش اتصال" data-en="Connection method">روش اتصال</span></label><select id="guide-method"><option value="" data-fa="انتخاب روش اتصال" data-en="Select a connection method">انتخاب روش اتصال</option><?php foreach ($methods as $index => $method): ?><option value="<?= (int)$index ?>"><?= e((string)$method['name']) ?></option><?php endforeach; ?></select></div>
+<div class="field"><label for="guide-system"><span class="guide-icon-slot" id="guide-system-icon"><?= guide_icon_svg("generic") ?></span><span data-fa="سیستم‌عامل یا دستگاه" data-en="Operating system or device">سیستم‌عامل یا دستگاه</span></label><select id="guide-system" disabled><option value="" data-fa="ابتدا روش اتصال را انتخاب کنید" data-en="Select a method first">ابتدا روش اتصال را انتخاب کنید</option></select></div>
 </div>
 <div id="guide-instructions" aria-live="polite"><div class="guide-empty" data-fa="ابتدا روش اتصال و سپس سیستم‌عامل یا دستگاه را انتخاب کنید." data-en="Choose a connection method, then an operating system or device.">ابتدا روش اتصال و سپس سیستم‌عامل یا دستگاه را انتخاب کنید.</div></div>
-<script type="application/json" id="guide-data"><?= json_encode(['methods' => $methods, 'systems' => $systems], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+<script type="application/json" id="guide-data"><?= json_encode(['methods' => array_map(static function(array $method): array { $method['icon'] = guide_method_icon_key($method); return $method; }, $methods), 'systems' => $systems, 'icons' => array_combine(['openvpn','v2ray','wireguard','generic','android','ios','windows','macos','linux'], array_map(static fn(string $key): string => guide_icon_svg($key), ['openvpn','v2ray','wireguard','generic','android','ios','windows','macos','linux']))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 <script>
 (function(){
  const data=JSON.parse(document.getElementById('guide-data').textContent);
  const method=document.getElementById('guide-method'),system=document.getElementById('guide-system'),output=document.getElementById('guide-instructions');
  const lang=()=>document.documentElement.lang==='en'?'en':'fa';
- const labels={android:{fa:'Android',en:'Android'},ios:{fa:'iPhone / iOS',en:'iPhone / iOS'},windows:{fa:'Windows',en:'Windows'},macos:{fa:'macOS',en:'macOS'},linux:{fa:'Linux',en:'Linux'}};
+ const labels={android:{fa:'Android',en:'Android'},ios:{fa:'iPhone / iPad (iOS)',en:'iPhone / iPad (iOS)'},windows:{fa:'Windows',en:'Windows'},macos:{fa:'macOS',en:'macOS'},linux:{fa:'Linux',en:'Linux'}};
  const safeUrl=value=>{try{const u=new URL(value,window.location.href);return ['http:','https:'].includes(u.protocol)?u.href:''}catch(_){return ''}};
  const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text)node.textContent=text;return node};
  function refreshSystems(){
   system.replaceChildren();system.disabled=true;
   const selected=data.methods[Number(method.value)];
+  setIcon(methodIcon,selected?.icon||'generic');setIcon(systemIcon,'generic');
   const placeholder=el('option','',lang()==='en'?'Select an operating system or device':'انتخاب سیستم‌عامل یا دستگاه');placeholder.value='';system.append(placeholder);
   if(!selected)return;
   Object.keys(labels).forEach(key=>{
@@ -102,9 +104,14 @@ $validUrl = static function ($value): string {
  function render(){
   output.replaceChildren();
   const selected=data.methods[Number(method.value)],key=system.value,item=selected?.systems?.[key];
+  setIcon(methodIcon,selected?.icon||'generic');setIcon(systemIcon,key||'generic');
   if(!selected||!item){output.append(el('div','guide-empty',lang()==='en'?'Select a method and an available operating system.':'روش اتصال و یک سیستم‌عامل دارای آموزش را انتخاب کنید.'));return}
   const section=el('section','');
-  section.append(el('h2','',selected.name+' · '+labels[key][lang()]));
+  const heading=el('h2','guide-result-heading');
+  const methodMark=el('span','guide-icon-slot');methodMark.innerHTML=data.icons[selected.icon]||data.icons.generic;
+  const systemMark=el('span','guide-icon-slot');systemMark.innerHTML=data.icons[key]||data.icons.generic;
+  heading.append(methodMark,el('span','',selected.name),el('span','guide-heading-separator','·'),systemMark,el('span','',labels[key][lang()]));
+  section.append(heading);
   if(item.content)section.append(el('div','guide-content',item.content));
   const image=safeUrl(item.image_url||'');
   if(image){const img=document.createElement('img');img.className='guide-image';img.src=image;img.alt=lang()==='en'?'Connection instruction':'تصویر آموزشی اتصال';img.loading='lazy';section.append(img)}
@@ -117,6 +124,7 @@ $validUrl = static function ($value): string {
  }
  method.addEventListener('change',refreshSystems);system.addEventListener('change',render);
  document.addEventListener('atd:language-change',()=>{const selected=system.value;refreshSystems();system.value=selected;render()});
+ refreshSystems();
 })();
 </script>
 <?php endif; ?>
