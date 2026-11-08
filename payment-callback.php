@@ -42,7 +42,7 @@ if ($success && $orderReference !== '') {
                 error_log('Payment success credential decrypt failed: ' . $decryptError->getMessage());
             }
             $attemptStmt = $pdo->prepare(
-                'SELECT a.server_id,a.status,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password
+                'SELECT a.server_id,a.status,s.name AS server_name,s.service_name,s.host,s.port,s.username AS admin_username,s.password_ciphertext AS server_password
                  FROM provisioning_attempts a JOIN ibsng_servers s ON s.id=a.server_id
                  WHERE a.order_id=? AND a.status=\'succeeded\' ORDER BY a.id ASC'
             );
@@ -63,10 +63,16 @@ if ($success && $orderReference !== '') {
                         $planStmt->execute([(int)$attempt['server_id'], $groupName]);
                         $planName = (string)($planStmt->fetchColumn() ?: '');
                     }
-                    $paidAccountCards[] = ['plan' => $planName];
+                    $paidAccountCards[] = [
+                        'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
+                        'plan' => $planName,
+                    ];
                 } catch (Throwable $detailError) {
                     error_log('Payment success account detail lookup failed for server ' . (int)$attempt['server_id'] . ': ' . $detailError->getMessage());
-                    $paidAccountCards[] = ['plan' => ''];
+                    $paidAccountCards[] = [
+                        'server' => trim((string)($attempt['service_name'] ?? '')) ?: (string)($attempt['server_name'] ?? ''),
+                        'plan' => '',
+                    ];
                 }
             }
         }
@@ -88,6 +94,7 @@ if ($success && $orderReference !== '') {
 .notice{padding:16px;border:1px solid var(--border);border-radius:14px;line-height:1.9}
 .ok{border-color:#44d6a055;background:#44d6a012}.fail{border-color:#ff718055;background:#ff718012}
 .account-details{margin:18px 0}
+.account-server-title{display:flex;align-items:center;gap:9px;margin:0;padding:0 2px 10px;font-size:1.05rem;line-height:1.6;overflow-wrap:anywhere}.account-server-title .ui-icon{width:21px;height:21px;flex:0 0 21px;color:var(--accent,var(--blue))}
 .account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .account-item{padding:clamp(13px,2.5vw,17px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);min-width:0}
 .account-item small{display:block;color:var(--muted);margin-bottom:8px;line-height:1.6}
@@ -111,6 +118,8 @@ if ($success && $orderReference !== '') {
 <h2 data-ui-text="status_account_heading">مشخصات اکانت</h2>
 <?php $cardsToShow = $paidAccountCards ?: [['plan' => '']]; foreach ($cardsToShow as $accountCard): ?>
 <section class="account-details">
+<?php $serverTitle = trim((string)($accountCard['server'] ?? '')); ?>
+<?php if ($serverTitle !== ''): ?><h3 class="account-server-title"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg><?= e($serverTitle) ?></h3><?php endif; ?>
 <div class="account-grid">
 <div class="account-item"><small data-ui-text="status_username">نام کاربری</small><strong dir="ltr"><?= e((string)$paidOrder['username']) ?></strong></div>
 <div class="account-item"><small data-ui-text="status_password">رمز عبور</small>
