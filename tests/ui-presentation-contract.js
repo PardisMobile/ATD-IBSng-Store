@@ -148,6 +148,14 @@ const adminNavigation = read('admin/_navigation.php');
 assert.ok(adminNavigation.includes("'مدیریت سرورها'"), 'Admin navigation must use the approved server-management label');
 assert.ok(adminNavigation.includes("'مدیریت اکانت ها'"), 'Admin navigation must use the approved account-management label');
 
+for (const page of ['index.php','checkout.php','customer-account.php','my-orders.php','order-status.php','guide.php']) {
+  const source = read(page);
+  assert.match(source, /StorefrontInfoIcons\.php/u, page + ' must load the shared customer information icon helper');
+  assert.match(source, /storefront_info_icon\(/u, page + ' must render customer information SVGs');
+}
+assert.match(read('app/StorefrontInfoIcons.php'), /function storefront_info_icon/u);
+assert.match(read('assets/css/unified.css'), /\.store-info-icon/u);
+assert.doesNotMatch(read('userguide.php'), /StorefrontInfoIcons\.php|store-info-icon/u, 'userguide.php is intentionally unchanged in this pass');
 console.log('UI presentation contract: PASS');
 
 const guideIcons = read('app/GuideIcons.php');

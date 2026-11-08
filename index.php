@@ -6,6 +6,7 @@ require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Pricing.php';
 require_once __DIR__ . '/app/Payments/PaymentManager.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/StorefrontInfoIcons.php';
 
 $config = app_config();
 $pageTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
@@ -209,16 +210,16 @@ try {
         <div class="catalog-grid">
         <?php foreach ($products as $product): ?>
           <article class="plan-card panel">
-            <div class="eyebrow" data-ui-text="catalog_plan_eyebrow">مشخصات سرویس</div>
+            <div class="eyebrow store-info-label"><?= storefront_info_icon("service") ?><span data-ui-text="catalog_plan_eyebrow">مشخصات سرویس</span></div>
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
             <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
-            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span data-ui-text="catalog_crypto_price">قیمت به تتر</span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
+            <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("price") ?><span data-ui-text="catalog_crypto_price">قیمت به تتر</span></span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <?php
             if ($isRenewCatalog) {
                 $validityDays = (int)$product['validity_days'];
-                ?><div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
+                ?><div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("duration") ?><span data-ui-text="catalog_validity">مدت اعتبار</span></span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
             } else {
                 $mappings = is_array($product['mappings'] ?? null) ? $product['mappings'] : [];
                 $durations = array_values(array_unique(array_map(static fn(array $mapping): int => (int)$mapping['validity_days'], $mappings)));
@@ -231,7 +232,7 @@ try {
             }
             ?>
             <?php $quotaLabel = storefront_bytes_label($product['quota_bytes'] === null ? null : (string)$product['quota_bytes']); ?>
-            <div class="plan-meta"><span data-ui-text="catalog_quota" >حجم سرویس</span><strong<?= ($product['quota_bytes'] === null || (float)$product['quota_bytes'] <= 0) ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
+            <div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("quota") ?><span data-ui-text="catalog_quota" >حجم سرویس</span></span><strong<?= ($product['quota_bytes'] === null || (float)$product['quota_bytes'] <= 0) ? ' data-fa="نامحدود" data-en="Unlimited"' : '' ?>><?= e($quotaLabel) ?></strong></div>
             <a class="button primary" href="<?= e(app_url('checkout.php?product_id=' . (int)$product['id'] . ($isRenewCatalog ? '&mode=renew&server_id=' . (int)$renewServerId : ''))) ?>"<?= $isRenewCatalog ? ' data-fa="تمدید" data-en="Renew"' : ' data-ui-text="catalog_order"' ?>><?= $isRenewCatalog ? 'تمدید' : 'ثبت سفارش' ?></a>
           </article>
         <?php endforeach; ?>

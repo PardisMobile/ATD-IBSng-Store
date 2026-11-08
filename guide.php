@@ -3,6 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/StorefrontInfoIcons.php';
 $config = app_config();
 $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 ?><!doctype html>
@@ -36,10 +37,10 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <main class="guide">
 <h1 data-ui-text="guide_title">راهنمای استفاده از اکانت</h1>
 <p class="muted" data-ui-text="guide_intro">اطلاعات ورود اکانت خریداری‌شده در ایمیل تحویل اکانت و صفحه پیگیری سفارش درج می‌شود. مراحل اتصال به نوع سرویس و برنامه‌ای که ارائه‌دهنده شما پشتیبانی می‌کند بستگی دارد.</p>
-<section><h2 data-ui-text="guide_step_account_title">۱. اطلاعات اکانت را پیدا کنید</h2><p data-ui-text="guide_step_account_body">ایمیل تحویل اکانت را باز کنید یا از لینک پیگیری سفارش استفاده کنید. نام کاربری و رمز عبور را دقیقاً مطابق اطلاعات ارائه‌شده وارد کنید. به بزرگی و کوچکی حروف و فاصله‌های اضافی توجه داشته باشید.</p></section>
-<section><h2 data-ui-text="guide_step_app_title">۲. برنامه یا روش اتصال مناسب را انتخاب کنید</h2><p data-ui-text="guide_step_app_body">برنامه، سیستم‌عامل و روش اتصال باید با مشخصات سرویس خریداری‌شده مطابقت داشته باشد. از تنظیمات یا راهنمای اختصاصی ارائه‌دهنده سرویس استفاده کنید؛ این صفحه اطلاعات سرور یا پروتکل را حدس نمی‌زند.</p></section>
-<section><h2 data-ui-text="guide_step_troubleshoot_title">۳. اتصال و عیب‌یابی اولیه</h2><ul><li data-ui-text="guide_troubleshoot_credentials">نام کاربری و رمز عبور را دوباره بررسی کنید.</li><li data-ui-text="guide_troubleshoot_expiry">مطمئن شوید سرویس هنوز فعال و منقضی نشده است.</li><li data-ui-text="guide_troubleshoot_destination">اگر اطلاعات مقصد یا روش اتصال در ایمیل مشخص شده، همان مورد را انتخاب کنید.</li><li data-ui-text="guide_troubleshoot_support">اگر مشکل برطرف نشد، کد رهگیری، شناسه سفارش یا نام کاربری را هنگام تماس با پشتیبانی اعلام کنید. رمز عبور خود را در پیام‌های عمومی ارسال نکنید.</li></ul></section>
-<section><h2 data-ui-text="guide_tracking_title">پیگیری سفارش</h2><p data-ui-text="guide_tracking_body">برای مشاهده وضعیت پرداخت، فعال‌سازی سرویس و جزئیات حساب، از صفحه پیگیری سفارش استفاده کنید.</p><p><a href="<?= e(app_url('order-status.php')) ?>" data-ui-text="guide_tracking_link">رفتن به پیگیری سفارش</a></p></section>
+<section><h2 class="store-info-heading"><?= storefront_info_icon("account") ?><span data-ui-text="guide_step_account_title">۱. اطلاعات اکانت را پیدا کنید</span></h2><p data-ui-text="guide_step_account_body">ایمیل تحویل اکانت را باز کنید یا از لینک پیگیری سفارش استفاده کنید. نام کاربری و رمز عبور را دقیقاً مطابق اطلاعات ارائه‌شده وارد کنید. به بزرگی و کوچکی حروف و فاصله‌های اضافی توجه داشته باشید.</p></section>
+<section><h2 class="store-info-heading"><?= storefront_info_icon("app") ?><span data-ui-text="guide_step_app_title">۲. برنامه یا روش اتصال مناسب را انتخاب کنید</span></h2><p data-ui-text="guide_step_app_body">برنامه، سیستم‌عامل و روش اتصال باید با مشخصات سرویس خریداری‌شده مطابقت داشته باشد. از تنظیمات یا راهنمای اختصاصی ارائه‌دهنده سرویس استفاده کنید؛ این صفحه اطلاعات سرور یا پروتکل را حدس نمی‌زند.</p></section>
+<section><h2 class="store-info-heading"><?= storefront_info_icon("troubleshoot") ?><span data-ui-text="guide_step_troubleshoot_title">۳. اتصال و عیب‌یابی اولیه</span></h2><ul><li data-ui-text="guide_troubleshoot_credentials">نام کاربری و رمز عبور را دوباره بررسی کنید.</li><li data-ui-text="guide_troubleshoot_expiry">مطمئن شوید سرویس هنوز فعال و منقضی نشده است.</li><li data-ui-text="guide_troubleshoot_destination">اگر اطلاعات مقصد یا روش اتصال در ایمیل مشخص شده، همان مورد را انتخاب کنید.</li><li data-ui-text="guide_troubleshoot_support">اگر مشکل برطرف نشد، کد رهگیری، شناسه سفارش یا نام کاربری را هنگام تماس با پشتیبانی اعلام کنید. رمز عبور خود را در پیام‌های عمومی ارسال نکنید.</li></ul></section>
+<section><h2 class="store-info-heading"><?= storefront_info_icon("tracking") ?><span data-ui-text="guide_tracking_title">پیگیری سفارش</span></h2><p data-ui-text="guide_tracking_body">برای مشاهده وضعیت پرداخت، فعال‌سازی سرویس و جزئیات حساب، از صفحه پیگیری سفارش استفاده کنید.</p><p><a href="<?= e(app_url('order-status.php')) ?>" data-ui-text="guide_tracking_link">رفتن به پیگیری سفارش</a></p></section>
 <?php if (isset($_SESSION['my_orders_email']) && (int)($_SESSION['my_orders_verified_until'] ?? 0) > time()) storefront_support_card(Database::connection()); ?>
 <?php storefront_footer($siteTitle); ?>
 </main>

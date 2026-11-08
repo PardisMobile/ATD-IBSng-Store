@@ -8,6 +8,7 @@ require_once __DIR__ . '/app/OrderTrackingCode.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/IBSngRenewalState.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/StorefrontInfoIcons.php';
 require_once __DIR__ . '/app/Payments/PaymentFlow.php';
 
 $config = app_config();
@@ -245,11 +246,11 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php else: ?>
 <h1><?= e((string)$order['product_name_snapshot']) ?></h1>
 <div class="purchase-summary">
-<div class="purchase-fact"><span data-ui-text="status_tracking_id">کد رهگیری</span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_order_state">وضعیت سفارش</span><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_paid_amount">مبلغ پرداخت‌شده</span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_purchase_date">تاریخ خرید</span><strong><?= e((string)$order['created_at']) ?></strong></div>
-<div class="purchase-fact"><span data-ui-text="status_payment_state">وضعیت پرداخت</span><strong data-ui-status="<?= e((string)$order['payment_status']) ?>"><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="status_tracking_id">کد رهگیری</span></span><strong><code><?= e((string)$order['tracking_code']) ?></code></strong></div>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("status") ?><span data-ui-text="status_order_state">وضعیت سفارش</span></span><strong data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e($attemptLabel((string)$order['order_status'])) ?></strong></div>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("payment") ?><span data-ui-text="status_paid_amount">مبلغ پرداخت‌شده</span></span><strong class="paid-amount"><?php if (strtoupper((string)$order['currency']) === 'USDT' && $order['price_usdt_snapshot'] !== null): ?><?= e(number_format((float)$order['price_usdt_snapshot'], 2)) ?> USDT<?php else: ?><?= e(number_format((int)$order['price_minor_snapshot'])) ?> <?= e((string)$order['currency']) ?><?php endif; ?></strong></div>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("date") ?><span data-ui-text="status_purchase_date">تاریخ خرید</span></span><strong><?= e((string)$order['created_at']) ?></strong></div>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("payment") ?><span data-ui-text="status_payment_state">وضعیت پرداخت</span></span><strong data-ui-status="<?= e((string)$order['payment_status']) ?>"><?= e($order['payment_status'] === 'paid' ? 'پرداخت تأیید شد' : ($order['payment_status'] === 'pending' ? 'در انتظار پرداخت' : (string)$order['payment_status'])) ?></strong>
 <?php if ($retryAvailable && $order['payment_status'] !== 'paid'): ?>
 <form method="post" style="display:grid;gap:8px;margin-top:12px">
 <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['order_payment_retry_csrf']) ?>">
@@ -258,7 +259,7 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php endif; ?>
 <?php if ($retryError !== ''): ?><p class="muted" role="alert"><?= e($retryError) ?></p><?php endif; ?>
 </div>
-<div class="purchase-fact"><span data-ui-text="status_product">سرویس</span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
+<div class="purchase-fact"><span class="store-info-label"><?= storefront_info_icon("service") ?><span data-ui-text="status_product">سرویس</span></span><strong><?= e((string)$order['product_name_snapshot']) ?></strong></div>
 </div>
 <?php if ($order['payment_status'] !== 'paid'): ?>
 <p class="muted" data-ui-text="status_payment_unconfirmed">پرداخت این سفارش هنوز تأیید نشده است. تا زمان تأیید پرداخت، سرویس خریداری شده ایجاد نخواهد شد.</p>
@@ -276,18 +277,18 @@ $attemptLabel = static fn(string $status): string => $statusLabels[$status] ?? '
 <?php $serverTitle = is_array($details) ? trim((string)($details['server'] ?? '')) : ''; ?>
 <?php if ($serverTitle !== ''): ?><h3 class="account-server-title"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg><?= e($serverTitle) ?></h3><?php endif; ?>
 <div class="account-grid">
-<div class="account-item"><small data-ui-text="status_username">نام کاربری</small><strong dir="ltr"><?= e((string)$order['username']) ?></strong></div>
-<div class="account-item"><small data-ui-text="status_password">رمز عبور</small>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("account") ?><span data-ui-text="status_username">نام کاربری</span></small><strong dir="ltr"><?= e((string)$order['username']) ?></strong></div>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("password") ?><span data-ui-text="status_password">رمز عبور</span></small>
 <?php if (is_string($accountPassword)): ?>
 <div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($accountPassword) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز عبور" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
 <?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
 </div>
-<?php if (is_array($details) && trim((string)($details['plan'] ?? '')) !== ''): ?><div class="account-item"><small data-fa="سرویس" data-en="Service">سرویس</small><strong><?= e((string)$details['plan']) ?></strong></div><?php endif; ?>
-<?php if (is_array($details) && (int)($details['validity'] ?? 0) > 0): ?><div class="account-item"><small data-ui-text="status_validity">مدت اعتبار</small><strong><?= e((string)$details['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div><?php endif; ?>
-<?php if (is_array($details) && array_key_exists('quota_bytes', $details)): ?><div class="account-item"><small data-ui-text="status_quota">محدودیت حجم</small><strong><?php if ($details['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php elseif ((int)$details['quota_bytes'] > 0): ?><?= e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div><?php endif; ?>
-<?php if (is_array($details) && trim((string)($details['expiry'] ?? '')) !== ''): ?><div class="account-item"><small data-ui-text="status_expiry">تاریخ انقضا</small><strong><?= e((string)$details['expiry']) ?></strong></div><?php endif; ?>
-<?php if (is_array($details) && is_bool($details['expired'] ?? null)): ?><div class="account-item"><small data-ui-text="status_validity_state">وضعیت اعتبار</small><strong data-ui-status="<?= $details['expired'] ? 'expired' : 'active' ?>"><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
-<div class="account-item"><small data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
+<?php if (is_array($details) && trim((string)($details['plan'] ?? '')) !== ''): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("plan") ?><span data-fa="سرویس" data-en="Service">سرویس</span></small><strong><?= e((string)$details['plan']) ?></strong></div><?php endif; ?>
+<?php if (is_array($details) && (int)($details['validity'] ?? 0) > 0): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("duration") ?><span data-ui-text="status_validity">مدت اعتبار</span></small><strong><?= e((string)$details['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div><?php endif; ?>
+<?php if (is_array($details) && array_key_exists('quota_bytes', $details)): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("quota") ?><span data-ui-text="status_quota">محدودیت حجم</span></small><strong><?php if ($details['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php elseif ((int)$details['quota_bytes'] > 0): ?><?= e(number_format((int)$details['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div><?php endif; ?>
+<?php if (is_array($details) && trim((string)($details['expiry'] ?? '')) !== ''): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("date") ?><span data-ui-text="status_expiry">تاریخ انقضا</span></small><strong><?= e((string)$details['expiry']) ?></strong></div><?php endif; ?>
+<?php if (is_array($details) && is_bool($details['expired'] ?? null)): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("status") ?><span data-ui-text="status_validity_state">وضعیت اعتبار</span></small><strong data-ui-status="<?= $details['expired'] ? 'expired' : 'active' ?>"><?= $details['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("guide") ?><span data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</span></small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
 </div>
 </div>
 <?php endif; ?>

@@ -10,6 +10,7 @@ require_once __DIR__ . '/app/Pricing.php';
 require_once __DIR__ . '/app/OrderTrackingCode.php';
 require_once __DIR__ . '/app/Payments/PaymentFlow.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/StorefrontInfoIcons.php';
 
 final class UsernameAlreadyExistsException extends RuntimeException
 {
@@ -306,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($successOrder !== null): ?>
 <h1 data-ui-text="checkout_success_title">درخواست سفارش ثبت شد</h1>
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
-<div class="notice success" role="status" aria-live="polite"><strong data-ui-text="checkout_tracking_code">کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
+<div class="notice success" role="status" aria-live="polite"><strong class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="checkout_tracking_code">کد پیگیری:</span></strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش و تلاش مجدد برای پرداخت" data-en="Track order and retry payment">پیگیری سفارش و تلاش مجدد برای پرداخت</a><?php endif; ?>
 <a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
@@ -315,8 +316,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php else: ?>
 <h1><?= e((string)$product['name']) ?></h1>
 <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
-<div class="price"><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></div>
-<?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted"><span data-ui-text="checkout_duration">مدت اعتبار:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
+<div class="price store-info-value"><?= storefront_info_icon("price") ?><span><?= e($displayPrice['amount']) ?> <?= e($displayPrice['label']) ?></span></div>
+<?php if ($operation === 'renew' || count($productTargets) === 1): ?><p class="muted store-info-inline"><?= storefront_info_icon("duration") ?><span data-ui-text="checkout_duration">مدت اعتبار:</span> <span data-ui-validity-days="<?= (int)$product['validity_days'] ?>"><?= e(storefront_validity_label((int)$product['validity_days'])) ?></span></p><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice error"><?= e($error) ?></div><?php endif; ?>
 <form method="post" autocomplete="on">
 <input type="hidden" name="site_language" id="checkout-site-language" value="fa"><input type="hidden" name="csrf" value="<?= e((string)$_SESSION['checkout_csrf']) ?>"><input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>"><input type="hidden" name="mode" value="<?= e($operation) ?>"><input type="hidden" name="server_id" value="<?= $operation === 'renew' ? (int)$renewServerId : '' ?>">
