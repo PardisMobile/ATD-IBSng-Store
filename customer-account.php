@@ -48,8 +48,15 @@ $loadAccountDetails = static function (PDO $pdo, string $username, array $server
     $accounts = [];
     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $server) {
         $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
+        // Credentials are required for authentication and the account card. Optional
+        // IBSng attributes are loaded independently so a new account can still be shown.
         $credentials = $client->getCredentials($username);
-        $state = IBSngRenewalState::fromClient($client, $username, isset($server['utc_offset']) ? (string)$server['utc_offset'] : null);
+        $state = ['nearest_exp_date' => '', 'remaining_days' => null, 'expired' => null];
+        try {
+            $state = IBSngRenewalState::fromClient($client, $username, isset($server['utc_offset']) ? (string)$server['utc_offset'] : null);
+        } catch (Throwable $stateError) {
+            error_log('Customer account optional expiry lookup failed for server ' . (int)$server['id'] . ': ' . $stateError->getMessage());
+        }
         // Independent copy of the admin IBSng A1.24 structural extraction algorithm.
         $accountHtml = (string)($credentials['html'] ?? '');
 $cleanAccountText = static function (string $value): string {
@@ -173,12 +180,19 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
         $multiLoginRaw = $ibsngAttributeValue($accountHtml, ['multi_login', 'multi_login_instances', 'multi_login_instance']);
         $multiLogin = trim((string)$multiLoginRaw);
         if ($multiLogin === '' || preg_match('/^-+$/u', $multiLogin)) {
-            $multiLogin = 'تک‌کاربره';
+            $multiLogin = '';
         }
         $groupName = trim((string)($credentials['group'] ?? ''));
-        $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
-        $planStmt->execute([(int)$server['id'], $groupName]);
-        $planName = (string)($planStmt->fetchColumn() ?: '');
+        $planName = '';
+        if ($groupName !== '') {
+            try {
+                $planStmt = $pdo->prepare('SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1 LIMIT 1');
+                $planStmt->execute([(int)$server['id'], $groupName]);
+                $planName = trim((string)($planStmt->fetchColumn() ?: ''));
+            } catch (Throwable $planError) {
+                error_log('Customer account optional plan lookup failed for server ' . (int)$server['id'] . ': ' . $planError->getMessage());
+            }
+        }
 
         // A volume quota belongs to a Store product mapping, not to an IBSng accounting attribute.
         // If the group maps to multiple active products, its exact product quota is ambiguous.
@@ -190,10 +204,19 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
              WHERE g.server_id=? AND g.group_name=? AND g.is_active=1
              ORDER BY p.id'
         );
-        $quotaStmt->execute([(int)$server['id'], $groupName]);
-        $quotaRows = $quotaStmt->fetchAll(PDO::FETCH_COLUMN);
-        $quotaBytes = count($quotaRows) === 1 && $quotaRows[0] !== null && (int)$quotaRows[0] > 0
-            ? (int)$quotaRows[0] : null;
+        $quotaBytes = null;
+        $quotaAvailable = false;
+        if ($groupName !== '') {
+            try {
+                $quotaStmt->execute([(int)$server['id'], $groupName]);
+                $quotaRows = $quotaStmt->fetchAll(PDO::FETCH_COLUMN);
+                $quotaAvailable = count($quotaRows) === 1;
+                $quotaBytes = $quotaAvailable && $quotaRows[0] !== null && (int)$quotaRows[0] > 0
+                    ? (int)$quotaRows[0] : null;
+            } catch (Throwable $quotaError) {
+                error_log('Customer account optional quota lookup failed for server ' . (int)$server['id'] . ': ' . $quotaError->getMessage());
+            }
+        }
 
         // Read only the actual Daily Traffic "This Period Usage" value.
         // Dashes, empty values and Not Applicable are unavailable, never zero.
@@ -211,14 +234,15 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
             'server_id' => (int)$server['id'],
             'server' => (string)($server['service_name'] ?: $server['name']),
             'username' => $username,
-            'plan' => $planName !== '' ? $planName : 'نامشخص',
+            'plan' => $planName,
+            'quota_available' => $quotaAvailable,
             'quota_bytes' => $quotaBytes,
             'consumed_bytes' => $consumedBytes,
             'remaining_bytes' => $remainingBytes,
             'multi_login' => $multiLogin,
-            'expiry' => (string)($state['nearest_exp_date'] ?? ''),
-            'remaining' => (int)($state['remaining_days'] ?? 0),
-            'expired' => (bool)($state['expired'] ?? false),
+            'expiry' => trim((string)($state['nearest_exp_date'] ?? '')),
+            'remaining' => isset($state['remaining_days']) ? (int)$state['remaining_days'] : null,
+            'expired' => isset($state['expired']) ? (bool)$state['expired'] : null,
             'password' => (string)($credentials['password'] ?? ''),
         ];
     }
@@ -414,12 +438,12 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <div class="account-grid">
 <div class="account-item"><small data-ui-text="customer_username">نام کاربری</small><strong dir="ltr"><?= e($item['username']) ?></strong></div>
 <div class="account-item"><small data-ui-text="customer_service">سرویس</small><strong><?= e($item['server']) ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_plan">پلن</small><strong><?= e($item['plan']) ?></strong></div>
-                <div class="account-item"><small data-fa="تعداد کاربران هم‌زمان" data-en="Simultaneous Users">تعداد کاربران هم‌زمان</small><strong><?php if ($item['multi_login'] === 'نامشخص'): ?><span data-fa="نامشخص" data-en="Unknown">نامشخص</span><?php elseif (preg_match('/^([0-9]+)\\s+instances?$/i', $item['multi_login'], $multiLoginMatch)): ?><span data-fa="<?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره" data-en="<?= e($multiLoginMatch[1]) ?> users"><?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره</span><?php else: ?><?= e($item['multi_login']) ?><?php endif; ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?php if ($item['expiry'] !== ''): ?><?= e($formatCustomerExpiry((string)$item['expiry'])) ?><?php else: ?><span data-ui-text="customer_expiry_unknown">بدون تاریخ انقضای قابل نمایش</span><?php endif; ?></strong></div>
-<div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div>
-<div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?php $remainingTrafficDisplay = $formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null); ?><?php if ($remainingTrafficDisplay === 'نامحدود'): ?><span data-fa="نامحدود" data-en="Unlimited">نامحدود</span><?php else: ?><?= e($remainingTrafficDisplay) ?><?php endif; ?></strong></div>
+<?php if ($item['plan'] !== ''): ?><div class="account-item"><small data-ui-text="customer_plan">پلن</small><strong><?= e($item['plan']) ?></strong></div><?php endif; ?>
+<?php if ($item['multi_login'] !== ''): ?><div class="account-item"><small data-fa="تعداد کاربران هم‌زمان" data-en="Simultaneous Users">تعداد کاربران هم‌زمان</small><strong><?php if (preg_match('/^([0-9]+)\\s+instances?$/i', $item['multi_login'], $multiLoginMatch)): ?><span data-fa="<?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره" data-en="<?= e($multiLoginMatch[1]) ?> users"><?= e(strtr($multiLoginMatch[1], ['0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'])) ?> کاربره</span><?php else: ?><?= e($item['multi_login']) ?><?php endif; ?></strong></div><?php endif; ?>
+<?php if (is_bool($item['expired'])): ?><div class="account-item"><small data-ui-text="customer_validity">وضعیت اعتبار</small><strong data-ui-status="<?= $item['expired'] ? 'expired' : 'active' ?>"><?= $item['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
+<?php if ($item['expiry'] !== ''): ?><div class="account-item"><small data-ui-text="customer_expiry">تاریخ انقضا</small><strong><?= e($formatCustomerExpiry((string)$item['expiry'])) ?></strong></div><?php endif; ?>
+<?php if (is_int($item['remaining'])): ?><div class="account-item"><small data-ui-text="customer_remaining">روزهای باقی‌مانده</small><strong><?= $item['expired'] === true ? '۰' : e((string)$item['remaining']) ?> <span data-ui-text="customer_days">روز</span></strong></div><?php endif; ?>
+<?php if ($item['quota_available']): ?><div class="account-item"><small data-fa="حجم باقی‌مانده" data-en="Remaining data">حجم باقی‌مانده</small><strong><?php $remainingTrafficDisplay = $formatTrafficBytes(isset($item['remaining_bytes']) ? (int)$item['remaining_bytes'] : null); ?><?php if ($remainingTrafficDisplay === 'نامحدود'): ?><span data-fa="نامحدود" data-en="Unlimited">نامحدود</span><?php else: ?><?= e($remainingTrafficDisplay) ?><?php endif; ?></strong></div><?php endif; ?>
 <div class="account-item"><small data-ui-text="customer_password_label">رمز عبور</small><div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($item['password']) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
 </div>
 </section>
