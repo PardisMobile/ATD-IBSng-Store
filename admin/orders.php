@@ -161,15 +161,15 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <title data-ui-title-key="title_admin_orders">گزارش خرید و فروش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.report-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px)}.report-filters label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}.report-filters input{min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.filter-actions{display:flex;gap:8px;flex-wrap:wrap}.filter-actions a{display:inline-flex;align-items:center;text-decoration:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:680px}.order-details{min-width:180px}.order-details summary{cursor:pointer;color:var(--accent);font-weight:650}.order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.order-detail-grid>div{display:grid;gap:3px;min-width:0}.order-detail-grid strong{overflow-wrap:anywhere}.order-attempts{border-top:1px solid var(--border);padding-top:10px;margin-top:10px}.attempt-line{display:grid;gap:4px;padding:9px 0;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.attempt-line small{overflow-wrap:anywhere}@media(max-width:480px){.order-detail-grid{grid-template-columns:1fr}}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.report-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px)}.report-filters label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}.report-filters input{min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.filter-actions{display:flex;gap:8px;flex-wrap:wrap}.filter-actions a{display:inline-flex;align-items:center;text-decoration:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:680px}.order-details{min-width:180px}.order-details-toggle{border:0;background:transparent;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;padding:2px 0;text-align:start}.order-details-toggle:hover{text-decoration:underline}.order-detail-row[hidden]{display:none}.order-detail-panel{padding:14px 16px;background:color-mix(in srgb,var(--surface-2) 58%,transparent);border-radius:var(--ui-radius-md,12px)}.order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 22px;margin:0}.order-detail-grid>div{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;min-width:0;padding:11px 2px;border-bottom:1px solid var(--border)}.order-detail-grid>div>span{color:var(--muted);flex:0 0 auto}.order-detail-grid strong{overflow-wrap:anywhere;text-align:end}.order-attempts{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.attempt-line{display:grid;gap:4px;padding:10px 2px;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.jalali-picker{position:relative;display:inline-flex;align-items:center;gap:6px}.jalali-picker input[type=text]{min-width:150px;direction:ltr;text-align:center}.jalali-picker-button{min-height:42px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);cursor:pointer}.jalali-calendar{position:absolute;z-index:30;top:calc(100% + 7px);inset-inline-start:0;width:280px;padding:12px;background:var(--surface,var(--surface-2));border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 34px #0005}.jalali-calendar[hidden]{display:none}.jalali-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.jalali-calendar-head button,.jalali-calendar-day{border:0;background:transparent;color:var(--text);font:inherit;cursor:pointer;border-radius:8px}.jalali-calendar-head button{padding:6px 10px}.jalali-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.jalali-calendar-grid span{padding:6px 0;color:var(--muted);font-size:.78rem}.jalali-calendar-day{padding:7px 0}.jalali-calendar-day:hover,.jalali-calendar-day[aria-selected=true]{background:var(--accent);color:white}.jalali-calendar-day.outside{opacity:.35}@media(max-width:480px){.order-detail-grid{grid-template-columns:1fr}.jalali-calendar{inset-inline-start:auto;inset-inline-end:0}}.attempt-line small{overflow-wrap:anywhere}@media(max-width:480px){.order-detail-grid{grid-template-columns:1fr}}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body><main class="admin-shell">
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارش‌ها</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش سفارش‌های پرداخت‌شده بر اساس مبلغ ثابت‌شده هنگام ثبت سفارش محاسبه می‌شود؛ تغییر قیمت محصول روی سفارش‌های قبلی اثری ندارد.</p>
 <form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش" data-ui-aria="orders_date_filter_aria">
-<label><span data-ui-text="orders_from_date">از تاریخ</span> <input type="date" name="from_date" value="<?= e($fromDate) ?>"></label>
-<label><span data-ui-text="orders_to_date">تا تاریخ</span> <input type="date" name="to_date" value="<?= e($toDate) ?>"></label>
+<label><span data-ui-text="orders_from_date">از تاریخ</span> <input type="date" class="report-date-filter" name="from_date" value="<?= e($fromDate) ?>" autocomplete="off"></label>
+<label><span data-ui-text="orders_to_date">تا تاریخ</span> <input type="date" class="report-date-filter" name="to_date" value="<?= e($toDate) ?>" autocomplete="off"></label>
 <div class="filter-actions"><button class="button" type="submit" data-ui-text="orders_apply_range">اعمال بازه</button><a class="button button-secondary" href="<?= e('orders.php') ?>" data-ui-text="orders_clear_filter">حذف فیلتر</a></div>
 </form>
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
@@ -187,28 +187,31 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <section class="section-gap" aria-labelledby="individual-orders-title">
 <h2 id="individual-orders-title" data-ui-text="orders_order_details_title">جزئیات سفارش‌های پرداخت‌شده</h2>
 <p class="muted" data-ui-text="orders_order_details_intro">مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید. حداکثر ۱۰۰ سفارش آخر نمایش داده می‌شود.</p>
-<div class="table-wrap"><table class="orders-detail-table"><thead><tr><th data-ui-text="orders_table_order">سفارش</th><th data-ui-text="orders_table_service">سرویس</th><th data-ui-text="orders_table_paid_amount">مبلغ پرداختی</th><th data-ui-text="orders_table_status">وضعیت</th><th data-ui-text="orders_table_details">جزئیات</th></tr></thead><tbody>
+<div class="table-wrap"><table class="orders-detail-table"><thead><tr><th data-ui-text="orders_username">نام کاربری</th><th data-ui-text="orders_order_type">نوع سفارش</th><th data-ui-text="orders_table_service">سرویس</th><th data-ui-text="orders_table_paid_amount">مبلغ پرداختی</th><th data-ui-text="orders_table_status">وضعیت</th></tr></thead><tbody>
 <?php if (!$orderRows): ?><tr><td colspan="5" data-ui-text="orders_empty_paid_orders">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($orderRows as $order): ?>
-<?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); ?>
+<?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); $detailId = 'order-detail-' . (int)$order['id']; ?>
 <tr>
-<td><span class="order-reference"><?= e((string)$order['public_id']) ?></span><br><small class="muted"><?= e((string)$order['tracking_code']) ?></small></td>
+<td><button type="button" class="order-details-toggle" aria-expanded="false" aria-controls="<?= e($detailId) ?>"><?= e((string)$order['username']) ?></button></td>
+<td><span data-fa="<?= e((string)$order['operation_label']) ?>" data-en="<?= $order['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$order['operation_label']) ?></span></td>
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
 <td><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></td>
 <td><span data-ui-status="<?= e((string)$order['order_status']) ?>"><?= e(match ((string)$order['order_status']) { 'active' => 'فعال', 'partial' => 'فعال‌سازی ناقص', 'failed' => 'ناموفق', 'provisioning' => 'در حال فعال‌سازی', 'paid' => 'پرداخت‌شده', default => (string)$order['order_status'] }) ?></span></td>
-<td><details class="order-details"><summary data-ui-text="orders_view_details">مشاهده جزئیات</summary>
+</tr>
+<tr id="<?= e($detailId) ?>" class="order-detail-row" hidden><td colspan="5"><div class="order-detail-panel">
 <div class="order-detail-grid">
-<div><span class="muted" data-ui-text="orders_username">نام کاربری</span><strong class="numeric-value"><?= e((string)$order['username']) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_order_type">نوع سفارش</span><strong><span data-fa="<?= e((string)$order['operation_label']) ?>" data-en="<?= $order['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$order['operation_label']) ?></span></strong></div>
-<div><span class="muted" data-ui-text="orders_order_created">زمان ثبت سفارش</span><strong class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_buyer_name">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_phone">تلفن</span><?php if ((string)$order['buyer_phone'] !== ''): ?><strong class="numeric-value"><?= e((string)$order['buyer_phone']) ?></strong><?php else: ?><strong data-fa="بدون تلفن" data-en="No phone">بدون تلفن</strong><?php endif; ?></div>
-<div><span class="muted" data-ui-text="orders_email">ایمیل</span><?php if ((string)$order['buyer_email'] !== ''): ?><strong><?= e((string)$order['buyer_email']) ?></strong><?php else: ?><strong data-fa="بدون ایمیل" data-en="No email">بدون ایمیل</strong><?php endif; ?></div>
-<div><span class="muted" data-ui-text="orders_order_snapshot_amount">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
-<div><span class="muted" data-fa="درگاه پرداخت" data-en="Payment gateway">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
-<?php if ($isSandboxPayment): ?><div><span class="muted" data-fa="محیط پرداخت" data-en="Payment environment">محیط پرداخت</span><strong><span data-fa="آزمایشی" data-en="Sandbox">آزمایشی</span></strong></div><?php endif; ?>
-<div><span class="muted" data-ui-text="orders_gateway_transaction_id">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
-<div><span class="muted" data-ui-text="orders_payment_verified_at">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
+<div><span data-ui-text="orders_order">سفارش</span><strong><span class="order-reference"><?= e((string)$order['public_id']) ?></span><br><small class="muted"><?= e((string)$order['tracking_code']) ?></small></strong></div>
+<div><span data-ui-text="orders_username">نام کاربری</span><strong class="numeric-value"><?= e((string)$order['username']) ?></strong></div>
+<div><span data-ui-text="orders_order_type">نوع سفارش</span><strong><span data-fa="<?= e((string)$order['operation_label']) ?>" data-en="<?= $order['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$order['operation_label']) ?></span></strong></div>
+<div><span data-ui-text="orders_order_created">زمان ثبت سفارش</span><strong class="report-date" data-date="<?= e((string)$order['created_at']) ?>"><?= e((string)$order['created_at']) ?></strong></div>
+<div><span data-ui-text="orders_buyer_name">نام خریدار</span><strong><?= e((string)$order['buyer_name']) ?></strong></div>
+<div><span data-ui-text="orders_phone">تلفن</span><?php if ((string)$order['buyer_phone'] !== ''): ?><strong class="numeric-value"><?= e((string)$order['buyer_phone']) ?></strong><?php else: ?><strong data-fa="بدون تلفن" data-en="No phone">بدون تلفن</strong><?php endif; ?></div>
+<div><span data-ui-text="orders_email">ایمیل</span><?php if ((string)$order['buyer_email'] !== ''): ?><strong><?= e((string)$order['buyer_email']) ?></strong><?php else: ?><strong data-fa="بدون ایمیل" data-en="No email">بدون ایمیل</strong><?php endif; ?></div>
+<div><span data-ui-text="orders_order_snapshot_amount">مبلغ زمان ثبت سفارش</span><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></div>
+<div><span data-fa="درگاه پرداخت" data-en="Payment gateway">درگاه پرداخت</span><strong><?= e((string)$order['provider']) ?></strong></div>
+<?php if ($isSandboxPayment): ?><div><span data-fa="محیط پرداخت" data-en="Payment environment">محیط پرداخت</span><strong><span data-fa="آزمایشی" data-en="Sandbox">آزمایشی</span></strong></div><?php endif; ?>
+<div><span data-ui-text="orders_gateway_transaction_id">شناسه تراکنش درگاه</span><strong class="numeric-value"><?= e((string)($order['provider_reference'] ?: '—')) ?></strong></div>
+<div><span data-ui-text="orders_payment_verified_at">زمان تأیید پرداخت</span><strong class="report-date" data-date="<?= e((string)($order['verified_at'] ?: '')) ?>"><?= e((string)($order['verified_at'] ?: '—')) ?></strong></div>
 </div>
 <?php if (!empty($attemptsByOrder[(int)$order['id']])): ?>
 <div class="order-attempts"><strong data-ui-text="orders_ibsng_operation_result">نتیجه عملیات IBSng</strong>
@@ -219,10 +222,9 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </div>
 <?php endforeach; ?></div>
 <?php else: ?><p class="muted" data-ui-text="orders_no_ibsng_details">هنوز جزئیات عملیات IBSng برای این سفارش ثبت نشده است.</p><?php endif; ?>
-</details></td>
-</tr>
+</div></td></tr>
 <?php endforeach; ?>
-</tbody></table></div>
+
 </section>
 
 <section class="section-gap" aria-labelledby="ambiguous-payments-title">
@@ -242,6 +244,80 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </tbody></table></div>
 </section>
 </section><?php require __DIR__ . '/_footer.php'; ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const jalaliLocale = 'fa-IR-u-ca-persian';
+  const fmt = new Intl.DateTimeFormat(jalaliLocale, {year:'numeric',month:'numeric',day:'numeric'});
+  const parts = (date) => Object.fromEntries(fmt.formatToParts(date).map(p=>[p.type,p.value]));
+  const jParts = (date) => { const p=parts(date); return {year:Number(p.year.replace(/[^0-9]/g,'')),month:Number(p.month.replace(/[^0-9]/g,'')),day:Number(p.day.replace(/[^0-9]/g,''))}; };
+  const toGregorian = (jy,jm,jd) => {
+    const start = Date.UTC(jy+621,2,19);
+    let first = null;
+    for(let n=0;n<6;n++){const d=new Date(start+n*86400000);const p=jParts(d);if(p.year===jy&&p.month===1&&p.day===1){first=d;break;}}
+    if(!first) throw new Error('Invalid Jalali year');
+    const offset = (jm-1)* (jm<=7?31:30) - (jm>7?6:0) + jd-1;
+    return new Date(first.getTime()+offset*86400000);
+  };
+  const monthLength = (y,m) => m<=6?31:m<=11?30:(jParts(toGregorian(y+1,1,1)).year===y+1?Math.round((toGregorian(y+1,1,1)-toGregorian(y,1,1))/86400000)-336:29);
+  const toIso = d => d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+  const parseIso = value => {const m=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null;};
+  const dayNames = ['ش','ی','د','س','چ','پ','ج'];
+  const monthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const setupJalaliFilters = () => {
+    document.querySelectorAll('.report-date-filter').forEach(input => {
+      if(input.dataset.jalaliReady==='1') return;
+      input.dataset.jalaliReady='1';
+      const initial = input.value;
+      const wrap=document.createElement('span');wrap.className='jalali-picker';
+      input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+      const hidden=document.createElement('input');hidden.type='hidden';hidden.name=input.name;hidden.value=initial;wrap.appendChild(hidden);input.removeAttribute('name');
+      const btn=document.createElement('button');btn.type='button';btn.className='jalali-picker-button';btn.textContent='▦';btn.setAttribute('aria-label','باز کردن تقویم شمسی');wrap.appendChild(btn);
+      const pop=document.createElement('div');pop.className='jalali-calendar';pop.hidden=true;pop.setAttribute('role','dialog');pop.setAttribute('aria-label','تقویم شمسی');wrap.appendChild(pop);
+      let selected=parseIso(initial), current=selected?jParts(selected):jParts(new Date());
+      input.type='text';input.readOnly=true;input.value=selected?new Intl.DateTimeFormat(jalaliLocale,{year:'numeric',month:'2-digit',day:'2-digit'}).format(selected):'';input.placeholder='سال/ماه/روز';
+      const render=()=>{
+        pop.innerHTML='';
+        const head=document.createElement('div');head.className='jalali-calendar-head';
+        const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','ماه قبل');
+        const title=document.createElement('strong');title.textContent=monthNames[current.month-1]+' '+new Intl.NumberFormat('fa-IR').format(current.year);
+        const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','ماه بعد');
+        prev.addEventListener('click',()=>{current.month--;if(current.month<1){current.month=12;current.year--;}render();});
+        next.addEventListener('click',()=>{current.month++;if(current.month>12){current.month=1;current.year++;}render();});
+        head.append(prev,title,next);pop.append(head);
+        const grid=document.createElement('div');grid.className='jalali-calendar-grid';
+        dayNames.forEach(n=>{const el=document.createElement('span');el.textContent=n;grid.append(el);});
+        const first=toGregorian(current.year,current.month,1);
+        const offset=(first.getUTCDay()+1)%7;
+        const count=monthLength(current.year,current.month);
+        for(let i=0;i<42;i++){const day=i-offset+1;const cell=document.createElement('button');cell.type='button';cell.className='jalali-calendar-day';if(day<1||day>count){cell.disabled=true;cell.classList.add('outside');cell.textContent='';}else{cell.textContent=new Intl.NumberFormat('fa-IR').format(day);const iso=toIso(toGregorian(current.year,current.month,day));cell.setAttribute('aria-selected',String(hidden.value===iso));cell.addEventListener('click',()=>{hidden.value=iso;selected=parseIso(iso);input.value=new Intl.DateTimeFormat(jalaliLocale,{year:'numeric',month:'2-digit',day:'2-digit'}).format(selected);pop.hidden=true;});}grid.append(cell);}
+        pop.append(grid);
+      };
+      btn.addEventListener('click',()=>{current=selected?jParts(selected):jParts(new Date());render();pop.hidden=!pop.hidden;});
+      input.addEventListener('click',()=>{btn.click();});
+      document.addEventListener('pointerdown',e=>{if(!wrap.contains(e.target))pop.hidden=true;});
+      input.form?.addEventListener('submit',()=>{});
+    });
+  };
+  const applyOrderDetails = () => {
+    document.querySelectorAll('.order-details-toggle').forEach(button=>{
+      if(button.dataset.bound==='1')return;button.dataset.bound='1';
+      button.addEventListener('click',()=>{
+        const row=document.getElementById(button.getAttribute('aria-controls'));
+        if(!row)return;const open=row.hidden;row.hidden=!open;button.setAttribute('aria-expanded',String(open));
+      });
+    });
+  };
+  const applyReportCalendar = () => {
+    const fa=root.lang!=='en';
+    document.querySelectorAll('.report-date-filter').forEach(input=>{
+      if(fa){if(input.type==='date')setupJalaliFilters();}
+    });
+  };
+  document.addEventListener('DOMContentLoaded',()=>{applyOrderDetails();applyReportCalendar();});
+  document.addEventListener('atd:language-change',()=>{location.reload();});
+})();
+</script>
 <script>
 (() => {
   const formatReportDates = () => {
