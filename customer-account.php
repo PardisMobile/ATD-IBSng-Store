@@ -423,8 +423,8 @@ $title = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <title data-ui-title-key="title_customer_account">پنل حساب | <?= e($title) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.account-shell{width:min(900px,calc(100% - 28px));margin:0 auto;padding:24px 0 0}
-.account-card{padding:clamp(18px,4vw,30px);margin-top:0;min-width:0}
+.account-shell{width:min(900px,calc(100% - 28px));margin:0 auto;padding:4px 0 0}
+.account-card{padding:clamp(18px,4vw,30px);margin-top:20px;min-width:0}
 .account-card h1,.account-card h2{line-height:1.5;overflow-wrap:anywhere}
 .account-card h1[data-ui-text="customer_view_account"]{font-size:clamp(1.65rem,3.2vw,2.25rem);line-height:1.45}
 .account-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,auto);gap:14px;align-items:end}
