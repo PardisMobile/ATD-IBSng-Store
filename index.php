@@ -140,6 +140,7 @@ try {
 .plan-card h3{margin:0;font-size:clamp(1.12rem,2vw,1.28rem);line-height:1.55;overflow-wrap:anywhere}
 .plan-price{display:flex;align-items:baseline;flex-wrap:wrap;gap:7px;font-size:clamp(1.55rem,4vw,1.9rem);font-weight:800;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
 .plan-price small{font-size:.8rem;font-weight:600;color:var(--muted)}
+.plan-price .store-info-icon{width:20px;height:20px;min-width:20px;max-width:20px;flex:0 0 20px;align-self:center}
 .plan-meta{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:var(--muted);padding:10px 0;border-bottom:1px solid var(--border);min-width:0}
 .plan-meta strong{text-align:end;color:var(--text);overflow-wrap:anywhere}
 .plan-description{color:var(--muted);line-height:1.85;min-height:3.5em;margin:0;overflow-wrap:anywhere}
@@ -214,7 +215,7 @@ try {
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
-            <div class="plan-price"><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
+            <div class="plan-price"><?= storefront_info_icon("price") ?><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
             <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("price") ?><span data-ui-text="catalog_crypto_price">قیمت به تتر</span></span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <?php
             if ($isRenewCatalog) {
@@ -225,9 +226,9 @@ try {
                 $durations = array_values(array_unique(array_map(static fn(array $mapping): int => (int)$mapping['validity_days'], $mappings)));
                 if (count($durations) === 1) {
                     $validityDays = $durations[0];
-                    ?><div class="plan-meta"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
+                    ?><div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("duration") ?><span data-ui-text="catalog_validity">مدت اعتبار</span></span><strong data-ui-validity-days="<?= $validityDays ?>" data-ui-validity-days-fa="<?= e(storefront_validity_label($validityDays)) ?>"><?= e(storefront_validity_label($validityDays)) ?></strong></div><?php
                 } elseif (count($durations) > 1) {
-                    ?><div class="plan-meta plan-validity-mappings"><span data-ui-text="catalog_validity">مدت اعتبار</span><strong><?php foreach ($mappings as $mapping): ?><span class="plan-validity-server"><?= e((string)$mapping['server_name']) ?>: <?= e(storefront_validity_label((int)$mapping['validity_days'])) ?></span><?php endforeach; ?></strong></div><?php
+                    ?><div class="plan-meta plan-validity-mappings"><span class="store-info-label"><?= storefront_info_icon("duration") ?><span data-ui-text="catalog_validity">مدت اعتبار</span></span><strong><?php foreach ($mappings as $mapping): ?><span class="plan-validity-server"><?= e((string)$mapping['server_name']) ?>: <?= e(storefront_validity_label((int)$mapping['validity_days'])) ?></span><?php endforeach; ?></strong></div><?php
                 }
             }
             ?>
