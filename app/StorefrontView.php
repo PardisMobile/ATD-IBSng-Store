@@ -54,7 +54,15 @@ function storefront_brand_mark(): string
 
 function storefront_header(string $siteTitle, string $active = 'home'): void
 {
-<?php $storefrontLogo = ''; try { $logoQuery = Database::connection()->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?,?)'); $logoQuery->execute(['storefront_logo','storefront_language','storefront_theme','storefront_accent','storefront_title']); $storePrefs = $logoQuery->fetchAll(PDO::FETCH_KEY_PAIR); $storefrontLogo = trim((string)($storePrefs['storefront_logo'] ?? '')); $siteTitle = trim((string)($storePrefs['storefront_title'] ?? '')) ?: $siteTitle; echo '<script>document.documentElement.dataset.defaultLanguage=' . json_encode(($storePrefs['storefront_language'] ?? 'fa')) . ';document.documentElement.dataset.defaultMode=' . json_encode(($storePrefs['storefront_theme'] ?? 'dark')) . ';document.documentElement.dataset.defaultAccent=' . json_encode(($storePrefs['storefront_accent'] ?? 'blue')) . ';</script>'; } catch (Throwable) {} ?>
+$storefrontLogo = '';
+    try {
+        $logoQuery = Database::connection()->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?,?)');
+        $logoQuery->execute(['storefront_logo','storefront_language','storefront_theme','storefront_accent','storefront_title']);
+        $storePrefs = $logoQuery->fetchAll(PDO::FETCH_KEY_PAIR);
+        $storefrontLogo = trim((string)($storePrefs['storefront_logo'] ?? ''));
+        $siteTitle = trim((string)($storePrefs['storefront_title'] ?? '')) ?: $siteTitle;
+        echo '<script>document.documentElement.dataset.defaultLanguage=' . json_encode(($storePrefs['storefront_language'] ?? 'fa')) . ';document.documentElement.dataset.defaultMode=' . json_encode(($storePrefs['storefront_theme'] ?? 'dark')) . ';document.documentElement.dataset.defaultAccent=' . json_encode(($storePrefs['storefront_accent'] ?? 'blue')) . ';</script>';
+    } catch (Throwable) {}
     $entries = [
         ['home', 'home', 'خانه', 'Home', ''],
         ['account', 'account', 'حساب کاربری', 'Account', 'customer-account.php'],
