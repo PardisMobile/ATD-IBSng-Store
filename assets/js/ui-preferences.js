@@ -588,6 +588,8 @@
     'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.': 'Invalid request. Refresh the page and try again.',
     'شناسه تراکنش معتبر نیست.': 'The transaction ID is invalid.',
     'یادداشت بررسی درگاه الزامی است.': 'A gateway review note is required.',
+    'تراکنش تغییر کرده یا دیگر در وضعیت مبهم قابل تعیین تکلیف نیست.': 'The transaction has changed or is no longer in an ambiguous state that can be resolved.',
+    'بازهٔ تاریخ واردشده معتبر نیست.': 'The selected date range is invalid.',
     'تراکنش پس از ثبت یادداشت بررسی، ناموفق تعیین شد. امکان تلاش مجدد برای سفارش آزاد شد.': 'The transaction was marked failed after review. A new attempt is now available for the order.',
     'شناسه سفارش معتبر نیست.': 'The order ID is invalid.',
     'شناسه عملیات معتبر نیست.': 'The operation ID is invalid.',
