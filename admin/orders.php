@@ -213,7 +213,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <?php if (!empty($attemptsByOrder[(int)$order['id']])): ?>
 <div class="order-attempts"><strong data-ui-text="orders_ibsng_operation_result">نتیجه عملیات IBSng</strong>
 <?php foreach ($attemptsByOrder[(int)$order['id']] as $attempt): ?>
-<div class="attempt-line"><span><?= e((string)($attempt['server_name'] ?: 'سرور')) ?> · <span data-fa="<?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?>" data-en="<?= $attempt['operation'] === 'renew' ? 'Renewal' : 'Purchase' ?>"><?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?></span></span><strong data-ui-status="<?= e((string)$attempt['status']) ?>"><?= e((string)$attempt['status']) ?></strong>
+<div class="attempt-line"><span><?php if ((string)$attempt['server_name'] !== ''): ?><?= e((string)$attempt['server_name']) ?><?php else: ?><span data-fa="سرور" data-en="Server">سرور</span><?php endif; ?> · <span data-fa="<?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?>" data-en="<?= $attempt['operation'] === 'renew' ? 'Renewal' : 'Purchase' ?>"><?= $attempt['operation'] === 'renew' ? 'تمدید' : 'خرید' ?></span></span><strong data-ui-status="<?= e((string)$attempt['status']) ?>"><?= e((string)$attempt['status']) ?></strong>
 <?php if (!empty($attempt['remote_user_id'])): ?><small><span data-ui-text="orders_ibsng_user_id">شناسه کاربر IBSng:</span> <span class="numeric-value"><?= e((string)$attempt['remote_user_id']) ?></span></small><?php endif; ?>
 <?php if (!empty($attempt['error_message'])): ?><small class="muted"><?= e((string)$attempt['error_message']) ?></small><?php endif; ?>
 </div>
