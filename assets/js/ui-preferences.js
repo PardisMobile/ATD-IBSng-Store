@@ -740,10 +740,10 @@
   }
 
   function apply() {
-    const mode = get(storage.mode, 'dark'), accent = get(storage.accent, 'blue');
+    const mode = get(storage.mode, root.dataset.defaultMode || 'dark'), accent = get(storage.accent, root.dataset.defaultAccent || 'blue');
     root.dataset.theme = mode === 'light' ? 'light' : 'dark';
     root.dataset.mode = root.dataset.theme;
-    const language = get(storage.lang, get(storage.legacyLang, root.lang || 'fa'));
+    const language = get(storage.lang, get(storage.legacyLang, root.dataset.defaultLanguage || root.lang || 'fa'));
     root.lang = language === 'en' ? 'en' : 'fa';
     root.dir = language === 'en' ? 'ltr' : 'rtl';
     root.dataset.language = root.lang;

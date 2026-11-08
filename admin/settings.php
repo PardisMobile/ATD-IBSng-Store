@@ -57,6 +57,63 @@ function support_valid_custom_url(string $value): bool
         && !isset($parts['user']) && !isset($parts['pass']);
 }
 
+$generalSettings = [
+    'storefront_title' => support_setting($pdo, 'storefront_title') ?: (string)(app_config()['site_title'] ?? 'ATD IBSng Store'),
+    'storefront_language' => support_setting($pdo, 'storefront_language') ?: 'fa',
+    'storefront_theme' => support_setting($pdo, 'storefront_theme') ?: 'dark',
+    'storefront_accent' => support_setting($pdo, 'storefront_accent') ?: 'blue',
+    'storefront_seo_description' => support_setting($pdo, 'storefront_seo_description'),
+    'storefront_seo_keywords' => support_setting($pdo, 'storefront_seo_keywords'),
+    'storefront_rules' => support_setting($pdo, 'storefront_rules'),
+    'storefront_logo' => support_setting($pdo, 'storefront_logo'),
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['settings_action'] ?? '') === 'general') {
+    if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
+        $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+    } else {
+        $generalSettings['storefront_title'] = trim((string)($_POST['storefront_title'] ?? ''));
+        $generalSettings['storefront_language'] = (string)($_POST['storefront_language'] ?? 'fa');
+        $generalSettings['storefront_theme'] = (string)($_POST['storefront_theme'] ?? 'dark');
+        $generalSettings['storefront_accent'] = (string)($_POST['storefront_accent'] ?? 'blue');
+        $generalSettings['storefront_seo_description'] = trim((string)($_POST['storefront_seo_description'] ?? ''));
+        $generalSettings['storefront_seo_keywords'] = trim((string)($_POST['storefront_seo_keywords'] ?? ''));
+        $generalSettings['storefront_rules'] = trim((string)($_POST['storefront_rules'] ?? ''));
+        if ($generalSettings['storefront_title'] === '' || mb_strlen($generalSettings['storefront_title']) > 100
+            || !in_array($generalSettings['storefront_language'], ['fa','en'], true)
+            || !in_array($generalSettings['storefront_theme'], ['dark','light'], true)
+            || !in_array($generalSettings['storefront_accent'], ['blue','violet','teal','rose','amber'], true)
+            || mb_strlen($generalSettings['storefront_seo_description']) > 320
+            || mb_strlen($generalSettings['storefront_seo_keywords']) > 500
+            || mb_strlen($generalSettings['storefront_rules']) > 30000) {
+            $error = 'یکی از مقادیر تنظیمات عمومی معتبر نیست یا بیش از حد مجاز است.';
+        } else {
+            try {
+                if (isset($_FILES['storefront_logo']) && (int)($_FILES['storefront_logo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                    $upload = $_FILES['storefront_logo'];
+                    if ((int)$upload['error'] !== UPLOAD_ERR_OK || (int)$upload['size'] > 2 * 1024 * 1024 || !is_uploaded_file((string)$upload['tmp_name'])) {
+                        throw new RuntimeException('بارگذاری لوگو ناموفق است؛ حداکثر حجم فایل ۲ مگابایت است.');
+                    }
+                    $imageInfo = @getimagesize((string)$upload['tmp_name']);
+                    $mime = is_array($imageInfo) ? (string)($imageInfo['mime'] ?? '') : '';
+                    $extensions = ['image/png'=>'png','image/jpeg'=>'jpg','image/webp'=>'webp'];
+                    if (!isset($extensions[$mime])) throw new RuntimeException('فرمت لوگو باید PNG، JPG یا WebP باشد.');
+                    $directory = dirname(__DIR__) . '/uploads/storefront';
+                    if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) throw new RuntimeException('ساخت پوشه لوگو ممکن نشد.');
+                    $filename = bin2hex(random_bytes(16)) . '.' . $extensions[$mime];
+                    if (!move_uploaded_file((string)$upload['tmp_name'], $directory . '/' . $filename)) throw new RuntimeException('ذخیره لوگو انجام نشد.');
+                    $generalSettings['storefront_logo'] = 'uploads/storefront/' . $filename;
+                }
+                $save = $pdo->prepare('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
+                foreach ($generalSettings as $key => $value) $save->execute([$key, (string)$value]);
+                $message = 'تنظیمات عمومی فروشگاه ذخیره شد.';
+            } catch (Throwable $exception) {
+                $error = $exception->getMessage();
+            }
+        }
+    }
+}
+
 $priceDisplayUnit = support_setting($pdo, 'price_display_unit') ?: 'IRT';
 $cryptoDisplayEnabled = support_setting($pdo, 'crypto_gateway_enabled') === '1';
 $paymentProvider = support_setting($pdo, 'payment_provider');
@@ -111,7 +168,7 @@ $values = [
     'support_custom_url' => support_setting($pdo, 'support_custom_url'),
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['settings_action'] ?? '') !== 'general') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
@@ -294,6 +351,26 @@ $config = app_config();
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 </section>
+<form method="post" enctype="multipart/form-data" class="general-store-settings">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
+<input type="hidden" name="settings_action" value="general">
+<section class="panel panel-card settings-section">
+<h2>تنظیمات عمومی فروشگاه</h2>
+<p class="hint">این موارد فقط ظاهر و محتوای فروشگاه مشتریان را تغییر می‌دهند؛ برند و لوگوی پنل مدیریت ATD ثابت می‌ماند.</p>
+<div class="grid">
+<div class="field"><label for="storefront_title">عنوان فروشگاه</label><input id="storefront_title" name="storefront_title" maxlength="100" required value="<?= e($generalSettings['storefront_title']) ?>"></div>
+<div class="field"><label for="storefront_logo">لوگوی فروشگاه مشتریان</label><input id="storefront_logo" name="storefront_logo" type="file" accept="image/png,image/jpeg,image/webp"><div class="hint">PNG، JPG یا WebP؛ حداکثر ۲ مگابایت. لوگوی پنل مدیریت تغییر نمی‌کند.</div><?php if ($generalSettings['storefront_logo'] !== ''): ?><div class="hint">لوگوی فعلی: <a href="<?= e(app_url($generalSettings['storefront_logo'])) ?>" target="_blank" rel="noopener">مشاهده</a></div><?php endif; ?></div>
+<div class="field"><label for="storefront_language">زبان پیش‌فرض</label><select id="storefront_language" name="storefront_language"><option value="fa"<?= $generalSettings['storefront_language']==='fa'?' selected':'' ?>>فارسی</option><option value="en"<?= $generalSettings['storefront_language']==='en'?' selected':'' ?>>English</option></select></div>
+<div class="field"><label for="storefront_theme">قالب پیش‌فرض</label><select id="storefront_theme" name="storefront_theme"><option value="dark"<?= $generalSettings['storefront_theme']==='dark'?' selected':'' ?>>تیره</option><option value="light"<?= $generalSettings['storefront_theme']==='light'?' selected':'' ?>>روشن</option></select></div>
+<div class="field"><label for="storefront_accent">رنگ تأکیدی پیش‌فرض</label><select id="storefront_accent" name="storefront_accent"><?php foreach (['blue'=>'آبی','violet'=>'بنفش','teal'=>'فیروزه‌ای','rose'=>'صورتی','amber'=>'کهربایی'] as $key=>$label): ?><option value="<?= e($key) ?>"<?= $generalSettings['storefront_accent']===$key?' selected':'' ?>><?= e($label) ?></option><?php endforeach; ?></select><div class="hint">فقط رنگ‌های موجود در پالت ATD قابل انتخاب هستند.</div></div>
+<div class="field"><label for="storefront_seo_description">توضیحات SEO</label><textarea id="storefront_seo_description" name="storefront_seo_description" rows="3" maxlength="320"><?= e($generalSettings['storefront_seo_description']) ?></textarea></div>
+<div class="field field-full"><label for="storefront_seo_keywords">کلمات کلیدی SEO</label><input id="storefront_seo_keywords" name="storefront_seo_keywords" maxlength="500" value="<?= e($generalSettings['storefront_seo_keywords']) ?>"></div>
+</div>
+<details class="form-section"><summary><strong>قوانین خرید و تمدید</strong></summary><div class="field"><label for="storefront_rules">متن قوانین</label><textarea id="storefront_rules" name="storefront_rules" rows="7" maxlength="30000" placeholder="قوانین خرید، پرداخت و تمدید را وارد کنید..."><?= e($generalSettings['storefront_rules']) ?></textarea><div class="hint">در صورت خالی بودن متن، لینک قوانین در مرحله پرداخت نمایش داده نمی‌شود.</div></div></details>
+<div class="actions"><button class="button primary" type="submit">ذخیره تنظیمات عمومی</button></div>
+</section>
+</form>
+
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <section class="panel panel-card settings-section">

@@ -354,6 +354,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php endif; ?>
 </fieldset>
 <div class="notice"><?= e(app_message('order_submitted_notice')) ?> <span data-ui-text="checkout_password_storage">اطلاعات رمز در دیتابیس به‌صورت رمزنگاری‌شده نگهداری می‌شود.</span></div>
+<?php $checkoutRules = ''; try { $rulesQuery = $pdo->prepare('SELECT setting_value FROM app_settings WHERE setting_key=? LIMIT 1'); $rulesQuery->execute(['storefront_rules']); $checkoutRules = trim((string)$rulesQuery->fetchColumn()); } catch (Throwable) {} ?>
+<?php if ($checkoutRules !== ''): ?><a class="store-rules-checkout-link" href="<?= e(app_url('store-rules.php')) ?>" target="_blank" rel="noopener noreferrer"><?= storefront_info_icon('guide') ?><span>قوانین خرید و تمدید</span></a><?php endif; ?>
 <button class="button primary" type="submit" data-ui-text="checkout_submit"<?= $availablePaymentProviders === [] ? ' disabled' : '' ?>>ثبت سفارش و پرداخت</button>
 </form>
 <script>(function(){const field=document.getElementById("checkout-site-language");const form=field&&field.form;if(!form)return;const sync=()=>{field.value=document.documentElement.lang==="en"?"en":"fa";};sync();form.addEventListener("submit",sync);document.addEventListener("atd:language-change",sync);})();</script>

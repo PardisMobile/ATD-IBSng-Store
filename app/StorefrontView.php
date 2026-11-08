@@ -54,6 +54,7 @@ function storefront_brand_mark(): string
 
 function storefront_header(string $siteTitle, string $active = 'home'): void
 {
+<?php $storefrontLogo = ''; try { $logoQuery = Database::connection()->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?)'); $logoQuery->execute(['storefront_logo','storefront_language','storefront_theme','storefront_accent']); $storePrefs = $logoQuery->fetchAll(PDO::FETCH_KEY_PAIR); $storefrontLogo = trim((string)($storePrefs['storefront_logo'] ?? '')); echo '<script>document.documentElement.dataset.defaultLanguage=' . json_encode(($storePrefs['storefront_language'] ?? 'fa')) . ';document.documentElement.dataset.defaultMode=' . json_encode(($storePrefs['storefront_theme'] ?? 'dark')) . ';document.documentElement.dataset.defaultAccent=' . json_encode(($storePrefs['storefront_accent'] ?? 'blue')) . ';</script>'; } catch (Throwable) {} ?>
     $entries = [
         ['home', 'home', 'خانه', 'Home', ''],
         ['account', 'account', 'حساب کاربری', 'Account', 'customer-account.php'],
@@ -64,7 +65,7 @@ function storefront_header(string $siteTitle, string $active = 'home'): void
     <header class="store-header">
       <div class="store-header-top">
         <a class="brand storefront-brand" href="<?= e(app_url('/')) ?>" aria-label="<?= e($siteTitle) ?>">
-          <?= storefront_brand_mark() ?>
+          <?= $storefrontLogo !== '' ? '<img class="storefront-logo" src="' . e(app_url($storefrontLogo)) . '" alt="">' : storefront_brand_mark() ?>
           <span class="storefront-brand-title"><?= e($siteTitle) ?></span>
         </a>
         <div class="store-header-actions">
