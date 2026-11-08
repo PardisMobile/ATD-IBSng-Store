@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1 data-ui-text="checkout_success_title">درخواست سفارش ثبت شد</h1>
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="notice success" role="status" aria-live="polite"><strong data-ui-text="checkout_tracking_code">کد پیگیری:</strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
-<?php if ($successTrackingCode !== ''): ?><a class="button button-primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش و تلاش مجدد برای پرداخت" data-en="Track order and retry payment">پیگیری سفارش و تلاش مجدد برای پرداخت</a><?php endif; ?>
+<?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش و تلاش مجدد برای پرداخت" data-en="Track order and retry payment">پیگیری سفارش و تلاش مجدد برای پرداخت</a><?php endif; ?>
 <a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
