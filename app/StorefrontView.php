@@ -109,12 +109,12 @@ function storefront_support_card(PDO $pdo): void
     $links = [];
     $telegram = $settings['support_telegram_id'] ?? '';
     if ($telegram !== '') {
-        $links[] = ['label' => 'پشتیبانی تلگرام', 'url' => 'https://t.me/' . rawurlencode(ltrim($telegram, '@')), 'icon' => '<path d="m21 3-7.2 18-4-7.1L3 10l18-7Z"/><path d="M9.8 13.9 21 3"/>'];
+        $links[] = ['label' => 'پشتیبانی تلگرام', 'label_en' => 'Telegram support', 'url' => 'https://t.me/' . rawurlencode(ltrim($telegram, '@')), 'icon' => '<path d="m21 3-7.2 18-4-7.1L3 10l18-7Z"/><path d="M9.8 13.9 21 3"/>'];
     }
     $whatsapp = $settings['support_whatsapp_target'] ?? '';
     if ($whatsapp !== '') {
         $target = preg_replace('/[^A-Za-z0-9._+-]/', '', $whatsapp);
-        $links[] = ['label' => 'پشتیبانی واتساپ', 'url' => 'https://wa.me/' . rawurlencode($target), 'icon' => '<path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8.5 8.5c.5 2.5 2 4 4.5 5"/>'];
+        $links[] = ['label' => 'پشتیبانی واتساپ', 'label_en' => 'WhatsApp support', 'url' => 'https://wa.me/' . rawurlencode($target), 'icon' => '<path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.7A8.5 8.5 0 1 1 20.5 11.5Z"/><path d="M8.5 8.5c.5 2.5 2 4 4.5 5"/>'];
     }
     $customLabel = $settings['support_custom_label'] ?? '';
     $customUrl = $settings['support_custom_url'] ?? '';
@@ -123,14 +123,14 @@ function storefront_support_card(PDO $pdo): void
     }
     if ($links === []) return;
     ?>
-    <section class="panel customer-support-card" aria-label="پشتیبانی مشتریان">
-      <h2>پشتیبانی مشتریان</h2>
-      <p>اگر درباره سفارش یا سرویس خود سؤالی دارید، از راه‌های زیر با ما در ارتباط باشید.</p>
+    <section class="panel customer-support-card" aria-label="پشتیبانی مشتریان" data-ui-aria="store_support_aria">
+      <h2 data-fa="پشتیبانی مشتریان" data-en="Customer support">پشتیبانی مشتریان</h2>
+      <p data-fa="اگر درباره سفارش یا سرویس خود سؤالی دارید، از راه‌های زیر با ما در ارتباط باشید." data-en="If you have a question about your order or service, contact us using one of the options below.">اگر درباره سفارش یا سرویس خود سؤالی دارید، از راه‌های زیر با ما در ارتباط باشید.</p>
       <div class="customer-support-links">
         <?php foreach ($links as $link): ?>
           <a class="customer-support-link" href="<?= e($link['url']) ?>" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?= $link['icon'] ?></svg>
-            <span><?= e($link['label']) ?></span>
+            <span<?= isset($link['label_en']) ? ' data-fa="' . e($link['label']) . '" data-en="' . e($link['label_en']) . '"' : '' ?>><?= e($link['label']) ?></span>
             <span class="support-external" aria-hidden="true">↗</span>
           </a>
         <?php endforeach; ?>

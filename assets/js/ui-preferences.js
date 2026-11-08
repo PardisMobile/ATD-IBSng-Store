@@ -556,6 +556,7 @@
       nav_orders: 'Track order',
       nav_guide: 'Help',
       store_nav_aria: 'Store navigation',
+      store_support_aria: 'Customer support',
       customer_account: 'Customer account',
       order_tracking: 'Track & recover orders',
       storefront_status: 'Account services',
