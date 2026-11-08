@@ -13,10 +13,11 @@ $checks = [
         && str_contains($servers, 'data-fa="نام سرور"')
         && str_contains($servers, 'data-en="Server Name"')
         && str_contains($servers, 'service_name'),
-    'customer status displays the plan mapped to the primary IBSng group, not the server name' => is_string($status)
+    'customer status maps the plan to the primary IBSng group and keeps server display name separate' => is_string($status)
         && str_contains($status, "SELECT plan_name FROM ibsng_groups WHERE server_id=? AND group_name=? AND is_active=1")
         && str_contains($status, "\$data['group']")
-        && !str_contains($status, "['service_name']"),
+        && str_contains($status, "['service_name']")
+        && str_contains($status, "['server_name']"),
     'tracking page includes purchase amount, payment status, and timestamp' => is_string($status) && str_contains($status, 'price_minor_snapshot') && str_contains($status, 'price_usdt_snapshot') && str_contains($status, 'payment_status') && str_contains($status, 'created_at'),
     'credential decrypt function is used' => is_string($status) && str_contains($status, 'app_decrypt_secret'),
     'credentials are shown only for succeeded attempts' => is_string($status) && str_contains($status, "['status'] === 'succeeded'") && str_contains($status, 'نمایش رمز عبور'),
@@ -26,14 +27,17 @@ $checks = [
         && str_contains($status, "if (is_string(\$accountPassword))")
         && str_contains($status, 'رمز عبور فقط برای سرورهایی نمایش داده می‌شود که فعال‌سازی اکانت در آن‌ها با موفقیت تأیید شده است. کد رهگیری سفارش را محرمانه نگه دارید.')
         && !str_contains($status, "!\$isTrackingCode && \$attempt['status'] === 'succeeded'"),
-    'account card contains only username, password, mapped service, and usage guide' => is_string($status)
+    'account card displays each optional service detail only when its value is available' => is_string($status)
         && str_contains($status, 'data-ui-password-toggle')
         && str_contains($status, 'data-fa="سرویس" data-en="Service"')
         && str_contains($status, "app_url('userguide.php')")
-        && !str_contains($status, "['service_name']")
-        && !str_contains($status, 'status_validity')
-        && !str_contains($status, 'status_quota')
-        && !str_contains($status, 'status_expiry'),
+        && str_contains($status, "['service_name']")
+        && str_contains($status, "['server_name']")
+        && str_contains($status, "status_validity")
+        && str_contains($status, "status_quota")
+        && str_contains($status, "status_expiry")
+        && str_contains($status, "if (trim((string)(\$details['plan'] ?? '')) !== '')")
+        && str_contains($status, "if (trim((string)(\$details['expiry'] ?? '')) !== '')"),
 ];
 
 foreach ($checks as $label => $passed) {
