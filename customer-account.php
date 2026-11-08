@@ -177,6 +177,26 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
     }
     return null;
 };
+        // Read the Daily Traffic section's Group Value for Traffic Limit.
+        // This is only a fallback when IBSng has not populated This Period Usage yet.
+        $ibsngGroupValue = static function (string $html, string $wantedLabel) use ($ibsngElementBlocks, $ibsngDirectCells, $cleanAccountText, $ibsngExtractControl): ?string {
+            foreach ($ibsngElementBlocks($html, 'tr') as $row) {
+                $cells = $ibsngDirectCells($row['outer']);
+                for ($i = 0; $i < count($cells); $i++) {
+                    $label = trim($cleanAccountText($cells[$i]['html']), " :");
+                    if (strcasecmp($label, $wantedLabel) !== 0) {
+                        continue;
+                    }
+                    for ($j = $i + 1; $j < count($cells); $j++) {
+                        $class = $cells[$j]['attrs']['class'] ?? '';
+                        if (strpos($class, 'Form_Content_Row_groupinfo') !== false) {
+                            return $ibsngExtractControl($cells[$j]['html']);
+                        }
+                    }
+                }
+            }
+            return null;
+        };
         $multiLoginRaw = $ibsngAttributeValue($accountHtml, ['multi_login', 'multi_login_instances', 'multi_login_instance']);
         $multiLogin = trim((string)$multiLoginRaw);
         if ($multiLogin === '' || preg_match('/^-+$/u', $multiLogin)) {
@@ -227,8 +247,22 @@ $ibsngAttributeValue = static function (string $html, array $names) use ($ibsngE
             $trafficPower = ['K'=>1,'M'=>2,'G'=>3,'T'=>4][strtoupper($trafficMatch[2])] ?? 0;
             $consumedBytes = (int)round((float)$trafficMatch[1] * (1024 ** $trafficPower));
         }
+        // Daily Traffic Limit is shown in IBSng's Group Value column (e.g. 10G).
+        // If This Period Usage is not available yet, show the configured limit itself
+        // instead of incorrectly formatting a null remaining value as Unlimited.
+        $dailyTrafficLimitRaw = trim((string)($ibsngGroupValue($accountHtml, 'Traffic Limit') ?? ''));
+        $dailyTrafficLimitBytes = null;
+        if ($dailyTrafficLimitRaw !== '' && !preg_match('/^(?:-+|not applicable)$/iu', $dailyTrafficLimitRaw)
+            && preg_match('/^([0-9]+(?:\\.[0-9]+)?)\\s*([KMGT])(?:i?B)?$/i', $dailyTrafficLimitRaw, $limitMatch)) {
+            $limitPower = ['K'=>1,'M'=>2,'G'=>3,'T'=>4][strtoupper($limitMatch[2])] ?? 0;
+            $dailyTrafficLimitBytes = (int)round((float)$limitMatch[1] * (1024 ** $limitPower));
+        }
+
         $remainingBytes = $quotaBytes !== null && $consumedBytes !== null
             ? max(0, $quotaBytes - $consumedBytes) : null;
+        if ($consumedBytes === null && $dailyTrafficLimitBytes !== null) {
+            $remainingBytes = $dailyTrafficLimitBytes;
+        }
 
         $accounts[] = [
             'server_id' => (int)$server['id'],
