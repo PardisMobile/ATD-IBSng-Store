@@ -121,6 +121,7 @@ if ($success && $orderReference !== '') {
 .account-item small{display:block;color:var(--muted);margin-bottom:8px;line-height:1.6}
 .account-item strong{overflow-wrap:anywhere;line-height:1.7}
 .account-item strong[dir="ltr"],.password-value[dir="ltr"]{direction:ltr;unicode-bidi:isolate;text-align:left;display:inline-block;max-width:100%}
+.payment-details-hint{margin:-4px 0 12px;color:var(--muted);font-size:.78rem;line-height:1.7}
 .password-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .password-line button{font:inherit;cursor:pointer;min-height:40px}
 .icon-button{width:42px;height:42px;padding:8px;flex:0 0 42px;display:inline-flex;align-items:center;justify-content:center}
@@ -138,6 +139,7 @@ if ($success && $orderReference !== '') {
 <?php if ($paidOrder): ?>
 <section class="payment-details">
 <h2 data-ui-text="payment_details_heading">مشخصات پرداخت</h2>
+<p class="payment-details-hint" data-ui-text="payment_tracking_hint">لطفاً کد رهگیری را برای پیگیری‌های بعدی نزد خود نگه دارید.</p>
 <div class="account-grid">
 <div class="account-item"><small class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="payment_tracking_code">کد رهگیری</span></small><strong dir="ltr"><?= e($orderTrackingCode) ?></strong></div>
 <div class="account-item"><small class="store-info-label"><?= storefront_info_icon("payment") ?><span data-ui-text="payment_gateway_reference">شناسه پرداخت</span></small><strong dir="ltr"><?= e($paymentReference !== '' ? $paymentReference : '—') ?></strong></div>
