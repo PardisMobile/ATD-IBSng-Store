@@ -8,6 +8,7 @@ declare(strict_types=1);
 final class EmailTemplates
 {
     public const EVENTS = [
+        'payment_confirmed' => 'تأیید پرداخت سفارش',
         'purchase_success' => 'خرید موفق',
         'renewal_success' => 'تمدید موفق',
         'order_recovery' => 'بازیابی سفارش / ارسال اطلاعات خرید',
@@ -16,6 +17,11 @@ final class EmailTemplates
     ];
 
     private const DEFAULTS = [
+        'payment_confirmed' => [
+            'subject' => 'پرداخت سفارش شما تأیید شد - {{site_name}}',
+            'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl"><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>پرداخت سفارش شما تأیید شده است. فعال‌سازی اکانت در حال انجام است. پس از تأیید موفق فعال‌سازی، اطلاعات ورود به ایمیل شما ارسال می‌شود.</p><p>کد رهگیری: <strong dir="ltr">{{tracking_code}}</strong></p><p>شناسه سفارش: <strong dir="ltr">{{order_id}}</strong></p><p><a href="{{order_url}}">پیگیری سفارش</a></p></main></body></html>',
+            'text' => "{{site_name}}\nسلام {{customer_name}}،\nپرداخت سفارش تأیید شد. فعال‌سازی در حال انجام است و اطلاعات ورود پس از موفقیت ارسال می‌شود.\nکد رهگیری: {{tracking_code}}\nشناسه سفارش: {{order_id}}\nپیگیری سفارش: {{order_url}}",
+        ],
         'purchase_success' => [
             'subject' => 'خرید شما در {{site_name}} ثبت شد',
             'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl" style="margin:0;background:#f3f5fa;font-family:Tahoma,Arial,sans-serif;color:#172033;direction:rtl;text-align:right"><main dir="rtl" style="direction:rtl;text-align:right;max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>خرید شما با موفقیت ثبت و اکانت آماده شده است.</p>{{account_details_html}}<p><a href="{{guide_url}}">راهنمای استفاده</a></p><p>شناسه سفارش: <strong dir="ltr">{{order_id}}</strong></p><p><a href="{{order_url}}">پیگیری سفارش</a></p></main></body></html>',
@@ -109,6 +115,11 @@ HTML,
     ];
 
     private const DEFAULTS_EN = [
+        'payment_confirmed' => [
+            'subject' => 'Your order payment is confirmed - {{site_name}}',
+            'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr"><main><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your payment has been confirmed. Account activation is in progress. Your login details will be emailed after activation succeeds.</p><p>Tracking code: <strong dir="ltr">{{tracking_code}}</strong></p><p>Order ID: <strong dir="ltr">{{order_id}}</strong></p><p><a href="{{order_url}}">Track your order</a></p></main></body></html>',
+            'text' => "{{site_name}}\nHello {{customer_name}},\nYour payment is confirmed. Account activation is in progress. Your login details will be emailed after activation succeeds.\nTracking code: {{tracking_code}}\nOrder ID: {{order_id}}\nTrack your order: {{order_url}}",
+        ],
         'purchase_success' => [
             'subject' => 'Your purchase at {{site_name}} is ready',
             'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr" style="margin:0;background:#f3f5fa;font-family:Arial,sans-serif;color:#172033;direction:ltr;text-align:left"><main dir="ltr" style="direction:ltr;text-align:left;max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your purchase was successful and your account is ready.</p>{{account_details_html}}<p><a href="{{guide_url}}">Account setup guide</a></p><p>Order ID: <strong>{{order_id}}</strong></p><p><a href="{{order_url}}">Track your order</a></p></main></body></html>',
@@ -217,6 +228,16 @@ HTML,
         $intro = '';
         $icon = '&#10003;';
         switch ($event) {
+            case 'payment_confirmed':
+                $title = $en ? 'Payment confirmed' : 'پرداخت تأیید شد';
+                $intro = $en
+                    ? 'Your payment has been confirmed. Account activation is in progress; your login details will be emailed after activation succeeds.'
+                    : 'پرداخت سفارش شما تأیید شده است. فعال‌سازی اکانت در حال انجام است و پس از موفقیت، اطلاعات ورود برای شما ایمیل می‌شود.';
+                $icon = '&#10003;';
+                $content = $en
+                    ? '<p style="margin:0 0 18px;font-size:14px;line-height:2;color:#475569;">Hello {{customer_name}},</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:16px;font-size:14px;line-height:2;color:#334155;">Tracking code: <strong dir="ltr">{{tracking_code}}</strong><br>Order ID: <strong dir="ltr">{{order_id}}</strong></td></tr></table><p style="margin:22px 0;text-align:center;"><a href="{{order_url}}" style="display:inline-block;padding:12px 24px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Track your order</a></p>'
+                    : '<p style="margin:0 0 18px;font-size:14px;line-height:2;color:#475569;">سلام {{customer_name}}،</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:16px;font-size:14px;line-height:2;color:#334155;">کد رهگیری: <strong dir="ltr">{{tracking_code}}</strong><br>شناسه سفارش: <strong dir="ltr">{{order_id}}</strong></td></tr></table><p style="margin:22px 0;text-align:center;"><a href="{{order_url}}" style="display:inline-block;padding:12px 24px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">پیگیری سفارش</a></p>';
+                break;
             case 'purchase_success':
                 $title = $en ? 'Your account is ready' : 'اکانت شما آماده است';
                 $intro = $en
