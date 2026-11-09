@@ -140,7 +140,7 @@ for (const source of [customerAccount, ibsngUsers]) {
 const ordersReport = read(path.join('admin', 'orders.php'));
 assert.match(ordersReport, /gregorianMonthIndex = month <= 10 \? month \+ 1 : month - 11/u, 'Jalali month-start lookup must use the Gregorian month corresponding to each Jalali month');
 assert.match(ordersReport, /for \(let offset = -12; offset <= 12; offset\+\+\)/u, 'Jalali month-start lookup must search around the month-specific Gregorian estimate');
-assert.match(ordersReport, /const applyCalendarLanguage = language =>[\\s\\S]*?if\(language==='en'\)removeCalendar\(input\);else makeCalendar\(input\)/u, 'English must retain the native Gregorian date picker and Persian must use the Jalali picker');
+assert.match(ordersReport, /const applyCalendarLanguage = language =>[\s\S]*?if\(language==='en'\)removeCalendar\(input\);else makeCalendar\(input\)/u, 'English must retain the native Gregorian date picker and Persian must use the Jalali picker');
 
 const customerAccountPage = read('customer-account.php');
 assert.match(customerAccountPage, /data-fa="[^"]* کاربره"/u, 'Customer simultaneous-user count must use the Persian suffix کاربره');
