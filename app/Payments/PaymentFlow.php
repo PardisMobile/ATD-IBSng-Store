@@ -327,6 +327,7 @@ final class PaymentFlow
             'paid' => true,
             'order_id' => (int)$transaction['order_id'],
             'order_public_id' => (string)$transaction['order_public_id'],
+            'provider_reference' => (string)($transaction['provider_reference'] ?? ''),
         ];
     }
 
