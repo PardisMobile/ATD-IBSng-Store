@@ -361,7 +361,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
     });
   };
   const initialize=()=>{bindDetails();applyCalendarLanguage(root.lang==='en'?'en':'fa');};
-  initialize();
+  document.addEventListener('DOMContentLoaded', initialize, {once:true});
   document.addEventListener('atd:language-change',event=>{
     const language=event.detail?.language==='en'?'en':'fa';applyCalendarLanguage(language);
     document.querySelectorAll('.order-details-toggle').forEach(button=>{
