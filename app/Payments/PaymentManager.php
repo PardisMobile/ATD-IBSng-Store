@@ -102,6 +102,16 @@ final class PaymentManager
         return $this->selectedProvider;
     }
 
+    /** Expose the selected adapter's retry semantics without imposing one gateway's behavior on others. */
+    public function retryStrategy(?string $provider = null): string
+    {
+        $strategy = $this->gateway($provider)->retryStrategy();
+        if (!in_array($strategy, ['new', 'resume'], true)) {
+            throw new RuntimeException('Payment provider returned an unsupported retry strategy.');
+        }
+        return $strategy;
+    }
+
     /** @return list<string> */
     public function supportedCurrencies(?string $provider = null): array
     {
