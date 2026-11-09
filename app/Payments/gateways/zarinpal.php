@@ -89,6 +89,20 @@ final class ZarinpalGateway implements PaymentGateway
         ];
     }
 
+    /** Resume the already-issued Authority without creating another invoice. */
+    public function resume(array $transaction, array $settings): string
+    {
+        $reference = trim((string)($transaction['provider_reference'] ?? ''));
+        $metadata = json_decode((string)($transaction['raw_result_json'] ?? ''), true);
+        $environment = is_array($metadata['gateway_environment'] ?? null) ? $metadata['gateway_environment'] : [];
+        $sandbox = ($environment['sandbox'] ?? false) === true;
+        if ($reference === '' || strlen($reference) > 190) {
+            throw new InvalidArgumentException('Zarinpal transaction has no resumable authority.');
+        }
+        $host = $sandbox ? 'https://sandbox.zarinpal.com' : 'https://payment.zarinpal.com';
+        return $host . '/pg/StartPay/' . rawurlencode($reference);
+    }
+
     public function verify(array $callback, array $transaction, array $settings): array
     {
         $metadata = json_decode((string)($transaction['raw_result_json'] ?? ''), true);
