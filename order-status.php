@@ -23,6 +23,7 @@ $accountDetails = [];
 $retryAvailable = false;
 $retryProvider = '';
 $retryMode = '';
+$retryAllowConcurrent = false;
 $retryError = '';
 if (empty($_SESSION['order_payment_retry_csrf'])) $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
 $productQuotaBytes = null;
@@ -66,9 +67,11 @@ if (!$notFound) {
                     $retryMode = 'new';
                 } elseif ($providerAvailable && $lastPayment['status'] === 'pending'
                     && trim((string)($lastPayment['provider_reference'] ?? '')) !== '') {
-                    // Resume the existing provider session through its adapter.
+                    // Retry behavior belongs to the selected provider adapter.
+                    $strategy = (new PaymentManager($retryProvider))->retryStrategy();
                     $retryAvailable = true;
-                    $retryMode = 'resume';
+                    $retryMode = $strategy;
+                    $retryAllowConcurrent = $strategy === 'new';
                 }
             } elseif (!$lastPayment) {
                 // No attempt exists yet. Do not guess when multiple gateways are available.
@@ -167,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_payment']) && $
             if ($retryMode !== 'new') {
                 throw new RuntimeException('This payment attempt cannot be safely retried.');
             }
-            $payment = PaymentFlow::initiate($pdo, (int)$order['id'], $retryProvider);
+            $payment = PaymentFlow::initiate($pdo, (int)$order['id'], $retryProvider, $retryAllowConcurrent);
             header('Location: ' . $payment['redirect_url'], true, 303);
             exit;
         } catch (Throwable $retryException) {
