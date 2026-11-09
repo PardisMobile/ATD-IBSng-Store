@@ -159,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $groupStmt->execute([$groupId, $selectedServerId]);
                 $groupName = (string)$groupStmt->fetchColumn();
                 $password = (string)($_POST['new_password'] ?? '');
-                $credit = trim((string)($_POST['credit'] ?? '0'));
+                $credit = trim((string)($_POST['credit'] ?? '1'));
                 if ($groupName === '' || $username === '' || $password === '') {
                     throw new InvalidArgumentException('گروه، نام کاربری و رمز عبور الزامی هستند.');
                 }
@@ -604,7 +604,7 @@ if ($accountHtml !== '') {
 <div class="field"><label for="group_id" data-fa="گروه IBSng (از گروه‌های فعال)" data-en="IBSng group (active groups)">گروه IBSng (از گروه‌های فعال)</label><select id="group_id" name="group_id" required><?php foreach ($groups as $group): ?><option value="<?= (int)$group['id'] ?>"><?= e((string)$group['plan_name']) ?> — <?= e((string)$group['group_name']) ?></option><?php endforeach; ?></select></div>
 <div class="field"><label for="create_username" data-fa="نام کاربری" data-en="Username">نام کاربری</label><input id="create_username" name="username" required autocomplete="off"></div>
 <div class="field"><label for="new_password" data-fa="رمز عبور" data-en="Password">رمز عبور</label><input id="new_password" name="new_password" type="password" required autocomplete="new-password"></div>
-<div class="field"><label for="credit" data-fa="اعتبار (Credit)" data-en="Credit">اعتبار (Credit)</label><input id="credit" name="credit" value="0" inputmode="decimal" required></div>
+<div class="field"><label for="credit" data-fa="اعتبار (Credit)" data-en="Credit">اعتبار (Credit)</label><input id="credit" name="credit" value="1" inputmode="decimal" required></div>
 </div>
 <button class="button primary" type="submit" data-fa="ایجاد اکانت در IBSng" data-en="Create account in IBSng">ایجاد اکانت در IBSng</button>
 </form>
