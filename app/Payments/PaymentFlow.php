@@ -126,7 +126,7 @@ final class PaymentFlow
      *
      * @return array{redirect_url:string,transaction_id:int}
      */
-    public static function initiate(PDO $pdo, int $orderId, string $selectedProvider): array
+    public static function initiate(PDO $pdo, int $orderId, string $selectedProvider, bool $allowConcurrentPending = false): array
     {
         $all = self::settings($pdo);
         $stmt = $pdo->prepare(
@@ -171,7 +171,8 @@ final class PaymentFlow
             $provider,
             $amount['amount_minor'],
             $amount['currency'],
-            $transactionMetadata
+            $transactionMetadata,
+            $allowConcurrentPending
         );
 
         try {
