@@ -30,6 +30,7 @@ $credentialPrefix = $credentialSettings['username_prefix'] ?? 'atd';
 $credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 5)));
 $generatedUsernameAlphabet = match ($credentialSettings['username_suffix_charset'] ?? 'letters') {
     'digits' => '23456789',
+    'letters' => 'abcdefghijklmnopqrstuvwxyz',
     'alphanumeric' => 'abcdefghijklmnopqrstuvwxyz0123456789',
     default => 'abcdefghijklmnopqrstuvwxyz',
 };
