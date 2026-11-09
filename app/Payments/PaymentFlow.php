@@ -339,24 +339,26 @@ final class PaymentFlow
     private static function sendPurchaseNotice(PDO $pdo, int $orderId, string $publicId): void
     {
         try {
-            $stmt = $pdo->prepare('SELECT buyer_email, buyer_name FROM orders WHERE id=? LIMIT 1');
+            $stmt = $pdo->prepare('SELECT buyer_email, buyer_name, tracking_code, language FROM orders WHERE id=? LIMIT 1');
             $stmt->execute([$orderId]);
             $order = $stmt->fetch(PDO::FETCH_ASSOC);
             $email = trim((string)($order['buyer_email'] ?? ''));
             if ($email === '') {
                 return;
             }
+
+            $language = (string)($order['language'] ?? 'fa') === 'en' ? 'en' : 'fa';
             $config = app_config();
-            $template = [
-                'subject' => 'پرداخت سفارش شما تأیید شد - {{site_name}}',
-                'html' => '<!doctype html><html lang="fa" dir="rtl"><meta charset="utf-8"><body><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>پرداخت سفارش شما تأیید شده است. فعال‌سازی اکانت در حال انجام است. پس از تأیید موفق فعال‌سازی، اطلاعات ورود به ایمیل شما ارسال می‌شود.</p><p>شناسه سفارش: <strong>{{order_id}}</strong></p><p><a href="{{order_url}}">پیگیری سفارش</a></p></main></body></html>',
-                'text' => "{{site_name}}\nسلام {{customer_name}}،\nپرداخت سفارش تأیید شد. فعال‌سازی در حال انجام است و اطلاعات ورود پس از موفقیت ارسال می‌شود.\nشناسه سفارش: {{order_id}}\nپیگیری سفارش: {{order_url}}",
-            ];
+            $trackingCode = trim((string)($order['tracking_code'] ?? ''));
+            $orderReference = $trackingCode !== '' ? $trackingCode : $publicId;
+            $orderUrl = app_url('order-status.php?order=' . rawurlencode($orderReference));
+            $template = EmailTemplates::get($pdo, 'payment_confirmed', $language);
             $variables = [
                 'site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'),
-                'customer_name' => (string)($order['buyer_name'] ?? ''),
+                'customer_name' => trim((string)($order['buyer_name'] ?? '')) ?: ($language === 'en' ? 'Customer' : 'مشتری'),
+                'tracking_code' => $orderReference,
                 'order_id' => $publicId,
-                'order_url' => app_url('order-status.php?order=' . rawurlencode($publicId)),
+                'order_url' => $orderUrl,
             ];
             $sent = EmailSender::send(
                 $pdo,
