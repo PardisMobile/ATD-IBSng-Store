@@ -116,19 +116,48 @@ final class PaymentTransactionService
             throw new InvalidArgumentException('A transaction ID and reconciliation note are required.');
         }
 
-        $raw = json_encode([
-            'manual_resolution' => 'confirmed_no_invoice',
-            'note' => $note,
-            'resolved_at' => gmdate('c'),
-        ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        $this->pdo->beginTransaction();
+        try {
+            $select = $this->pdo->prepare(
+                "SELECT raw_result_json FROM payment_transactions
+                 WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL
+                 FOR UPDATE"
+            );
+            $select->execute([$transactionId]);
+            $current = $select->fetchColumn();
+            if ($current === false) {
+                $this->pdo->commit();
+                return false;
+            }
 
-        $stmt = $this->pdo->prepare(
-            "UPDATE payment_transactions
-             SET status = 'failed', raw_result_json = ?
-             WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL"
-        );
-        $stmt->execute([$raw, $transactionId]);
-        return $stmt->rowCount() === 1;
+            $metadata = is_string($current) && trim($current) !== ''
+                ? json_decode($current, true)
+                : [];
+            if (!is_array($metadata)) {
+                $metadata = ['previous_raw_result' => is_string($current) ? $current : null];
+            }
+            $metadata['manual_resolution'] = [
+                'result' => 'confirmed_no_invoice',
+                'note' => $note,
+                'resolved_at' => gmdate('c'),
+            ];
+            $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+            $stmt = $this->pdo->prepare(
+                "UPDATE payment_transactions
+                 SET status = 'failed', raw_result_json = ?
+                 WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL"
+            );
+            $stmt->execute([$raw, $transactionId]);
+            $changed = $stmt->rowCount() === 1;
+            $this->pdo->commit();
+            return $changed;
+        } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $e;
+        }
     }
 
     /**
