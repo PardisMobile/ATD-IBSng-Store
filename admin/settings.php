@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['settings_action'] ?? '') !
             'credential_mode' => trim((string)($_POST['credential_mode'] ?? 'customer')),
             'username_prefix' => trim((string)($_POST['username_prefix'] ?? 'atd')),
             'username_suffix_length' => trim((string)($_POST['username_suffix_length'] ?? '6')),
-            'username_suffix_charset' => trim((string)($_POST['username_suffix_charset'] ?? 'letters')),
+            'username_suffix_charset' => trim((string)($_POST['username_suffix_charset'] ?? 'digits')),
             'password_length' => trim((string)($_POST['password_length'] ?? '4')),
             'password_charset' => trim((string)($_POST['password_charset'] ?? 'mixed')),
         ];
@@ -329,7 +329,7 @@ if ($error !== '') {
         $renewalValues[$key] = support_setting($pdo, $key) ?: ($key === 'ibsng_gift_days_first' ? '1' : '5');
     }
     foreach ($credentialValues as $key => $value) {
-        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'username_suffix_charset' => 'letters', 'password_length' => '4', default => 'mixed' };
+        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'username_suffix_charset' => 'digits', 'password_length' => '4', default => 'mixed' };
     }
 }
 $config = app_config();
