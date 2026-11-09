@@ -559,6 +559,9 @@
     payment_result_page: {
       payment_success_title: 'Payment confirmed',
       payment_success_body: 'The gateway confirmed your payment.',
+      payment_details_heading: 'Payment details',
+      payment_tracking_code: 'Order tracking code',
+      payment_gateway_reference: 'Gateway payment reference',
       payment_order_id: 'Order ID:',
       payment_provisioning_note: 'Service activation is recorded and tracked separately.',
       payment_track_activation: 'Track activation status',
