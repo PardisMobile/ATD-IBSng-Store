@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'account_details_text' => $templateLanguage === 'en' ? "Username: ATD12345\\nPassword: Demo1234" : "نام کاربری: ATD12345\\nرمز عبور: Demo1234",
                             'verification_code' => '123456',
                             'expires_in' => $templateLanguage === 'en' ? '30 minutes' : '۳۰ دقیقه',
-                            'verification_url' => app_url(),
+                            'verification_url' => app_absolute_url('index.php'),
                             'expiration_date' => $templateLanguage === 'en' ? '2026-12-09' : '۱۴۰۵/۰۹/۱۸',
                             'service_url' => app_url('my-orders.php'),
                         ];
