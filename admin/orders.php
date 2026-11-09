@@ -161,7 +161,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <title data-ui-title-key="title_admin_orders">گزارش خرید و فروش | <?= e((string)($config['site_title'] ?? 'ATD IBSng Store')) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
-.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.report-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px)}.report-filters label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}.report-filters input{min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.filter-actions{display:flex;gap:8px;flex-wrap:wrap}.filter-actions a{display:inline-flex;align-items:center;text-decoration:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:680px}.ambiguous-payments-table{width:100%;min-width:0;table-layout:fixed}.ambiguous-payments-table .col-transaction{width:6%}.ambiguous-payments-table .col-order{width:17%}.ambiguous-payments-table .col-gateway{width:10%}.ambiguous-payments-table .col-amount{width:11%}.ambiguous-payments-table .col-buyer{width:13%}.ambiguous-payments-table .col-created{width:17%}.ambiguous-payments-table .col-action{width:26%}.ambiguous-payments-table th{white-space:nowrap;overflow-wrap:normal;word-break:normal}.ambiguous-payments-table td{vertical-align:middle}.ambiguous-payments-table .order-reference{max-width:100%;overflow-wrap:anywhere;word-break:break-word}.ambiguous-payments-table .review-action{min-width:0;width:auto;max-width:100%;padding:8px}.ambiguous-payments-table .review-action form{display:block;width:100%;min-width:0;max-width:100%}.ambiguous-payments-table .review-action textarea{display:block;width:100%;min-width:0;max-width:100%;min-height:38px;height:38px;margin:4px 0;padding:5px 7px;box-sizing:border-box;font-size:.78rem}.payment-diagnostic-content pre{max-width:100%;max-height:55vh;overflow:auto;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.7;text-align:left}.payment-diagnostic-content .muted{font-size:.85rem;margin:8px 0}.transaction-reference-cell{min-width:0}.transaction-reference-toggle{display:block;margin-top:7px;padding:5px 7px;font-size:.7rem;white-space:normal;line-height:1.3}.ambiguous-payments-table .review-action .button{display:inline-flex;align-items:center;justify-content:center;width:auto;max-width:100%;min-width:0;padding:6px 8px;white-space:normal;overflow-wrap:anywhere;line-height:1.25;font-size:.72rem;box-sizing:border-box}.orders-detail-table .order-details-toggle{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:0;height:auto;padding:6px 10px;font-size:.82rem;line-height:1.25;border-radius:9px;max-width:100%;box-sizing:border-box}.order-details-toggle{font-weight:600}.order-details-dialog{width:min(680px,calc(100% - 32px));max-width:680px;max-height:min(82vh,760px);padding:0;border:1px solid var(--border);border-radius:16px;background:var(--surface,var(--surface-2));color:var(--text);box-shadow:0 24px 80px #0008}.order-details-dialog::backdrop{background:#050914a8;backdrop-filter:blur(4px)}.order-details-dialog-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:var(--surface,var(--surface-2));border-bottom:1px solid var(--border)}.order-details-dialog-head h2{margin:0;font-size:1.1rem}.order-details-dialog-content{padding:8px 20px 18px;overflow:auto;max-height:calc(82vh - 72px)}.order-details-dialog .order-detail-panel{padding:0;background:transparent}.order-details-dialog .order-detail-grid{display:grid;grid-template-columns:1fr;gap:0}.order-details-dialog .order-detail-grid>div{padding:12px 4px;border-bottom:1px solid var(--border)}.order-details-dialog .order-attempts{margin-top:12px}.order-details{min-width:180px}.order-details-toggle{cursor:pointer}.order-details-template-row{display:none}.order-detail-panel{padding:14px 16px;background:color-mix(in srgb,var(--surface-2) 58%,transparent);border-radius:var(--ui-radius-md,12px)}.order-detail-grid{display:grid;grid-template-columns:1fr;gap:0;margin:0}.order-detail-grid>div{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;min-width:0;padding:12px 4px;border-bottom:1px solid var(--border)}.order-detail-grid>div>span{color:var(--muted);flex:0 0 auto}.order-detail-grid strong{overflow-wrap:anywhere;text-align:end}.order-attempts{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.attempt-line{display:grid;gap:4px;padding:10px 2px;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.jalali-picker{position:relative;display:inline-flex;align-items:center;gap:6px}.jalali-picker input[type=text]{min-width:150px;direction:ltr;text-align:center}.jalali-picker-button{min-height:42px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);cursor:pointer}.jalali-calendar{position:absolute;z-index:30;top:calc(100% + 7px);inset-inline-start:0;width:280px;padding:12px;background:var(--surface,var(--surface-2));border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 34px #0005}.jalali-calendar[hidden]{display:none}.jalali-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.jalali-calendar-head button,.jalali-calendar-day{border:0;background:transparent;color:var(--text);font:inherit;cursor:pointer;border-radius:8px}.jalali-calendar-head button{padding:6px 10px}.jalali-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.jalali-calendar-grid span{padding:6px 0;color:var(--muted);font-size:.78rem}.jalali-calendar-day{padding:7px 0}.jalali-calendar-day:hover,.jalali-calendar-day[aria-selected=true]{background:var(--accent);color:white}.jalali-calendar-day.outside{opacity:.35}@media(max-width:480px){.jalali-calendar{inset-inline-start:auto;inset-inline-end:0}}.attempt-line small{overflow-wrap:anywhere}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
+.admin-shell{width:min(1120px,calc(100% - 32px));margin:0 auto}.top{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:24px 0}.report-filters{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:18px 0;padding:14px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px)}.report-filters label{display:grid;gap:6px;color:var(--muted);font-size:.9rem}.report-filters input{min-height:42px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit}.filter-actions{display:flex;gap:8px;flex-wrap:wrap}.filter-actions a{display:inline-flex;align-items:center;text-decoration:none}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:20px 0}.stat,.report{padding:20px}.stat strong{display:block;margin-top:10px;font-size:1.65rem;overflow-wrap:anywhere}.sales-total-line{display:block;font-size:1.25rem;line-height:1.8}.sales-total-line small{font-size:.8rem;color:var(--muted);font-weight:600}.muted{color:var(--muted);line-height:1.8}.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);overscroll-behavior-inline:contain}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:13px;border-bottom:1px solid var(--border);vertical-align:top;white-space:normal;overflow-wrap:anywhere}th{background:var(--surface-2);color:var(--muted);font-size:.9rem;font-weight:650}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:color-mix(in srgb,var(--surface-2) 55%,transparent)}.notice{padding:12px 14px;border-radius:var(--ui-radius-md,12px);margin:14px 0}.ok{border:1px solid #44d6a044;background:#44d6a018}.err{border:1px solid #ff718044;background:#ff718018}textarea{display:block;width:100%;min-width:220px;min-height:70px;box-sizing:border-box;margin:6px 0;padding:10px 12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);font:inherit;resize:vertical}textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px var(--ui-focus-ring)}button{font:inherit;cursor:pointer}.review-action{min-width:250px;white-space:normal}.numeric-value{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;font-variant-numeric:tabular-nums;max-width:100%;overflow-wrap:anywhere}.order-reference{direction:ltr;unicode-bidi:plaintext;display:inline-block;text-align:left;overflow-wrap:anywhere}.section-gap{margin-top:22px}.orders-detail-table{min-width:680px}.ambiguous-payments-table{width:100%;min-width:0;table-layout:fixed}.ambiguous-payments-table .col-transaction{width:6%}.ambiguous-payments-table .col-order{width:17%}.ambiguous-payments-table .col-gateway{width:10%}.ambiguous-payments-table .col-amount{width:11%}.ambiguous-payments-table .col-buyer{width:13%}.ambiguous-payments-table .col-created{width:17%}.ambiguous-payments-table .col-action{width:26%}.ambiguous-payments-table th{white-space:nowrap;overflow-wrap:normal;word-break:normal}.ambiguous-payments-table td{vertical-align:middle}.ambiguous-payments-table .order-reference{max-width:100%;overflow-wrap:anywhere;word-break:break-word}.ambiguous-payments-table .review-action{min-width:0;width:auto;max-width:100%;padding:8px}.ambiguous-payments-table .review-action form{display:block;width:100%;min-width:0;max-width:100%}.ambiguous-payments-table .review-action textarea{display:block;width:100%;min-width:0;max-width:100%;min-height:38px;height:38px;margin:4px 0;padding:5px 7px;box-sizing:border-box;font-size:.78rem}.payment-diagnostic-content pre{max-width:100%;max-height:55vh;overflow:auto;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.7;text-align:left}.payment-diagnostic-content .muted{font-size:.85rem;margin:8px 0}.transaction-reference-cell{min-width:0}.transaction-reference-toggle{display:block;margin-top:7px;padding:5px 7px;font-size:.7rem;white-space:normal;line-height:1.3}.ambiguous-payments-table .review-action .button{display:inline-flex;align-items:center;justify-content:center;width:auto;max-width:100%;min-width:0;padding:6px 8px;white-space:normal;overflow-wrap:anywhere;line-height:1.25;font-size:.72rem;box-sizing:border-box}.orders-detail-table .order-details-toggle{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:0;height:auto;padding:6px 10px;font-size:.82rem;line-height:1.25;border-radius:9px;max-width:100%;box-sizing:border-box}.order-details-toggle{font-weight:600}.order-details-dialog{width:min(680px,calc(100% - 32px));max-width:680px;max-height:min(82vh,760px);padding:0;border:1px solid var(--border);border-radius:16px;background:var(--surface,var(--surface-2));color:var(--text);box-shadow:0 24px 80px #0008}.order-details-dialog::backdrop{background:#050914a8;backdrop-filter:blur(4px)}.order-details-dialog-head{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;background:var(--surface,var(--surface-2));border-bottom:1px solid var(--border)}.order-details-dialog-head h2{margin:0;font-size:1.1rem}.order-details-dialog-content{padding:8px 20px 18px;overflow:auto;max-height:calc(82vh - 72px)}.order-details-dialog .order-detail-panel{padding:0;background:transparent}.order-details-dialog .order-detail-grid{display:grid;grid-template-columns:1fr;gap:0}.order-details-dialog .order-detail-grid>div{padding:12px 4px;border-bottom:1px solid var(--border)}.order-details-dialog .order-attempts{margin-top:12px}.order-details{min-width:180px}.order-details-toggle{cursor:pointer}.order-details-template-row{display:none}.order-detail-panel{padding:14px 16px;background:color-mix(in srgb,var(--surface-2) 58%,transparent);border-radius:var(--ui-radius-md,12px)}.order-detail-grid{display:grid;grid-template-columns:1fr;gap:0;margin:0}.order-detail-grid>div{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;min-width:0;padding:12px 4px;border-bottom:1px solid var(--border)}.order-detail-grid>div>span{color:var(--muted);flex:0 0 auto}.order-detail-grid strong{overflow-wrap:anywhere;text-align:end}.order-attempts{border-top:1px solid var(--border);padding-top:12px;margin-top:12px}.attempt-line{display:grid;gap:4px;padding:10px 2px;border-bottom:1px solid var(--border)}.attempt-line:last-child{border-bottom:0}.jalali-picker{position:relative;display:inline-flex;align-items:center;gap:6px}.jalali-picker input[type=text]{min-width:150px;direction:ltr;text-align:center}.jalali-picker-button{min-height:42px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--ui-radius-md,12px);background:var(--control-bg,var(--surface-2));color:var(--text);cursor:pointer}.jalali-calendar{position:absolute;z-index:30;top:calc(100% + 7px);inset-inline-start:0;width:280px;padding:12px;background:var(--surface,var(--surface-2));border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 34px #0005}.jalali-calendar[hidden]{display:none}.jalali-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.jalali-calendar-head button,.jalali-calendar-day{border:0;background:transparent;color:var(--text);font:inherit;cursor:pointer;border-radius:8px}.jalali-calendar-head button{padding:6px 10px}.jalali-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.jalali-calendar-grid span{padding:6px 0;color:var(--muted);font-size:.78rem}.jalali-calendar-day{padding:7px 0}.jalali-calendar-day:hover,.jalali-calendar-day[aria-selected=true]{background:var(--accent);color:white}.jalali-calendar-day.today{outline:2px solid var(--accent);outline-offset:-2px;font-weight:750}.jalali-calendar-day[aria-selected=true].today{box-shadow:inset 0 0 0 2px var(--surface,var(--surface-2))}.jalali-calendar-day.outside{opacity:.35}@media(max-width:480px){.jalali-calendar{inset-inline-start:auto;inset-inline-end:0}}.attempt-line small{overflow-wrap:anywhere}@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.stats{grid-template-columns:1fr}}@media(max-width:600px){.top{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body><main class="admin-shell">
@@ -265,6 +265,7 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
   const root = document.documentElement;
   const locale = 'fa-IR-u-ca-persian';
   const formatter = new Intl.DateTimeFormat(locale, {year:'numeric', month:'numeric', day:'numeric'});
+  const gregorianFormatter = new Intl.DateTimeFormat('en-GB', {year:'numeric', month:'2-digit', day:'2-digit'});
   const latin = value => String(value).replace(/[۰-۹٠-٩]/g, ch => {
     const code = ch.charCodeAt(0);
     return String(code >= 0x06f0 && code <= 0x06f9 ? code - 0x06f0 : code - 0x0660);
@@ -274,15 +275,22 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
     formatter.formatToParts(date).forEach(part => { values[part.type] = latin(part.value); });
     return {year:Number(values.year), month:Number(values.month), day:Number(values.day)};
   };
+  const gregorianParts = date => ({
+    year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate()
+  });
   const utcDate = (year, month, day) => new Date(Date.UTC(year, month - 1, day, 12));
   const isoDate = date => date.getUTCFullYear() + '-' + String(date.getUTCMonth()+1).padStart(2,'0') + '-' + String(date.getUTCDate()).padStart(2,'0');
   const parseIso = value => {
-    const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return match ? utcDate(Number(match[1]), Number(match[2]), Number(match[3])) : null;
+    const match = String(value || '').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+    if (!match) return null;
+    const date = utcDate(Number(match[1]), Number(match[2]), Number(match[3]));
+    return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth()+1 === Number(match[2]) && date.getUTCDate() === Number(match[3]) ? date : null;
+  };
+  const todayIso = () => {
+    const now = new Date();
+    return isoDate(utcDate(now.getFullYear(), now.getMonth()+1, now.getDate()));
   };
   const jalaliMonthStart = (year, month) => {
-    // Jalali months 1-10 begin in Gregorian March-December; months 11-12
-    // begin in January-February of the following Gregorian year.
     const gregorianYear = year + 621 + (month >= 11 ? 1 : 0);
     const gregorianMonthIndex = month <= 10 ? month + 1 : month - 11;
     const guess = utcDate(gregorianYear, gregorianMonthIndex + 1, 15);
@@ -293,81 +301,128 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
     }
     throw new Error('Unable to resolve Jalali month start');
   };
-  const monthLength = (year, month) => {
+  const jalaliMonthLength = (year, month) => {
     const first = jalaliMonthStart(year, month);
     const next = month === 12 ? jalaliMonthStart(year + 1, 1) : jalaliMonthStart(year, month + 1);
     return Math.round((next - first) / 86400000);
   };
-  const monthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-  const weekNames = ['ش','ی','د','س','چ','پ','ج'];
-  const makeCalendar = input => {
-    if (input.dataset.jalaliReady === '1') return;
-    input.dataset.jalaliReady = '1';
-    const fieldName = input.name;
-    const initial = input.value;
-    const wrap = document.createElement('span');
-    wrap.className = 'jalali-picker';
-    input.parentNode.insertBefore(wrap, input);
-    wrap.appendChild(input);
-    const hidden = document.createElement('input');
-    hidden.type = 'hidden'; hidden.name = fieldName; hidden.value = initial; wrap.appendChild(hidden);
-    input.removeAttribute('name');
-    const trigger = document.createElement('button');
-    trigger.type = 'button'; trigger.className = 'jalali-picker-button'; trigger.textContent = '▦';
-    trigger.setAttribute('aria-label','باز کردن تقویم شمسی'); wrap.appendChild(trigger);
-    const popup = document.createElement('div');
-    popup.className = 'jalali-calendar'; popup.hidden = true; popup.setAttribute('role','dialog');
-    popup.setAttribute('aria-label','تقویم شمسی'); wrap.appendChild(popup);
-    let selected = parseIso(initial);
-    let current = selected ? jalaliParts(selected) : jalaliParts(new Date());
-    input.type = 'text'; input.readOnly = true; input.placeholder = 'سال/ماه/روز';
-    input.value = selected ? formatter.format(selected) : '';
-    const render = () => {
+  const gregorianMonthLength = (year, month) => Math.round((utcDate(year, month+1, 1) - utcDate(year, month, 1)) / 86400000);
+  const jalaliMonthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+  const persianWeekNames = ['ش','ی','د','س','چ','پ','ج'];
+  const englishWeekNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const makeCalendar = (input, language) => {
+    let state = input._atdCalendar;
+    if (!state) {
+      const fieldName = input.name;
+      const initial = input.value;
+      const wrap = document.createElement('span');
+      wrap.className = 'jalali-picker';
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden'; hidden.name = fieldName; hidden.value = initial; wrap.appendChild(hidden);
+      input.removeAttribute('name');
+      const trigger = document.createElement('button');
+      trigger.type = 'button'; trigger.className = 'jalali-picker-button'; trigger.textContent = '▦';
+      wrap.appendChild(trigger);
+      const popup = document.createElement('div');
+      popup.className = 'jalali-calendar'; popup.hidden = true; popup.setAttribute('role','dialog');
+      wrap.appendChild(popup);
+      state = input._atdCalendar = {wrap, hidden, trigger, popup, fieldName, selected:parseIso(initial), language:'fa', current:null};
+      input.type = 'text';
+      input.readOnly = true;
+      trigger.addEventListener('click',()=>{
+        if (!popup.hidden) { popup.hidden=true; return; }
+        state.current = state.selected ? (state.language==='fa' ? jalaliParts(state.selected) : gregorianParts(state.selected)) : currentParts(state.language);
+        render();
+        popup.hidden=false;
+      });
+      input.addEventListener('click',()=>trigger.click());
+      document.addEventListener('pointerdown',event=>{if(!wrap.contains(event.target))popup.hidden=true;});
+      input.form?.addEventListener('reset',()=>{
+        window.setTimeout(()=>{
+          state.hidden.value='';
+          state.selected=null;
+          input.value='';
+          state.current=currentParts(state.language);
+          if (!state.popup.hidden) render();
+        },0);
+      });
+    }
+    state.language = language;
+    input.type = 'text';
+    input.readOnly = true;
+    input.placeholder = language === 'en' ? 'DD/MM/YYYY' : 'سال/ماه/روز';
+    input.value = state.selected
+      ? (language === 'fa' ? formatter.format(state.selected) : gregorianFormatter.format(state.selected))
+      : '';
+    state.trigger.setAttribute('aria-label',language==='en'?'Open calendar':'باز کردن تقویم شمسی');
+    state.popup.setAttribute('aria-label',language==='en'?'Calendar':'تقویم شمسی');
+    if (state.current === null) state.current = state.selected
+      ? (language==='fa' ? jalaliParts(state.selected) : gregorianParts(state.selected))
+      : currentParts(language);
+    else if (state.popup.hidden) state.current = state.selected
+      ? (language==='fa' ? jalaliParts(state.selected) : gregorianParts(state.selected))
+      : currentParts(language);
+    if (!state.popup.hidden) render();
+    function currentParts(mode) {
+      const now = new Date();
+      return mode==='fa' ? jalaliParts(utcDate(now.getFullYear(),now.getMonth()+1,now.getDate())) : {year:now.getFullYear(),month:now.getMonth()+1};
+    }
+    function render() {
+      const mode=state.language, persian=mode==='fa', current=state.current;
+      const popup=state.popup;
       popup.replaceChildren();
-      const header = document.createElement('div'); header.className = 'jalali-calendar-head';
-      const previous = document.createElement('button'); previous.type='button'; previous.textContent='‹'; previous.setAttribute('aria-label','ماه قبل');
-      const heading = document.createElement('strong'); heading.textContent=monthNames[current.month-1]+' '+new Intl.NumberFormat('fa-IR').format(current.year);
-      const next = document.createElement('button'); next.type='button'; next.textContent='›'; next.setAttribute('aria-label','ماه بعد');
-      previous.addEventListener('click',()=>{current.month--;if(current.month<1){current.month=12;current.year--;}render();});
-      next.addEventListener('click',()=>{current.month++;if(current.month>12){current.month=1;current.year++;}render();});
+      const header=document.createElement('div'); header.className='jalali-calendar-head';
+      const previous=document.createElement('button'); previous.type='button'; previous.textContent='‹';
+      previous.setAttribute('aria-label',persian?'ماه قبل':'Previous month');
+      const heading=document.createElement('strong');
+      heading.textContent=persian
+        ? jalaliMonthNames[current.month-1]+' '+new Intl.NumberFormat('fa-IR').format(current.year)
+        : new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric'}).format(utcDate(current.year,current.month,1));
+      const next=document.createElement('button'); next.type='button'; next.textContent='›';
+      next.setAttribute('aria-label',persian?'ماه بعد':'Next month');
+      const move=delta=>{
+        current.month+=delta;
+        if(current.month<1){current.month=12;current.year--;}
+        if(current.month>12){current.month=1;current.year++;}
+        render();
+      };
+      previous.addEventListener('click',()=>move(-1));
+      next.addEventListener('click',()=>move(1));
       header.append(previous,heading,next); popup.appendChild(header);
       const grid=document.createElement('div'); grid.className='jalali-calendar-grid';
-      weekNames.forEach(name=>{const el=document.createElement('span');el.textContent=name;grid.appendChild(el);});
-      const first=jalaliMonthStart(current.year,current.month);
-      const offset=(first.getUTCDay()+1)%7;
-      const days=monthLength(current.year,current.month);
+      (persian?persianWeekNames:englishWeekNames).forEach(name=>{
+        const el=document.createElement('span');el.textContent=name;grid.appendChild(el);
+      });
+      const first=persian?jalaliMonthStart(current.year,current.month):utcDate(current.year,current.month,1);
+      const offset=persian?(first.getUTCDay()+1)%7:first.getUTCDay();
+      const days=persian?jalaliMonthLength(current.year,current.month):gregorianMonthLength(current.year,current.month);
+      const today=todayIso();
       for(let i=0;i<42;i++){
-        const day=i-offset+1; const cell=document.createElement('button');
-        cell.type='button'; cell.className='jalali-calendar-day';
-        if(day<1||day>days){cell.disabled=true;cell.classList.add('outside');cell.textContent=' ';}
-        else{
-          cell.textContent=new Intl.NumberFormat('fa-IR').format(day);
-          const date=new Date(first.getTime()+(day-1)*86400000); const iso=isoDate(date);
-          cell.setAttribute('aria-selected',String(hidden.value===iso));
-          cell.addEventListener('click',()=>{hidden.value=iso;selected=date;input.value=formatter.format(date);popup.hidden=true;});
+        const day=i-offset+1,cell=document.createElement('button');
+        cell.type='button';cell.className='jalali-calendar-day';
+        if(day<1||day>days){
+          cell.disabled=true;cell.classList.add('outside');cell.textContent=' ';
+        } else {
+          const date=new Date(first.getTime()+(day-1)*86400000),iso=isoDate(date);
+          cell.textContent=persian?new Intl.NumberFormat('fa-IR').format(day):String(day);
+          cell.setAttribute('aria-selected',String(state.hidden.value===iso));
+          if(iso===today)cell.classList.add('today');
+          if(iso===today)cell.setAttribute('aria-current','date');
+          cell.addEventListener('click',()=>{
+            state.hidden.value=iso;state.selected=date;
+            input.value=persian?formatter.format(date):gregorianFormatter.format(date);
+            popup.hidden=true;
+          });
         }
         grid.appendChild(cell);
       }
       popup.appendChild(grid);
-    };
-    trigger.addEventListener('click',()=>{if(!popup.hidden){popup.hidden=true;return;}current=selected?jalaliParts(selected):jalaliParts(new Date());render();popup.hidden=false;});
-    input.addEventListener('click',()=>trigger.click());
-    document.addEventListener('pointerdown',event=>{if(!wrap.contains(event.target))popup.hidden=true;});
-    input.form?.addEventListener('reset',()=>{hidden.value='';input.value='';selected=null;});
-    input._atdJalali={wrap,hidden,fieldName};
-  };
-  const removeCalendar = input => {
-    const state=input._atdJalali;if(!state)return;
-    input.type='date';input.readOnly=false;input.name=state.fieldName;
-    state.hidden.remove();state.wrap.querySelector('.jalali-picker-button')?.remove();
-    state.wrap.querySelector('.jalali-calendar')?.remove();
-    state.wrap.parentNode.insertBefore(input,state.wrap);state.wrap.remove();
-    delete input._atdJalali;delete input.dataset.jalaliReady;
+    }
   };
   const applyCalendarLanguage = language => {
-    document.querySelectorAll('.report-date-filter').forEach(input=>{
-      if(language==='en')removeCalendar(input);else makeCalendar(input);
-    });
+    document.querySelectorAll('.report-date-filter').forEach(input=>makeCalendar(input,language));
   };
   const bindDetails = () => {
     const dialog=document.getElementById('order-details-dialog');
