@@ -34,9 +34,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $subject = trim((string)($_POST['subject'] ?? ''));
         $html = (string)($_POST['html'] ?? '');
         $plain = (string)($_POST['text'] ?? '');
+        $subjectLength = preg_match_all('/./us', $subject, $subjectCharacters);
         if ($subject === '' || trim($html) === '' || trim($plain) === '') {
             $error = 'موضوع، قالب HTML و نسخه متنی باید تکمیل شوند.';
-        } elseif (mb_strlen($subject) > 250 || strlen($html) > 200000 || strlen($plain) > 50000) {
+        } elseif ($subjectLength === false) {
+            $error = 'موضوع ایمیل باید دارای متن UTF-8 معتبر باشد.';
+        } elseif ($subjectLength > 250 || strlen($html) > 200000 || strlen($plain) > 50000) {
             $error = 'حجم موضوع یا محتوای قالب بیش از حد مجاز است.';
         } else {
             $save = $pdo->prepare('INSERT INTO app_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
