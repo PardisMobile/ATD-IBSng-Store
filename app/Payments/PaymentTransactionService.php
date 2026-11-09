@@ -131,6 +131,46 @@ final class PaymentTransactionService
         return $stmt->rowCount() === 1;
     }
 
+    /**
+     * Persist a non-sensitive diagnostic for an initiation that did not reach
+     * provider-reference attachment. Preserve the environment snapshot and
+     * any earlier metadata so an administrator can inspect the exact failure.
+     *
+     * @param array<string,mixed> $diagnostic
+     */
+    public function recordInitiationDiagnostic(int $transactionId, array $diagnostic): void
+    {
+        if ($transactionId < 1) {
+            throw new InvalidArgumentException('Payment transaction ID is invalid.');
+        }
+
+        $select = $this->pdo->prepare(
+            "SELECT raw_result_json FROM payment_transactions
+             WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL
+             LIMIT 1"
+        );
+        $select->execute([$transactionId]);
+        $current = $select->fetchColumn();
+        if ($current === false) {
+            return;
+        }
+
+        $metadata = is_string($current) && trim($current) !== ''
+            ? json_decode($current, true)
+            : [];
+        if (!is_array($metadata)) {
+            $metadata = ['previous_raw_result' => is_string($current) ? $current : null];
+        }
+        $metadata['initiation_diagnostic'] = $diagnostic;
+        $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        $update = $this->pdo->prepare(
+            "UPDATE payment_transactions SET raw_result_json = ?
+             WHERE id = ? AND status = 'initiated' AND provider_reference IS NULL"
+        );
+        $update->execute([$raw, $transactionId]);
+    }
+
     /** Mark a provider request as failed only before a provider reference exists. */
     public function failInitiation(int $transactionId): void
     {
