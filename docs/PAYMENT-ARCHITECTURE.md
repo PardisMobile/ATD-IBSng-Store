@@ -91,6 +91,43 @@ Current adapters:
 - Releasing an ambiguous transaction requires a non-empty reconciliation note. The service transitions only a matching `initiated` row with a NULL provider reference to `failed`; the note and resolution timestamp are retained in `raw_result_json`. This is an operator assertion, not a provider-side cancellation.
 - Do not mark a transaction failed if a payable invoice may still exist. Reconcile with the gateway first; otherwise a customer could pay twice.
 
+## Customer payment retry and transaction history
+
+Payment retry is intentionally provider-aware. The generic customer page and `PaymentFlow` coordinate the operation, while each gateway adapter declares how an existing payment session is retried through the `PaymentGateway` contract:
+
+- `retryStrategy(): string` must return either `new` or `resume`.
+- `resume(array $transaction, array $settings): string` reopens the already-issued provider session and must not create a replacement invoice/session.
+- The order-status page uses the latest transaction row (`ORDER BY id DESC`) to decide which retry action is available. It does not rewrite or delete earlier transaction rows; each new attempt is a separate durable `payment_transactions` record.
+
+Current behavior:
+
+| Situation | Retry behavior |
+|---|---|
+| No transaction exists yet | A retry is offered only when exactly one currently available provider can be selected unambiguously; it starts a new transaction. |
+| Latest transaction is definitively `failed` | A new transaction/provider session may be created, provided that the same provider is still enabled, configured, and compatible with the order. |
+| Latest transaction is `pending` and has a provider reference; adapter strategy is `new` | Start a new transaction and obtain a fresh provider session. The prior transaction and its reference remain in history. |
+| Latest transaction is `pending` and has a provider reference; adapter strategy is `resume` | Reopen the existing provider session through the adapter. Do not create a new transaction or invoice. |
+| Latest transaction is `initiated` without a provider reference | No customer retry is offered. This is an ambiguous initiation and requires provider-side reconciliation before it can be released. |
+| Latest transaction is `pending` without a provider reference, or the provider is no longer available | No retry is offered because there is no safe resumable session or compatible provider choice. |
+
+Adapter-specific rules:
+
+- **Zarinpal — `new`:** every new attempt requests a fresh Authority. A pending transaction with an existing Authority can therefore be followed by a new transaction/Authority while the order remains unpaid; `order-status.php` passes `allowConcurrentPending=true` for this adapter strategy so the old pending Authority remains recorded rather than overwritten. The new transaction is the latest attempt shown to the customer, but callbacks for older attempts still resolve against their own persisted provider reference and transaction.
+- **IRCrypto — `resume`:** retry re-fetches the existing invoice by its persisted invoice ID and reopens its hosted `payment_url`. It never creates a replacement invoice in the resume path. If the latest transaction is definitively failed, the generic failed-attempt rule permits a fresh transaction; the adapter's `resume` strategy applies to a still-pending invoice with a stored reference.
+
+A resume operation is restricted to a transaction whose status is `pending`, whose provider reference is present, and whose order is still `pending` / `pending_payment`. The adapter is selected from the provider stored on that transaction, not from a newly selected global provider. A successful resume returns a validated HTTPS redirect URL; the existing transaction row and provider reference remain unchanged.
+
+### Initiation failure classification and manual reconciliation
+
+A payment transaction is persisted as `initiated` before the outbound gateway request. If initiation throws before a provider reference is attached, `PaymentFlow` stores a diagnostic in `payment_transactions.raw_result_json` under `initiation_diagnostic` (exception class, bounded message, and timestamp), preserving existing metadata such as Zarinpal's environment snapshot.
+
+- **Definitive Zarinpal rejection:** when the Zarinpal adapter throws an `InvalidArgumentException` for invalid/incomplete request parameters, or returns a structured API rejection with no Authority (`Zarinpal did not issue a payment authority. Response: ...`), `PaymentFlow` marks that initiation transaction `failed`. No provider Authority was issued, so a new attempt can safely be started for the same unpaid order.
+- **Unknown/ambiguous outcome:** network errors, timeouts, and other unclassified exceptions remain `initiated` with no provider reference. The system does not assume that the provider failed to create a payable session. An administrator must inspect the provider portal and use the ambiguous-payment reconciliation flow before the transaction can be released.
+- This definitive-rejection classification is currently explicit Zarinpal handling in `PaymentFlow`; do not generalize it to another provider without a provider-specific, evidence-backed rule. Other adapters' exceptions remain ambiguous unless their own safe classification is deliberately implemented and tested.
+- Manual release is limited to the matching `initiated` row with NULL provider reference. The required operator note and resolution timestamp are retained with the initiation diagnostic. It changes the Store's internal transaction state only; it does not cancel an invoice at the gateway.
+
+The distinction is deliberate: a provider-declared/known failure can allow a new attempt, whereas an uncertain request must not be replayed blindly. Keeping every attempt as its own row preserves Authority/invoice history and allows callbacks to be matched to the exact transaction that created them.
+
 ## Verification and idempotency guarantees
 
 - Provider callbacks are untrusted input. The adapter verifies the persisted provider reference and amount/currency using provider-side verification. IRCrypto webhook HMAC authenticates the webhook delivery but does not replace invoice lookup.
