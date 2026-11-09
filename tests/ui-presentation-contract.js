@@ -140,10 +140,10 @@ for (const source of [customerAccount, ibsngUsers]) {
 const ordersReport = read(path.join('admin', 'orders.php'));
 assert.match(ordersReport, /gregorianMonthIndex = month <= 10 \? month \+ 1 : month - 11/u, 'Jalali month-start lookup must use the Gregorian month corresponding to each Jalali month');
 assert.match(ordersReport, /for \(let offset = -12; offset <= 12; offset\+\+\)/u, 'Jalali month-start lookup must search around the month-specific Gregorian estimate');
-assert.match(ordersReport, /const applyCalendarLanguage = language =>[\\s\\S]*?makeCalendar\\(input,language\\)/u, 'Both languages must use the shared themed custom calendar');
+assert.match(ordersReport, /const applyCalendarLanguage = language =>[\s\S]*?makeCalendar\(input,language\)/u, 'Both languages must use the shared themed custom calendar');
 assert.match(ordersReport, /gregorianMonthLength/u, 'English calendar must calculate Gregorian month lengths');
-assert.match(ordersReport, /cell\\.classList\\.add\\('today'\\)/u, 'Calendar must visibly mark the current day');
-assert.match(ordersReport, /jalali-calendar-day\\.today/u, 'Current-day marker must use shared calendar styling');
+assert.match(ordersReport, /cell\.classList\.add\('today'\)/u, 'Calendar must visibly mark the current day');
+assert.match(ordersReport, /jalali-calendar-day\.today/u, 'Current-day marker must use shared calendar styling');
 
 const customerAccountPage = read('customer-account.php');
 assert.match(customerAccountPage, /data-fa="[^"]* کاربره"/u, 'Customer simultaneous-user count must use the Persian suffix کاربره');
