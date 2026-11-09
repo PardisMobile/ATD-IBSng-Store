@@ -349,7 +349,11 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
         },0);
       });
     }
+    const languageChanged = state.language !== language;
     state.language = language;
+    if (languageChanged) state.current = state.selected
+      ? (language==='fa' ? jalaliParts(state.selected) : gregorianParts(state.selected))
+      : currentParts(language);
     input.type = 'text';
     input.readOnly = true;
     input.placeholder = language === 'en' ? 'DD/MM/YYYY' : 'سال/ماه/روز';
