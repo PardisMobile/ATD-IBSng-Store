@@ -167,11 +167,15 @@ final class ZarinpalGateway implements PaymentGateway
         curl_close($handle);
 
         if (!is_string($body) || $body === '' || $httpStatus < 200 || $httpStatus >= 300) {
-            throw new RuntimeException('Zarinpal request failed (HTTP ' . $httpStatus . '): ' . $curlError);
+            $responseBody = is_string($body) ? substr($body, 0, 4000) : '[no response body]';
+            throw new RuntimeException(
+                'Zarinpal request failed (HTTP ' . $httpStatus . '): ' . $curlError
+                . ' | Response body: ' . $responseBody
+            );
         }
         $decoded = json_decode($body, true);
         if (!is_array($decoded)) {
-            throw new RuntimeException('Zarinpal returned invalid JSON.');
+            throw new RuntimeException('Zarinpal returned invalid JSON. Response body: ' . substr($body, 0, 4000));
         }
         return $decoded;
     }
