@@ -1,10 +1,6 @@
 <?php
 declare(strict_types=1);
 
-if (is_file(__DIR__ . '/StorefrontInfoIcons.php')) {
-    require_once __DIR__ . '/StorefrontInfoIcons.php';
-}
-
 /**
  * Customer email templates. Locale selection is content-only and does not
  * change the delivery transport or order/provisioning state machine.
@@ -65,7 +61,7 @@ final class EmailTemplates
 <tr>
 <td align="center" style="padding:34px 28px 12px;">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:0;line-height:54px;font-weight:700;">{{status_icon_svg}}</td></tr>
+<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:0;line-height:54px;font-weight:700;"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1769d2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></td></tr>
 </table>
 <h1 style="margin:18px 0 8px;font-size:23px;line-height:1.7;color:#172033;font-weight:700;">تأیید نشانی ایمیل</h1>
 <p style="margin:0;font-size:14px;line-height:2;color:#64748b;">برای فعال‌سازی و اطمینان از صحت نشانی ایمیل، آن را تأیید کنید.</p>
@@ -158,7 +154,7 @@ HTML,
 <tr>
 <td align="center" style="padding:34px 28px 12px;">
 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:27px;line-height:54px;font-weight:700;">✓</td></tr>
+<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:0;line-height:54px;font-weight:700;"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1769d2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></td></tr>
 </table>
 <h1 style="margin:18px 0 8px;font-size:23px;line-height:1.7;color:#172033;font-weight:700;">Verify your email address</h1>
 <p style="margin:0;font-size:14px;line-height:2;color:#64748b;">Confirm your email address to continue.</p>
@@ -222,9 +218,6 @@ HTML,
             if (is_string($value) && $value !== '') $result[$field] = $value;
         }
         $result['html'] = self::applyDocumentDirection($result['html'], $language);
-        $statusIcon = function_exists('storefront_info_icon') ? storefront_info_icon('status') : '';
-        $statusIcon = str_replace('class="store-info-icon"', 'width="26" height="26" style="display:block;width:26px;height:26px;color:#1769d2;"', $statusIcon);
-        $result['html'] = str_replace('{{status_icon_svg}}', $statusIcon, $result['html']);
         return $result;
     }
 
