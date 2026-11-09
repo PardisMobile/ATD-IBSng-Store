@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $fromDate = trim((string)($_GET['from_date'] ?? ''));
 $toDate = trim((string)($_GET['to_date'] ?? ''));
 $paidSearch = trim((string)($_GET['orders_search'] ?? ''));
-if (strlen($paidSearch) > 150) $paidSearch = substr($paidSearch, 0, 150);
+if (function_exists('mb_substr')) $paidSearch = mb_substr($paidSearch, 0, 150, 'UTF-8');
 $datePattern = '/^\\d{4}-\\d{2}-\\d{2}$/';
 if (($fromDate !== '' && (!preg_match($datePattern, $fromDate) || !checkdate((int)substr($fromDate, 5, 2), (int)substr($fromDate, 8, 2), (int)substr($fromDate, 0, 4))))
     || ($toDate !== '' && (!preg_match($datePattern, $toDate) || !checkdate((int)substr($toDate, 5, 2), (int)substr($toDate, 8, 2), (int)substr($toDate, 0, 4))))) {
@@ -127,7 +127,7 @@ if ($paidSearch !== '') {
     )";
     array_push($paidOrderParams, $likeSearch, $likeSearch, $likeSearch, $likeSearch, $likeSearch);
 }
-$paidCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders o
+$paidCountStmt = $pdo->prepare("SELECT COUNT(DISTINCT o.id) FROM orders o
     INNER JOIN payment_transactions t ON t.order_id=o.id AND t.status='verified'
     WHERE o.payment_status='paid'$paidOrderWhere");
 $paidCountStmt->execute($paidOrderParams);
@@ -245,7 +245,7 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidSe
 <form method="get" class="report-filters" aria-label="جستجوی سفارش‌های پرداخت‌شده" data-ui-aria="orders_search_aria">
   <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>">
   <input type="hidden" name="orders_per_page" value="<?= $paidPerPage ?>"><input type="hidden" name="ambiguous_page" value="<?= $ambiguousPage ?>">
-  <label style="flex:1;min-width:min(100%,280px)"><span data-ui-text="orders_search_label">جستجوی سفارش‌ها</span>
+  <label><span data-ui-text="orders_search_label">جستجوی سفارش‌ها</span>
     <input type="search" name="orders_search" value="<?= e($paidSearch) ?>" maxlength="150" autocomplete="off" placeholder="نام کاربری، نام خریدار، ایمیل، تلفن یا کد رهگیری" data-ui-placeholder="orders_search_placeholder">
   </label>
   <div class="filter-actions"><button class="button" type="submit" data-ui-text="orders_search_submit">جستجو</button>
@@ -293,7 +293,7 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidSe
 </tbody></table></div>
 <div class="report-pagination">
   <form method="get" class="pagination-size">
-    <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>"><input type="hidden" name="ambiguous_page" value="<?= $ambiguousPage ?>">
+    <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>"><input type="hidden" name="orders_search" value="<?= e($paidSearch) ?>"><input type="hidden" name="ambiguous_page" value="<?= $ambiguousPage ?>">
     <label><span data-fa="تعداد در هر صفحه" data-en="Per page">تعداد در هر صفحه</span>
       <select name="orders_per_page" onchange="this.form.submit()">
         <?php foreach ([10,25,50] as $size): ?><option value="<?= $size ?>" <?= $paidPerPage === $size ? 'selected' : '' ?>><?= $size ?></option><?php endforeach; ?>
