@@ -192,7 +192,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <?php foreach ($orderRows as $order): ?>
 <?php $paymentMetadata = json_decode((string)($order['raw_result_json'] ?? ''), true); $isSandboxPayment = is_array($paymentMetadata) && (($paymentMetadata['gateway_environment']['sandbox'] ?? false) === true); $detailId = 'order-detail-' . (int)$order['id']; ?>
 <tr>
-<td><button type="button" class="order-details-toggle" aria-expanded="false" aria-controls="<?= e($detailId) ?>"><?= e((string)$order['username']) ?></button></td>
+<td><span class="numeric-value"><?= e((string)$order['username']) ?></span><br><button type="button" class="order-details-toggle" aria-expanded="false" aria-controls="<?= e($detailId) ?>" data-fa="مشاهده جزئیات" data-en="View details">مشاهده جزئیات</button></td>
 <td><span data-fa="<?= e((string)$order['operation_label']) ?>" data-en="<?= $order['operation_label'] === 'تمدید' ? 'Renewal' : 'Purchase' ?>"><?= e((string)$order['operation_label']) ?></span></td>
 <td><?= e((string)$order['product_name_snapshot']) ?></td>
 <td><strong><?= number_format((int)$order['price_minor_snapshot']) ?> <?= e((string)$order['order_currency']) ?></strong></td>
@@ -224,7 +224,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <?php else: ?><p class="muted" data-ui-text="orders_no_ibsng_details">هنوز جزئیات عملیات IBSng برای این سفارش ثبت نشده است.</p><?php endif; ?>
 </div></td></tr>
 <?php endforeach; ?>
-
+</tbody></table></div>
 </section>
 
 <section class="section-gap" aria-labelledby="ambiguous-payments-title">
@@ -246,76 +246,129 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 </section><?php require __DIR__ . '/_footer.php'; ?></main><script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script><script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 <script>
 (() => {
+  'use strict';
   const root = document.documentElement;
-  const jalaliLocale = 'fa-IR-u-ca-persian';
-  const fmt = new Intl.DateTimeFormat(jalaliLocale, {year:'numeric',month:'numeric',day:'numeric'});
-  const parts = (date) => Object.fromEntries(fmt.formatToParts(date).map(p=>[p.type,p.value]));
-  const latin = value => value.replace(/[۰-۹٠-٩]/g, ch => String(ch.charCodeAt(0)>=0x06f0&&ch.charCodeAt(0)<=0x06f9?ch.charCodeAt(0)-0x06f0:ch.charCodeAt(0)-0x0660));\n  const jParts = (date) => { const p=parts(date); return {year:Number(latin(p.year)),month:Number(latin(p.month)),day:Number(latin(p.day))}; };
-  const toGregorian = (jy,jm,jd) => {
-    const start = Date.UTC(jy+621,2,19,12);
-    let first = null;
-    for(let n=0;n<6;n++){const d=new Date(start+n*86400000);const p=jParts(d);if(p.year===jy&&p.month===1&&p.day===1){first=d;break;}}
-    if(!first) throw new Error('Invalid Jalali year');
-    const offset = (jm<=7 ? (jm-1)*31 : 186+(jm-8)*30) + jd-1;
-    return new Date(first.getTime()+offset*86400000);
+  const locale = 'fa-IR-u-ca-persian';
+  const formatter = new Intl.DateTimeFormat(locale, {year:'numeric', month:'numeric', day:'numeric'});
+  const latin = value => String(value).replace(/[۰-۹٠-٩]/g, ch => {
+    const code = ch.charCodeAt(0);
+    return String(code >= 0x06f0 && code <= 0x06f9 ? code - 0x06f0 : code - 0x0660);
+  });
+  const jalaliParts = date => {
+    const values = {};
+    formatter.formatToParts(date).forEach(part => { values[part.type] = latin(part.value); });
+    return {year:Number(values.year), month:Number(values.month), day:Number(values.day)};
   };
-  const monthLength = (y,m) => m<=6?31:m<=11?30:(jParts(toGregorian(y+1,1,1)).year===y+1?Math.round((toGregorian(y+1,1,1)-toGregorian(y,1,1))/86400000)-336:29);
-  const toIso = d => d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
-  const parseIso = value => {const m=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12)):null;};
-  const dayNames = ['ش','ی','د','س','چ','پ','ج'];
+  const utcDate = (year, month, day) => new Date(Date.UTC(year, month - 1, day, 12));
+  const isoDate = date => date.getUTCFullYear() + '-' + String(date.getUTCMonth()+1).padStart(2,'0') + '-' + String(date.getUTCDate()).padStart(2,'0');
+  const parseIso = value => {
+    const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return match ? utcDate(Number(match[1]), Number(match[2]), Number(match[3])) : null;
+  };
+  const jalaliMonthStart = (year, month) => {
+    const guess = utcDate(year + 621, 3, 15);
+    for (let offset = -12; offset <= 18; offset++) {
+      const candidate = new Date(guess.getTime() + offset * 86400000);
+      const p = jalaliParts(candidate);
+      if (p.year === year && p.month === month && p.day === 1) return candidate;
+    }
+    throw new Error('Unable to resolve Jalali month start');
+  };
+  const monthLength = (year, month) => {
+    const first = jalaliMonthStart(year, month);
+    const next = month === 12 ? jalaliMonthStart(year + 1, 1) : jalaliMonthStart(year, month + 1);
+    return Math.round((next - first) / 86400000);
+  };
   const monthNames = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-  const setupJalaliFilters = () => {
-    document.querySelectorAll('.report-date-filter').forEach(input => {
-      if(input.dataset.jalaliReady==='1') return;
-      input.dataset.jalaliReady='1';
-      const initial = input.value;
-      const wrap=document.createElement('span');wrap.className='jalali-picker';
-      input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
-      const hidden=document.createElement('input');hidden.type='hidden';hidden.name=input.name;hidden.value=initial;wrap.appendChild(hidden);input.removeAttribute('name');
-      const btn=document.createElement('button');btn.type='button';btn.className='jalali-picker-button';btn.textContent='▦';btn.setAttribute('aria-label','باز کردن تقویم شمسی');wrap.appendChild(btn);
-      const pop=document.createElement('div');pop.className='jalali-calendar';pop.hidden=true;pop.setAttribute('role','dialog');pop.setAttribute('aria-label','تقویم شمسی');wrap.appendChild(pop);
-      let selected=parseIso(initial), current=selected?jParts(selected):jParts(new Date());
-      input.type='text';input.readOnly=true;input.value=selected?new Intl.DateTimeFormat(jalaliLocale,{year:'numeric',month:'2-digit',day:'2-digit'}).format(selected):'';input.placeholder='سال/ماه/روز';
-      const render=()=>{
-        pop.innerHTML='';
-        const head=document.createElement('div');head.className='jalali-calendar-head';
-        const prev=document.createElement('button');prev.type='button';prev.textContent='‹';prev.setAttribute('aria-label','ماه قبل');
-        const title=document.createElement('strong');title.textContent=monthNames[current.month-1]+' '+new Intl.NumberFormat('fa-IR').format(current.year);
-        const next=document.createElement('button');next.type='button';next.textContent='›';next.setAttribute('aria-label','ماه بعد');
-        prev.addEventListener('click',()=>{current.month--;if(current.month<1){current.month=12;current.year--;}render();});
-        next.addEventListener('click',()=>{current.month++;if(current.month>12){current.month=1;current.year++;}render();});
-        head.append(prev,title,next);pop.append(head);
-        const grid=document.createElement('div');grid.className='jalali-calendar-grid';
-        dayNames.forEach(n=>{const el=document.createElement('span');el.textContent=n;grid.append(el);});
-        const first=toGregorian(current.year,current.month,1);
-        const offset=(first.getUTCDay()+1)%7;
-        const count=monthLength(current.year,current.month);
-        for(let i=0;i<42;i++){const day=i-offset+1;const cell=document.createElement('button');cell.type='button';cell.className='jalali-calendar-day';if(day<1||day>count){cell.disabled=true;cell.classList.add('outside');cell.textContent='';}else{cell.textContent=new Intl.NumberFormat('fa-IR').format(day);const iso=toIso(toGregorian(current.year,current.month,day));cell.setAttribute('aria-selected',String(hidden.value===iso));cell.addEventListener('click',()=>{hidden.value=iso;selected=parseIso(iso);input.value=new Intl.DateTimeFormat(jalaliLocale,{year:'numeric',month:'2-digit',day:'2-digit'}).format(selected);pop.hidden=true;});}grid.append(cell);}
-        pop.append(grid);
-      };
-      btn.addEventListener('click',()=>{current=selected?jParts(selected):jParts(new Date());render();pop.hidden=!pop.hidden;});
-      input.addEventListener('click',()=>{btn.click();});
-      document.addEventListener('pointerdown',e=>{if(!wrap.contains(e.target))pop.hidden=true;});
-      input.form?.addEventListener('submit',()=>{});
+  const weekNames = ['ش','ی','د','س','چ','پ','ج'];
+  const makeCalendar = input => {
+    if (input.dataset.jalaliReady === '1') return;
+    input.dataset.jalaliReady = '1';
+    const fieldName = input.name;
+    const initial = input.value;
+    const wrap = document.createElement('span');
+    wrap.className = 'jalali-picker';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden'; hidden.name = fieldName; hidden.value = initial; wrap.appendChild(hidden);
+    input.removeAttribute('name');
+    const trigger = document.createElement('button');
+    trigger.type = 'button'; trigger.className = 'jalali-picker-button'; trigger.textContent = '▦';
+    trigger.setAttribute('aria-label','باز کردن تقویم شمسی'); wrap.appendChild(trigger);
+    const popup = document.createElement('div');
+    popup.className = 'jalali-calendar'; popup.hidden = true; popup.setAttribute('role','dialog');
+    popup.setAttribute('aria-label','تقویم شمسی'); wrap.appendChild(popup);
+    let selected = parseIso(initial);
+    let current = selected ? jalaliParts(selected) : jalaliParts(new Date());
+    input.type = 'text'; input.readOnly = true; input.placeholder = 'سال/ماه/روز';
+    input.value = selected ? formatter.format(selected) : '';
+    const render = () => {
+      popup.replaceChildren();
+      const header = document.createElement('div'); header.className = 'jalali-calendar-head';
+      const previous = document.createElement('button'); previous.type='button'; previous.textContent='‹'; previous.setAttribute('aria-label','ماه قبل');
+      const heading = document.createElement('strong'); heading.textContent=monthNames[current.month-1]+' '+new Intl.NumberFormat('fa-IR').format(current.year);
+      const next = document.createElement('button'); next.type='button'; next.textContent='›'; next.setAttribute('aria-label','ماه بعد');
+      previous.addEventListener('click',()=>{current.month--;if(current.month<1){current.month=12;current.year--;}render();});
+      next.addEventListener('click',()=>{current.month++;if(current.month>12){current.month=1;current.year++;}render();});
+      header.append(previous,heading,next); popup.appendChild(header);
+      const grid=document.createElement('div'); grid.className='jalali-calendar-grid';
+      weekNames.forEach(name=>{const el=document.createElement('span');el.textContent=name;grid.appendChild(el);});
+      const first=jalaliMonthStart(current.year,current.month);
+      const offset=(first.getUTCDay()+1)%7;
+      const days=monthLength(current.year,current.month);
+      for(let i=0;i<42;i++){
+        const day=i-offset+1; const cell=document.createElement('button');
+        cell.type='button'; cell.className='jalali-calendar-day';
+        if(day<1||day>days){cell.disabled=true;cell.classList.add('outside');cell.textContent=' ';}
+        else{
+          cell.textContent=new Intl.NumberFormat('fa-IR').format(day);
+          const date=new Date(first.getTime()+(day-1)*86400000); const iso=isoDate(date);
+          cell.setAttribute('aria-selected',String(hidden.value===iso));
+          cell.addEventListener('click',()=>{hidden.value=iso;selected=date;input.value=formatter.format(date);popup.hidden=true;});
+        }
+        grid.appendChild(cell);
+      }
+      popup.appendChild(grid);
+    };
+    trigger.addEventListener('click',()=>{if(!popup.hidden){popup.hidden=true;return;}current=selected?jalaliParts(selected):jalaliParts(new Date());render();popup.hidden=false;});
+    input.addEventListener('click',()=>trigger.click());
+    document.addEventListener('pointerdown',event=>{if(!wrap.contains(event.target))popup.hidden=true;});
+    input.form?.addEventListener('reset',()=>{hidden.value='';input.value='';selected=null;});
+    input._atdJalali={wrap,hidden,fieldName};
+  };
+  const removeCalendar = input => {
+    const state=input._atdJalali;if(!state)return;
+    input.type='date';input.readOnly=false;input.name=state.fieldName;
+    state.hidden.remove();state.wrap.querySelector('.jalali-picker-button')?.remove();
+    state.wrap.querySelector('.jalali-calendar')?.remove();
+    state.wrap.parentNode.insertBefore(input,state.wrap);state.wrap.remove();
+    delete input._atdJalali;delete input.dataset.jalaliReady;
+  };
+  const applyCalendarLanguage = language => {
+    document.querySelectorAll('.report-date-filter').forEach(input=>{
+      if(language==='en')removeCalendar(input);else makeCalendar(input);
     });
   };
-  const applyOrderDetails = () => {
+  const bindDetails = () => {
     document.querySelectorAll('.order-details-toggle').forEach(button=>{
       if(button.dataset.bound==='1')return;button.dataset.bound='1';
       button.addEventListener('click',()=>{
-        const row=document.getElementById(button.getAttribute('aria-controls'));
-        if(!row)return;const open=row.hidden;row.hidden=!open;button.setAttribute('aria-expanded',String(open));
+        const row=document.getElementById(button.getAttribute('aria-controls'));if(!row)return;
+        const opening=row.hidden;row.hidden=!opening;button.setAttribute('aria-expanded',String(opening));
+        button.textContent=opening?(root.lang==='en'?'Hide details':'بستن جزئیات'):(root.lang==='en'?'View details':'مشاهده جزئیات');
       });
     });
   };
-  const applyReportCalendar = () => {
-    const fa=root.lang!=='en';
-    document.querySelectorAll('.report-date-filter').forEach(input=>{
-      if(fa){if(input.type==='date')setupJalaliFilters();}
+  const initialize=()=>{bindDetails();applyCalendarLanguage(root.lang==='en'?'en':'fa');};
+  initialize();
+  document.addEventListener('atd:language-change',event=>{
+    const language=event.detail?.language==='en'?'en':'fa';applyCalendarLanguage(language);
+    document.querySelectorAll('.order-details-toggle').forEach(button=>{
+      const row=document.getElementById(button.getAttribute('aria-controls'));const open=row&&!row.hidden;
+      button.textContent=language==='en'?(open?'Hide details':'View details'):(open?'بستن جزئیات':'مشاهده جزئیات');
     });
-  };
-  document.addEventListener('DOMContentLoaded',()=>{applyOrderDetails();applyReportCalendar();});
-  document.addEventListener('atd:language-change',()=>{location.reload();});
+  });
 })();
 </script>
 <script>
