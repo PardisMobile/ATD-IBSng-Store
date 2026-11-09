@@ -8,7 +8,7 @@ $checks = [
 'username mode selector is beside prefix settings' => str_contains($settings, 'name="username_suffix_charset"') && strpos($settings, 'name="username_prefix"') < strpos($settings, 'name="username_suffix_charset"'),
 'checkout loads selected username mode' => str_contains($checkout, "'username_suffix_charset'"),
 'digits-only suffix' => str_contains($checkout, "'digits' => '23456789'"),
-'letters-only suffix' => str_contains($checkout, "'default' => 'abcdefghijklmnopqrstuvwxyz'"),
+'letters-only suffix' => str_contains($checkout, "'letters' => 'abcdefghijklmnopqrstuvwxyz'"),
 'alphanumeric suffix' => str_contains($checkout, "'alphanumeric' => 'abcdefghijklmnopqrstuvwxyz0123456789'"),
 'prefix is retained before generated suffix' => str_contains($checkout, '$candidate = $credentialPrefix . checkout_random_string($generatedUsernameAlphabet, $credentialSuffixLength);'),
 ];
