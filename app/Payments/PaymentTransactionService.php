@@ -22,7 +22,7 @@ final class PaymentTransactionService
      *
      * @return int Transaction ID
      */
-    public function create(int $orderId, string $provider, int $amountMinor, string $currency, array $metadata = []): int
+    public function create(int $orderId, string $provider, int $amountMinor, string $currency, array $metadata = [], bool $allowConcurrentPending = false): int
     {
         $provider = strtolower(trim($provider));
         $currency = strtoupper(trim($currency));
@@ -55,12 +55,14 @@ final class PaymentTransactionService
                 throw new RuntimeException('Payment amount/currency does not match the persisted order price.');
             }
 
-            $active = $this->pdo->prepare(
-                "SELECT id FROM payment_transactions WHERE order_id = ? AND status IN ('initiated','pending') LIMIT 1 FOR UPDATE"
-            );
-            $active->execute([$orderId]);
-            if ($active->fetch(PDO::FETCH_ASSOC)) {
-                throw new RuntimeException('Order already has an active payment transaction.');
+            if (!$allowConcurrentPending) {
+                $active = $this->pdo->prepare(
+                    "SELECT id FROM payment_transactions WHERE order_id = ? AND status IN ('initiated','pending') LIMIT 1 FOR UPDATE"
+                );
+                $active->execute([$orderId]);
+                if ($active->fetch(PDO::FETCH_ASSOC)) {
+                    throw new RuntimeException('Order already has an active payment transaction.');
+                }
             }
 
             $rawMetadata = $metadata !== []
