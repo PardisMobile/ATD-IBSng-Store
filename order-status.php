@@ -23,8 +23,6 @@ $accountDetails = [];
 $retryAvailable = false;
 $retryProvider = '';
 $retryMode = '';
-$retryAuthority = '';
-$retrySandbox = false;
 $retryError = '';
 if (empty($_SESSION['order_payment_retry_csrf'])) $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
 $productQuotaBytes = null;
@@ -44,7 +42,7 @@ if (!$notFound) {
         if (!$order) {
             $notFound = true;
         } elseif ($order['payment_status'] === 'pending' && $order['order_status'] === 'pending_payment') {
-            $paymentStmt = $pdo->prepare('SELECT provider,status,provider_reference,raw_result_json FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
+            $paymentStmt = $pdo->prepare('SELECT id,provider,status,provider_reference FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
             $paymentStmt->execute([(int)$order['id']]);
             $lastPayment = $paymentStmt->fetch(PDO::FETCH_ASSOC) ?: null;
             if ($lastPayment) {
@@ -158,9 +156,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['retry_payment']) && $
         $retryError = 'درخواست نامعتبر است. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.';
     } else {
         try {
-            if ($retryMode === 'resume' && $retryProvider === 'zarinpal' && $retryAuthority !== '') {
-                $paymentHost = $retrySandbox ? 'https://sandbox.zarinpal.com' : 'https://payment.zarinpal.com';
-                header('Location: ' . $paymentHost . '/pg/StartPay/' . rawurlencode($retryAuthority), true, 303);
+            if ($retryMode === 'resume' && $lastPayment) {
+                $resumeUrl = PaymentFlow::resumeTransaction($pdo, (int)$lastPayment['id']);
+                if (!filter_var($resumeUrl, FILTER_VALIDATE_URL) || !str_starts_with(strtolower($resumeUrl), 'https://')) {
+                    throw new RuntimeException('Payment provider returned an invalid resume URL.');
+                }
+                header('Location: ' . $resumeUrl, true, 303);
                 exit;
             }
             if ($retryMode !== 'new') {
