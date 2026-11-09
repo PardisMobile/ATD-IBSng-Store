@@ -96,6 +96,13 @@
       title_admin_provisioning: 'Provisioning queue',
       title_admin_upgrade: 'Database upgrade'
     },
+    admin_orders: {
+      orders_search_label: 'Search paid orders',
+      orders_search_placeholder: 'Username, buyer name, email, phone, or tracking code',
+      orders_search_submit: 'Search',
+      orders_search_clear: 'Clear search',
+      orders_search_aria: 'Search paid orders'
+    },
     admin_ibsng_servers: {
       server_add: 'Add IBSng server',
       server_title: 'IBSng servers',
