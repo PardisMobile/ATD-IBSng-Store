@@ -20,6 +20,16 @@ $previewHtml = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+    } elseif (isset($_POST['reset_template'])) {
+        $templatePrefix = 'email_template_' . $event . ($language === 'en' ? '_en' : '');
+        $delete = $pdo->prepare('DELETE FROM app_settings WHERE setting_key IN (?, ?, ?)');
+        $delete->execute([
+            $templatePrefix . '_subject',
+            $templatePrefix . '_html',
+            $templatePrefix . '_text',
+        ]);
+        $template = EmailTemplates::get($pdo, $event, $language);
+        $message = 'قالب به تنظیمات پیش‌فرض بازنشانی شد.';
     } else {
         $subject = trim((string)($_POST['subject'] ?? ''));
         $html = (string)($_POST['html'] ?? '');
@@ -85,7 +95,7 @@ document.addEventListener('atd:language-change', function () {
 <div class="field"><label for="subject" data-ui-text="email_templates_subject">موضوع ایمیل</label><input id="subject" name="subject" maxlength="250" required value="<?= e($template['subject']) ?>"></div>
 <div class="field"><label for="html" data-ui-text="email_templates_html">قالب HTML</label><textarea id="html" name="html" required><?= e($template['html']) ?></textarea><div class="hint" data-ui-text="email_templates_html_hint">HTML ایمیل را ویرایش کنید. پیش‌نمایش با داده‌های نمونه در همین صفحه ارائه می‌شود.</div></div>
 <div class="field"><label for="text" data-ui-text="email_templates_text">نسخه متنی جایگزین (Plain text)</label><textarea id="text" name="text" required><?= e($template['text']) ?></textarea></div>
-<div class="actions"><button class="button primary" type="submit" name="save" value="1" data-ui-text="email_templates_save">ذخیره قالب</button><button class="button" type="submit" name="preview" value="1" data-ui-text="email_templates_preview_save">ذخیره و پیش‌نمایش</button></div>
+<div class="actions"><button class="button primary" type="submit" name="save" value="1" data-ui-text="email_templates_save">ذخیره قالب</button><button class="button" type="submit" name="preview" value="1" data-ui-text="email_templates_preview_save">ذخیره و پیش‌نمایش</button><button class="button danger" type="submit" name="reset_template" value="1" formnovalidate onclick="return confirm('قالب این رویداد و زبان به نسخه پیش‌فرض بازنشانی شود؟')">بازنشانی تنظیمات</button></div>
 </form>
 </section>
 <?php if ($previewHtml !== ''): ?><section class="panel panel-card"><h2 data-ui-text="email_templates_preview">پیش‌نمایش</h2><iframe title="پیش‌نمایش قالب ایمیل" data-ui-aria="email_templates_preview_title" sandbox="" srcdoc="<?= e($previewHtml) ?>"></iframe></section><?php endif; ?>
