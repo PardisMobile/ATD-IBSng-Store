@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/StorefrontInfoIcons.php';
+if (is_file(__DIR__ . '/StorefrontInfoIcons.php')) {
+    require_once __DIR__ . '/StorefrontInfoIcons.php';
+}
 
 /**
  * Customer email templates. Locale selection is content-only and does not
@@ -220,7 +222,7 @@ HTML,
             if (is_string($value) && $value !== '') $result[$field] = $value;
         }
         $result['html'] = self::applyDocumentDirection($result['html'], $language);
-        $statusIcon = storefront_info_icon('status');
+        $statusIcon = function_exists('storefront_info_icon') ? storefront_info_icon('status') : '';
         $statusIcon = str_replace('class="store-info-icon"', 'width="26" height="26" style="display:block;width:26px;height:26px;color:#1769d2;"', $statusIcon);
         $result['html'] = str_replace('{{status_icon_svg}}', $statusIcon, $result['html']);
         return $result;
