@@ -312,7 +312,7 @@ final class IBSngClient
         }
     }
 
-    public function createUser(string $groupName, string $username, string $password, string $credit = '0'): void
+    public function createUser(string $groupName, string $username, string $password, string $credit = '1'): void
     {
         $groupName = trim($groupName);
         $username = trim($username);

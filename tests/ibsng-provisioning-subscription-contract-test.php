@@ -12,6 +12,8 @@ $checks = [
         str_contains($source, "if (\$status === 'succeeded')") && str_contains($source, "\$this->recordSubscription"),
     'manual successful resolution is wired to subscription persistence' =>
         str_contains($source, "if (\$outcome === 'succeeded')") && str_contains($source, "\$this->recordSubscription"),
+    'new account creation explicitly uses credit one' =>
+        str_contains($source, "createUser(\$groupName, \$username, app_decrypt_secret((string)\$row['password_ciphertext']), '1')"),
     'subscription uses server-scoped account identity' =>
         str_contains($source, 'INSERT INTO subscriptions (order_id, product_id, server_id, ibsng_user_id, username, status, last_synced_at)'),
     'expiry and quota remain unknown until real sync' =>

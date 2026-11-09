@@ -19,8 +19,8 @@ final class UsernameAlreadyExistsException extends RuntimeException
 $config = app_config();
 $pdo = Database::connection();
 $priceDisplayUnit = store_price_display_unit($pdo);
-$credentialSettingsStmt = $pdo->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?,?)');
-$credentialSettingsStmt->execute(['credential_mode','username_prefix','username_suffix_length','password_length','password_charset']);
+$credentialSettingsStmt = $pdo->prepare('SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN (?,?,?,?,?,?)');
+$credentialSettingsStmt->execute(['credential_mode','username_prefix','username_suffix_length','username_suffix_charset','password_length','password_charset']);
 $credentialSettings = [];
 foreach ($credentialSettingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) {
     $credentialSettings[(string)$setting['setting_key']] = (string)$setting['setting_value'];
@@ -28,6 +28,11 @@ foreach ($credentialSettingsStmt->fetchAll(PDO::FETCH_ASSOC) as $setting) {
 $credentialPolicy = $credentialSettings['credential_mode'] ?? 'customer';
 $credentialPrefix = $credentialSettings['username_prefix'] ?? 'atd';
 $credentialSuffixLength = max(4, min(12, (int)($credentialSettings['username_suffix_length'] ?? 5)));
+$generatedUsernameAlphabet = match ($credentialSettings['username_suffix_charset'] ?? 'letters') {
+    'digits' => '23456789',
+    'alphanumeric' => 'abcdefghijklmnopqrstuvwxyz0123456789',
+    default => 'abcdefghijklmnopqrstuvwxyz',
+};
 $generatedPasswordLength = max(4, min(11, (int)($credentialSettings['password_length'] ?? 5)));
 $generatedPasswordCharset = match ($credentialSettings['password_charset'] ?? 'alphanumeric') {
     'digits' => '23456789',
@@ -113,10 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         if ($operation === 'create' && $credentialMethod === 'automatic') {
             $username = '';
             $password = '';
-            $usernameAlphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
             try {
                 for ($attempt = 0; $attempt < 12 && $username === ''; $attempt++) {
-                    $candidate = $credentialPrefix . checkout_random_string($usernameAlphabet, $credentialSuffixLength);
+                    $candidate = $credentialPrefix . checkout_random_string($generatedUsernameAlphabet, $credentialSuffixLength);
                     if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
                         $available = true;
                         foreach ($productTargets as $target) {

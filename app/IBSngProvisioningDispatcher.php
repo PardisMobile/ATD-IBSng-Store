@@ -129,7 +129,7 @@ final class IBSngProvisioningDispatcher
 
             // A create may now be sent only once. Any thrown result is treated
             // as ambiguous because IBSng may have committed before response loss.
-            $client->createUser($groupName, $username, app_decrypt_secret((string)$row['password_ciphertext']));
+            $client->createUser($groupName, $username, app_decrypt_secret((string)$row['password_ciphertext']), '1');
             $remoteId = $client->findUserId($username);
             if ($remoteId === null) {
                 $this->finish($attemptId, 'needs_review', null, 'create_unconfirmed',
