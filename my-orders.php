@@ -14,7 +14,8 @@ if (empty($_SESSION['my_orders_csrf'])) {
     $_SESSION['my_orders_csrf'] = bin2hex(random_bytes(32));
 }
 $csrf = (string)$_SESSION['my_orders_csrf'];
-$notice = '';
+$notice = (string)($_SESSION['my_orders_notice'] ?? '');
+unset($_SESSION['my_orders_notice']);
 $stage = isset($_SESSION['my_orders_email']) && (int)($_SESSION['my_orders_verified_until'] ?? 0) > time()
     ? 'orders'
     : (isset($_SESSION['my_orders_email_pending']) ? 'verify' : 'request');
@@ -109,6 +110,9 @@ if (isset($_POST['action'])) {
             $notice = app_message('order_recovery_unavailable');
         }
     }
+    $_SESSION['my_orders_notice'] = $notice;
+    header('Location: ' . app_url('my-orders.php'), true, 303);
+    exit;
 }
 
 if ($stage === 'orders' && $email !== '') {
