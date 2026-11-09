@@ -193,6 +193,20 @@ final class PaymentFlow
             }
             return ['redirect_url' => $redirect, 'transaction_id' => $transactionId];
         } catch (Throwable $e) {
+            // Keep the original ambiguous state, but persist the exact exception
+            // (including any structured gateway response embedded by the adapter)
+            // so an administrator can inspect it before releasing the order.
+            try {
+                $transactions->recordInitiationDiagnostic($transactionId, [
+                    'exception_class' => get_class($e),
+                    'message' => substr($e->getMessage(), 0, 4000),
+                    'occurred_at' => gmdate('c'),
+                ]);
+            } catch (Throwable $diagnosticError) {
+                error_log('Unable to persist payment initiation diagnostic for transaction '
+                    . $transactionId . ': ' . $diagnosticError->getMessage());
+            }
+
             // A structured Zarinpal API rejection with no authority is definitive:
             // no payable gateway session was issued, so this transaction can be
             // safely failed and the same pending order may be retried.
