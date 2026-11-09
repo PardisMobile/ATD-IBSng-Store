@@ -31,6 +31,12 @@ final class ZarinpalGateway implements PaymentGateway
         return trim((string)($callback['Authority'] ?? ''));
     }
 
+    /** Zarinpal issues a new Authority for each new payment attempt. */
+    public function retryStrategy(): string
+    {
+        return 'new';
+    }
+
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(): array
     {
