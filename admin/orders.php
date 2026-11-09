@@ -170,8 +170,8 @@ $ambiguousSql = "SELECT t.id, t.order_id, t.provider, t.amount_minor, t.currency
 $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 
 $paginationQuery = ['from_date' => $fromDate, 'to_date' => $toDate, 'orders_per_page' => $paidPerPage];
-$paidPageUrl = static function (int $page) use ($paginationQuery): string {
-    return 'orders.php?' . http_build_query($paginationQuery + ['orders_page' => $page]);
+$paidPageUrl = static function (int $page) use ($paginationQuery, $ambiguousPage): string {
+    return 'orders.php?' . http_build_query($paginationQuery + ['orders_page' => $page, 'ambiguous_page' => $ambiguousPage]);
 };
 $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPerPage, $paidPage): string {
     return 'orders.php?' . http_build_query([
@@ -255,7 +255,7 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPe
 </tbody></table></div>
 <div class="report-pagination">
   <form method="get" class="pagination-size">
-    <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>">
+    <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>"><input type="hidden" name="ambiguous_page" value="<?= $ambiguousPage ?>">
     <label><span data-fa="تعداد در هر صفحه" data-en="Per page">تعداد در هر صفحه</span>
       <select name="orders_per_page" onchange="this.form.submit()">
         <?php foreach ([10,25,50] as $size): ?><option value="<?= $size ?>" <?= $paidPerPage === $size ? 'selected' : '' ?>><?= $size ?></option><?php endforeach; ?>
