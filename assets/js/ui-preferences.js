@@ -136,6 +136,7 @@
       email_templates_text: 'Fallback text version',
       email_templates_save: 'Save template',
       email_templates_preview_save: 'Save and preview',
+      email_templates_reset: 'Reset settings',
       email_templates_preview: 'Preview',
       email_templates_preview_title: 'Email template preview',
       email_event_purchase_success: 'Successful purchase',
