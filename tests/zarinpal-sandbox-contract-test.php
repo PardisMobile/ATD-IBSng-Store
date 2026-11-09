@@ -33,7 +33,7 @@ zarinpal_sandbox_assert(str_contains($flow, '$e instanceof InvalidArgumentExcept
 
 zarinpal_sandbox_assert(str_contains($flow, 'Zarinpal did not issue a payment authority. Response:') && str_contains($flow, '$transactions->failInitiation($transactionId)'), 'A definitive Zarinpal rejection without authority must release the transaction for safe retry.');
 zarinpal_sandbox_assert(is_string($orderStatus) && str_contains($orderStatus, 'retry_payment') && str_contains($orderStatus, "\$lastPayment['status'] === 'failed'") && str_contains($orderStatus, 'PaymentFlow::initiate'), 'Pending orders with a failed payment must offer retry through the same provider.');
-zarinpal_sandbox_assert(str_contains($orderStatus, 'raw_result_json') && str_contains($orderStatus, '$retrySandbox') && str_contains($orderStatus, 'sandbox.zarinpal.com'), 'Resuming an existing Zarinpal authority must use the original Sandbox/Live environment snapshot.');
+zarinpal_sandbox_assert(str_contains($adapter, 'public function resume') && str_contains($adapter, "'gateway_environment'") && str_contains($adapter, 'sandbox.zarinpal.com'), 'Zarinpal adapter must resume its existing authority using the original Sandbox/Live environment snapshot.');
 
 zarinpal_sandbox_assert(is_string($transactions) && str_contains($transactions, 'raw_result_json') && str_contains($transactions, '$metadata'), 'Payment transaction creation must persist environment metadata before provider initiation.');
 zarinpal_sandbox_assert(is_string($settings) && str_contains($settings, "['type'] ?? '') === 'checkbox'") && str_contains($settings, 'sandbox_merchant_id'), 'Admin settings must expose sandbox mode and sandbox merchant credentials.');
