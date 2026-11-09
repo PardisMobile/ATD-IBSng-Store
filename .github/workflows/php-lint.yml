@@ -42,6 +42,9 @@ jobs:
       - name: Run customer order account display contract test
         run: php tests/order-status-account-contract-test.php
 
+      - name: Run payment success presentation contract test
+        run: php tests/payment-success-presentation-contract-test.php
+
       - name: Run IBSng lookup contract test
         run: php tests/ibsng-lookup-contract-test.php
 
