@@ -47,34 +47,40 @@ if (!$notFound) {
             $paymentStmt = $pdo->prepare('SELECT provider,status,provider_reference,raw_result_json FROM payment_transactions WHERE order_id=? ORDER BY id DESC LIMIT 1');
             $paymentStmt->execute([(int)$order['id']]);
             $lastPayment = $paymentStmt->fetch(PDO::FETCH_ASSOC) ?: null;
-            if ($lastPayment && (string)$lastPayment['provider'] === 'zarinpal') {
-                $retryProvider = 'zarinpal';
-                if ($lastPayment['status'] === 'failed') {
-                    // A definitive failed attempt can safely create a new gateway request.
-                    $retryAvailable = true;
-                    $retryMode = 'new';
-                } elseif ($lastPayment['status'] === 'pending'
-                    && trim((string)($lastPayment['provider_reference'] ?? '')) !== '') {
-                    // Resume the already-issued Zarinpal authority; never create a second invoice.
-                    $retryAvailable = true;
-                    $retryMode = 'resume';
-                    $retryAuthority = trim((string)$lastPayment['provider_reference']);
-                    $transactionMetadata = json_decode((string)($lastPayment['raw_result_json'] ?? ''), true);
-                    $gatewayEnvironment = is_array($transactionMetadata['gateway_environment'] ?? null)
-                        ? $transactionMetadata['gateway_environment'] : [];
-                    $retrySandbox = ($gatewayEnvironment['sandbox'] ?? false) === true;
-                }
-            } elseif (!$lastPayment) {
-                // If the order was saved but payment initiation never created a
-                // transaction, allow a fresh attempt only when Zarinpal is the
-                // single configured provider. Never guess between gateways.
+            if ($lastPayment) {
+                $retryProvider = strtolower(trim((string)$lastPayment['provider']));
                 $available = PaymentFlow::availableProviders($pdo, [
                     'price_minor_snapshot' => $order['price_minor_snapshot'],
                     'price_usdt_snapshot' => $order['price_usdt_snapshot'],
                     'currency' => $order['currency'],
                 ]);
-                if (count($available) === 1 && ($available[0]['code'] ?? '') === 'zarinpal') {
-                    $retryProvider = 'zarinpal';
+                $providerAvailable = false;
+                foreach ($available as $choice) {
+                    if (($choice['code'] ?? '') === $retryProvider) {
+                        $providerAvailable = true;
+                        break;
+                    }
+                }
+
+                if ($providerAvailable && $lastPayment['status'] === 'failed') {
+                    // A definitive failed attempt can safely create a new provider session.
+                    $retryAvailable = true;
+                    $retryMode = 'new';
+                } elseif ($providerAvailable && $lastPayment['status'] === 'pending'
+                    && trim((string)($lastPayment['provider_reference'] ?? '')) !== '') {
+                    // Resume the existing provider session through its adapter.
+                    $retryAvailable = true;
+                    $retryMode = 'resume';
+                }
+            } elseif (!$lastPayment) {
+                // No attempt exists yet. Do not guess when multiple gateways are available.
+                $available = PaymentFlow::availableProviders($pdo, [
+                    'price_minor_snapshot' => $order['price_minor_snapshot'],
+                    'price_usdt_snapshot' => $order['price_usdt_snapshot'],
+                    'currency' => $order['currency'],
+                ]);
+                if (count($available) === 1) {
+                    $retryProvider = (string)$available[0]['code'];
                     $retryAvailable = true;
                     $retryMode = 'new';
                 }
