@@ -133,7 +133,12 @@ $orderSql = "SELECT o.id, o.public_id, o.tracking_code, o.buyer_name, o.buyer_ph
              ORDER BY o.created_at DESC, o.id DESC
              LIMIT ? OFFSET ?";
 $orderStmt = $pdo->prepare($orderSql);
-$orderStmt->execute([...$dateParams, $paidPerPage, $paidOffset]);
+foreach ($dateParams as $index => $value) {
+    $orderStmt->bindValue($index + 1, $value, PDO::PARAM_STR);
+}
+$orderStmt->bindValue(count($dateParams) + 1, $paidPerPage, PDO::PARAM_INT);
+$orderStmt->bindValue(count($dateParams) + 2, $paidOffset, PDO::PARAM_INT);
+$orderStmt->execute();
 $orderRows = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
 $orderIds = array_map(static fn(array $r): int => (int)$r['id'], $orderRows);
 $attemptsByOrder = [];
