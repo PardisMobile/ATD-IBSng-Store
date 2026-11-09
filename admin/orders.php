@@ -285,8 +285,12 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
     return match ? utcDate(Number(match[1]), Number(match[2]), Number(match[3])) : null;
   };
   const jalaliMonthStart = (year, month) => {
-    const guess = utcDate(year + 621, 3, 15);
-    for (let offset = -12; offset <= 18; offset++) {
+    // Jalali months 1-10 begin in Gregorian March-December; months 11-12
+    // begin in January-February of the following Gregorian year.
+    const gregorianYear = year + 621 + (month >= 11 ? 1 : 0);
+    const gregorianMonthIndex = month <= 10 ? month + 1 : month - 11;
+    const guess = utcDate(gregorianYear, gregorianMonthIndex + 1, 15);
+    for (let offset = -12; offset <= 12; offset++) {
       const candidate = new Date(guess.getTime() + offset * 86400000);
       const p = jalaliParts(candidate);
       if (p.year === year && p.month === month && p.day === 1) return candidate;
