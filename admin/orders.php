@@ -234,7 +234,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 <div class="table-wrap ambiguous-payments-wrap"><table class="ambiguous-payments-table"><colgroup><col class="col-transaction"><col class="col-order"><col class="col-gateway"><col class="col-amount"><col class="col-buyer"><col class="col-created"><col class="col-action"></colgroup><thead><tr><th data-ui-text="orders_transaction">تراکنش</th><th data-ui-text="orders_order">سفارش</th><th data-ui-text="orders_gateway">درگاه</th><th data-ui-text="orders_amount">مبلغ</th><th data-ui-text="orders_buyer">خریدار</th><th data-ui-text="orders_created_at">زمان ثبت</th><th data-ui-text="orders_action">اقدام</th></tr></thead><tbody>
 <?php if (!$ambiguousRows): ?><tr><td colspan="7" data-ui-text="orders_no_ambiguous">پرداخت مبهمی برای بررسی وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($ambiguousRows as $row): ?><tr>
-<td class="transaction-reference-cell"><span class="numeric-value transaction-reference-value"><?= e((string)($row['tracking_code'] ?? '—')) ?></span><button type="button" class="button button-secondary transaction-reference-toggle" data-transaction-id="#<?= (int)$row['id'] ?>" data-tracking-code="<?= e((string)($row['tracking_code'] ?? '—')) ?>" data-fa="نمایش شناسه پرداخت" data-en="Show transaction ID">نمایش شناسه پرداخت</button></td><td><span class="order-reference"><?= e((string)$row['public_id']) ?></span></td><td><?= e((string)$row['provider']) ?></td>
+<td><span class="numeric-value">#<?= (int)$row['id'] ?></span></td><td class="transaction-reference-cell"><span class="order-reference transaction-reference-value"><?= e((string)($row['tracking_code'] ?? '—')) ?></span><button type="button" class="button button-secondary transaction-reference-toggle" data-order-id="<?= e((string)$row['public_id']) ?>" data-tracking-code="<?= e((string)($row['tracking_code'] ?? '—')) ?>" data-fa="نمایش شناسه پرداخت" data-en="Show payment ID">نمایش شناسه پرداخت</button></td><td><?= e((string)$row['provider']) ?></td>
 <td><span class="numeric-value"><?= e(number_format((int)$row['amount_minor'])) ?> <?= e((string)$row['currency']) ?></span></td>
 <td><?= e((string)$row['buyer_name']) ?><br><span class="numeric-value"><?= e((string)$row['buyer_phone']) ?></span></td><td><span class="numeric-value"><?= e((string)$row['created_at']) ?></span></td>
 <td class="review-action">
@@ -417,11 +417,11 @@ $hasInitiationDiagnostic = is_array($diagnosticData['initiation_diagnostic'] ?? 
         const value=button.previousElementSibling;
         if(!value)return;
         const showingId=button.dataset.showingId==='1';
-        value.textContent=showingId?button.dataset.trackingCode:button.dataset.transactionId;
+        value.textContent=showingId?button.dataset.trackingCode:button.dataset.orderId;
         button.dataset.showingId=showingId?'0':'1';
         const language=root.lang==='en'?'en':'fa';
         button.textContent=showingId
-          ? (language==='en'?'Show transaction ID':'نمایش شناسه پرداخت')
+          ? (language==='en'?'Show payment ID':'نمایش شناسه پرداخت')
           : (language==='en'?'Show tracking code':'نمایش کد رهگیری');
       });
     });
