@@ -157,7 +157,7 @@ $credentialValues = [
     'credential_mode' => support_setting($pdo, 'credential_mode') ?: 'customer',
     'username_prefix' => support_setting($pdo, 'username_prefix') ?: 'atd',
     'username_suffix_length' => support_setting($pdo, 'username_suffix_length') ?: '5',
-    'username_suffix_charset' => in_array(support_setting($pdo, 'username_suffix_charset'), ['digits', 'letters', 'alphanumeric'], true) ? support_setting($pdo, 'username_suffix_charset') : 'letters',
+    'username_suffix_charset' => in_array(support_setting($pdo, 'username_suffix_charset'), ['digits', 'letters', 'alphanumeric'], true) ? support_setting($pdo, 'username_suffix_charset') : 'digits',
     'password_length' => support_setting($pdo, 'password_length') ?: '4',
     'password_charset' => in_array(support_setting($pdo, 'password_charset'), ['digits', 'letters', 'alphanumeric'], true) ? support_setting($pdo, 'password_charset') : 'alphanumeric',
 ];
