@@ -717,6 +717,9 @@
         ? translated + (brand ? ' | ' + brand : '')
         : original;
     });
+    document.querySelectorAll('[data-fa-placeholder][data-en-placeholder]').forEach((element) => {
+      element.setAttribute('placeholder', language === 'en' ? element.dataset.enPlaceholder : element.dataset.faPlaceholder);
+    });
     document.querySelectorAll('[data-ui-placeholder]').forEach((element) => {
       const key = element.dataset.uiPlaceholder;
       const translated = Object.values(pageCopy).map((dictionary) => dictionary[key]).find(Boolean);
