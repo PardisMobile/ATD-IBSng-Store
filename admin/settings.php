@@ -329,7 +329,7 @@ if ($error !== '') {
         $renewalValues[$key] = support_setting($pdo, $key) ?: ($key === 'ibsng_gift_days_first' ? '1' : '5');
     }
     foreach ($credentialValues as $key => $value) {
-        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'password_length' => '4', default => 'mixed' };
+        $credentialValues[$key] = support_setting($pdo, $key) ?: match ($key) { 'credential_mode' => 'customer', 'username_prefix' => 'atd', 'username_suffix_length' => '6', 'username_suffix_charset' => 'letters', 'password_length' => '4', default => 'mixed' };
     }
 }
 $config = app_config();
