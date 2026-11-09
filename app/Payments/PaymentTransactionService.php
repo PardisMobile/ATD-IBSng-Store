@@ -141,7 +141,7 @@ final class PaymentTransactionService
                 'note' => $note,
                 'resolved_at' => gmdate('c'),
             ];
-            $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
 
             $stmt = $this->pdo->prepare(
                 "UPDATE payment_transactions
@@ -191,7 +191,7 @@ final class PaymentTransactionService
             $metadata = ['previous_raw_result' => is_string($current) ? $current : null];
         }
         $metadata['initiation_diagnostic'] = $diagnostic;
-        $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $raw = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);
 
         $update = $this->pdo->prepare(
             "UPDATE payment_transactions SET raw_result_json = ?
