@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'site_name' => 'نمونه فروشگاه',
             'customer_name' => $language === 'en' ? 'Sample Customer' : 'مشتری نمونه',
             'order_id' => '0123456789abcdef0123456789abcdef',
+            'tracking_code' => 'ATD-7K3M9PQ',
             'order_url' => '#',
             'verification_code' => '123456',
             'expires_in' => $language === 'en' ? '10 minutes' : '۱۰ دقیقه',
