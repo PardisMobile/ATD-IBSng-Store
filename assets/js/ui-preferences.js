@@ -253,6 +253,11 @@
     },
 
     admin_orders: {
+      orders_search_label: 'Search paid orders',
+      orders_search_placeholder: 'Username, buyer name, email, phone, or tracking code',
+      orders_search_submit: 'Search',
+      orders_search_clear: 'Clear search',
+      orders_search_aria: 'Search paid orders',
       orders_dashboard: 'Dashboard',
       orders_reports_eyebrow: 'Reports',
       orders_report_title: 'Sales report',
