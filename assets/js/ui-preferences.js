@@ -227,6 +227,8 @@
       email_settings_from_name: 'Sender display name',
       email_settings_save: 'Save settings',
       email_settings_test_title: 'Send test email',
+      email_settings_test_template: 'Test email template',
+      email_settings_test_template_hint: 'The selected template is sent to the destination email address with sample data.',
       email_settings_test_to: 'Send to this email',
       email_settings_send_test: 'Save and send test',
       email_settings_manage_templates: 'Manage templates'
