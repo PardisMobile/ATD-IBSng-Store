@@ -25,6 +25,9 @@ $checks = [
         && str_contains($callback, 'storefront_info_icon("duration")')
         && str_contains($callback, 'storefront_info_icon("quota")')
         && str_contains($callback, 'storefront_info_icon("date")'),
+    'payment tracking reminder is displayed under the payment heading with compact styling' => is_string($callback)
+        && str_contains($callback, 'payment_tracking_hint')
+        && str_contains($callback, '.payment-details-hint'),
     'callback main card has the storefront top accent strip' => is_string($callback)
         && str_contains($callback, '.result-card::before')
         && str_contains($callback, 'height:4px'),
@@ -34,7 +37,9 @@ $checks = [
         && str_contains($messages, "'payment_gateway_reference' => 'شناسه پرداخت درگاه'")
         && str_contains($messages, "'payment_details_heading' => 'Payment details'")
         && str_contains($messages, "'payment_tracking_code' => 'Order tracking code'")
-        && str_contains($messages, "'payment_gateway_reference' => 'Gateway payment reference'"),
+        && str_contains($messages, "'payment_gateway_reference' => 'Gateway payment reference'")
+        && str_contains($messages, "'payment_tracking_hint' => 'لطفاً کد رهگیری را برای پیگیری‌های بعدی نزد خود نگه دارید.'")
+        && str_contains($messages, "'payment_tracking_hint' => 'Please keep your tracking code for future reference.'"),
     'payment SVG names are registered in the shared icon catalog' => is_string($icons)
         && str_contains($icons, "'tracking' =>")
         && str_contains($icons, "'payment' =>"),
