@@ -225,6 +225,38 @@ final class PaymentFlow
     }
 
     /**
+     * Resume an existing, active provider session without creating a new transaction.
+     * The persisted provider adapter owns the redirect URL and environment rules.
+     */
+    public static function resumeTransaction(PDO $pdo, int $transactionId): string
+    {
+        if ($transactionId < 1) {
+            throw new InvalidArgumentException('Payment transaction ID is invalid.');
+        }
+        $stmt = $pdo->prepare(
+            "SELECT t.* FROM payment_transactions t
+             JOIN orders o ON o.id = t.order_id
+             WHERE t.id = ? AND t.status = 'pending'
+               AND t.provider_reference IS NOT NULL
+               AND o.payment_status = 'pending'
+               AND o.order_status = 'pending_payment'
+             LIMIT 1"
+        );
+        $stmt->execute([$transactionId]);
+        $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$transaction) {
+            throw new RuntimeException('No resumable payment session exists for this order.');
+        }
+        $all = self::settings($pdo);
+        $provider = strtolower(trim((string)$transaction['provider']));
+        $manager = new PaymentManager($provider);
+        return $manager->resume(
+            $transaction,
+            [$provider => self::providerSettings($all, $provider)]
+        );
+    }
+
+    /**
      * Resolve and verify a provider callback. Browser parameters never mark an
      * order paid by themselves.
      *
