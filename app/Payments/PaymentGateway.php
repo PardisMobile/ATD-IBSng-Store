@@ -18,6 +18,9 @@ interface PaymentGateway
     /** Extract the provider's transaction reference from untrusted callback data. */
     public function callbackReference(array $callback): string;
 
+    /** Return 'new' when retrying requires a fresh provider session, or 'resume' to reuse the existing one. */
+    public function retryStrategy(): string;
+
     /**
      * Begin checkout for an already-persisted pending order.
      *
