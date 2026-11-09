@@ -562,6 +562,7 @@
       payment_details_heading: 'Payment details',
       payment_tracking_code: 'Order tracking code',
       payment_gateway_reference: 'Gateway payment reference',
+      payment_tracking_hint: 'Please keep your tracking code for future reference.',
       payment_order_id: 'Order ID:',
       payment_provisioning_note: 'Service activation is recorded and tracked separately.',
       payment_track_activation: 'Track activation status',
