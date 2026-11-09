@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'order_url' => '#',
             'verification_code' => '123456',
             'expires_in' => $language === 'en' ? '10 minutes' : '۱۰ دقیقه',
-            'verification_url' => app_url('index.php'),
+            'verification_url' => app_absolute_url('index.php'),
             'expiration_date' => $language === 'en' ? '2026/11/30' : '۱۴۰۵/۰۹/۱۰',
             'service_url' => '#',
         ]);
