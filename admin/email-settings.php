@@ -10,6 +10,10 @@ $pdo = Database::connection();
 $config = app_config();
 $message = '';
 $error = '';
+$testTemplateEvent = (string)($_POST['test_template_event'] ?? 'email_verification');
+if (!isset(EmailTemplates::EVENTS[$testTemplateEvent])) {
+    $testTemplateEvent = 'email_verification';
+}
 $settings = [
     'email_from_address' => '',
     'email_from_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'),
@@ -45,11 +49,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $error = 'ایمیل مقصد تست معتبر نیست.';
                 } else {
                     try {
-                        $tpl = EmailTemplates::get($pdo, 'email_verification');
+                        $templateLanguage = (string)($_COOKIE['atd-ui-language'] ?? 'fa') === 'en' ? 'en' : 'fa';
+                        $tpl = EmailTemplates::get($pdo, $testTemplateEvent, $templateLanguage);
+                        $sampleAccountHtml = $templateLanguage === 'en'
+                            ? '<section dir="ltr"><h3>Account details</h3><p>Username: <strong>ATD12345</strong></p><p>Password: <strong>Demo1234</strong></p></section>'
+                            : '<section dir="rtl"><h3>اطلاعات اکانت</h3><p>نام کاربری: <strong dir="ltr">ATD12345</strong></p><p>رمز عبور: <strong dir="ltr">Demo1234</strong></p></section>';
                         $vars = [
                             'site_name' => (string)($config['site_title'] ?? 'ATD IBSng Store'),
+                            'customer_name' => $templateLanguage === 'en' ? 'Sample Customer' : 'مشتری نمونه',
+                            'order_id' => 'ATD-TEST-2026',
+                            'order_url' => app_url('my-orders.php'),
+                            'guide_url' => app_url('guide.php'),
+                            'account_details_html' => $sampleAccountHtml,
+                            'account_details_text' => $templateLanguage === 'en' ? "Username: ATD12345\\nPassword: Demo1234" : "نام کاربری: ATD12345\\nرمز عبور: Demo1234",
+                            'verification_code' => '123456',
+                            'expires_in' => $templateLanguage === 'en' ? '30 minutes' : '۳۰ دقیقه',
                             'verification_url' => app_url(),
-                            'expires_in' => '۳۰ دقیقه',
+                            'expiration_date' => $templateLanguage === 'en' ? '2026-12-09' : '۱۴۰۵/۰۹/۱۸',
+                            'service_url' => app_url('my-orders.php'),
                         ];
                         $sent = EmailSender::send(
                             $pdo,
@@ -100,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="actions"><button class="button" type="submit" name="action" value="save" data-ui-text="email_settings_save">ذخیره تنظیمات</button></div>
 <hr>
 <h2 data-ui-text="email_settings_test_title">ارسال ایمیل تست</h2>
+<div class="field"><label for="test_template_event" data-ui-text="email_settings_test_template">قالب ایمیل تست</label><select id="test_template_event" name="test_template_event"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $testTemplateEvent === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select><div class="hint" data-ui-text="email_settings_test_template_hint">قالب انتخاب‌شده با داده‌های نمونه به نشانی ایمیل مقصد ارسال می‌شود.</div></div>
 <div class="field"><label for="test_to" data-ui-text="email_settings_test_to">ارسال به این ایمیل</label><input id="test_to" type="email" name="test_to" maxlength="190" placeholder="you@example.com"></div>
 <div class="actions"><button class="button" type="submit" name="action" value="test" data-ui-text="email_settings_send_test">ذخیره و ارسال تست</button><a class="button" href="<?= e(app_url('admin/email-templates.php')) ?>" data-ui-text="email_settings_manage_templates">مدیریت قالب‌ها</a></div>
 </form>
