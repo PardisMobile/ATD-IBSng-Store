@@ -33,8 +33,73 @@ final class EmailTemplates
         ],
         'email_verification' => [
             'subject' => 'تأیید ایمیل در {{site_name}}',
-            'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl" style="margin:0;background:#f3f5fa;font-family:Tahoma,Arial,sans-serif;color:#172033;direction:rtl;text-align:right"><main dir="rtl" style="direction:rtl;text-align:right;max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>برای تأیید ایمیل خود از پیوند زیر استفاده کنید:</p><p><a href="{{verification_url}}">تأیید ایمیل</a></p><p>این پیوند تا {{expires_in}} معتبر است.</p></main></body></html>',
-            'text' => "{{site_name}}\nتأیید ایمیل: {{verification_url}}\nمدت اعتبار: {{expires_in}}",
+            'html' => <<<'HTML'
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>تأیید ایمیل</title>
+</head>
+<body dir="rtl" style="margin:0;padding:0;background-color:#f3f5f9;color:#172033;font-family:Tahoma,Arial,sans-serif;direction:rtl;text-align:right;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;background-color:#f3f5f9;border-collapse:collapse;">
+<tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;border-collapse:separate;border-spacing:0;background-color:#ffffff;border:1px solid #e5eaf2;border-radius:14px;overflow:hidden;">
+<tr>
+<td style="padding:22px 26px;background-color:#ffffff;border-bottom:1px solid #e8edf5;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr>
+<td align="right" style="font-size:23px;line-height:1.4;font-weight:700;letter-spacing:-.4px;color:#172033;">
+<span style="color:#1769d2;">ATD</span> IBSng Store
+</td>
+<td align="left" style="font-size:11px;line-height:1.8;color:#718096;">فروشگاه اکانت‌های IBSng</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding:34px 28px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:27px;line-height:54px;font-weight:700;">✓</td></tr>
+</table>
+<h1 style="margin:18px 0 8px;font-size:23px;line-height:1.7;color:#172033;font-weight:700;">تأیید نشانی ایمیل</h1>
+<p style="margin:0;font-size:14px;line-height:2;color:#64748b;">برای فعال‌سازی و اطمینان از صحت نشانی ایمیل، آن را تأیید کنید.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:18px 28px 8px;">
+<p style="margin:0 0 18px;font-size:15px;line-height:2;color:#334155;">سلام،</p>
+<p style="margin:0 0 22px;font-size:14px;line-height:2;color:#475569;">برای تأیید ایمیل خود، روی دکمه زیر بزنید. این پیوند فقط برای تأیید نشانی ایمیل شماست.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 22px;">
+<tr><td align="center" bgcolor="#1769d2" style="border-radius:9px;">
+<a href="{{verification_url}}" target="_blank" style="display:inline-block;padding:13px 34px;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:15px;line-height:1.5;font-weight:700;">تأیید ایمیل</a>
+</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;">
+<tr><td style="padding:14px 16px;font-size:12px;line-height:2;color:#64748b;">
+<strong style="color:#334155;">مدت اعتبار پیوند:</strong> {{expires_in}}<br>
+اگر دکمه بالا کار نکرد، نشانی زیر را در مرورگر خود باز کنید:<br>
+<a href="{{verification_url}}" target="_blank" style="color:#1769d2;word-break:break-all;text-decoration:underline;">{{verification_url}}</a>
+</td></tr>
+</table>
+<p style="margin:20px 0 0;font-size:12px;line-height:2;color:#8491a5;">اگر شما درخواست تأیید ایمیل نداده‌اید، این پیام را نادیده بگیرید.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:22px 28px;background-color:#f8fafc;border-top:1px solid #e8edf5;text-align:center;">
+<p style="margin:0 0 5px;font-size:13px;line-height:1.8;color:#475569;">با احترام، تیم پشتیبانی</p>
+<p style="margin:0;font-size:13px;line-height:1.8;font-weight:700;color:#172033;">{{site_name}}</p>
+<p style="margin:10px 0 0;font-size:11px;line-height:1.8;color:#94a3b8;">این ایمیل به‌صورت خودکار ارسال شده است؛ لطفاً به آن پاسخ ندهید.</p>
+</td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+HTML,
+            'text' => "{{site_name}}\nتأیید نشانی ایمیل\nبرای تأیید ایمیل خود، پیوند زیر را باز کنید:\n{{verification_url}}\nمدت اعتبار پیوند: {{expires_in}}\nاگر شما درخواست تأیید ایمیل نداده‌اید، این پیام را نادیده بگیرید.",
         ],
         'expiration_reminder' => [
             'subject' => 'یادآوری انقضای سرویس در {{site_name}}',
@@ -61,8 +126,73 @@ final class EmailTemplates
         ],
         'email_verification' => [
             'subject' => 'Verify your email at {{site_name}}',
-            'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr" style="margin:0;background:#f3f5fa;font-family:Arial,sans-serif;color:#172033;direction:ltr;text-align:left"><main dir="ltr" style="direction:ltr;text-align:left;max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>Use the link below to verify your email address:</p><p><a href="{{verification_url}}">Verify email</a></p><p>This link is valid for {{expires_in}}.</p></main></body></html>',
-            'text' => "{{site_name}}\nVerify your email: {{verification_url}}\nValidity: {{expires_in}}",
+            'html' => <<<'HTML'
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Verify your email</title>
+</head>
+<body dir="ltr" style="margin:0;padding:0;background-color:#f3f5f9;color:#172033;font-family:Arial,sans-serif;direction:ltr;text-align:left;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;background-color:#f3f5f9;border-collapse:collapse;">
+<tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;border-collapse:separate;border-spacing:0;background-color:#ffffff;border:1px solid #e5eaf2;border-radius:14px;overflow:hidden;">
+<tr>
+<td style="padding:22px 26px;background-color:#ffffff;border-bottom:1px solid #e8edf5;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+<tr>
+<td align="left" style="font-size:23px;line-height:1.4;font-weight:700;letter-spacing:-.4px;color:#172033;">
+<span style="color:#1769d2;">ATD</span> IBSng Store
+</td>
+<td align="right" style="font-size:11px;line-height:1.8;color:#718096;">IBSng Accounts Store</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding:34px 28px 12px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" style="width:54px;height:54px;border-radius:50%;background-color:#eaf2ff;color:#1769d2;font-size:27px;line-height:54px;font-weight:700;">✓</td></tr>
+</table>
+<h1 style="margin:18px 0 8px;font-size:23px;line-height:1.7;color:#172033;font-weight:700;">Verify your email address</h1>
+<p style="margin:0;font-size:14px;line-height:2;color:#64748b;">Confirm your email address to continue.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:18px 28px 8px;">
+<p style="margin:0 0 18px;font-size:15px;line-height:2;color:#334155;">Hello,</p>
+<p style="margin:0 0 22px;font-size:14px;line-height:2;color:#475569;">Click the button below to verify your email address. This link is intended only for email verification.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 22px;">
+<tr><td align="center" bgcolor="#1769d2" style="border-radius:9px;">
+<a href="{{verification_url}}" target="_blank" style="display:inline-block;padding:13px 34px;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:15px;line-height:1.5;font-weight:700;">Verify email</a>
+</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;">
+<tr><td style="padding:14px 16px;font-size:12px;line-height:2;color:#64748b;">
+<strong style="color:#334155;">Link validity:</strong> {{expires_in}}<br>
+If the button does not work, open this address in your browser:<br>
+<a href="{{verification_url}}" target="_blank" style="color:#1769d2;word-break:break-all;text-decoration:underline;">{{verification_url}}</a>
+</td></tr>
+</table>
+<p style="margin:20px 0 0;font-size:12px;line-height:2;color:#8491a5;">If you did not request this email verification, you can safely ignore this message.</p>
+</td>
+</tr>
+<tr>
+<td style="padding:22px 28px;background-color:#f8fafc;border-top:1px solid #e8edf5;text-align:center;">
+<p style="margin:0 0 5px;font-size:13px;line-height:1.8;color:#475569;">Regards, Support Team</p>
+<p style="margin:0;font-size:13px;line-height:1.8;font-weight:700;color:#172033;">{{site_name}}</p>
+<p style="margin:10px 0 0;font-size:11px;line-height:1.8;color:#94a3b8;">This is an automated email. Please do not reply.</p>
+</td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+HTML,
+            'text' => "{{site_name}}\nVerify your email address\nOpen the link below to verify your email:\n{{verification_url}}\nLink validity: {{expires_in}}\nIf you did not request this verification, ignore this message.",
         ],
         'expiration_reminder' => [
             'subject' => 'Service expiration reminder from {{site_name}}',
