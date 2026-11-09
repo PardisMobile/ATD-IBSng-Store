@@ -29,6 +29,12 @@ final class IRCryptoGateway implements PaymentGateway
         return trim((string)($callback['invoice_id'] ?? $callback['id'] ?? ''));
     }
 
+    /** IRCrypto invoices are resumable; retry should reopen the existing invoice. */
+    public function retryStrategy(): string
+    {
+        return 'resume';
+    }
+
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(): array
     {
@@ -50,15 +56,11 @@ final class IRCryptoGateway implements PaymentGateway
             throw new InvalidArgumentException('IRCrypto payment parameters are invalid.');
         }
 
-        // IRCrypto invoice currency accepts IRR, USD, EUR. IRT is converted to
-        // IRR exactly; USDT uses USD as the nominal invoice currency (1:1).
         if ($currency === 'IRT') {
             $amount = self::minorToDecimal($amountMinor, 0);
             $amount = self::multiplyDecimalByInteger($amount, 10);
             $invoiceCurrency = 'IRR';
         } elseif ($currency === 'USDT') {
-            // IRCrypto invoice amount precision is capped at six decimals.
-            // Refuse unsupported 7th/8th decimal places rather than rounding.
             if ($amountMinor % 100 !== 0) {
                 throw new InvalidArgumentException('IRCrypto supports at most six decimal places for invoice amounts.');
             }
@@ -76,8 +78,6 @@ final class IRCryptoGateway implements PaymentGateway
             'external_ref' => (string)($order['public_id'] ?? ''),
             'description' => self::limitDescription((string)($order['description'] ?? 'Store order'), 500),
             'redirect_url' => $callbackUrl,
-            // Match the gateway's short hosted-checkout window; expiration is
-            // enforced by IRCrypto itself, not by a store-side scheduler.
             'expires_in' => 600,
         ];
         if ($payload['external_ref'] === '') {
@@ -88,8 +88,7 @@ final class IRCryptoGateway implements PaymentGateway
         $invoice = $response['invoice'] ?? [];
         $invoiceId = trim((string)($invoice['id'] ?? ''));
         $paymentUrl = trim((string)($invoice['payment_url'] ?? ''));
-        if ($invoiceId === '' || !filter_var($paymentUrl, FILTER_VALIDATE_URL)
-            || !str_starts_with(strtolower($paymentUrl), 'https://pay.ircryptopay.online/')) {
+        if ($invoiceId === '' || !self::isHostedPaymentUrl($paymentUrl)) {
             throw new RuntimeException('IRCrypto returned an invalid invoice response.');
         }
 
@@ -98,6 +97,26 @@ final class IRCryptoGateway implements PaymentGateway
             'provider_reference' => $invoiceId,
             'request_data' => $response,
         ];
+    }
+
+    /** Re-fetch and reopen the existing hosted invoice; never create a replacement invoice here. */
+    public function resume(array $transaction, array $settings): string
+    {
+        $apiKey = trim((string)($settings['api_key'] ?? ''));
+        $invoiceId = trim((string)($transaction['provider_reference'] ?? ''));
+        if ($apiKey === '' || $invoiceId === '') {
+            throw new InvalidArgumentException('IRCrypto transaction cannot be resumed without its API key and invoice reference.');
+        }
+
+        $response = $this->request('GET', '/v1/invoices/' . rawurlencode($invoiceId), $apiKey);
+        $invoice = $response['invoice'] ?? [];
+        $returnedId = trim((string)($invoice['id'] ?? ''));
+        $paymentUrl = trim((string)($invoice['payment_url'] ?? ''));
+        if ($returnedId === '' || !hash_equals($invoiceId, $returnedId) || !self::isHostedPaymentUrl($paymentUrl)) {
+            throw new RuntimeException('IRCrypto did not return a valid resumable invoice.');
+        }
+
+        return $paymentUrl;
     }
 
     public function verify(array $callback, array $transaction, array $settings): array
@@ -111,7 +130,6 @@ final class IRCryptoGateway implements PaymentGateway
             return ['verified' => false];
         }
 
-        // Do not trust the browser return payload. Fetch the invoice state directly.
         $response = $this->request('GET', '/v1/invoices/' . rawurlencode($invoiceId), $apiKey);
         $invoice = $response['invoice'] ?? [];
         $expectedRef = (string)($transaction['order_public_id'] ?? '');
@@ -137,6 +155,12 @@ final class IRCryptoGateway implements PaymentGateway
             'currency' => $currency,
             'result' => $response,
         ];
+    }
+
+    private static function isHostedPaymentUrl(string $url): bool
+    {
+        return filter_var($url, FILTER_VALIDATE_URL) !== false
+            && str_starts_with(strtolower($url), 'https://pay.ircryptopay.online/');
     }
 
     private function request(string $method, string $path, string $apiKey, ?array $payload = null): array
@@ -195,8 +219,6 @@ final class IRCryptoGateway implements PaymentGateway
         $scale = strlen($m[2] ?? '');
         $digits = ltrim($m[1] . ($m[2] ?? ''), '0');
         $digits = $digits === '' ? '0' : $digits;
-        // Keep arithmetic in decimal strings: casting a large IRT amount to
-        // int and multiplying can overflow before JSON encoding the invoice.
         $carry = 0;
         $product = '';
         for ($i = strlen($digits) - 1; $i >= 0; $i--) {
