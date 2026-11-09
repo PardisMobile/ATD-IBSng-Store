@@ -2,8 +2,10 @@
 declare(strict_types=1);
 $settings = file_get_contents(dirname(__DIR__) . '/admin/settings.php');
 $checkout = file_get_contents(dirname(__DIR__) . '/checkout.php');
-if (!is_string($settings) || !is_string($checkout)) { fwrite(STDERR, "FAIL: unable to read credential sources.\n"); exit(1); }
+$ibsngUsers = file_get_contents(dirname(__DIR__) . '/admin/ibsng-users.php');
+if (!is_string($settings) || !is_string($checkout) || !is_string($ibsngUsers)) { fwrite(STDERR, "FAIL: unable to read credential sources.\n"); exit(1); }
 $checks = [
+'manual IBSng account credit defaults to 1 in form and POST fallback' => str_contains($ibsngUsers, 'name="credit" value="1"') && str_contains($ibsngUsers, "\$_POST['credit'] ?? '1'"),
 'username mode is validated and persisted' => str_contains($settings, "'username_suffix_charset'") && str_contains($settings, "['digits', 'letters', 'alphanumeric']"),
     'username suffix length is limited to 4–11 characters' => str_contains($settings, "'username_suffix_length'] < 4") && str_contains($settings, "'username_suffix_length'] > 11") && str_contains($settings, 'min="4" max="11"') && str_contains($checkout, 'min(11, (int)($credentialSettings[\'username_suffix_length\'] ?? 5))'),
 'username mode selector is beside prefix settings' => str_contains($settings, 'name="username_suffix_charset"') && strpos($settings, 'name="username_prefix"') < strpos($settings, 'name="username_suffix_charset"'),
