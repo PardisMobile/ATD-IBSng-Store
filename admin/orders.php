@@ -38,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // order creation. Product price changes must never alter historical sales.
 $fromDate = trim((string)($_GET['from_date'] ?? ''));
 $toDate = trim((string)($_GET['to_date'] ?? ''));
+$paidSearch = trim((string)($_GET['orders_search'] ?? ''));
+if (strlen($paidSearch) > 150) $paidSearch = substr($paidSearch, 0, 150);
 $datePattern = '/^\\d{4}-\\d{2}-\\d{2}$/';
 if (($fromDate !== '' && (!preg_match($datePattern, $fromDate) || !checkdate((int)substr($fromDate, 5, 2), (int)substr($fromDate, 8, 2), (int)substr($fromDate, 0, 4))))
     || ($toDate !== '' && (!preg_match($datePattern, $toDate) || !checkdate((int)substr($toDate, 5, 2), (int)substr($toDate, 8, 2), (int)substr($toDate, 0, 4))))) {
@@ -112,11 +114,30 @@ $totalStmt = $pdo->prepare($totalSql);
 $totalStmt->execute($dateParams);
 $totalSalesRows = $totalStmt->fetchAll(PDO::FETCH_ASSOC);
 
+$paidOrderWhere = $dateWhere;
+$paidOrderParams = $dateParams;
+if ($paidSearch !== '') {
+    $likeSearch = '%' . strtr($paidSearch, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+    $paidOrderWhere .= " AND (
+        o.username LIKE ? ESCAPE '!'
+        OR o.buyer_name LIKE ? ESCAPE '!'
+        OR o.buyer_email LIKE ? ESCAPE '!'
+        OR o.buyer_phone LIKE ? ESCAPE '!'
+        OR o.tracking_code LIKE ? ESCAPE '!'
+    )";
+    array_push($paidOrderParams, $likeSearch, $likeSearch, $likeSearch, $likeSearch, $likeSearch);
+}
+$paidCountStmt = $pdo->prepare("SELECT COUNT(*) FROM orders o
+    INNER JOIN payment_transactions t ON t.order_id=o.id AND t.status='verified'
+    WHERE o.payment_status='paid'$paidOrderWhere");
+$paidCountStmt->execute($paidOrderParams);
+$filteredPaidTotal = (int)$paidCountStmt->fetchColumn();
+
 // Paid-order pagination is performed in SQL to keep the report page compact.
 $paidPerPage = (int)($_GET['orders_per_page'] ?? 10);
 if (!in_array($paidPerPage, [10, 25, 50], true)) $paidPerPage = 10;
 $paidPage = max(1, (int)($_GET['orders_page'] ?? 1));
-$paidPages = max(1, (int)ceil($totalPaid / $paidPerPage));
+$paidPages = max(1, (int)ceil($filteredPaidTotal / $paidPerPage));
 $paidPage = min($paidPage, $paidPages);
 $paidOffset = ($paidPage - 1) * $paidPerPage;
 
@@ -129,15 +150,15 @@ $orderSql = "SELECT o.id, o.public_id, o.tracking_code, o.buyer_name, o.buyer_ph
                     t.provider, t.provider_reference, t.verified_at, t.raw_result_json
              FROM orders o
              INNER JOIN payment_transactions t ON t.order_id=o.id AND t.status='verified'
-             WHERE o.payment_status='paid'$dateWhere
+             WHERE o.payment_status='paid'$paidOrderWhere
              ORDER BY o.created_at DESC, o.id DESC
              LIMIT ? OFFSET ?";
 $orderStmt = $pdo->prepare($orderSql);
-foreach ($dateParams as $index => $value) {
+foreach ($paidOrderParams as $index => $value) {
     $orderStmt->bindValue($index + 1, $value, PDO::PARAM_STR);
 }
-$orderStmt->bindValue(count($dateParams) + 1, $paidPerPage, PDO::PARAM_INT);
-$orderStmt->bindValue(count($dateParams) + 2, $paidOffset, PDO::PARAM_INT);
+$orderStmt->bindValue(count($paidOrderParams) + 1, $paidPerPage, PDO::PARAM_INT);
+$orderStmt->bindValue(count($paidOrderParams) + 2, $paidOffset, PDO::PARAM_INT);
 $orderStmt->execute();
 $orderRows = $orderStmt->fetchAll(PDO::FETCH_ASSOC);
 $orderIds = array_map(static fn(array $r): int => (int)$r['id'], $orderRows);
@@ -174,13 +195,13 @@ $ambiguousSql = "SELECT t.id, t.order_id, t.provider, t.amount_minor, t.currency
                  LIMIT {$ambiguousPerPage} OFFSET {$ambiguousOffset}";
 $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
 
-$paginationQuery = ['from_date' => $fromDate, 'to_date' => $toDate, 'orders_per_page' => $paidPerPage];
+$paginationQuery = ['from_date' => $fromDate, 'to_date' => $toDate, 'orders_search' => $paidSearch, 'orders_per_page' => $paidPerPage];
 $paidPageUrl = static function (int $page) use ($paginationQuery, $ambiguousPage): string {
     return 'orders.php?' . http_build_query($paginationQuery + ['orders_page' => $page, 'ambiguous_page' => $ambiguousPage]);
 };
-$ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPerPage, $paidPage): string {
+$ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidSearch, $paidPerPage, $paidPage): string {
     return 'orders.php?' . http_build_query([
-        'from_date' => $fromDate, 'to_date' => $toDate,
+        'from_date' => $fromDate, 'to_date' => $toDate, 'orders_search' => $paidSearch,
         'orders_per_page' => $paidPerPage, 'orders_page' => $paidPage,
         'ambiguous_page' => $page,
     ]);
@@ -201,6 +222,7 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPe
 <?php require __DIR__ . '/_navigation.php'; ?>
 <section class="panel report"><div class="eyebrow" data-ui-text="orders_reports_eyebrow">گزارش‌ها</div><h1 data-ui-text="orders_report_title">گزارش خرید و فروش</h1><p class="muted" data-ui-text="orders_report_intro">فروش سفارش‌های پرداخت‌شده بر اساس مبلغ ثابت‌شده هنگام ثبت سفارش محاسبه می‌شود؛ تغییر قیمت محصول روی سفارش‌های قبلی اثری ندارد.</p>
 <form method="get" class="report-filters" aria-label="فیلتر تاریخ گزارش" data-ui-aria="orders_date_filter_aria">
+<input type="hidden" name="orders_search" value="<?= e($paidSearch) ?>">
 <label><span data-ui-text="orders_from_date">از تاریخ</span> <input type="date" class="report-date-filter" name="from_date" value="<?= e($fromDate) ?>" autocomplete="off"></label>
 <label><span data-ui-text="orders_to_date">تا تاریخ</span> <input type="date" class="report-date-filter" name="to_date" value="<?= e($toDate) ?>" autocomplete="off"></label>
 <div class="filter-actions"><button class="button" type="submit" data-ui-text="orders_apply_range">اعمال بازه</button><a class="button button-secondary" href="<?= e('orders.php') ?>" data-ui-text="orders_clear_filter">حذف فیلتر</a></div>
@@ -220,6 +242,17 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPe
 <section class="section-gap" aria-labelledby="individual-orders-title">
 <h2 id="individual-orders-title" data-ui-text="orders_order_details_title">جزئیات سفارش‌های پرداخت‌شده</h2>
 <p class="muted" data-fa="مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید." data-en="Paid amounts are read from the verified transaction. Open an order's details to view buyer information, payment data, and each server result.">مبلغ پرداختی از تراکنش تأییدشده خوانده می‌شود. برای مشاهدهٔ مشخصات خریدار، اطلاعات پرداخت و نتیجهٔ هر سرور، جزئیات سفارش را باز کنید.</p>
+<form method="get" class="report-filters" aria-label="جستجوی سفارش‌های پرداخت‌شده" data-ui-aria="orders_search_aria">
+  <input type="hidden" name="from_date" value="<?= e($fromDate) ?>"><input type="hidden" name="to_date" value="<?= e($toDate) ?>">
+  <input type="hidden" name="orders_per_page" value="<?= $paidPerPage ?>"><input type="hidden" name="ambiguous_page" value="<?= $ambiguousPage ?>">
+  <label style="flex:1;min-width:min(100%,280px)"><span data-ui-text="orders_search_label">جستجوی سفارش‌ها</span>
+    <input type="search" name="orders_search" value="<?= e($paidSearch) ?>" maxlength="150" autocomplete="off" placeholder="نام کاربری، نام خریدار، ایمیل، تلفن یا کد رهگیری" data-ui-placeholder="orders_search_placeholder">
+  </label>
+  <div class="filter-actions"><button class="button" type="submit" data-ui-text="orders_search_submit">جستجو</button>
+    <?php if ($paidSearch !== ''): ?><a class="button button-secondary" href="<?= e('orders.php?' . http_build_query(['from_date'=>$fromDate,'to_date'=>$toDate,'orders_per_page'=>$paidPerPage,'ambiguous_page'=>$ambiguousPage])) ?>" data-ui-text="orders_search_clear">پاک کردن جستجو</a><?php endif; ?>
+  </div>
+</form>
+<?php if ($paidSearch !== ''): ?><p class="muted" data-fa="نتایج جستجو: <?= number_format($filteredPaidTotal) ?> سفارش" data-en="Search results: <?= number_format($filteredPaidTotal) ?> orders">نتایج جستجو: <?= number_format($filteredPaidTotal) ?> سفارش</p><?php endif; ?>
 <div class="table-wrap"><table class="orders-detail-table"><thead><tr><th data-ui-text="orders_username">نام کاربری</th><th data-ui-text="orders_order_type">نوع سفارش</th><th data-ui-text="orders_table_service">سرویس</th><th data-ui-text="orders_table_paid_amount">مبلغ پرداختی</th><th data-ui-text="orders_table_status">وضعیت</th><th data-fa="جزئیات" data-en="Details">جزئیات</th></tr></thead><tbody>
 <?php if (!$orderRows): ?><tr><td colspan="5" data-ui-text="orders_empty_paid_orders">سفارش پرداخت‌شده‌ای برای نمایش وجود ندارد.</td></tr><?php endif; ?>
 <?php foreach ($orderRows as $order): ?>
@@ -267,7 +300,7 @@ $ambiguousPageUrl = static function (int $page) use ($fromDate, $toDate, $paidPe
       </select>
     </label>
   </form>
-  <span class="pagination-count" data-fa="صفحه <?= $paidPage ?> از <?= $paidPages ?> · <?= number_format($totalPaid) ?> سفارش" data-en="Page <?= $paidPage ?> of <?= $paidPages ?> · <?= number_format($totalPaid) ?> orders">صفحه <?= $paidPage ?> از <?= $paidPages ?> · <?= number_format($totalPaid) ?> سفارش</span>
+  <span class="pagination-count" data-fa="صفحه <?= $paidPage ?> از <?= $paidPages ?> · <?= number_format($filteredPaidTotal) ?> سفارش" data-en="Page <?= $paidPage ?> of <?= $paidPages ?> · <?= number_format($filteredPaidTotal) ?> orders">صفحه <?= $paidPage ?> از <?= $paidPages ?> · <?= number_format($filteredPaidTotal) ?> سفارش</span>
   <nav class="pagination-links" aria-label="صفحه‌بندی سفارش‌های پرداخت‌شده">
     <?php if ($paidPage > 1): ?><a class="button button-secondary" href="<?= e($paidPageUrl($paidPage-1)) ?>" data-fa="قبلی" data-en="Previous">قبلی</a><?php endif; ?>
     <?php if ($paidPage < $paidPages): ?><a class="button" href="<?= e($paidPageUrl($paidPage+1)) ?>" data-fa="بعدی" data-en="Next">بعدی</a><?php endif; ?>
