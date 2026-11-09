@@ -153,6 +153,25 @@ final class PaymentManager
     }
 
     /**
+     * Resume a previously issued provider session through its adapter.
+     * The provider code and reference come from the persisted transaction.
+     *
+     * @param array<string,mixed> $transaction Persisted payment transaction.
+     * @param array<string,mixed> $allSettings Trusted server-side provider settings.
+     */
+    public function resume(array $transaction, array $allSettings): string
+    {
+        $provider = strtolower(trim((string)($transaction['provider'] ?? '')));
+        if ($provider === '') {
+            throw new InvalidArgumentException('Payment transaction has no provider.');
+        }
+        return $this->gateway($provider)->resume(
+            $transaction,
+            $this->settingsFor($provider, $allSettings)
+        );
+    }
+
+    /**
      * Verify against the provider persisted on the transaction, not the current
      * global selection, so changing the selected gateway cannot affect old payments.
      *
