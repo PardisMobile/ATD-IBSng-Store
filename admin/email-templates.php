@@ -90,13 +90,22 @@ document.addEventListener('atd:language-change', function () {
 <?php if ($message !== ''): ?><div class="notice ok" role="status" aria-live="polite"><?= e($message) ?></div><?php endif; ?>
 <?php if ($error !== ''): ?><div class="notice err" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <form method="get" class="field"><label for="event" data-ui-text="email_templates_event">رویداد ایمیل</label><select id="event" name="event" onchange="this.form.submit()"><?php foreach (EmailTemplates::EVENTS as $key => $label): ?><option value="<?= e($key) ?>" data-ui-event="<?= e($key) ?>" <?= $event === $key ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select></form>
-<form method="post">
+<form method="post" id="email-template-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="event" value="<?= e($event) ?>"><input type="hidden" name="language" value="<?= e($language) ?>">
 <div class="field"><label for="subject" data-ui-text="email_templates_subject">موضوع ایمیل</label><input id="subject" name="subject" maxlength="250" required value="<?= e($template['subject']) ?>"></div>
 <div class="field"><label for="html" data-ui-text="email_templates_html">قالب HTML</label><textarea id="html" name="html" required><?= e($template['html']) ?></textarea><div class="hint" data-ui-text="email_templates_html_hint">HTML ایمیل را ویرایش کنید. پیش‌نمایش با داده‌های نمونه در همین صفحه ارائه می‌شود.</div></div>
 <div class="field"><label for="text" data-ui-text="email_templates_text">نسخه متنی جایگزین (Plain text)</label><textarea id="text" name="text" required><?= e($template['text']) ?></textarea></div>
-<div class="actions"><button class="button primary" type="submit" name="save" value="1" data-ui-text="email_templates_save">ذخیره قالب</button><button class="button" type="submit" name="preview" value="1" data-ui-text="email_templates_preview_save">ذخیره و پیش‌نمایش</button><button class="button danger" type="submit" name="reset_template" value="1" formnovalidate data-ui-text="email_templates_reset" onclick="return confirm('قالب این رویداد و زبان به نسخه پیش‌فرض بازنشانی شود؟')">بازنشانی تنظیمات</button></div>
 </form>
+<div class="actions">
+<button class="button primary" type="submit" form="email-template-form" name="save" value="1" data-ui-text="email_templates_save">ذخیره قالب</button>
+<button class="button" type="submit" form="email-template-form" name="preview" value="1" data-ui-text="email_templates_preview_save">ذخیره و پیش‌نمایش</button>
+<form method="post" data-confirm-fa="قالب این رویداد و زبان به نسخه پیش‌فرض بازنشانی شود؟" data-confirm-en="Reset this event and language template to its default version?">
+<input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
+<input type="hidden" name="event" value="<?= e($event) ?>">
+<input type="hidden" name="language" value="<?= e($language) ?>">
+<button class="button danger" type="submit" name="reset_template" value="1" formnovalidate data-ui-text="email_templates_reset">بازنشانی تنظیمات</button>
+</form>
+</div>
 </section>
 <?php if ($previewHtml !== ''): ?><section class="panel panel-card"><h2 data-ui-text="email_templates_preview">پیش‌نمایش</h2><iframe title="پیش‌نمایش قالب ایمیل" data-ui-aria="email_templates_preview_title" sandbox="" srcdoc="<?= e($previewHtml) ?>"></iframe></section><?php endif; ?>
 
