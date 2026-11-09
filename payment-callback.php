@@ -7,10 +7,13 @@ require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
 require_once __DIR__ . '/app/Payments/PaymentFlow.php';
 require_once __DIR__ . '/app/StorefrontView.php';
+require_once __DIR__ . '/app/StorefrontInfoIcons.php';
 
 $provider = strtolower(trim((string)($_GET['provider'] ?? '')));
 $success = false;
 $orderReference = '';
+$orderTrackingCode = '';
+$paymentReference = '';
 $errorMessage = 'پرداخت توسط درگاه تأیید نشد. اگر مبلغ از حساب شما کسر شده، شناسه پیگیری را نگه دارید و با پشتیبانی تماس بگیرید.';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $provider !== '') {
@@ -18,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $provider !== '') {
         $result = PaymentFlow::handleCallback(Database::connection(), $provider, $_GET);
         $success = (bool)($result['paid'] ?? false);
         $orderReference = (string)$result['order_public_id'];
+        $paymentReference = trim((string)($result['provider_reference'] ?? ''));
     } catch (Throwable $e) {
         // Provider/transport details are intentionally not exposed to customers.
         error_log('Payment callback processing failed: ' . $e->getMessage());
@@ -32,9 +36,12 @@ $paidAccountCards = [];
 if ($success && $orderReference !== '') {
     try {
         $pdo = Database::connection();
-        $orderStmt = $pdo->prepare('SELECT o.id,o.public_id,o.product_id,o.username,o.password_ciphertext,o.validity_days_snapshot,o.server_targets_snapshot,p.quota_bytes FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE o.public_id=? LIMIT 1');
+        $orderStmt = $pdo->prepare('SELECT o.id,o.public_id,o.tracking_code,o.product_id,o.username,o.password_ciphertext,o.validity_days_snapshot,o.server_targets_snapshot,p.quota_bytes FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE o.public_id=? LIMIT 1');
         $orderStmt->execute([$orderReference]);
         $paidOrder = $orderStmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        if ($paidOrder) {
+            $orderTrackingCode = (string)($paidOrder['tracking_code'] ?? '');
+        }
         if ($paidOrder) {
             try {
                 $paidAccountPassword = app_decrypt_secret((string)$paidOrder['password_ciphertext']);
@@ -104,10 +111,10 @@ if ($success && $orderReference !== '') {
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>"><link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
 <style>
 .result-shell{width:min(820px,calc(100% - 32px));margin:0 auto}
-.result-card{padding:clamp(20px,4vw,34px);margin:24px 0}.result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.result-actions .button{flex:1 1 180px;text-align:center}
+.result-card{padding:clamp(20px,4vw,34px);margin:24px 0;position:relative;overflow:hidden}.result-card::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--accent));pointer-events:none}.result-card>*{position:relative;z-index:1}.result-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.result-actions .button{flex:1 1 180px;text-align:center}
 .notice{padding:16px;border:1px solid var(--border);border-radius:14px;line-height:1.9}
 .ok{border-color:#44d6a055;background:#44d6a012}.fail{border-color:#ff718055;background:#ff718012}
-.account-details{margin:18px 0}
+.account-details{margin:18px 0}.payment-details{margin:20px 0}.payment-details h2{margin-bottom:0}.payment-details .account-grid{margin-top:12px}
 .account-server-title{display:flex;align-items:center;gap:9px;margin:0;padding:0 2px 10px;font-size:1.05rem;line-height:1.6;overflow-wrap:anywhere}.account-server-title .ui-icon{width:21px;height:21px;flex:0 0 21px;color:var(--accent,var(--blue))}
 .account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .account-item{padding:clamp(13px,2.5vw,17px);border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--surface-2);min-width:0}
@@ -127,26 +134,33 @@ if ($success && $orderReference !== '') {
 <section class="result-card panel">
 <?php if ($success): ?>
 <h1 data-ui-text="payment_success_title">پرداخت تأیید شد</h1>
-<div class="notice ok"><span data-ui-text="payment_success_body">پرداخت سفارش شما توسط درگاه تأیید شد.</span><br><strong data-ui-text="payment_order_id">شناسه سفارش:</strong> <code><?= e($orderReference) ?></code></div>
+<div class="notice ok"><span data-ui-text="payment_success_body">پرداخت سفارش شما توسط درگاه تأیید شد.</span></div>
 <?php if ($paidOrder): ?>
+<section class="payment-details">
+<h2 data-ui-text="payment_details_heading">مشخصات پرداخت</h2>
+<div class="account-grid">
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="payment_tracking_code">کد رهگیری</span></small><strong dir="ltr"><?= e($orderTrackingCode) ?></strong></div>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("payment") ?><span data-ui-text="payment_gateway_reference">شناسه پرداخت</span></small><strong dir="ltr"><?= e($paymentReference !== '' ? $paymentReference : '—') ?></strong></div>
+</div>
+</section>
 <h2 data-ui-text="status_account_heading">مشخصات اکانت</h2>
 <?php $cardsToShow = $paidAccountCards ?: [['plan' => '']]; foreach ($cardsToShow as $accountCard): ?>
 <section class="account-details">
 <?php $serverTitle = trim((string)($accountCard['server'] ?? '')); ?>
 <?php if ($serverTitle !== ''): ?><h3 class="account-server-title"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg><?= e($serverTitle) ?></h3><?php endif; ?>
 <div class="account-grid">
-<div class="account-item"><small data-ui-text="status_username">نام کاربری</small><strong dir="ltr"><?= e((string)$paidOrder['username']) ?></strong></div>
-<div class="account-item"><small data-ui-text="status_password">رمز عبور</small>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("account") ?><span data-ui-text="status_username">نام کاربری</span></small><strong dir="ltr"><?= e((string)$paidOrder['username']) ?></strong></div>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("password") ?><span data-ui-text="status_password">رمز عبور</span></small>
 <?php if (is_string($paidAccountPassword)): ?>
 <div class="password-line"><strong dir="ltr" class="password-value" data-password="<?= e($paidAccountPassword) ?>">••••••••</strong><button type="button" class="button primary icon-button" data-ui-password-toggle aria-label="نمایش رمز" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
 <?php else: ?><strong data-ui-text="status_password_hidden">در حال حاضر قابل نمایش نیست</strong><?php endif; ?>
 </div>
-<?php if (trim((string)($accountCard['plan'] ?? '')) !== ''): ?><div class="account-item"><small data-fa="سرویس" data-en="Service">سرویس</small><strong><?= e((string)$accountCard['plan']) ?></strong></div><?php endif; ?>
-<?php if ((int)($accountCard['validity'] ?? 0) > 0): ?><div class="account-item"><small data-ui-text="status_validity">مدت اعتبار</small><strong><?= e((string)$accountCard['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div><?php endif; ?>
-<?php if (array_key_exists('quota_bytes', $accountCard)): ?><div class="account-item"><small data-ui-text="status_quota">محدودیت حجم</small><strong><?php if ($accountCard['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php elseif ((int)$accountCard['quota_bytes'] > 0): ?><?= e(number_format((int)$accountCard['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div><?php endif; ?>
-<?php if (trim((string)($accountCard['expiry'] ?? '')) !== ''): ?><div class="account-item"><small data-ui-text="status_expiry">تاریخ انقضا</small><strong><?= e((string)$accountCard['expiry']) ?></strong></div><?php endif; ?>
-<?php if (is_bool($accountCard['expired'] ?? null)): ?><div class="account-item"><small data-ui-text="status_validity_state">وضعیت اعتبار</small><strong data-ui-status="<?= $accountCard['expired'] ? 'expired' : 'active' ?>"><?= $accountCard['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
-<div class="account-item"><small data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
+<?php if (trim((string)($accountCard['plan'] ?? '')) !== ''): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("plan") ?><span data-fa="سرویس" data-en="Service">سرویس</span></small><strong><?= e((string)$accountCard['plan']) ?></strong></div><?php endif; ?>
+<?php if ((int)($accountCard['validity'] ?? 0) > 0): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("duration") ?><span data-ui-text="status_validity">مدت اعتبار</span></small><strong><?= e((string)$accountCard['validity']) ?> <span data-ui-text="status_days">روز</span></strong></div><?php endif; ?>
+<?php if (array_key_exists('quota_bytes', $accountCard)): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("quota") ?><span data-ui-text="status_quota">محدودیت حجم</span></small><strong><?php if ($accountCard['quota_bytes'] === null): ?><span data-ui-text="status_unlimited">نامحدود</span><?php elseif ((int)$accountCard['quota_bytes'] > 0): ?><?= e(number_format((int)$accountCard['quota_bytes'] / 1073741824, 2)) ?> <span data-ui-text="status_gigabytes">گیگابایت</span><?php endif; ?></strong></div><?php endif; ?>
+<?php if (trim((string)($accountCard['expiry'] ?? '')) !== ''): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("date") ?><span data-ui-text="status_expiry">تاریخ انقضا</span></small><strong><?= e((string)$accountCard['expiry']) ?></strong></div><?php endif; ?>
+<?php if (is_bool($accountCard['expired'] ?? null)): ?><div class="account-item"><small class="store-info-label"><?= storefront_info_icon("status") ?><span data-ui-text="status_validity_state">وضعیت اعتبار</span></small><strong data-ui-status="<?= $accountCard['expired'] ? 'expired' : 'active' ?>"><?= $accountCard['expired'] ? 'منقضی شده' : 'فعال' ?></strong></div><?php endif; ?>
+<div class="account-item"><small class="store-info-label"><?= storefront_info_icon("guide") ?><span data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</span></small><strong><a class="button primary" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a></strong></div>
 </div>
 </section>
 <?php endforeach; ?>
