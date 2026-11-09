@@ -28,6 +28,15 @@ interface PaymentGateway
     public function initiate(array $order, array $settings): array;
 
     /**
+     * Resume the existing provider payment session for a persisted transaction.
+     * This must not create a new invoice or authority.
+     *
+     * @param array<string,mixed> $transaction Persisted transaction including provider reference and metadata.
+     * @param array<string,mixed> $settings Provider-specific settings.
+     */
+    public function resume(array $transaction, array $settings): string;
+
+    /**
      * Verify a provider return/callback using server-side transaction data.
      *
      * @param array<string, mixed> $callback Untrusted provider callback parameters.
