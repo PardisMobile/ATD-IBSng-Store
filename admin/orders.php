@@ -361,6 +361,7 @@ $ambiguousRows = $pdo->query($ambiguousSql)->fetchAll(PDO::FETCH_ASSOC);
         const template=document.getElementById(button.getAttribute('aria-controls'));
         if(!template)return;
         content.replaceChildren(template.content.cloneNode(true));
+        document.dispatchEvent(new CustomEvent('atd:language-change',{detail:{language:root.lang==='en'?'en':'fa',direction:root.dir}}));
         if(typeof dialog.showModal==='function')dialog.showModal();
         else dialog.setAttribute('open','');
         button.setAttribute('aria-expanded','true');
