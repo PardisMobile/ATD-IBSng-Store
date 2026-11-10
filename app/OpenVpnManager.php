@@ -34,52 +34,93 @@ final class OpenVpnManager
 
     public static function fetchProfileUrl(string $url): string
     {
-        $parts = parse_url(trim($url));
+        $url = trim($url);
+        $parts = parse_url($url);
         if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https'
-            || empty($parts['host']) || isset($parts['user']) || isset($parts['pass'])) {
-            throw new InvalidArgumentException('نشانی پروفایل باید HTTPS و بدون اطلاعات ورود باشد.');
+            || empty($parts['host']) || isset($parts['user']) || isset($parts['pass'])
+            || isset($parts['fragment'])) {
+            throw new InvalidArgumentException('نشانی پروفایل باید HTTPS و بدون اطلاعات ورود یا fragment باشد.');
         }
-        $host = strtolower((string)$parts['host']);
+
+        $host = strtolower(rtrim((string)$parts['host'], '.'));
+        $port = isset($parts['port']) ? (int)$parts['port'] : 443;
+        if ($port < 1 || $port > 65535) {
+            throw new InvalidArgumentException('پورت نشانی پروفایل معتبر نیست.');
+        }
+
+        // Resolve and reject private/reserved destinations before opening the URL.
         $ips = [];
-        if (filter_var($host, FILTER_VALIDATE_IP)) $ips[] = $host;
-        else {
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $ips[] = $host;
+        } else {
             $records = @dns_get_record($host, DNS_A | DNS_AAAA);
             foreach (is_array($records) ? $records : [] as $record) {
                 if (!empty($record['ip'])) $ips[] = $record['ip'];
                 if (!empty($record['ipv6'])) $ips[] = $record['ipv6'];
             }
         }
+        $ips = array_values(array_unique($ips));
         if (!$ips) throw new RuntimeException('نشانی سرور پروفایل قابل resolve نیست.');
         foreach ($ips as $ip) {
             if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
                 throw new InvalidArgumentException('دریافت پروفایل از نشانی‌های داخلی یا رزروشده مجاز نیست.');
             }
         }
-        if (!function_exists('curl_init')) throw new RuntimeException('افزونه cURL برای دریافت امن پروفایل فعال نیست.');
-        $port = isset($parts['port']) ? (int)$parts['port'] : 443;
-        $resolve = [];
-        foreach ($ips as $ip) { $resolve[] = $host . ':' . $port . ':' . (str_contains($ip, ':') ? '[' . $ip . ']' : $ip); }
-        $ch = curl_init($url);
-        $body = '';
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => false, CURLOPT_FOLLOWLOCATION => false,
-            CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_TIMEOUT => 15,
-            CURLOPT_SSL_VERIFYPEER => true, CURLOPT_SSL_VERIFYHOST => 2,
-            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-            CURLOPT_WRITEFUNCTION => static function ($curl, string $chunk) use (&$body): int {
-                if (strlen($body) + strlen($chunk) > self::MAX_PROFILE_BYTES) return 0;
-                $body .= $chunk; return strlen($chunk);
-            },
-            CURLOPT_USERAGENT => 'ATD-IBSng-Store OpenVPN Profile Fetcher',
-            CURLOPT_RESOLVE => $resolve,
-        ]);
-        $ok = curl_exec($ch);
-        $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        if ($ok !== true || $status < 200 || $status >= 300) {
-            throw new RuntimeException('دریافت فایل پروفایل ناموفق بود: ' . ($error ?: 'HTTP ' . $status));
+
+        if (!filter_var(ini_get('allow_url_fopen'), FILTER_VALIDATE_BOOLEAN)) {
+            throw new RuntimeException('قابلیت دریافت URL در تنظیمات PHP هاست فعال نیست (allow_url_fopen).');
         }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 15,
+                'ignore_errors' => true,
+                'follow_location' => 0,
+                'max_redirects' => 0,
+                'protocol_version' => 1.1,
+                'header' => "User-Agent: ATD-IBSng-Store OpenVPN Profile Fetcher\r\nAccept: text/plain, application/octet-stream;q=0.9, */*;q=0.1\r\nConnection: close\r\n",
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+                'peer_name' => $host,
+                'SNI_enabled' => true,
+                'allow_self_signed' => false,
+            ],
+        ]);
+
+        $stream = @fopen($url, 'rb', false, $context);
+        if ($stream === false) {
+            $last = error_get_last();
+            $detail = is_array($last) && !empty($last['message']) ? $last['message'] : 'اتصال برقرار نشد.';
+            throw new RuntimeException('دریافت فایل پروفایل ناموفق بود: ' . $detail);
+        }
+
+        try {
+            $meta = stream_get_meta_data($stream);
+            $headers = is_array($meta['wrapper_data'] ?? null) ? $meta['wrapper_data'] : [];
+            $status = 0;
+            foreach ($headers as $header) {
+                if (preg_match('/^HTTP\/\S+\s+(\d{3})\b/i', (string)$header, $match)) {
+                    $status = (int)$match[1];
+                }
+            }
+            if ($status < 200 || $status >= 300) {
+                throw new RuntimeException('دریافت فایل پروفایل ناموفق بود: HTTP ' . ($status ?: 'نامشخص'));
+            }
+
+            $body = stream_get_contents($stream, self::MAX_PROFILE_BYTES + 1);
+            if (!is_string($body)) {
+                throw new RuntimeException('خواندن فایل پروفایل از نشانی واردشده ناموفق بود.');
+            }
+            if (strlen($body) > self::MAX_PROFILE_BYTES) {
+                throw new RuntimeException('حجم فایل پروفایل بیش از ۱ مگابایت است.');
+            }
+        } finally {
+            fclose($stream);
+        }
+
         return self::validateProfile($body);
     }
 
