@@ -4,6 +4,9 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_admin();
 require_once dirname(__DIR__) . '/app/GuideIcons.php';
+require_once dirname(__DIR__) . '/app/OpenVpnManager.php';
+require_once dirname(__DIR__) . '/app/EmailTemplates.php';
+require_once dirname(__DIR__) . '/app/EmailSender.php';
 
 $config = app_config();
 $pdo = Database::connection();
@@ -37,6 +40,16 @@ $readGuide = static function () use ($pdo, $settingKey, $defaultGuide): array {
 $guide = $readGuide();
 $error = '';
 $message = isset($_GET['saved']) ? 'راهنمای عمومی ذخیره شد.' : '';
+$ovpnMessage = '';
+$ovpnError = '';
+$ovpnResult = '';
+$ovpnManager = new OpenVpnManager($pdo);
+$ovpnSearch = trim((string)($_GET['ovpn_order_search'] ?? ''));
+$ovpnOrders = [];
+if ($ovpnSearch !== '') {
+    $find = $pdo->prepare("SELECT id, username, buyer_name, buyer_email, tracking_code FROM orders WHERE payment_status='paid' AND (username LIKE ? OR buyer_email LIKE ? OR tracking_code LIKE ?) ORDER BY id DESC LIMIT 30");
+    $term = '%' . $ovpnSearch . '%'; $find->execute([$term,$term,$term]); $ovpnOrders = $find->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $cleanUrl = static function (string $value): string {
     $value = trim($value);
@@ -51,7 +64,61 @@ $cleanUrl = static function (string $value): string {
     return $value;
 };
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['action'] ?? ''), 'openvpn_')) {
+    if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
+        $ovpnError = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
+    } else {
+        try {
+            $action = (string)$_POST['action'];
+            if ($action === 'openvpn_save_profile') {
+                $name = trim((string)($_POST['profile_name'] ?? ''));
+                $id = (int)($_POST['profile_id'] ?? 0) ?: null;
+                if (isset($_FILES['profile_file']) && (int)($_FILES['profile_file']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                    if ((int)$_FILES['profile_file']['error'] !== UPLOAD_ERR_OK || (int)$_FILES['profile_file']['size'] > 1048576) throw new RuntimeException('بارگذاری فایل ناموفق بود یا حجم فایل بیش از ۱ مگابایت است.');
+                    if (strtolower(pathinfo((string)($_FILES['profile_file']['name'] ?? ''), PATHINFO_EXTENSION)) !== 'ovpn') throw new InvalidArgumentException('فقط فایل با پسوند .ovpn پذیرفته می‌شود.');
+                    $profileContent = file_get_contents((string)$_FILES['profile_file']['tmp_name']);
+                    if (!is_string($profileContent)) throw new RuntimeException('خواندن فایل بارگذاری‌شده ناموفق بود.');
+                } else {
+                    $url = trim((string)($_POST['profile_url'] ?? ''));
+                    if ($url === '') throw new InvalidArgumentException('نشانی HTTPS یا فایل پروفایل را وارد کنید.');
+                    $profileContent = OpenVpnManager::fetchProfileUrl($url);
+                }
+                $savedId = $ovpnManager->saveProfile($id, $name, $profileContent);
+                $ovpnMessage = 'پروفایل OpenVPN با موفقیت ذخیره شد. شناسه: ' . $savedId;
+            } elseif ($action === 'openvpn_toggle_profile') {
+                $ovpnManager->setProfileActive((int)$_POST['profile_id'], (string)($_POST['active'] ?? '') === '1');
+                $ovpnMessage = 'وضعیت پروفایل تغییر کرد.';
+            } elseif ($action === 'openvpn_delete_profile') {
+                $ovpnManager->deleteProfile((int)$_POST['profile_id']);
+                $ovpnMessage = 'پروفایل حذف شد.';
+            } elseif ($action === 'openvpn_create_link') {
+                $kind = (string)($_POST['link_type'] ?? '');
+                $orderId = (int)($_POST['order_id'] ?? 0) ?: null;
+                $email = trim((string)($_POST['recipient_email'] ?? ''));
+                $link = $ovpnManager->createLink((int)($_POST['profile_id'] ?? 0), $kind, $orderId, $email);
+                $ovpnResult = $link['url'];
+                if ($kind === 'personalized') {
+                    $orderStmt = $pdo->prepare('SELECT buyer_name, language FROM orders WHERE id=? LIMIT 1');
+                    $orderStmt->execute([$orderId]); $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
+                    $language = (string)($order['language'] ?? 'fa') === 'en' ? 'en' : 'fa';
+                    $template = EmailTemplates::get($pdo, 'openvpn_profile', $language);
+                    $profileStmt = $pdo->prepare('SELECT name FROM openvpn_profiles WHERE id=?');
+                    $profileStmt->execute([(int)$_POST['profile_id']]);
+                    $variables = ['site_name'=>(string)($config['site_title'] ?? 'ATD IBSng Store'),'customer_name'=>(string)($order['buyer_name'] ?: ($language==='en'?'Customer':'مشتری')),'profile_name'=>(string)$profileStmt->fetchColumn(),'profile_url'=>$link['url'],'order_id'=>(string)$orderId];
+                    $html = EmailTemplates::render($template['html'], array_map(static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'), $variables));
+                    $plain = EmailTemplates::render($template['text'], $variables);
+                    EmailSender::send($pdo, $email, EmailTemplates::render($template['subject'], $variables), $html, $plain);
+                    $ovpnMessage = 'لینک اختصاصی ساخته و به نشانی واردشده ارسال شد.';
+                } else {
+                    $ovpnMessage = 'لینک عمومی ساخته شد؛ نشانی آن را در محتوای راهنمای عمومی OpenVPN قرار دهید.';
+                }
+            }
+        } catch (Throwable $e) {
+            error_log('OpenVPN admin action failed: ' . $e->getMessage());
+            $ovpnError = $e instanceof InvalidArgumentException ? $e->getMessage() : 'عملیات OpenVPN انجام نشد. جزئیات در گزارش خطای سرور ثبت شد.';
+        }
+    }
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!admin_csrf_valid((string)($_POST['csrf'] ?? ''))) {
         $error = 'درخواست معتبر نیست؛ صفحه را تازه‌سازی کنید.';
     } else {
