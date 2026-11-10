@@ -205,5 +205,4 @@ final class OpenVpnManager
         if ($count!==1) throw new RuntimeException('افزودن اطلاعات ورود به پروفایل ناموفق بود.');
         return self::validateProfile($content);
     }
-    }
-}
+ }
