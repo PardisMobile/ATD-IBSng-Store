@@ -197,7 +197,7 @@ final class OpenVpnManager
     public static function profileWithCredentials(string $content, string $username, string $password): string
     {
         $content=self::validateProfile($content);
-        if ($username==='' || preg_match('/[^A-Za-z0-9_.@-]/', $username) || preg_match('/[\r\n\x00-\x1F\x7F]/', $password)) {
+        if ($username==='' || preg_match('/[^A-Za-z0-9_.@-]/', $username) || preg_match('/[<>\r\n\x00-\x1F\x7F]/', $password)) {
             throw new InvalidArgumentException('اطلاعات ورود برای ساخت پروفایل اختصاصی معتبر نیست.');
         }
         if (!preg_match('/^\s*auth-user-pass\s*$/mi', $content)) {
