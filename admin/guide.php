@@ -201,6 +201,31 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-method .field-full{grid-column:1/-1}
 .guide-admin-method .check-toggle{display:flex;align-items:center;gap:8px}
 .guide-admin-note{color:var(--muted);line-height:1.9}
+
+/* Page-scoped disclosures; shared theme tokens and surfaces remain authoritative. */
+.guide-system-section{min-width:0}
+.guide-system-summary,.guide-admin-disclosure-summary{
+ display:flex;align-items:center;gap:10px;min-width:0;max-width:100%;
+ list-style:none;cursor:pointer;line-height:1.5;
+}
+.guide-system-summary::-webkit-details-marker,.guide-admin-disclosure-summary::-webkit-details-marker{display:none}
+.guide-system-summary::marker,.guide-admin-disclosure-summary::marker{content:""}
+.guide-system-summary::after,.guide-admin-disclosure-summary::after{
+ content:"";width:8px;height:8px;flex:0 0 8px;margin-inline-start:auto;
+ border-inline-end:2px solid var(--muted);border-block-end:2px solid var(--muted);
+ transform:rotate(45deg);transition:transform .16s ease;
+}
+.guide-system-section[open]>.guide-system-summary::after,
+.guide-admin-disclosure[open]>.guide-admin-disclosure-summary::after{transform:rotate(225deg)}
+.guide-system-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 22px;min-width:22px}
+.guide-system-icon .guide-icon{display:block;width:20px;height:20px;min-width:20px;max-width:20px;flex:0 0 20px}
+.guide-system-title{display:block;min-width:0;white-space:nowrap;word-break:keep-all;overflow-wrap:normal}
+.guide-admin-disclosure-summary{gap:12px}
+.guide-admin-disclosure-summary .eyebrow{margin:0}
+.guide-admin-disclosure-summary strong{font-size:1.15rem;line-height:1.5}
+.guide-admin-disclosure-content{min-width:0;margin-top:16px}
+.guide-admin-disclosure-content>.form-section{margin-top:16px}
+@media(prefers-reduced-motion:reduce){.guide-system-summary::after,.guide-admin-disclosure-summary::after{transition:none}}
 .ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
 .ovpn-copy-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
 .ovpn-copy-button .ui-icon{width:18px;height:18px;flex:0 0 18px}
@@ -232,8 +257,8 @@ $esc = static fn($value): string => e((string)$value);
 <button class="button danger" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
 </div>
 <?php foreach ($systems as $systemKey => $labels): $system = is_array($method['systems'][$systemKey] ?? null) ? $method['systems'][$systemKey] : []; ?>
-<fieldset class="form-section">
-<legend><?= guide_icon_svg($systemKey) ?><span data-fa="<?= e($labels['fa']) ?>" data-en="<?= e($labels['en']) ?>"><?= e($labels['fa']) ?></span></legend>
+<details class="form-section guide-system-section">
+<summary class="guide-system-summary"><span class="guide-system-icon"><?= guide_icon_svg($systemKey) ?></span><span class="guide-system-title" data-fa="<?= e($labels['fa']) ?>" data-en="<?= e($labels['en']) ?>"><?= e($labels['fa']) ?></span></summary>
 <div class="system-fields">
 <div class="field field-full"><label data-fa="مراحل و توضیحات" data-en="Instructions">مراحل و توضیحات</label><textarea name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][content]" rows="5"><?= $esc($system['content'] ?? '') ?></textarea></div>
 <div class="field"><label data-fa="نشانی تصویر آموزشی (اختیاری)" data-en="Instruction image URL (optional)">نشانی تصویر آموزشی (اختیاری)</label><input type="url" name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][image_url]" value="<?= $esc($system['image_url'] ?? '') ?>" placeholder="https://..."></div>
@@ -241,7 +266,7 @@ $esc = static fn($value): string => e((string)$value);
 <div class="field"><label data-fa="لینک فایل راهنما (اختیاری)" data-en="Guide file URL (optional)">لینک فایل راهنما (اختیاری)</label><input type="url" name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][download_url]" value="<?= $esc($system['download_url'] ?? '') ?>" placeholder="https://..."></div>
 <div class="field"><label data-fa="عنوان لینک فایل" data-en="Download link label">عنوان لینک فایل</label><input name="methods[<?= (int)$index ?>][systems][<?= e($systemKey) ?>][download_label]" maxlength="160" value="<?= $esc($system['download_label'] ?? '') ?>"></div>
 </div>
-</fieldset>
+</details>
 <?php endforeach; ?>
 </article>
 <?php endforeach; ?>
@@ -266,9 +291,13 @@ foreach ($ovpnProfiles as $profileRow) {
     if ((int)$profileRow['id'] === $editProfileId) $editProfile = $profileRow;
 }
 ?>
-<section class="panel panel-card" id="openvpn-management" aria-labelledby="openvpn-management-title">
-<div class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</div>
-<h2 id="openvpn-management-title" data-fa="مدیریت OpenVPN" data-en="OpenVPN Management">مدیریت OpenVPN</h2>
+<section class="panel panel-card" id="openvpn-management">
+<details class="guide-admin-disclosure guide-ovpn-disclosure">
+<summary class="guide-admin-disclosure-summary">
+<span class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</span>
+<strong id="openvpn-management-title" data-fa="مدیریت OpenVPN" data-en="OpenVPN Management">مدیریت OpenVPN</strong>
+</summary>
+<div class="guide-admin-disclosure-content">
 <p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
 <?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
@@ -288,7 +317,7 @@ foreach ($ovpnProfiles as $profileRow) {
 </div>
 </div>
 <?php endif; ?>
-<details class="form-section" open>
+<details class="form-section">
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
 <form method="post" enctype="multipart/form-data">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
@@ -304,7 +333,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <?php foreach ($ovpnProfiles as $profileRow): ?><tr><td><?= e((string)$profileRow['name']) ?></td><td><?= !empty($profileRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td class="actions"><a class="button" href="<?= e(app_url('admin/guide.php?edit_ovpn_profile='.(int)$profileRow['id'].'#openvpn-management')) ?>" data-fa="جایگزینی فایل" data-en="Replace file">جایگزینی فایل</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($profileRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($profileRow['is_active']) ? '<span data-fa="غیرفعال‌سازی" data-en="Disable">غیرفعال‌سازی</span>' : '<span data-fa="فعال‌سازی" data-en="Enable">فعال‌سازی</span>' ?></button></form><form method="post" data-confirm-fa="این پروفایل و لینک‌های وابسته به آن حذف شوند؟" data-confirm-en="Delete this profile and its associated links?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </details>
-<details class="form-section" open>
+<details class="form-section">
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
 <form method="get" class="field"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
 <form method="post" id="ovpn-link-form">
@@ -319,6 +348,8 @@ foreach ($ovpnProfiles as $profileRow) {
 <?php if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
 <?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($linkRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($linkRow['is_active']) ? '<span data-fa="لغو لینک" data-en="Revoke link">لغو لینک</span>' : '<span data-fa="فعال‌سازی مجدد" data-en="Reactivate">فعال‌سازی مجدد</span>' ?></button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
+</div>
+</details>
 </section>
 <script>
 (function(){const order=document.getElementById('ovpn-order-id'),email=document.getElementById('ovpn-recipient-email'),form=document.getElementById('ovpn-link-form');if(order&&email)order.addEventListener('change',()=>{const option=order.selectedOptions[0];email.value=option?.dataset.email||'';});if(form)form.addEventListener('submit',event=>{const button=event.submitter;if(button?.value==='personalized'){if(!order.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Select an order first.':'ابتدا سفارش مشتری را انتخاب کنید.');return;}if(!email.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Enter a recipient email address.':'نشانی ایمیل گیرنده را وارد کنید.');}}});})();
