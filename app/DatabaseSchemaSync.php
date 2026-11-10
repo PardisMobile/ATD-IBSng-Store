@@ -93,7 +93,9 @@ final class DatabaseSchemaSync
         if (!$this->tableExists('customer_email_deliveries') && $this->tableExists('orders')) {
             $pending[] = 'ایجاد جدول ثبت تحویل ایمیل حساب مشتری';
         }
-        if (!$this->tableExists('openvpn_profiles') && $this->tableExists('orders')) {\n            $pending[] = 'ایجاد جداول مدیریت پروفایل و لینک OpenVPN';\n        }\n\n        if (!$this->tableExists('customer_order_recovery_codes')) {
+        if (!$this->tableExists('openvpn_profiles') && $this->tableExists('orders')) {
+            $pending[] = 'ایجاد جداول مدیریت پروفایل و لینک OpenVPN';
+        }\n\n        if (!$this->tableExists('customer_order_recovery_codes')) {
             $pending[] = 'ایجاد جدول کدهای بازیابی سفارش مشتری';
         }
 
