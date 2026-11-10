@@ -110,8 +110,8 @@ HTML,
         ],
         'openvpn_profile' => [
             'subject' => 'لینک پروفایل OpenVPN شما - {{site_name}}',
-            'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl"><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>لینک اختصاصی دریافت پروفایل {{profile_name}} برای سفارش شما آماده است.</p><p><a href="{{profile_url}}">دریافت پروفایل OpenVPN</a></p><p>شناسه سفارش: {{order_id}}</p><p>برای ورود در برنامه OpenVPN از نام کاربری و رمز عبور اکانت IBSng خود استفاده کنید.</p></main></body></html>',
-            'text' => "{{site_name}}\nسلام {{customer_name}}،\nلینک دریافت پروفایل {{profile_name}}: {{profile_url}}\nشناسه سفارش: {{order_id}}\nبرای اتصال از نام کاربری و رمز عبور اکانت IBSng استفاده کنید.",
+            'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl"><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>صفحه راهنمای اتصال پروفایل {{profile_name}} برای سفارش شما آماده است.</p><p><a href="{{profile_url}}">مشاهده لینک‌های اتصال OpenVPN</a></p><p>شناسه سفارش: {{order_id}}</p><p>در صفحه بازشده، لینک اختصاصی را در بخش Import from URL برنامه OpenVPN Connect وارد کنید. پروفایل اختصاصی شامل اطلاعات ورود حساب شماست.</p></main></body></html>',
+            'text' => "{{site_name}}\nسلام {{customer_name}}،\nصفحه لینک‌های اتصال {{profile_name}}: {{profile_url}}\nشناسه سفارش: {{order_id}}\nلینک اختصاصی را در بخش Import from URL برنامه OpenVPN Connect وارد کنید؛ پروفایل شامل اطلاعات ورود حساب شماست.",
         ],
         'expiration_reminder' => [
             'subject' => 'یادآوری انقضای سرویس در {{site_name}}',
