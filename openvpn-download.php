@@ -11,7 +11,7 @@ $valid = false;
 $personalUrl = $publicUrl = $profileName = '';
 try {
     $manager = new OpenVpnManager(Database::connection());
-    $result = $manager->resolveToken((string)($_GET['t'] ?? ''));
+    $result = $manager->resolveToken((string)($_GET['t'] ?? ''), false);
     if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
     $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode((string)($_GET['t'] ?? '')));
     $publicUrl = app_absolute_url('openvpn-profile.php?p=' . (int)$result['id']);
