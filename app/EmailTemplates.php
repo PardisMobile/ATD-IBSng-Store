@@ -213,8 +213,8 @@ HTML,
         ],
         'openvpn_profile' => [
             'subject' => 'Your personalized OpenVPN profile - {{site_name}}',
-            'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr"><main><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your personalized download link for the {{profile_name}} OpenVPN profile is ready.</p><p><a href="{{profile_url}}">Download OpenVPN profile</a></p><p>Order ID: {{order_id}}</p><p>Use your IBSng account username and password when prompted by your OpenVPN application.</p></main></body></html>',
-            'text' => "{{site_name}}\nHello {{customer_name}},\nDownload your {{profile_name}} profile: {{profile_url}}\nOrder ID: {{order_id}}\nUse your IBSng account username and password when prompted by your OpenVPN application.",
+            'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr"><main><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your OpenVPN connection page for {{profile_name}} is ready.</p><p><a href="{{profile_url}}" >View OpenVPN connection links</a></p><p>Order ID: {{order_id}}</p><p>Copy your personalized URL from the page and enter it under Import from URL in OpenVPN Connect. The profile contains your account credentials.</p></main></body></html>',
+            'text' => "{{site_name}}\nHello {{customer_name}},\nOpenVPN connection links for {{profile_name}}: {{profile_url}}\nOrder ID: {{order_id}}\nUse the personalized URL under Import from URL in OpenVPN Connect. The profile contains your account credentials.",
         ],
         'expiration_reminder' => [
             'subject' => 'Service expiration reminder from {{site_name}}',
