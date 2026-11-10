@@ -63,6 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'verification_url' => app_absolute_url('index.php'),
             'expiration_date' => $language === 'en' ? '2026/11/30' : '۱۴۰۵/۰۹/۱۰',
             'service_url' => '#',
+            'profile_name' => $language === 'en' ? 'Turkey Server' : 'سرور ترکیه',
+            'profile_url' => app_absolute_url('openvpn-download.php?t=sample-token'),
         ]);
     }
 }
