@@ -147,9 +147,9 @@ final class OpenVpnManager
         if (!in_array($kind, ['public','personalized'], true)) throw new InvalidArgumentException('نوع لینک معتبر نیست.');
         if ($kind === 'personalized') {
             if (!$orderId || filter_var($email, FILTER_VALIDATE_EMAIL) === false) throw new InvalidArgumentException('برای لینک اختصاصی، سفارش و ایمیل معتبر لازم است.');
-            $check=$this->pdo->prepare("SELECT o.id FROM orders o WHERE o.id=? AND o.payment_status='paid' AND EXISTS (SELECT 1 FROM provisioning_attempts p WHERE p.order_id=o.id AND p.status='succeeded')");
+            $check=$this->pdo->prepare("SELECT o.id,o.password_ciphertext FROM orders o WHERE o.id=? AND o.payment_status='paid' AND EXISTS (SELECT 1 FROM provisioning_attempts p WHERE p.order_id=o.id AND p.status='succeeded')");
             $check->execute([$orderId]);
-            if (!$check->fetchColumn()) throw new RuntimeException('لینک اختصاصی فقط برای سفارش پرداخت‌شده و فعال‌سازی موفق ساخته می‌شود.');
+            $eligible=$check->fetch(PDO::FETCH_ASSOC); if (!$eligible || !is_string($eligible['password_ciphertext']) || $eligible['password_ciphertext']==='') throw new RuntimeException('لینک اختصاصی فقط برای سفارش پرداخت‌شده، فعال‌سازی موفق و دارای رمز عبور ذخیره‌شده ساخته می‌شود.');
         }
         $profile=$this->pdo->prepare('SELECT id FROM openvpn_profiles WHERE id=? AND is_active=1');
         $profile->execute([$profileId]);
@@ -161,7 +161,7 @@ final class OpenVpnManager
         return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-profile.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
     }
 
-    public function resolveToken(string $token): array
+    public function resolveToken(string $token, bool $countAccess = true): array
     {
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) throw new RuntimeException('پیوند معتبر نیست.');
         $stmt=$this->pdo->prepare('SELECT l.id,l.link_type,l.order_id,l.profile_id,p.name,p.profile_ciphertext FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id WHERE l.token_hash=? AND l.is_active=1 AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1');
@@ -177,8 +177,10 @@ final class OpenVpnManager
             $username=(string)$credentials['username'];
             $password=app_decrypt_secret((string)$credentials['password_ciphertext']);
         }
-        $update=$this->pdo->prepare('UPDATE openvpn_links SET last_used_at=UTC_TIMESTAMP(), download_count=download_count+1 WHERE id=?');
-        $update->execute([(int)$row['id']]);
+        if ($countAccess) {
+            $update=$this->pdo->prepare('UPDATE openvpn_links SET last_used_at=UTC_TIMESTAMP(), download_count=download_count+1 WHERE id=?');
+            $update->execute([(int)$row['id']]);
+        }
         return ['id'=>(int)$row['profile_id'],'name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>(string)$row['link_type'],'username'=>$username,'password'=>$password];
     }
 
