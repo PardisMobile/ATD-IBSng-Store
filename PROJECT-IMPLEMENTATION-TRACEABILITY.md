@@ -633,3 +633,19 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Resolve contradictory historical entries by preserving the date and adding `SUPERSEDED by <later section>`; do not erase the audit trail.
 - Keep user-approved product decisions in `PROJECT-CONTEXT.md`; keep current implementation facts, exact source paths, tests, and verification gaps here.
 - No PHP lint, automated suite, DB migration execution, live email, cPanel, gateway, or IBSng E2E run is claimed in this audit checkpoint.
+
+
+## OpenVPN profile management (2026-11-11)
+
+**Status: SOURCE IMPLEMENTED — NOT RUNTIME VERIFIED.**
+
+- Added a dedicated OpenVPN management card to `admin/guide.php`, separate from the existing general customer guide editor and its save flow. Both management subsections are contained in the same card.
+- Profile import accepts either a hosted HTTPS URL or an uploaded `.ovpn` file. URL imports are fetched once and stored as a snapshot; uploaded and fetched profile content is encrypted using the existing application encryption key. Basic profile structure, file size, URL scheme, DNS address scope, and risky executable/config directives are validated.
+- Added public and personalized token links. Raw tokens are not stored; only SHA-256 token hashes are persisted. Personalized links require a paid order with at least one successful provisioning attempt and a valid admin-entered recipient email. The selected email is not written to `orders.buyer_email`.
+- Public links are not tied to an order. Link records support disable/reactivate and download count/last-used tracking. Profile deletion removes associated links.
+- Added the explicit `/openvpn-download.php` route and token-validated profile download endpoint. Profile data is decrypted only after token validation.
+- Added fresh-install schema and idempotent schema synchronization for `openvpn_profiles` and `openvpn_links`.
+- Added the bilingual `openvpn_profile` email event, using the existing EmailTemplates/EmailSender path and shared HTML shell. Email template editor preview includes the new variables. UI labels/placeholders and the event selector have Persian/English translations.
+- **OpenVPN authentication limitation:** an `.ovpn` file containing `auth-user-pass` does not embed username/password. The personalized email therefore sends the protected profile link and tells the customer to enter their existing IBSng credentials when the client prompts. No credentials are placed in a URL or injected into unsupported inline syntax.
+- Public link generation displays the URL for the administrator to copy into the existing general OpenVPN guide text; the guide generation/customer rendering mechanism was not modified.
+- Outstanding verification: PHP lint, schema sync on an existing cPanel database, profile URL import against a real HTTPS host, upload, token expiry/revocation, order eligibility, bilingual email delivery, and OpenVPN client import/authentication. No runtime or live mail test is claimed.
