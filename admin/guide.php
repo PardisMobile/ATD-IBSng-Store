@@ -249,13 +249,30 @@ $esc = static fn($value): string => e((string)$value);
 <div class="actions"><button class="button primary" type="submit" data-fa="ذخیره راهنمای عمومی" data-en="Save general guide">ذخیره راهنمای عمومی</button><a class="button" href="<?= e(app_url('userguide.php')) ?>" target="_blank" rel="noopener" data-fa="مشاهده صفحه راهنما" data-en="Open customer guide">مشاهده صفحه راهنما</a></div>
 </form>
 </section>
-<?php $ovpnProfiles = $ovpnManager->profiles(); $editProfileId = (int)($_GET['edit_ovpn_profile'] ?? 0); $editProfile = null; foreach ($ovpnProfiles as $profileRow) { if ((int)$profileRow['id'] === $editProfileId) $editProfile = $profileRow; } ?>
+<?php
+$ovpnProfiles = [];
+$ovpnLinks = [];
+$ovpnLoadError = '';
+try {
+    $ovpnProfiles = $ovpnManager->profiles();
+    $ovpnLinks = $ovpnManager->links();
+} catch (Throwable $e) {
+    error_log('OpenVPN admin data loading failed: ' . $e->getMessage());
+    $ovpnLoadError = 'جداول OpenVPN در دیتابیس آماده نیستند. از بخش همگام‌سازی دیتابیس در مدیریت، تغییرات معوق را اعمال کنید.';
+}
+$editProfileId = (int)($_GET['edit_ovpn_profile'] ?? 0);
+$editProfile = null;
+foreach ($ovpnProfiles as $profileRow) {
+    if ((int)$profileRow['id'] === $editProfileId) $editProfile = $profileRow;
+}
+?>
 <section class="panel panel-card" id="openvpn-management">
 <div class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</div>
 <h2 data-fa="مدیریت OpenVPN" data-en="OpenVPN Management">مدیریت OpenVPN</h2>
 <p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
 <?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
+<?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnLoadError) ?></div><?php endif; ?>
 <?php if ($ovpnGeneratedLinks): ?>
 <div class="form-section" aria-live="polite">
 <h3 data-fa="لینک‌های Import ساخته‌شده" data-en="Generated import URLs">لینک‌های Import ساخته‌شده</h3>
@@ -299,7 +316,7 @@ $esc = static fn($value): string => e((string)$value);
 </form>
 </details>
 <div class="table-wrap" style="margin-top:18px"><h3 data-fa="لینک‌های ساخته‌شده" data-en="Generated links">لینک‌های ساخته‌شده</h3><table><thead><tr><th data-fa="پروفایل" data-en="Profile">پروفایل</th><th data-fa="نوع" data-en="Type">نوع</th><th data-fa="سفارش" data-en="Order">سفارش</th><th data-fa="ایمیل گیرنده" data-en="Recipient">ایمیل گیرنده</th><th data-fa="دانلود" data-en="Downloads">دانلود</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
-<?php $ovpnLinks = $ovpnManager->links(); if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
+<?php if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
 <?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($linkRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($linkRow['is_active']) ? '<span data-fa="لغو لینک" data-en="Revoke link">لغو لینک</span>' : '<span data-fa="فعال‌سازی مجدد" data-en="Reactivate">فعال‌سازی مجدد</span>' ?></button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </section>
