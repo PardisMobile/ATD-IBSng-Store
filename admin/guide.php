@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/app/AdminAuth.php';
 require_admin();
 require_once dirname(__DIR__) . '/app/GuideIcons.php';
 require_once dirname(__DIR__) . '/app/OpenVpnManager.php';
+require_once dirname(__DIR__) . '/app/StorefrontView.php';
 require_once dirname(__DIR__) . '/app/EmailTemplates.php';
 require_once dirname(__DIR__) . '/app/EmailSender.php';
 
@@ -43,6 +44,7 @@ $message = isset($_GET['saved']) ? 'راهنمای عمومی ذخیره شد.' 
 $ovpnMessage = '';
 $ovpnError = '';
 $ovpnResult = '';
+$ovpnGeneratedLinks = [];
 $ovpnManager = new OpenVpnManager($pdo);
 $ovpnSearch = trim((string)($_GET['ovpn_order_search'] ?? ''));
 $ovpnOrders = [];
@@ -101,6 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                 $email = trim((string)($_POST['recipient_email'] ?? ''));
                 $link = $ovpnManager->createLink((int)($_POST['profile_id'] ?? 0), $kind, $orderId, $email);
                 $ovpnResult = $kind === 'public' ? $link['public_url'] : $link['url'];
+                $ovpnGeneratedLinks = ['public' => (string)$link['public_url']];
+                if ($kind === 'personalized') $ovpnGeneratedLinks['personalized'] = (string)$link['profile_url'];
                 if ($kind === 'personalized') {
                     $orderStmt = $pdo->prepare('SELECT buyer_name, language FROM orders WHERE id=? LIMIT 1');
                     $orderStmt->execute([$orderId]); $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
@@ -249,7 +253,21 @@ $esc = static fn($value): string => e((string)$value);
 <p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
 <?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
-<?php if ($ovpnResult !== ''): ?><div class="field"><label data-fa="لینک ساخته‌شده" data-en="Generated link">لینک ساخته‌شده</label><input readonly dir="ltr" value="<?= e($ovpnResult) ?>" onclick="this.select()"></div><?php endif; ?>
+<?php if ($ovpnGeneratedLinks): ?>
+<div class="form-section" aria-live="polite">
+<h3 data-fa="لینک‌های Import ساخته‌شده" data-en="Generated import URLs">لینک‌های Import ساخته‌شده</h3>
+<?php if (isset($ovpnGeneratedLinks['personalized'])): ?>
+<div class="field">
+<label data-fa="لینک اختصاصی Import" data-en="Personalized import URL">لینک اختصاصی Import</label>
+<div class="actions"><input class="ovpn-admin-url" readonly dir="ltr" value="<?= e($ovpnGeneratedLinks['personalized']) ?>"><button class="button ovpn-copy-button" type="button" data-copy-value="<?= e($ovpnGeneratedLinks['personalized']) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized URL">کپی لینک اختصاصی</span></button></div>
+</div>
+<?php endif; ?>
+<div class="field">
+<label data-fa="لینک عمومی Import" data-en="Public import URL">لینک عمومی Import</label>
+<div class="actions"><input class="ovpn-admin-url" readonly dir="ltr" value="<?= e($ovpnGeneratedLinks['public']) ?>"><button class="button ovpn-copy-button" type="button" data-copy-value="<?= e($ovpnGeneratedLinks['public']) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک عمومی" data-en="Copy public URL">کپی لینک عمومی</span></button></div>
+</div>
+</div>
+<?php endif; ?>
 <details class="form-section" open>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
 <form method="post" enctype="multipart/form-data">
@@ -284,6 +302,19 @@ $esc = static fn($value): string => e((string)$value);
 </section>
 <script>
 (function(){const order=document.getElementById('ovpn-order-id'),email=document.getElementById('ovpn-recipient-email'),form=document.getElementById('ovpn-link-form');if(order&&email)order.addEventListener('change',()=>{const option=order.selectedOptions[0];email.value=option?.dataset.email||'';});if(form)form.addEventListener('submit',event=>{const button=event.submitter;if(button?.value==='personalized'){if(!order.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Select an order first.':'ابتدا سفارش مشتری را انتخاب کنید.');return;}if(!email.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Enter a recipient email address.':'نشانی ایمیل گیرنده را وارد کنید.');}}});})();
+</script>
+<script>
+document.addEventListener('click', async function(event) {
+ const button = event.target.closest('[data-copy-value]');
+ if (!button) return;
+ const value = button.getAttribute('data-copy-value') || '';
+ try {
+  if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
+  else { const field=document.createElement('textarea'); field.value=value; field.style.position='fixed'; field.style.opacity='0'; document.body.appendChild(field); field.select(); document.execCommand('copy'); field.remove(); }
+  const label=button.querySelector('span');
+  if(label){const old=label.textContent;label.textContent=document.documentElement.lang==='en'?'Copied':'کپی شد';setTimeout(()=>label.textContent=old,1800);}
+ } catch (_) { const input=button.parentElement?.querySelector('input'); if(input){input.focus();input.select();} }
+});
 </script>
 <?php require __DIR__ . '/_footer.php'; ?>
 </main>
