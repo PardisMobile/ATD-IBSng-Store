@@ -93,6 +93,11 @@ final class OpenVpnManager
     {
         $name = trim($name);
         if ($name === '' || mb_strlen($name) > 120) throw new InvalidArgumentException('نام پروفایل الزامی و حداکثر ۱۲۰ نویسه است.');
+        if ($id && trim($content) === '') {
+            $stmt = $this->pdo->prepare('UPDATE openvpn_profiles SET name=?, updated_at=NOW() WHERE id=?');
+            $stmt->execute([$name, $id]);
+            return $id;
+        }
         $content = self::validateProfile($content);
         $cipher = app_encrypt_secret($content);
         if ($id) {
