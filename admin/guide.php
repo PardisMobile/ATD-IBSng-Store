@@ -201,6 +201,9 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-method .field-full{grid-column:1/-1}
 .guide-admin-method .check-toggle{display:flex;align-items:center;gap:8px}
 .guide-admin-note{color:var(--muted);line-height:1.9}
+.ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
+.ovpn-copy-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.ovpn-copy-button .ui-icon{width:18px;height:18px;flex:0 0 18px}
 @media(max-width:650px){.guide-admin-method .system-fields{grid-template-columns:1fr}}
 </style>
 </head>
