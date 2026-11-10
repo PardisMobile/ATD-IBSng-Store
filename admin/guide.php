@@ -317,7 +317,7 @@ foreach ($ovpnProfiles as $profileRow) {
 </div>
 </div>
 <?php endif; ?>
-<details class="form-section">
+<details class="form-section"<?= $editProfile ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
 <form method="post" enctype="multipart/form-data">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
