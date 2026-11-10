@@ -92,7 +92,7 @@ final class OpenVpnManager
     public function saveProfile(?int $id, string $name, string $content): int
     {
         $name = trim($name);
-        if ($name === '' || mb_strlen($name) > 120) throw new InvalidArgumentException('نام پروفایل الزامی و حداکثر ۱۲۰ نویسه است.');
+        if ($name === '' || (preg_match_all('/./us', $name, $nameChars) === false || count($nameChars[0]) > 120)) throw new InvalidArgumentException('نام پروفایل الزامی و حداکثر ۱۲۰ نویسه است.');
         if ($id && trim($content) === '') {
             $stmt = $this->pdo->prepare('UPDATE openvpn_profiles SET name=?, updated_at=NOW() WHERE id=?');
             $stmt->execute([$name, $id]);
@@ -154,6 +154,7 @@ final class OpenVpnManager
         $profile=$this->pdo->prepare('SELECT id FROM openvpn_profiles WHERE id=? AND is_active=1');
         $profile->execute([$profileId]);
         if (!$profile->fetchColumn()) throw new RuntimeException('پروفایل انتخاب‌شده فعال نیست.');
+        if ($kind === 'public') $orderId = null;
         $token=bin2hex(random_bytes(32));
         $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, is_active, expires_at) VALUES (?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
         $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token)]);
