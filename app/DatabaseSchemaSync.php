@@ -95,7 +95,9 @@ final class DatabaseSchemaSync
         }
         if ((!$this->tableExists('openvpn_profiles') || !$this->tableExists('openvpn_links')) && $this->tableExists('orders')) {
             $pending[] = 'ایجاد جداول مدیریت پروفایل و لینک OpenVPN';
-        }\n\n        if (!$this->tableExists('customer_order_recovery_codes')) {
+        }
+
+        if (!$this->tableExists('customer_order_recovery_codes')) {
             $pending[] = 'ایجاد جدول کدهای بازیابی سفارش مشتری';
         }
 
@@ -163,7 +165,8 @@ final class DatabaseSchemaSync
         }
         $this->ensureProvisioningReviewStatus();
         $this->ensureCustomerEmailDeliveries();
-        $this->ensureCustomerRecoveryCodes();\n        $this->ensureOpenVpnTables();
+        $this->ensureCustomerRecoveryCodes();
+        $this->ensureOpenVpnTables();
         $settings = $this->pdo->prepare('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)');
         $settings->execute(['price_display_unit', 'IRT']);
         $settings->execute(['crypto_gateway_enabled', '0']);
