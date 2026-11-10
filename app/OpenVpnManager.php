@@ -108,6 +108,17 @@ final class OpenVpnManager
         $stmt->execute([$active ? 1 : 0, $id]);
     }
 
+    public function links(): array
+    {
+        return $this->pdo->query('SELECT l.id,l.link_type,l.order_id,l.recipient_email,l.is_active,l.expires_at,l.download_count,l.created_at,p.name AS profile_name FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id ORDER BY l.id DESC LIMIT 100')->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function setLinkActive(int $id, bool $active): void
+    {
+        $stmt=$this->pdo->prepare('UPDATE openvpn_links SET is_active=? WHERE id=?');
+        $stmt->execute([$active ? 1 : 0, $id]);
+    }
+
     public function deleteProfile(int $id): void
     {
         $stmt=$this->pdo->prepare('DELETE FROM openvpn_profiles WHERE id=?');
