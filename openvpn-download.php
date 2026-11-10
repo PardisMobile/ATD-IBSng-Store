@@ -8,18 +8,30 @@ require_once __DIR__ . '/app/OpenVpnManager.php';
 
 $config = app_config();
 $valid = false;
+$isPersonalized = false;
 $personalUrl = $publicUrl = $profileName = '';
 try {
     $manager = new OpenVpnManager(Database::connection());
-    $result = $manager->resolveToken((string)($_GET['t'] ?? ''), false);
-    if ($result['type'] === 'public') {
-        header('Location: ' . app_absolute_url('openvpn-profile.php?p=' . (int)$result['id']), true, 302);
-        exit;
+    $token = trim((string)($_GET['t'] ?? ''));
+    $profileId = (int)($_GET['p'] ?? 0);
+    if ($token !== '') {
+        $result = $manager->resolveToken($token, false);
+        if ($result['type'] === 'public') {
+            header('Location: ' . app_absolute_url('openvpn-download.php?p=' . (int)$result['id']), true, 302);
+            exit;
+        }
+        if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
+        $isPersonalized = true;
+        $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));
+        $profileId = (int)$result['id'];
+        $profileName = (string)$result['name'];
+    } elseif ($profileId > 0) {
+        $result = $manager->resolvePublicProfile($profileId);
+        $profileName = (string)$result['name'];
+    } else {
+        throw new RuntimeException('A valid public profile or personalized token is required.');
     }
-    if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
-    $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode((string)($_GET['t'] ?? '')));
-    $publicUrl = app_absolute_url('openvpn-profile.php?p=' . (int)$result['id']);
-    $profileName = (string)$result['name'];
+    $publicUrl = app_absolute_url('openvpn-profile.php?p=' . $profileId);
     $valid = true;
 } catch (Throwable $e) {
     http_response_code(404);
@@ -71,14 +83,16 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section class="panel plan-card openvpn-guide-main">
 <div class="eyebrow" data-fa="پروفایل اتصال: <?= e($profileName) ?>" data-en="Connection profile: <?= e($profileName) ?>">پروفایل اتصال: <?= e($profileName) ?></div>
 <h1 data-fa="راهنمای اتصال OpenVPN" data-en="OpenVPN connection guide">راهنمای اتصال OpenVPN</h1>
-<p class="openvpn-guide-intro" data-fa="برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید." data-en="To add this profile to OpenVPN Connect, copy the required URL and enter it under Import from URL.">برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید.</p>
+<p class="openvpn-guide-intro" data-fa="برای افزودن پروفایل به OpenVPN Connect، لینک موردنظر را کپی کنید و در بخش Import from URL وارد نمایید." data-en="To add this profile to OpenVPN Connect, copy the required URL and enter it under Import from URL.">برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید.</p>
 <div class="openvpn-link-grid">
+<?php if ($isPersonalized): ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('account') ?><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
 <p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the IBSng username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
 </article>
+<?php endif; ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('globe') ?><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
 <p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید." data-en="This URL has no personalized token and contains no customer's login credentials. You can place it in the site's general connection guide.">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید.</p>
@@ -89,9 +103,9 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <ol class="openvpn-guide-steps">
 <li data-fa="برنامه OpenVPN Connect را باز کنید." data-en="Open the OpenVPN Connect app.">برنامه OpenVPN Connect را باز کنید.</li>
 <li data-fa="از بخش Add Profile، گزینه Import from URL را انتخاب کنید." data-en="From Add Profile, choose Import from URL.">از بخش Add Profile، گزینه Import from URL را انتخاب کنید.</li>
-<li data-fa="لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود." data-en="Enter your personalized URL to retrieve your account profile.">لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود.</li>
+<?php if ($isPersonalized): ?><li data-fa="لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود." data-en="Enter your personalized URL to retrieve your account profile.">لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود.</li><?php else: ?><li data-fa="لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود." data-en="Enter the public URL to retrieve the connection profile.">لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود.</li><?php endif; ?>
 </ol>
-<div class="openvpn-guide-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg><span data-fa="لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است." data-en="Your personalized link contains your login credentials. Do not share it. The public link does not contain login credentials.">لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است.</span></div>
+<?php if ($isPersonalized): ?><div class="openvpn-guide-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg><span data-fa="لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است." data-en="Your personalized link contains your login credentials. Do not share it. The public link does not contain login credentials.">لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است.</span></div><?php endif; ?>
 </section>
 <?php endif; ?>
 </main>
