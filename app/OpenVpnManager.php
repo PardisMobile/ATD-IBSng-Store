@@ -158,22 +158,52 @@ final class OpenVpnManager
         $token=bin2hex(random_bytes(32));
         $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, is_active, expires_at) VALUES (?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
         $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token)]);
-        return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
+        return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-profile.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
     }
 
     public function resolveToken(string $token): array
     {
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) throw new RuntimeException('پیوند معتبر نیست.');
-        $stmt=$this->pdo->prepare('SELECT l.id,l.link_type,l.order_id,p.name,p.profile_ciphertext FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id WHERE l.token_hash=? AND l.is_active=1 AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1');
+        $stmt=$this->pdo->prepare('SELECT l.id,l.link_type,l.order_id,l.profile_id,p.name,p.profile_ciphertext FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id WHERE l.token_hash=? AND l.is_active=1 AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1');
         $stmt->execute([hash('sha256',$token)]); $row=$stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) throw new RuntimeException('این پیوند منقضی یا غیرفعال شده است.');
+        $username = '';
+        $password = '';
         if ($row['link_type']==='personalized') {
-            $check=$this->pdo->prepare("SELECT id FROM orders WHERE id=? AND payment_status='paid'");
+            $check=$this->pdo->prepare("SELECT username,password_ciphertext FROM orders WHERE id=? AND payment_status='paid' LIMIT 1");
             $check->execute([(int)$row['order_id']]);
-            if (!$check->fetchColumn()) throw new RuntimeException('سفارش مربوط به این پیوند دیگر معتبر نیست.');
+            $credentials=$check->fetch(PDO::FETCH_ASSOC);
+            if (!$credentials || !is_string($credentials['password_ciphertext']) || $credentials['password_ciphertext']==='') throw new RuntimeException('اطلاعات ورود سفارش در دسترس نیست.');
+            $username=(string)$credentials['username'];
+            $password=app_decrypt_secret((string)$credentials['password_ciphertext']);
         }
         $update=$this->pdo->prepare('UPDATE openvpn_links SET last_used_at=UTC_TIMESTAMP(), download_count=download_count+1 WHERE id=?');
         $update->execute([(int)$row['id']]);
-        return ['name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>(string)$row['link_type']];
+        return ['id'=>(int)$row['profile_id'],'name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>(string)$row['link_type'],'username'=>$username,'password'=>$password];
+    }
+
+    public function resolvePublicProfile(int $profileId): array
+    {
+        if ($profileId < 1) throw new RuntimeException('پروفایل عمومی معتبر نیست.');
+        $stmt=$this->pdo->prepare('SELECT id,name,profile_ciphertext FROM openvpn_profiles WHERE id=? AND is_active=1 LIMIT 1');
+        $stmt->execute([$profileId]);
+        $row=$stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) throw new RuntimeException('پروفایل عمومی فعال پیدا نشد.');
+        return ['id'=>(int)$row['id'],'name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>'public','username'=>'','password'=>''];
+    }
+
+    public static function profileWithCredentials(string $content, string $username, string $password): string
+    {
+        $content=self::validateProfile($content);
+        if ($username==='' || preg_match('/[^A-Za-z0-9_.@-]/', $username) || preg_match('/[\r\n\x00-\x1F\x7F]/', $password)) {
+            throw new InvalidArgumentException('اطلاعات ورود برای ساخت پروفایل اختصاصی معتبر نیست.');
+        }
+        if (!preg_match('/^\s*auth-user-pass\s*$/mi', $content)) {
+            throw new RuntimeException('پروفایل باید دقیقاً از دستور auth-user-pass بدون فایل جانبی استفاده کند.');
+        }
+        $content=preg_replace('/^\s*auth-user-pass\s*$/mi', "<auth-user-pass>\n".$username."\n".$password."\n</auth-user-pass>", $content, 1, $count);
+        if ($count!==1) throw new RuntimeException('افزودن اطلاعات ورود به پروفایل ناموفق بود.');
+        return self::validateProfile($content);
+    }
     }
 }
