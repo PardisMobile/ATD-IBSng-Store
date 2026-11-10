@@ -56,6 +56,9 @@ final class OpenVpnManager
             }
         }
         if (!function_exists('curl_init')) throw new RuntimeException('افزونه cURL برای دریافت امن پروفایل فعال نیست.');
+        $port = isset($parts['port']) ? (int)$parts['port'] : 443;
+        $resolve = [];
+        foreach ($ips as $ip) { $resolve[] = $host . ':' . $port . ':' . (str_contains($ip, ':') ? '[' . $ip . ']' : $ip); }
         $ch = curl_init($url);
         $body = '';
         curl_setopt_array($ch, [
@@ -68,6 +71,7 @@ final class OpenVpnManager
                 $body .= $chunk; return strlen($chunk);
             },
             CURLOPT_USERAGENT => 'ATD-IBSng-Store OpenVPN Profile Fetcher',
+            CURLOPT_RESOLVE => $resolve,
         ]);
         $ok = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
