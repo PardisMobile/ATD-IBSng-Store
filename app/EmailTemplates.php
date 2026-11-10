@@ -14,6 +14,7 @@ final class EmailTemplates
         'order_recovery' => 'بازیابی سفارش / ارسال اطلاعات خرید',
         'email_verification' => 'تأیید ایمیل',
         'expiration_reminder' => 'یادآوری انقضا',
+        'openvpn_profile' => 'لینک اختصاصی پروفایل OpenVPN',
     ];
 
     private const DEFAULTS = [
@@ -106,6 +107,11 @@ final class EmailTemplates
 </html>
 HTML,
             'text' => "{{site_name}}\nتأیید نشانی ایمیل\nبرای تأیید ایمیل خود، پیوند زیر را باز کنید:\n{{verification_url}}\nمدت اعتبار پیوند: {{expires_in}}\nاگر شما درخواست تأیید ایمیل نداده‌اید، این پیام را نادیده بگیرید.",
+        ],
+        'openvpn_profile' => [
+            'subject' => 'لینک پروفایل OpenVPN شما - {{site_name}}',
+            'html' => '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"></head><body dir="rtl"><main><h2>{{site_name}}</h2><p>سلام {{customer_name}}،</p><p>لینک اختصاصی دریافت پروفایل {{profile_name}} برای سفارش شما آماده است.</p><p><a href="{{profile_url}}">دریافت پروفایل OpenVPN</a></p><p>شناسه سفارش: {{order_id}}</p><p>برای ورود در برنامه OpenVPN از نام کاربری و رمز عبور اکانت IBSng خود استفاده کنید.</p></main></body></html>',
+            'text' => "{{site_name}}\nسلام {{customer_name}}،\nلینک دریافت پروفایل {{profile_name}}: {{profile_url}}\nشناسه سفارش: {{order_id}}\nبرای اتصال از نام کاربری و رمز عبور اکانت IBSng استفاده کنید.",
         ],
         'expiration_reminder' => [
             'subject' => 'یادآوری انقضای سرویس در {{site_name}}',
@@ -205,6 +211,11 @@ If the button does not work, open this address in your browser:<br>
 HTML,
             'text' => "{{site_name}}\nVerify your email address\nOpen the link below to verify your email:\n{{verification_url}}\nLink validity: {{expires_in}}\nIf you did not request this verification, ignore this message.",
         ],
+        'openvpn_profile' => [
+            'subject' => 'Your personalized OpenVPN profile - {{site_name}}',
+            'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr"><main><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your personalized download link for the {{profile_name}} OpenVPN profile is ready.</p><p><a href="{{profile_url}}">Download OpenVPN profile</a></p><p>Order ID: {{order_id}}</p><p>Use your IBSng account username and password when prompted by your OpenVPN application.</p></main></body></html>',
+            'text' => "{{site_name}}\nHello {{customer_name}},\nDownload your {{profile_name}} profile: {{profile_url}}\nOrder ID: {{order_id}}\nUse your IBSng account username and password when prompted by your OpenVPN application.",
+        ],
         'expiration_reminder' => [
             'subject' => 'Service expiration reminder from {{site_name}}',
             'html' => '<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"></head><body dir="ltr" style="margin:0;background:#f3f5fa;font-family:Arial,sans-serif;color:#172033;direction:ltr;text-align:left"><main dir="ltr" style="direction:ltr;text-align:left;max-width:600px;margin:24px auto;padding:28px;background:#fff;border-radius:16px"><h2>{{site_name}}</h2><p>Hello {{customer_name}},</p><p>Your service is scheduled to expire on {{expiration_date}}.</p><p><a href="{{service_url}}">View service</a></p></main></body></html>',
@@ -272,6 +283,14 @@ HTML,
                 $content = $en
                     ? '<p style="margin:0 0 22px;font-size:14px;line-height:2;color:#475569;">Click the button below to verify your email address.</p><p style="margin:22px 0;text-align:center;"><a href="{{verification_url}}" style="display:inline-block;padding:13px 34px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">Verify email</a></p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:14px 16px;font-size:12px;line-height:2;color:#64748b;">Link validity: {{expires_in}}<br>If the button does not work, open this address:<br><a href="{{verification_url}}" style="color:#1769d2;word-break:break-all;">{{verification_url}}</a></td></tr></table>'
                     : '<p style="margin:0 0 22px;font-size:14px;line-height:2;color:#475569;">برای تأیید ایمیل خود، روی دکمه زیر بزنید.</p><p style="margin:22px 0;text-align:center;"><a href="{{verification_url}}" style="display:inline-block;padding:13px 34px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;">تأیید ایمیل</a></p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:14px 16px;font-size:12px;line-height:2;color:#64748b;">مدت اعتبار پیوند: {{expires_in}}<br>اگر دکمه بالا کار نکرد، این نشانی را باز کنید:<br><a href="{{verification_url}}" style="color:#1769d2;word-break:break-all;">{{verification_url}}</a></td></tr></table>';
+                break;
+            case 'openvpn_profile':
+                $title = $en ? 'Your OpenVPN profile is ready' : 'پروفایل OpenVPN شما آماده است';
+                $intro = $en ? 'A personalized download link for your OpenVPN profile has been created.' : 'پیوند اختصاصی دریافت پروفایل OpenVPN برای شما ساخته شده است.';
+                $icon = '&#8681;';
+                $content = $en
+                    ? '<p style="margin:0 0 18px;font-size:14px;line-height:2;color:#475569;">Hello {{customer_name}},</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:16px;font-size:14px;line-height:2;color:#334155;">Profile: <strong>{{profile_name}}</strong><br>Order ID: <strong dir="ltr">{{order_id}}</strong></td></tr></table><p style="margin:22px 0;text-align:center;"><a href="{{profile_url}}" style="display:inline-block;padding:12px 24px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Download OpenVPN profile</a></p><p style="font-size:13px;line-height:2;color:#64748b;">Use your IBSng username and password when the OpenVPN app asks for credentials.</p>'
+                    : '<p style="margin:0 0 18px;font-size:14px;line-height:2;color:#475569;">سلام {{customer_name}}،</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f8fc;border:1px solid #e8edf5;border-radius:10px;"><tr><td style="padding:16px;font-size:14px;line-height:2;color:#334155;">پروفایل: <strong>{{profile_name}}</strong><br>شناسه سفارش: <strong dir="ltr">{{order_id}}</strong></td></tr></table><p style="margin:22px 0;text-align:center;"><a href="{{profile_url}}" style="display:inline-block;padding:12px 24px;background:#1769d2;border:1px solid #1769d2;border-radius:9px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">دریافت پروفایل OpenVPN</a></p><p style="font-size:13px;line-height:2;color:#64748b;">هنگام درخواست اطلاعات ورود در برنامه OpenVPN، نام کاربری و رمز عبور اکانت IBSng خود را وارد کنید.</p>';
                 break;
             case 'expiration_reminder':
                 $title = $en ? 'Service expiration reminder' : 'یادآوری انقضای سرویس';
