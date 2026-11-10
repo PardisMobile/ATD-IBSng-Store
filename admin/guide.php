@@ -292,16 +292,16 @@ foreach ($ovpnProfiles as $profileRow) {
 }
 ?>
 <section class="panel panel-card" id="openvpn-management">
-<details class="guide-admin-disclosure guide-ovpn-disclosure">
+<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
+<?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
+<?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnLoadError) ?></div><?php endif; ?>
+<details class="guide-admin-disclosure guide-ovpn-disclosure"<?= ($editProfile || $ovpnGeneratedLinks) ? ' open' : '' ?>>
 <summary class="guide-admin-disclosure-summary">
 <span class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</span>
 <strong id="openvpn-management-title" data-fa="مدیریت OpenVPN" data-en="OpenVPN Management">مدیریت OpenVPN</strong>
 </summary>
 <div class="guide-admin-disclosure-content">
 <p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
-<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
-<?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
-<?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnLoadError) ?></div><?php endif; ?>
 <?php if ($ovpnGeneratedLinks): ?>
 <div class="form-section" aria-live="polite">
 <h3 data-fa="لینک‌های Import ساخته‌شده" data-en="Generated import URLs">لینک‌های Import ساخته‌شده</h3>
