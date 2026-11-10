@@ -80,8 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                     if (!is_string($profileContent)) throw new RuntimeException('خواندن فایل بارگذاری‌شده ناموفق بود.');
                 } else {
                     $url = trim((string)($_POST['profile_url'] ?? ''));
-                    if ($url === '') throw new InvalidArgumentException('نشانی HTTPS یا فایل پروفایل را وارد کنید.');
-                    $profileContent = OpenVpnManager::fetchProfileUrl($url);
+                    if ($url === '' && $id) $profileContent = '';
+                    elseif ($url === '') throw new InvalidArgumentException('نشانی HTTPS یا فایل پروفایل را وارد کنید.');
+                    else $profileContent = OpenVpnManager::fetchProfileUrl($url);
                 }
                 $savedId = $ovpnManager->saveProfile($id, $name, $profileContent);
                 $ovpnMessage = 'پروفایل OpenVPN با موفقیت ذخیره شد. شناسه: ' . $savedId;
