@@ -7,77 +7,99 @@ require_once __DIR__ . '/app/StorefrontView.php';
 require_once __DIR__ . '/app/OpenVpnManager.php';
 
 $config = app_config();
-
+$valid = false;
+$personalUrl = $publicUrl = $profileName = '';
 try {
     $manager = new OpenVpnManager(Database::connection());
     $result = $manager->resolveToken((string)($_GET['t'] ?? ''));
-    $filename = preg_replace('/[^a-zA-Z0-9._-]+/', '-', $result['name']) ?: 'openvpn-profile';
-
-    // A valid token keeps the existing direct-download response.
-    header('Content-Type: application/x-openvpn-profile');
-    header('Content-Disposition: attachment; filename="' . $filename . '.ovpn"');
-    header('X-Content-Type-Options: nosniff');
-    header('Cache-Control: private, no-store, max-age=0');
-    header('Pragma: no-cache');
-    header('Content-Length: ' . strlen($result['content']));
-    echo $result['content'];
-    exit;
+    if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
+    $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode((string)($_GET['t'] ?? '')));
+    $publicUrl = app_absolute_url('openvpn-profile.php?p=' . (int)$result['id']);
+    $profileName = (string)$result['name'];
+    $valid = true;
 } catch (Throwable $e) {
-    // Do not expose token, database, or decryption details to the visitor.
     http_response_code(404);
     header('Cache-Control: no-store');
 }
-
 $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 ?>
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="<?= e(app_asset_url('assets/icons/atd-app-icon.svg')) ?>">
-<link rel="apple-touch-icon" sizes="180x180" href="<?= e(app_asset_url('assets/icons/apple-touch-icon.png')) ?>">
-<link rel="manifest" href="<?= e(app_asset_url('site.webmanifest')) ?>">
-<title data-fa="پیوند دانلود معتبر نیست" data-en="Invalid download link">پیوند دانلود معتبر نیست | <?= e($siteTitle) ?></title>
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/app.css')) ?>">
 <link rel="stylesheet" href="<?= e(app_asset_url('assets/css/unified.css')) ?>">
+<title data-fa="راهنمای اتصال OpenVPN" data-en="OpenVPN connection guide">راهنمای اتصال OpenVPN | <?= e($siteTitle) ?></title>
 <style>
-.openvpn-download-shell{width:min(820px,calc(100% - 28px));margin:0 auto}
-.openvpn-download-card{padding:clamp(20px,4vw,34px);margin:24px 0 36px;text-align:center;min-width:0}
-.openvpn-download-card h1{max-width:none;font-size:clamp(1.4rem,4vw,2rem);line-height:1.5;margin:14px 0 10px}
-.openvpn-download-card p{max-width:620px;margin:0 auto;color:var(--muted);line-height:1.95}
-.openvpn-download-symbol{display:grid;place-items:center;width:66px;height:66px;margin:0 auto 12px;border:1px solid color-mix(in srgb,var(--danger,var(--amber)) 35%,var(--border));border-radius:20px;background:color-mix(in srgb,var(--danger,var(--amber)) 10%,var(--surface-2));color:var(--danger,var(--amber))}
-.openvpn-download-symbol svg{width:30px;height:30px}
-.openvpn-download-alert{margin:18px auto 0;padding:14px 16px;border:1px solid color-mix(in srgb,var(--danger,var(--amber)) 28%,var(--border));border-radius:var(--ui-radius-md,14px);background:color-mix(in srgb,var(--danger,var(--amber)) 7%,var(--surface-2));color:var(--text);line-height:1.9;overflow-wrap:anywhere}
-.openvpn-download-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-top:22px}
-.openvpn-download-actions .button{min-width:160px}
-@media(max-width:560px){.openvpn-download-shell{width:calc(100% - 20px)}.openvpn-download-card{padding:22px 17px}.openvpn-download-actions{display:grid}.openvpn-download-actions .button{width:100%}}
+.openvpn-guide-shell{width:min(820px,calc(100% - 28px));margin:24px auto 38px}
+.openvpn-guide-main{padding:clamp(18px,3vw,28px);display:flex;flex-direction:column;gap:16px;min-width:0}
+.openvpn-guide-main::before{content:"";display:block;height:3px;margin:calc(-1 * clamp(18px,3vw,28px)) calc(-1 * clamp(18px,3vw,28px)) 4px;background:var(--accent);opacity:.75}
+.openvpn-guide-main h1{margin:0;font-size:clamp(1.35rem,3.5vw,1.8rem);line-height:1.5}
+.openvpn-guide-intro{margin:0;color:var(--muted);line-height:1.9}
+.openvpn-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.openvpn-link-card{padding:clamp(15px,2.5vw,20px);display:flex;flex-direction:column;gap:12px;min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2)}
+.openvpn-link-card h2{display:flex;align-items:center;gap:9px;margin:0;font-size:1.08rem;line-height:1.5}
+.openvpn-link-card p{margin:0;color:var(--muted);line-height:1.85;font-size:.92rem;min-height:5.1em}
+.openvpn-link-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}
+.openvpn-url{direction:ltr;text-align:left;unicode-bidi:plaintext;display:block;width:100%;min-width:0;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--control-bg,var(--surface));color:var(--text);font:inherit;font-size:.82rem;overflow-wrap:anywhere}
+.openvpn-copy{width:100%;justify-content:center}
+.openvpn-guide-note{display:flex;align-items:flex-start;gap:9px;padding:13px 15px;border:1px solid color-mix(in srgb,var(--warning,#d97706) 30%,var(--border));border-radius:var(--ui-radius-md,14px);background:color-mix(in srgb,var(--warning,#d97706) 7%,var(--surface-2));color:var(--text);line-height:1.8}
+.openvpn-guide-note svg{width:20px;height:20px;flex:0 0 20px;color:var(--warning,#d97706);margin-top:2px}
+.openvpn-guide-steps{margin:0;padding-inline-start:22px;color:var(--muted);line-height:1.9}
+.openvpn-guide-steps li+li{margin-top:5px}
+@media(max-width:640px){.openvpn-link-grid{grid-template-columns:1fr}.openvpn-link-card p{min-height:0}.openvpn-guide-shell{width:calc(100% - 22px)}}
 </style>
 <script src="<?= e(app_asset_url('assets/js/ui-preferences.js')) ?>" defer></script>
 <script src="<?= e(app_asset_url('assets/js/ui-components.js')) ?>" defer></script>
 </head>
 <body>
 <?php storefront_header($siteTitle, 'guide'); ?>
-<main class="openvpn-download-shell">
-<section class="panel openvpn-download-card" aria-labelledby="download-error-title">
-  <div class="openvpn-download-symbol" aria-hidden="true">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5"></path><path d="M12 16h.01"></path>
-    </svg>
-  </div>
-  <div class="eyebrow" data-fa="دانلود پروفایل OpenVPN" data-en="OpenVPN profile download">دانلود پروفایل OpenVPN</div>
-  <h1 id="download-error-title" data-fa="پیوند دانلود معتبر نیست" data-en="This download link is unavailable">پیوند دانلود معتبر نیست</h1>
-  <p data-fa="این پیوند ممکن است اشتباه، منقضی یا توسط مدیر غیرفعال شده باشد. برای دریافت لینک معتبر، از راهنمای اتصال یا پشتیبانی سایت کمک بگیرید."
-     data-en="This link may be incorrect, expired, or disabled by the site administrator. Please use the connection guide or contact support to obtain a valid link.">
-     این پیوند ممکن است اشتباه، منقضی یا توسط مدیر غیرفعال شده باشد. برای دریافت لینک معتبر، از راهنمای اتصال یا پشتیبانی سایت کمک بگیرید.
-  </p>
-  <div class="openvpn-download-alert" role="alert" data-fa="فایل به دلایل امنیتی قابل ارائه نیست." data-en="The file cannot be provided for security reasons.">فایل به دلایل امنیتی قابل ارائه نیست.</div>
-  <div class="openvpn-download-actions">
-    <a class="button primary" href="<?= e(app_url('guide.php')) ?>" data-fa="مشاهده راهنمای اتصال" data-en="View connection guide">مشاهده راهنمای اتصال</a>
-    <a class="button" href="<?= e(app_url('/')) ?>" data-fa="بازگشت به فروشگاه" data-en="Back to store">بازگشت به فروشگاه</a>
-  </div>
+<main class="openvpn-guide-shell">
+<?php if (!$valid): ?>
+<section class="panel plan-card openvpn-guide-main">
+<h1 data-fa="پیوند اختصاصی معتبر نیست" data-en="Personalized link unavailable">پیوند اختصاصی معتبر نیست</h1>
+<p class="openvpn-guide-intro" data-fa="این پیوند اشتباه، منقضی یا غیرفعال شده است. برای دریافت لینک جدید با پشتیبانی تماس بگیرید." data-en="This link is invalid, expired, or disabled. Contact support to receive a new link.">این پیوند اشتباه، منقضی یا غیرفعال شده است. برای دریافت لینک جدید با پشتیبانی تماس بگیرید.</p>
+<a class="button primary" href="<?= e(app_url('guide.php')) ?>" data-fa="مشاهده راهنمای عمومی" data-en="View general guide">مشاهده راهنمای عمومی</a>
 </section>
-<?php storefront_footer($siteTitle); ?>
+<?php else: ?>
+<section class="panel plan-card openvpn-guide-main">
+<div class="eyebrow" data-fa="پروفایل اتصال: <?= e($profileName) ?>" data-en="Connection profile: <?= e($profileName) ?>">پروفایل اتصال: <?= e($profileName) ?></div>
+<h1 data-fa="راهنمای اتصال OpenVPN" data-en="OpenVPN connection guide">راهنمای اتصال OpenVPN</h1>
+<p class="openvpn-guide-intro" data-fa="برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید." data-en="To add this profile to OpenVPN Connect, copy the required URL and enter it under Import from URL.">برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید.</p>
+<div class="openvpn-link-grid">
+<article class="openvpn-link-card">
+<h2><svg class="openvpn-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
+<p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the IBSng username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
+<input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
+<button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
+</article>
+<article class="openvpn-link-card">
+<h2><svg class="openvpn-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
+<p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید." data-en="This URL has no personalized token and contains no customer's login credentials. You can place it in the site's general connection guide.">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید.</p>
+<input class="openvpn-url" type="text" readonly value="<?= e($publicUrl) ?>" aria-label="Public OpenVPN URL">
+<button class="button openvpn-copy" type="button" data-copy-value="<?= e($publicUrl) ?>"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span data-fa="کپی لینک عمومی" data-en="Copy public link">کپی لینک عمومی</span></button>
+</article>
+</div>
+<ol class="openvpn-guide-steps">
+<li data-fa="برنامه OpenVPN Connect را باز کنید." data-en="Open the OpenVPN Connect app.">برنامه OpenVPN Connect را باز کنید.</li>
+<li data-fa="از بخش Add Profile، گزینه Import from URL را انتخاب کنید." data-en="From Add Profile, choose Import from URL.">از بخش Add Profile، گزینه Import from URL را انتخاب کنید.</li>
+<li data-fa="لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود." data-en="Enter your personalized URL to retrieve your account profile.">لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود.</li>
+</ol>
+<div class="openvpn-guide-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg><span data-fa="لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است." data-en="Your personalized link contains your login credentials. Do not share it. The public link does not contain login credentials.">لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است.</span></div>
+</section>
+<?php endif; ?>
 </main>
+<?php storefront_footer($siteTitle); ?>
+<script>
+document.addEventListener('click',async function(event){
+ const button=event.target.closest('[data-copy-value]');if(!button)return;
+ const value=button.getAttribute('data-copy-value')||'';
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);}else{const field=document.createElement('textarea');field.value=value;field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();document.execCommand('copy');field.remove();}
+ const label=button.querySelector('span');if(label){const old=label.textContent;label.textContent=document.documentElement.lang==='en'?'Copied':'کپی شد';setTimeout(()=>label.textContent=old,1800);}
+ }catch(_){const input=button.previousElementSibling;if(input){input.focus();input.select();}}
+});
+</script>
 </body>
 </html>
