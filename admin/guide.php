@@ -21,6 +21,7 @@ $systems = [
 ];
 $defaultGuide = [
     'intro' => 'روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید.',
+    'intro_en' => 'Select your connection method and operating system.',
     'methods' => [[
         'name' => 'OpenVPN',
         'active' => 0,
@@ -35,6 +36,7 @@ $readGuide = static function () use ($pdo, $settingKey, $defaultGuide): array {
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) return $defaultGuide;
     $decoded['intro'] = is_string($decoded['intro'] ?? null) ? $decoded['intro'] : $defaultGuide['intro'];
+    $decoded['intro_en'] = is_string($decoded['intro_en'] ?? null) ? $decoded['intro_en'] : $defaultGuide['intro_en'];
     $decoded['methods'] = is_array($decoded['methods'] ?? null) ? array_values($decoded['methods']) : [];
     return $decoded;
 };
@@ -132,7 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
     } else {
         try {
             $intro = trim((string)($_POST['intro'] ?? ''));
-            if (strlen($intro) > 3000) throw new InvalidArgumentException('توضیح راهنما بیش از حد طولانی است.');
+            $introEn = trim((string)($_POST['intro_en'] ?? ''));
+            if (strlen($intro) > 3000 || strlen($introEn) > 3000) throw new InvalidArgumentException('توضیح راهنما بیش از حد طولانی است.');
             $rawMethods = $_POST['methods'] ?? [];
             if (!is_array($rawMethods) || count($rawMethods) > 30) throw new InvalidArgumentException('فهرست روش‌های اتصال معتبر نیست.');
             $methods = [];
@@ -171,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                     'systems' => $methodSystems,
                 ];
             }
-            $payload = json_encode(['intro' => $intro, 'methods' => $methods], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            $payload = json_encode(['intro' => $intro, 'intro_en' => $introEn, 'methods' => $methods], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
             if (strlen($payload) > 60000) throw new InvalidArgumentException('حجم محتوای راهنما بیش از ظرفیت ذخیره تنظیمات است؛ متن یا تعداد روش‌ها را کاهش دهید.');
             $stmt = $pdo->prepare('INSERT INTO app_settings (setting_key,setting_value) VALUES (?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
             $stmt->execute([$settingKey, $payload]);
@@ -179,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
             exit;
         } catch (Throwable $e) {
             $error = $e instanceof InvalidArgumentException ? $e->getMessage() : 'ذخیره راهنما انجام نشد.';
-            $guide = ['intro' => (string)($_POST['intro'] ?? ''), 'methods' => is_array($_POST['methods'] ?? null) ? array_values($_POST['methods']) : []];
+            $guide = ['intro' => (string)($_POST['intro'] ?? ''), 'intro_en' => (string)($_POST['intro_en'] ?? ''), 'methods' => is_array($_POST['methods'] ?? null) ? array_values($_POST['methods']) : []];
         }
     }
 }
@@ -244,8 +247,12 @@ $esc = static fn($value): string => e((string)$value);
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field field-full">
-<label for="guide-intro" data-fa="توضیح ابتدای راهنما" data-en="Guide introduction">توضیح ابتدای راهنما</label>
+<label for="guide-intro" data-fa="توضیح ابتدای راهنما (فارسی)" data-en="Guide introduction (Persian)">توضیح ابتدای راهنما (فارسی)</label>
 <textarea id="guide-intro" name="intro" rows="3" placeholder="توضیح کوتاهی برای مشتریان وارد کنید." data-ui-placeholder="guide_intro_placeholder"><?= $esc($guide['intro'] ?? '') ?></textarea>
+</div>
+<div class="field field-full">
+<label for="guide-intro-en" data-fa="توضیح ابتدای راهنما (انگلیسی)" data-en="Guide introduction (English)">توضیح ابتدای راهنما (انگلیسی)</label>
+<textarea id="guide-intro-en" name="intro_en" rows="3" dir="ltr" placeholder="Enter a short introduction for customers."><?= $esc($guide['intro_en'] ?? $defaultGuide['intro_en']) ?></textarea>
 </div>
 <div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
 <div id="guide-method-list">
@@ -294,7 +301,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <section class="panel panel-card" id="openvpn-management">
 <?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
-<?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnLoadError) ?></div><?php endif; ?>
+<?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert" data-fa="جداول OpenVPN در دیتابیس آماده نیستند. از بخش همگام‌سازی دیتابیس در مدیریت، تغییرات معوق را اعمال کنید." data-en="The OpenVPN database tables are not ready. Apply the pending changes from the Database Synchronization section in the admin panel."><?= e($ovpnLoadError) ?></div><?php endif; ?>
 <details class="guide-admin-disclosure guide-ovpn-disclosure"<?= ($editProfile || $ovpnGeneratedLinks) ? ' open' : '' ?>>
 <summary class="guide-admin-disclosure-summary">
 <span class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</span>
