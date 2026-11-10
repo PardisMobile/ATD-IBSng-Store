@@ -151,7 +151,8 @@
       email_event_renewal_success: 'Successful renewal',
       email_event_order_recovery: 'Order recovery / purchase details',
       email_event_email_verification: 'Email verification',
-      email_event_expiration_reminder: 'Expiration reminder'
+      email_event_expiration_reminder: 'Expiration reminder',
+      email_event_openvpn_profile: 'OpenVPN profile link'
     },
     admin_renewal_migration: {
       upgrade_admin: 'Store administration',
