@@ -14,7 +14,7 @@ $systems = [
     'macos' => ['fa' => 'macOS', 'en' => 'macOS'],
     'linux' => ['fa' => 'Linux', 'en' => 'Linux'],
 ];
-$guide = ['intro' => 'روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید.', 'methods' => []];
+$guide = ['intro' => 'روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید.', 'intro_en' => 'Select your connection method and operating system.', 'methods' => []];
 try {
     $stmt = Database::connection()->prepare("SELECT setting_value FROM app_settings WHERE setting_key='general_account_guide' LIMIT 1");
     $stmt->execute();
@@ -70,7 +70,7 @@ $validUrl = static function ($value): string {
 <?php storefront_header($siteTitle, 'home'); ?>
 <main class="guide">
 <h1 data-ui-text="guide_title">راهنمای استفاده از اکانت</h1>
-<p class="muted"><?= e((string)($guide['intro'] ?? '')) ?></p>
+<p class="muted" data-fa="<?= e((string)($guide['intro'] ?? '')) ?>" data-en="<?= e((string)($guide['intro_en'] ?? 'Select your connection method and operating system.')) ?>"><?= e((string)($guide['intro'] ?? '')) ?></p>
 <?php if (!$methods): ?>
 <div class="guide-empty" data-fa="راهنمای اتصال هنوز توسط مدیریت منتشر نشده است." data-en="Connection instructions have not been published yet.">راهنمای اتصال هنوز توسط مدیریت منتشر نشده است.</div>
 <?php else: ?>
