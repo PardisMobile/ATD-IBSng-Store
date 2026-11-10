@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                 $orderId = (int)($_POST['order_id'] ?? 0) ?: null;
                 $email = trim((string)($_POST['recipient_email'] ?? ''));
                 $link = $ovpnManager->createLink((int)($_POST['profile_id'] ?? 0), $kind, $orderId, $email);
-                $ovpnResult = $link['url'];
+                $ovpnResult = $kind === 'public' ? $link['public_url'] : $link['url'];
                 if ($kind === 'personalized') {
                     $orderStmt = $pdo->prepare('SELECT buyer_name, language FROM orders WHERE id=? LIMIT 1');
                     $orderStmt->execute([$orderId]); $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
