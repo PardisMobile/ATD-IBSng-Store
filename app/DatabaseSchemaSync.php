@@ -93,7 +93,7 @@ final class DatabaseSchemaSync
         if (!$this->tableExists('customer_email_deliveries') && $this->tableExists('orders')) {
             $pending[] = 'ایجاد جدول ثبت تحویل ایمیل حساب مشتری';
         }
-        if (!$this->tableExists('customer_order_recovery_codes')) {
+        if (!$this->tableExists('openvpn_profiles') && $this->tableExists('orders')) {\n            $pending[] = 'ایجاد جداول مدیریت پروفایل و لینک OpenVPN';\n        }\n\n        if (!$this->tableExists('customer_order_recovery_codes')) {
             $pending[] = 'ایجاد جدول کدهای بازیابی سفارش مشتری';
         }
 
@@ -161,7 +161,7 @@ final class DatabaseSchemaSync
         }
         $this->ensureProvisioningReviewStatus();
         $this->ensureCustomerEmailDeliveries();
-        $this->ensureCustomerRecoveryCodes();
+        $this->ensureCustomerRecoveryCodes();\n        $this->ensureOpenVpnTables();
         $settings = $this->pdo->prepare('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)');
         $settings->execute(['price_display_unit', 'IRT']);
         $settings->execute(['crypto_gateway_enabled', '0']);
@@ -210,6 +210,43 @@ final class DatabaseSchemaSync
                 UNIQUE KEY uq_customer_email_delivery (order_id, event_key),
                 KEY idx_customer_email_delivery_status (status, updated_at),
                 CONSTRAINT fk_customer_email_delivery_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+    }
+
+
+    private function ensureOpenVpnTables(): void
+    {
+        $this->pdo->exec(
+            "CREATE TABLE IF NOT EXISTS openvpn_profiles (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(120) NOT NULL,
+                profile_ciphertext MEDIUMTEXT NOT NULL,
+                profile_sha256 CHAR(64) NOT NULL,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY idx_openvpn_profile_active (is_active)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+        $this->pdo->exec(
+            "CREATE TABLE IF NOT EXISTS openvpn_links (
+                id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                profile_id BIGINT UNSIGNED NOT NULL,
+                order_id BIGINT UNSIGNED NULL,
+                link_type ENUM('public','personalized') NOT NULL,
+                recipient_email VARCHAR(190) NULL,
+                token_hash CHAR(64) NOT NULL,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                expires_at DATETIME NULL,
+                last_used_at DATETIME NULL,
+                download_count INT UNSIGNED NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY uq_openvpn_link_token (token_hash),
+                KEY idx_openvpn_link_profile (profile_id, is_active),
+                KEY idx_openvpn_link_order (order_id, created_at),
+                CONSTRAINT fk_openvpn_link_profile FOREIGN KEY (profile_id) REFERENCES openvpn_profiles(id) ON DELETE CASCADE,
+                CONSTRAINT fk_openvpn_link_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
         );
     }
