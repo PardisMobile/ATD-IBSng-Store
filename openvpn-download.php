@@ -42,7 +42,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .openvpn-link-card{padding:clamp(15px,2.5vw,20px);display:flex;flex-direction:column;gap:12px;min-width:0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2)}
 .openvpn-link-card h2{display:flex;align-items:center;gap:9px;margin:0;font-size:1.08rem;line-height:1.5}
 .openvpn-link-card p{margin:0;color:var(--muted);line-height:1.85;font-size:.92rem;min-height:5.1em}
-.openvpn-link-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}
+.openvpn-link-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}\n.openvpn-link-card h2 .ui-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}
 .openvpn-url{direction:ltr;text-align:left;unicode-bidi:plaintext;display:block;width:100%;min-width:0;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--control-bg,var(--surface));color:var(--text);font:inherit;font-size:.82rem;overflow-wrap:anywhere}
 .openvpn-copy{width:100%;justify-content:center}
 .openvpn-guide-note{display:flex;align-items:flex-start;gap:9px;padding:13px 15px;border:1px solid color-mix(in srgb,var(--warning,#d97706) 30%,var(--border));border-radius:var(--ui-radius-md,14px);background:color-mix(in srgb,var(--warning,#d97706) 7%,var(--surface-2));color:var(--text);line-height:1.8}
@@ -70,16 +70,16 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <p class="openvpn-guide-intro" data-fa="برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید." data-en="To add this profile to OpenVPN Connect, copy the required URL and enter it under Import from URL.">برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید.</p>
 <div class="openvpn-link-grid">
 <article class="openvpn-link-card">
-<h2><svg class="openvpn-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
+<h2><?= storefront_icon_svg('account') ?><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
 <p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the IBSng username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
-<button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
+<button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
 </article>
 <article class="openvpn-link-card">
-<h2><svg class="openvpn-link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
+<h2><?= storefront_icon_svg('globe') ?><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
 <p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید." data-en="This URL has no personalized token and contains no customer's login credentials. You can place it in the site's general connection guide.">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($publicUrl) ?>" aria-label="Public OpenVPN URL">
-<button class="button openvpn-copy" type="button" data-copy-value="<?= e($publicUrl) ?>"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span data-fa="کپی لینک عمومی" data-en="Copy public link">کپی لینک عمومی</span></button>
+<button class="button openvpn-copy" type="button" data-copy-value="<?= e($publicUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک عمومی" data-en="Copy public link">کپی لینک عمومی</span></button>
 </article>
 </div>
 <ol class="openvpn-guide-steps">
