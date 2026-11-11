@@ -828,3 +828,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - In `admin/guide.php`, applied the same fixed 34px height/min-height, padding, font sizing, and icon sizing to all buttons inside `.ovpn-link-actions`, including Copy, Enable/Disable, and Delete.
 - Previously, the sizing selector excluded buttons with `data-copy-value`, leaving Copy at the global button dimensions while the other actions had compact dimensions.
 - No action handlers, permissions, or link behavior changed.
+
+
+### 2026-11-11 — Align guide method icon choices with supported protocols
+
+**Status: IMPLEMENTED ON `main` / CI AND VISUAL VALIDATION PENDING.**
+
+- Replaced the guide icon choices V2Ray and WireGuard with Cisco and L2TP / PPTP; the four selectable choices are now OpenVPN, Cisco, L2TP / PPTP, and Generic.
+- Added Cisco and shared L2TP/PPTP SVG path definitions to the existing `app/GuideIcons.php` icon library. The SVGs use the same 24×24 viewBox, no-fill outline style, currentColor stroke, 1.8 stroke width, and rounded caps/joins as the existing guide icons; no external icon package was added.
+- Updated admin selector options, dynamic icon preview mapping, validation allowlist, and name-based icon inference.
+- Legacy stored V2Ray/WireGuard icon keys are no longer selectable/accepted; when rendered they safely fall back to Generic unless the method name identifies another supported icon. Existing method records and their text are preserved.
+- No connection method execution, customer guide content, payment, account, or IBSng behavior changed.
