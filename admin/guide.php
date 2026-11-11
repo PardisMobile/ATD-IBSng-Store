@@ -255,6 +255,16 @@ $esc = static fn($value): string => e((string)$value);
 .ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px}
 .ovpn-management-column{min-width:0}
 .ovpn-management-column>.form-section{width:100%;box-sizing:border-box}
+.ovpn-profile-form,.ovpn-link-create-form{display:flex;flex-direction:column;gap:0}
+.ovpn-profile-form>.field,.ovpn-link-create-form>.field{margin:0 0 16px !important}
+.ovpn-profile-form>.field>label,.ovpn-link-create-form>.field>label,.ovpn-search-form>label{display:block;min-height:22px;line-height:22px;margin:0 0 8px}
+.ovpn-profile-form>.field>input,.ovpn-link-create-form>.field>input,.ovpn-link-create-form>.field>select{height:45px;min-height:45px;box-sizing:border-box}
+.ovpn-profile-form>.hint{margin:0 0 16px !important}
+.ovpn-profile-form>button[type="submit"]{align-self:flex-start;margin:0 0 20px !important}
+.ovpn-link-create-form>.actions{margin-top:0}
+.ovpn-search-form{margin:0 0 16px !important}
+.ovpn-search-form>input{height:45px;min-height:45px;box-sizing:border-box}
+.ovpn-search-form>button{height:45px;min-height:45px;align-self:end}
 .ovpn-management-column>.form-section{margin-block:0 16px}
 .ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
 .ovpn-management-column table{min-width:620px}
@@ -378,7 +388,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <details class="form-section"<?= $ovpnKeepLinksOpen ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
 <form method="get" class="field ovpn-search-form"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button primary" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
-<form method="post" id="ovpn-link-form">
+<form method="post" id="ovpn-link-form" class="ovpn-link-create-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_create_link">
 <div class="field"><label for="ovpn-order-id" data-fa="انتخاب سفارش / حساب مشتری" data-en="Select order / customer account">انتخاب سفارش / حساب مشتری</label><select id="ovpn-order-id" name="order_id"><option value="" data-fa="انتخاب کنید" data-en="Select">انتخاب کنید</option><?php foreach ($ovpnOrders as $orderRow): ?><option value="<?= (int)$orderRow['id'] ?>" data-email="<?= e((string)$orderRow['buyer_email']) ?>"><?= e((string)$orderRow['username'].' · '.$orderRow['tracking_code'].' · '.$orderRow['buyer_name']) ?></option><?php endforeach; ?></select></div>
 <div class="field"><label for="ovpn-link-profile" data-fa="انتخاب پروفایل OpenVPN" data-en="Select OpenVPN profile">انتخاب پروفایل OpenVPN</label><select id="ovpn-link-profile" name="profile_id" required><option value="" data-fa="انتخاب پروفایل" data-en="Select profile">انتخاب پروفایل</option><?php foreach ($ovpnProfiles as $profileRow): if (empty($profileRow['is_active'])) continue; ?><option value="<?= (int)$profileRow['id'] ?>"><?= e((string)$profileRow['name']) ?></option><?php endforeach; ?></select></div>
