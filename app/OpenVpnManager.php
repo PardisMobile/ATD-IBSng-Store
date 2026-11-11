@@ -160,7 +160,21 @@ final class OpenVpnManager
 
     public function links(): array
     {
-        return $this->pdo->query('SELECT l.id,l.link_type,l.order_id,l.recipient_email,l.is_active,l.expires_at,l.download_count,l.created_at,p.name AS profile_name FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id ORDER BY l.id DESC LIMIT 100')->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $this->pdo->query('SELECT l.id,l.profile_id,l.link_type,l.order_id,l.recipient_email,l.token_ciphertext,l.is_active,l.expires_at,l.download_count,l.created_at,p.name AS profile_name FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id ORDER BY l.id DESC LIMIT 100')->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $row['url'] = '';
+            if ($row['link_type'] === 'public') {
+                $row['url'] = app_absolute_url('openvpn-download.php?p=' . (int)$row['profile_id']);
+            } elseif (is_string($row['token_ciphertext'] ?? null) && $row['token_ciphertext'] !== '') {
+                $token = app_decrypt_secret((string)$row['token_ciphertext']);
+                if (preg_match('/^[a-f0-9]{64}$/D', $token)) {
+                    $row['url'] = app_absolute_url('openvpn-download.php?t=' . $token);
+                }
+            }
+            unset($row['token_ciphertext'], $row['profile_id']);
+        }
+        unset($row);
+        return $rows;
     }
 
     public function setLinkActive(int $id, bool $active): void
@@ -205,8 +219,8 @@ final class OpenVpnManager
         if (!$profile->fetchColumn()) throw new RuntimeException('پروفایل انتخاب‌شده فعال نیست.');
         if ($kind === 'public') $orderId = null;
         $token=bin2hex(random_bytes(32));
-        $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, is_active, expires_at) VALUES (?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
-        $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token)]);
+        $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, token_ciphertext, is_active, expires_at) VALUES (?,?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
+        $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token),app_encrypt_secret($token)]);
         return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-download.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
     }
 
