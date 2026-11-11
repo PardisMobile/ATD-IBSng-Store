@@ -84,6 +84,13 @@ openvpn_profile_assert(
     'Generated public profiles must be served without an order check, while personalized profiles must retain paid-order validation.'
 );
 openvpn_profile_assert(is_string($downloadSource) && str_contains($downloadSource, "openvpn://import-profile/") && str_contains($downloadSource, 'Import to OpenVPN') && str_contains($downloadSource, 'generatedProfileUrl'), 'The customer landing page must expose a direct OpenVPN Connect import action using the generated file URL.');
+openvpn_profile_assert(
+    is_string($downloadSource)
+        && str_contains($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);')
+        && strpos($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);') > strpos($downloadSource, "if (\$token !== '')")
+        && strpos($downloadSource, '$publicImportUrl = \'openvpn://import-profile/\' . $publicFileUrl;') > strpos($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);'),
+    'The public Import deep link must be generated for both public and personalized landing pages after the profile ID is resolved.'
+);
 openvpn_profile_assert(is_string($fileEndpointSource) && str_contains($fileEndpointSource, 'resolveGeneratedFile') && str_contains($fileEndpointSource, 'application/x-openvpn-profile') && str_contains($fileEndpointSource, 'filename*=UTF-8'), 'Generated profile URLs must be served by the validating OpenVPN endpoint and preserve the configured profile display filename.');
 openvpn_profile_assert(is_string($rootHtaccess) && str_contains($rootHtaccess, 'openvpn-file.php') && str_contains($rootHtaccess, 'ovpn/'), 'The generated profile URL must route through the protected file endpoint.');
 openvpn_profile_assert(is_string($schemaSource) && str_contains($schemaSource, 'generated_filename') && is_string($schemaSyncSource) && str_contains($schemaSyncSource, 'generated_filename'), 'Fresh installs and existing databases must both support generated OpenVPN filenames.');
