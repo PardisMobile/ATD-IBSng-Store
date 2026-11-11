@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                 $link = $ovpnManager->createLink((int)($_POST['profile_id'] ?? 0), $kind, $orderId, $email);
                 $ovpnResult = $kind === 'public' ? $link['public_url'] : $link['url'];
                 $ovpnGeneratedLinks = ['public' => (string)$link['public_url']];
-                if ($kind === 'personalized') $ovpnGeneratedLinks['personalized'] = (string)$link['profile_url'];
+                if ($kind === 'personalized') $ovpnGeneratedLinks['personalized'] = (string)$link['url'];
                 if ($kind === 'personalized') {
                     $orderStmt = $pdo->prepare('SELECT buyer_name, language FROM orders WHERE id=? LIMIT 1');
                     $orderStmt->execute([$orderId]); $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
