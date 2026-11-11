@@ -91,7 +91,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <?php if ($isPersonalized): ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('account') ?><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
-<p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور حساب همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the account username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
+<p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور حساب همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the account username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور حساب همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
 <a class="button primary" href="<?= e($importUrl) ?>" aria-label="Import to OpenVPN"><span data-fa="Import مستقیم در OpenVPN" data-en="Import to OpenVPN">Import to OpenVPN</span></a>
@@ -99,7 +99,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <?php endif; ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('globe') ?><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
-<p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. " data-en="This URL has no personalized token and contains no customer's login credentials. ">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد.</p>
+<p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد." data-en="This URL has no personalized token and contains no customer's login credentials.">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($publicUrl) ?>" aria-label="Public OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($publicUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک عمومی" data-en="Copy public link">کپی لینک عمومی</span></button>
 <a class="button primary" href="<?= e($publicImportUrl) ?>" aria-label="Import to OpenVPN"><span data-fa="Import مستقیم در OpenVPN" data-en="Import to OpenVPN">Import to OpenVPN</span></a>
