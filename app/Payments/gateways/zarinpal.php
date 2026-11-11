@@ -182,6 +182,20 @@ final class ZarinpalGateway implements PaymentGateway
         return substr($value, 0, $limit);
     }
 
+    /**
+     * A provider outcome is ambiguous only after cURL has evidence of an HTTP
+     * response or of request bytes being sent. Timing fields such as
+     * pretransfer_time are not reliable evidence by themselves.
+     *
+     * @param array<string,mixed> $transferInfo
+     */
+    private static function requestMayHaveReachedProvider(int $httpStatus, array $transferInfo): bool
+    {
+        return $httpStatus > 0
+            || (int)($transferInfo['request_size'] ?? 0) > 0
+            || (float)($transferInfo['size_upload'] ?? 0) > 0;
+    }
+
     /** @return array<string,mixed> */
     private function postJson(string $url, array $payload): array
     {
@@ -205,11 +219,10 @@ final class ZarinpalGateway implements PaymentGateway
         $curlError = curl_error($handle);
         $curlErrno = curl_errno($handle);
         $transferInfo = curl_getinfo($handle);
-        // pretransfer_time is populated only after DNS, connection and TLS setup
-        // have completed and cURL is ready to send the HTTP request.
-        $requestMayHaveReachedProvider = $httpStatus > 0
-            || (float)($transferInfo['pretransfer_time'] ?? 0) > 0
-            || (float)($transferInfo['starttransfer_time'] ?? 0) > 0;
+        // Timing fields alone are not proof that an HTTP request was sent.
+        // Some cURL builds report elapsed timeout values in pretransfer_time
+        // and starttransfer_time even when DNS resolution failed.
+        $requestMayHaveReachedProvider = self::requestMayHaveReachedProvider($httpStatus, $transferInfo);
         curl_close($handle);
 
         if (!is_string($body) || $body === '' || $httpStatus < 200 || $httpStatus >= 300) {
@@ -221,6 +234,8 @@ final class ZarinpalGateway implements PaymentGateway
                 'pretransfer_time' => $transferInfo['pretransfer_time'] ?? null,
                 'starttransfer_time' => $transferInfo['starttransfer_time'] ?? null,
                 'primary_ip' => $transferInfo['primary_ip'] ?? null,
+                'request_size' => $transferInfo['request_size'] ?? null,
+                'size_upload' => $transferInfo['size_upload'] ?? null,
                 'request_may_have_reached_provider' => $requestMayHaveReachedProvider,
             ];
             throw new PaymentGatewayInitiationException(

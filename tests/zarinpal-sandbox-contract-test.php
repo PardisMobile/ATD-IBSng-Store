@@ -9,6 +9,38 @@ function zarinpal_sandbox_assert(bool $condition, string $message): void
 }
 
 $root = dirname(__DIR__);
+
+require_once $root . '/app/Payments/PaymentGateway.php';
+require_once $root . '/app/Payments/gateways/zarinpal.php';
+$reachability = new ReflectionMethod(ZarinpalGateway::class, 'requestMayHaveReachedProvider');
+$reachability->setAccessible(true);
+$dnsTimeoutDiagnostics = [
+    'namelookup_time' => 0,
+    'connect_time' => 0,
+    'appconnect_time' => null,
+    'pretransfer_time' => 10.002004,
+    'starttransfer_time' => 10.002008,
+    'primary_ip' => '',
+    'request_size' => 0,
+    'size_upload' => 0,
+];
+zarinpal_sandbox_assert(
+    $reachability->invoke(null, 0, $dnsTimeoutDiagnostics) === false,
+    'A DNS-resolution timeout with no HTTP response, destination IP, connection, or sent request bytes must be safe to retry even if pretransfer_time is non-zero.'
+);
+$sentRequestDiagnostics = $dnsTimeoutDiagnostics;
+$sentRequestDiagnostics['request_size'] = 180;
+zarinpal_sandbox_assert(
+    $reachability->invoke(null, 0, $sentRequestDiagnostics) === true,
+    'A transport failure after request bytes were sent must remain ambiguous.'
+);
+$httpResponseDiagnostics = $dnsTimeoutDiagnostics;
+zarinpal_sandbox_assert(
+    $reachability->invoke(null, 502, $httpResponseDiagnostics) === true,
+    'An HTTP response must remain ambiguous for automatic retry classification.'
+);
+
+
 $adapter = file_get_contents($root . '/app/Payments/gateways/zarinpal.php');
 $flow = file_get_contents($root . '/app/Payments/PaymentFlow.php');
 $transactions = file_get_contents($root . '/app/Payments/PaymentTransactionService.php');
