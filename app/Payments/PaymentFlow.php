@@ -211,16 +211,21 @@ final class PaymentFlow
             // A structured Zarinpal API rejection with no authority is definitive:
             // no payable gateway session was issued, so this transaction can be
             // safely failed and the same pending order may be retried.
-            // Network/timeout/unknown outcomes remain active for reconciliation.
+            // Failures proven to occur before HTTP transfer (including DNS-resolution
+            // timeouts) are safe to retry immediately. Once cURL has entered the
+            // request-transfer phase, keep the attempt ambiguous for reconciliation.
             $preRequestTransportCodes = array_filter([
                 defined('CURLE_COULDNT_RESOLVE_HOST') ? CURLE_COULDNT_RESOLVE_HOST : null,
                 defined('CURLE_COULDNT_CONNECT') ? CURLE_COULDNT_CONNECT : null,
                 defined('CURLE_COULDNT_RESOLVE_PROXY') ? CURLE_COULDNT_RESOLVE_PROXY : null,
                 defined('CURLE_SSL_CONNECT_ERROR') ? CURLE_SSL_CONNECT_ERROR : null,
             ], static fn($code): bool => is_int($code));
+            $preTransferTransportFailure = $e instanceof ZarinpalTransportException
+                && !$e->requestWasSent();
             $definitiveZarinpalFailure = $provider === 'zarinpal' && ($e instanceof InvalidArgumentException
                 || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')
-                || in_array($e->getCode(), $preRequestTransportCodes, true));
+                || in_array($e->getCode(), $preRequestTransportCodes, true)
+                || $preTransferTransportFailure);
             if ($definitiveZarinpalFailure) {
                 try {
                     $transactions->failInitiation($transactionId);
