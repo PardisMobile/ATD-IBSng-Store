@@ -21,7 +21,6 @@ $systems = [
 ];
 $defaultGuide = [
     'intro' => 'روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید.',
-    'intro_en' => 'Select your connection method and operating system.',
     'methods' => [[
         'name' => 'OpenVPN',
         'active' => 0,
@@ -36,7 +35,6 @@ $readGuide = static function () use ($pdo, $settingKey, $defaultGuide): array {
     $decoded = json_decode($raw, true);
     if (!is_array($decoded)) return $defaultGuide;
     $decoded['intro'] = is_string($decoded['intro'] ?? null) ? $decoded['intro'] : $defaultGuide['intro'];
-    $decoded['intro_en'] = is_string($decoded['intro_en'] ?? null) ? $decoded['intro_en'] : $defaultGuide['intro_en'];
     $decoded['methods'] = is_array($decoded['methods'] ?? null) ? array_values($decoded['methods']) : [];
     return $decoded;
 };
@@ -141,8 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
     } else {
         try {
             $intro = trim((string)($_POST['intro'] ?? ''));
-            $introEn = trim((string)($_POST['intro_en'] ?? ''));
-            if (strlen($intro) > 3000 || strlen($introEn) > 3000) throw new InvalidArgumentException('توضیح راهنما بیش از حد طولانی است.');
+            if (strlen($intro) > 3000) throw new InvalidArgumentException('توضیح راهنما بیش از حد طولانی است.');
             $rawMethods = $_POST['methods'] ?? [];
             if (!is_array($rawMethods) || count($rawMethods) > 30) throw new InvalidArgumentException('فهرست روش‌های اتصال معتبر نیست.');
             $methods = [];
@@ -181,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                     'systems' => $methodSystems,
                 ];
             }
-            $payload = json_encode(['intro' => $intro, 'intro_en' => $introEn, 'methods' => $methods], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            $payload = json_encode(['intro' => $intro, 'methods' => $methods], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
             if (strlen($payload) > 60000) throw new InvalidArgumentException('حجم محتوای راهنما بیش از ظرفیت ذخیره تنظیمات است؛ متن یا تعداد روش‌ها را کاهش دهید.');
             $stmt = $pdo->prepare('INSERT INTO app_settings (setting_key,setting_value) VALUES (?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
             $stmt->execute([$settingKey, $payload]);
@@ -189,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
             exit;
         } catch (Throwable $e) {
             $error = $e instanceof InvalidArgumentException ? $e->getMessage() : 'ذخیره راهنما انجام نشد.';
-            $guide = ['intro' => (string)($_POST['intro'] ?? ''), 'intro_en' => (string)($_POST['intro_en'] ?? ''), 'methods' => is_array($_POST['methods'] ?? null) ? array_values($_POST['methods']) : []];
+            $guide = ['intro' => (string)($_POST['intro'] ?? ''), 'methods' => is_array($_POST['methods'] ?? null) ? array_values($_POST['methods']) : []];
         }
     }
 }
@@ -215,6 +212,16 @@ $esc = static fn($value): string => e((string)$value);
 <style>
 .guide-admin-method{padding:18px;margin:16px 0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2)}
 .guide-admin-method-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.guide-admin-method>.guide-admin-method-head{display:grid;grid-template-columns:minmax(180px,1.5fr) minmax(150px,.8fr) auto auto;align-items:end;gap:12px}
+.guide-admin-method>.guide-admin-method-head>.field{margin:0;min-width:0}
+.guide-admin-method>.guide-admin-method-head .check-toggle{align-self:end;min-height:45px;white-space:nowrap}
+.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{align-self:end;min-height:45px}
+.ovpn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:10px;row-gap:8px}
+.ovpn-search-form>label{grid-column:1/-1}
+.ovpn-search-form>input{grid-column:1;min-width:0}
+.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;margin-bottom:12px;white-space:nowrap}
+@media(max-width:760px){.guide-admin-method>.guide-admin-method-head{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.guide-admin-method>.guide-admin-method-head .check-toggle{grid-column:1}.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{grid-column:2;justify-self:end}}
+@media(max-width:420px){.ovpn-search-form{grid-template-columns:minmax(0,1fr)}.ovpn-search-form>label,.ovpn-search-form>input,.ovpn-search-form>button{grid-column:1}.ovpn-search-form>button{margin:0;justify-self:start}}
 .guide-admin-method .system-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .guide-admin-method textarea{min-height:120px;resize:vertical}
 .guide-admin-method .field-full{grid-column:1/-1}
@@ -269,19 +276,16 @@ $esc = static fn($value): string => e((string)$value);
 <form method="post">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field field-full">
-<label for="guide-intro" data-fa="توضیح ابتدای راهنما (فارسی)" data-en="Guide introduction (Persian)">توضیح ابتدای راهنما (فارسی)</label>
+<label for="guide-intro" data-fa="توضیح ابتدای راهنما" data-en="Guide introduction">توضیح ابتدای راهنما</label>
 <textarea id="guide-intro" name="intro" rows="3" placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-fa-placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-en-placeholder="Select your connection method and operating system."></textarea>
-</div>
-<div class="field field-full">
-<label for="guide-intro-en" data-fa="توضیح ابتدای راهنما (انگلیسی)" data-en="Guide introduction (English)">توضیح ابتدای راهنما (انگلیسی)</label>
-<textarea id="guide-intro-en" name="intro_en" rows="3" dir="ltr" placeholder="Select your connection method and operating system." data-fa-placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-en-placeholder="Select your connection method and operating system."></textarea>
 </div>
 <div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
 <div id="guide-method-list">
 <?php foreach ($guideMethods as $index => $method): $method = is_array($method) ? $method : []; ?>
 <article class="guide-admin-method" data-guide-method>
 <div class="guide-admin-method-head">
-<div class="field guide-method-name-field"><label><span class="guide-icon-slot" data-method-icon-preview><?= guide_icon_svg(guide_method_icon_key($method)) ?></span><span data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</span></label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"><div class="guide-method-icon-picker"><label data-fa="آیکون روش" data-en="Method icon" for="guide-method-icon-<?= (int)$index ?>">آیکون روش</label><select id="guide-method-icon-<?= (int)$index ?>" name="methods[<?= (int)$index ?>][icon]" data-method-icon-select><?php foreach (['openvpn' => 'OpenVPN', 'v2ray' => 'V2Ray', 'wireguard' => 'WireGuard', 'generic' => 'Generic'] as $iconKey => $iconLabel): ?><option value="<?= e($iconKey) ?>"<?= guide_method_icon_key($method) === $iconKey ? ' selected' : '' ?>><?= e($iconLabel) ?></option><?php endforeach; ?></select></div></div>
+<div class="field guide-method-name-field"><label><span class="guide-icon-slot" data-method-icon-preview><?= guide_icon_svg(guide_method_icon_key($method)) ?></span><span data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</span></label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"></div>
+<div class="field guide-method-icon-picker"><label data-fa="آیکون روش" data-en="Method icon" for="guide-method-icon-<?= (int)$index ?>">آیکون روش</label><select id="guide-method-icon-<?= (int)$index ?>" name="methods[<?= (int)$index ?>][icon]" data-method-icon-select><?php foreach (['openvpn' => 'OpenVPN', 'v2ray' => 'V2Ray', 'wireguard' => 'WireGuard', 'generic' => 'Generic'] as $iconKey => $iconLabel): ?><option value="<?= e($iconKey) ?>"<?= guide_method_icon_key($method) === $iconKey ? ' selected' : '' ?>><?= e($iconLabel) ?></option><?php endforeach; ?></select></div>
 <label class="check-toggle"><input type="checkbox" name="methods[<?= (int)$index ?>][active]" value="1"<?= !empty($method['active']) ? ' checked' : '' ?>> <span data-fa="فعال و قابل نمایش برای مشتری" data-en="Enabled and visible to customers">فعال و قابل نمایش برای مشتری</span></label>
 <button class="button danger" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
 </div>
@@ -359,7 +363,7 @@ foreach ($ovpnProfiles as $profileRow) {
 </details>
 <details class="form-section"<?= $ovpnKeepLinksOpen ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
-<form method="get" class="field"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
+<form method="get" class="field ovpn-search-form"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button primary" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
 <form method="post" id="ovpn-link-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_create_link">
 <div class="field"><label for="ovpn-order-id" data-fa="انتخاب سفارش / حساب مشتری" data-en="Select order / customer account">انتخاب سفارش / حساب مشتری</label><select id="ovpn-order-id" name="order_id"><option value="" data-fa="انتخاب کنید" data-en="Select">انتخاب کنید</option><?php foreach ($ovpnOrders as $orderRow): ?><option value="<?= (int)$orderRow['id'] ?>" data-email="<?= e((string)$orderRow['buyer_email']) ?>"><?= e((string)$orderRow['username'].' · '.$orderRow['tracking_code'].' · '.$orderRow['buyer_name']) ?></option><?php endforeach; ?></select></div>
