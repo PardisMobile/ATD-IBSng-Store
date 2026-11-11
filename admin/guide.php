@@ -300,7 +300,7 @@ $esc = static fn($value): string => e((string)$value);
 <label for="guide-intro" data-fa="توضیح ابتدای راهنما" data-en="Guide introduction">توضیح ابتدای راهنما</label>
 <textarea id="guide-intro" name="intro" rows="3" placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-fa-placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-en-placeholder="Select your connection method and operating system."></textarea>
 </div>
-<div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
+<div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button primary" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
 <div id="guide-method-list">
 <?php foreach ($guideMethods as $index => $method): $method = is_array($method) ? $method : []; ?>
 <article class="guide-admin-method" data-guide-method>
