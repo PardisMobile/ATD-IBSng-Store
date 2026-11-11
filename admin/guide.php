@@ -217,9 +217,9 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-method>.guide-admin-method-head .check-toggle{align-self:end;min-height:45px;white-space:nowrap}
 .guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{align-self:end;min-height:45px}
 .ovpn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:10px;row-gap:8px;width:100%;max-width:100%;box-sizing:border-box}
-.ovpn-search-form>label{grid-column:1/-1}
-.ovpn-search-form>input{grid-column:1;min-width:0;margin:0 !important}
-.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;height:45px;margin:0 !important;white-space:nowrap;box-sizing:border-box}
+.ovpn-search-form>label{grid-column:1/-1;margin:0 0 8px}
+.ovpn-search-form>input{grid-column:1;min-width:0;height:45px;min-height:45px;margin:0 !important;align-self:end}
+.ovpn-search-form>button{grid-column:2;display:inline-flex;align-items:center;justify-content:center;align-self:end;min-height:45px;height:45px;padding:0 22px;margin:0 !important;line-height:1;white-space:nowrap;box-sizing:border-box}
 @media(max-width:760px){.guide-admin-method>.guide-admin-method-head{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.guide-admin-method>.guide-admin-method-head .check-toggle{grid-column:1}.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{grid-column:2;justify-self:end}}
 @media(max-width:420px){.ovpn-search-form{grid-template-columns:minmax(0,1fr)}.ovpn-search-form>label,.ovpn-search-form>input,.ovpn-search-form>button{grid-column:1}.ovpn-search-form>button{margin:0 !important;justify-self:start}}
 .guide-admin-method .system-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -252,13 +252,14 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-disclosure-content{min-width:0;margin-top:16px}
 .guide-admin-disclosure-content>.form-section{margin-top:16px}
 @media(prefers-reduced-motion:reduce){.guide-system-summary::after,.guide-admin-disclosure-summary::after{transition:none}}
-.ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:16px}
-.ovpn-management-column{min-width:0;display:flex;flex-direction:column}
-.ovpn-management-column>.form-section{width:100%;height:100%;box-sizing:border-box}
+.ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px}
+.ovpn-management-column{min-width:0}
+.ovpn-management-column>.form-section{width:100%;box-sizing:border-box}
 .ovpn-management-column>.form-section{margin-block:0 16px}
 .ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
 .ovpn-management-column table{min-width:620px}
 .ovpn-generated-links{grid-column:1/-1;width:100%;max-width:100%;min-width:0;clear:both}
+.ovpn-profile-form .actions{margin-bottom:16px}
 .ovpn-generated-links table{width:100%;min-width:760px}
 .ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
 @media(max-width:1050px){.ovpn-management-grid{grid-template-columns:minmax(0,1fr)}}
@@ -358,7 +359,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="ovpn-management-column">
 <details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" class="ovpn-profile-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
 <input type="hidden" name="profile_id" value="<?= $editProfile ? (int)$editProfile['id'] : 0 ?>">
 <div class="field"><label for="ovpn-profile-name" data-fa="نام نمایشی پروفایل" data-en="Profile display name">نام نمایشی پروفایل</label><input id="ovpn-profile-name" name="profile_name" maxlength="120" required value="<?= e((string)($editProfile['name'] ?? '')) ?>" placeholder="سرور ترکیه" data-fa-placeholder="سرور ترکیه" data-en-placeholder="Turkey Server"></div>
