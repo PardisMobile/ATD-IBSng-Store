@@ -365,11 +365,12 @@ foreach ($ovpnProfiles as $profileRow) {
 </div>
 </div>
 <?php endif; ?>
+<p class="guide-admin-note" data-fa="در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید." data-en="In this section, you can manage OpenVPN profiles, create public or personalized links, and prepare profile files for users to connect.">در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید.</p>
 <div class="ovpn-management-grid">
 <div class="ovpn-management-column">
 <details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال" data-en="Manage OpenVPN Profiles and Create Connection Links">مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال</strong></summary>
-<p class="guide-admin-note" data-fa="در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید." data-en="In this section, you can manage OpenVPN profiles, create public or personalized links, and prepare profile files for users to connect.">در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید.</p>
+
 <form method="post" enctype="multipart/form-data" class="ovpn-profile-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
 <input type="hidden" name="profile_id" value="<?= $editProfile ? (int)$editProfile['id'] : 0 ?>">
