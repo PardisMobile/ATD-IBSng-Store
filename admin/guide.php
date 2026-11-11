@@ -47,6 +47,8 @@ $ovpnMessage = '';
 $ovpnError = '';
 $ovpnResult = '';
 $ovpnGeneratedLinks = [];
+$ovpnKeepProfilesOpen = false;
+$ovpnKeepLinksOpen = false;
 $ovpnManager = new OpenVpnManager($pdo);
 $ovpnSearch = trim((string)($_GET['ovpn_order_search'] ?? ''));
 $ovpnOrders = [];
@@ -74,6 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
     } else {
         try {
             $action = (string)$_POST['action'];
+            $ovpnKeepProfilesOpen = in_array($action, ['openvpn_save_profile','openvpn_toggle_profile','openvpn_delete_profile'], true);
+            $ovpnKeepLinksOpen = in_array($action, ['openvpn_toggle_link','openvpn_delete_link','openvpn_create_link'], true);
             if ($action === 'openvpn_save_profile') {
                 $name = trim((string)($_POST['profile_name'] ?? ''));
                 $id = (int)($_POST['profile_id'] ?? 0) ?: null;
@@ -96,6 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
             } elseif ($action === 'openvpn_toggle_link') {
                 $ovpnManager->setLinkActive((int)$_POST['link_id'], (string)($_POST['active'] ?? '') === '1');
                 $ovpnMessage = 'وضعیت لینک تغییر کرد.';
+            } elseif ($action === 'openvpn_delete_link') {
+                $ovpnManager->deleteLink((int)($_POST['link_id'] ?? 0));
+                $ovpnMessage = 'لینک حذف شد.';
             } elseif ($action === 'openvpn_delete_profile') {
                 $ovpnManager->deleteProfile((int)$_POST['profile_id']);
                 $ovpnMessage = 'پروفایل حذف شد.';
@@ -248,11 +255,11 @@ $esc = static fn($value): string => e((string)$value);
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>">
 <div class="field field-full">
 <label for="guide-intro" data-fa="توضیح ابتدای راهنما (فارسی)" data-en="Guide introduction (Persian)">توضیح ابتدای راهنما (فارسی)</label>
-<textarea id="guide-intro" name="intro" rows="3" placeholder="توضیح کوتاهی برای مشتریان وارد کنید." data-ui-placeholder="guide_intro_placeholder"><?= $esc($guide['intro'] ?? '') ?></textarea>
+<textarea id="guide-intro" name="intro" rows="3" placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-fa-placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-en-placeholder="Select your connection method and operating system."></textarea>
 </div>
 <div class="field field-full">
 <label for="guide-intro-en" data-fa="توضیح ابتدای راهنما (انگلیسی)" data-en="Guide introduction (English)">توضیح ابتدای راهنما (انگلیسی)</label>
-<textarea id="guide-intro-en" name="intro_en" rows="3" dir="ltr" placeholder="Enter a short introduction for customers."><?= $esc($guide['intro_en'] ?? $defaultGuide['intro_en']) ?></textarea>
+<textarea id="guide-intro-en" name="intro_en" rows="3" dir="ltr" placeholder="Select your connection method and operating system." data-fa-placeholder="روش اتصال و سیستم‌عامل موردنظر خود را انتخاب کنید." data-en-placeholder="Select your connection method and operating system."></textarea>
 </div>
 <div class="guide-admin-method-head"><h2 data-fa="روش‌های اتصال" data-en="Connection methods">روش‌های اتصال</h2><button class="button" type="button" id="add-guide-method" data-fa="افزودن روش اتصال" data-en="Add connection method">افزودن روش اتصال</button></div>
 <div id="guide-method-list">
@@ -299,14 +306,9 @@ foreach ($ovpnProfiles as $profileRow) {
 }
 ?>
 <section class="panel panel-card" id="openvpn-management">
-<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status"><?= e($ovpnMessage) ?></div><?php endif; ?>
-<?php if ($ovpnError !== ''): ?><div class="notice err" role="alert"><?= e($ovpnError) ?></div><?php endif; ?>
+<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status" data-fa="<?= e($ovpnMessage) ?>" data-en="<?= e($ovpnMessage === 'لینک حذف شد.' ? 'Link deleted.' : ($ovpnMessage === 'لینک عمومی ساخته شد؛ نشانی آن را در محتوای راهنمای عمومی OpenVPN قرار دهید.' ? 'Public link created. Add its URL to the public OpenVPN guide.' : ($ovpnMessage === 'لینک اختصاصی ساخته و به نشانی واردشده ارسال شد.' ? 'Personalized link created and emailed.' : ($ovpnMessage === 'پروفایل حذف شد.' ? 'Profile deleted.' : ($ovpnMessage === 'وضعیت لینک تغییر کرد.' ? 'Link status updated.' : ($ovpnMessage === 'وضعیت پروفایل تغییر کرد.' ? 'Profile status updated.' : 'OpenVPN profile saved successfully.'))))) ?>"><?= e($ovpnMessage) ?></div><?php endif; ?>
+<?php if ($ovpnError !== ''): ?><div class="notice err" role="alert" data-fa="<?= e($ovpnError) ?>" data-en="OpenVPN operation failed. Check the server error log for details."><?= e($ovpnError) ?></div><?php endif; ?>
 <?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert" data-fa="جداول OpenVPN در دیتابیس آماده نیستند. از بخش همگام‌سازی دیتابیس در مدیریت، تغییرات معوق را اعمال کنید." data-en="The OpenVPN database tables are not ready. Apply the pending changes from the Database Synchronization section in the admin panel."><?= e($ovpnLoadError) ?></div><?php endif; ?>
-<details class="guide-admin-disclosure guide-ovpn-disclosure"<?= ($editProfile || $ovpnGeneratedLinks) ? ' open' : '' ?>>
-<summary class="guide-admin-disclosure-summary">
-<span class="eyebrow" data-fa="پروفایل و لینک اتصال" data-en="Connection profiles and links">پروفایل و لینک اتصال</span>
-<strong id="openvpn-management-title" data-fa="مدیریت OpenVPN" data-en="OpenVPN Management">مدیریت OpenVPN</strong>
-</summary>
 <div class="guide-admin-disclosure-content">
 <p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
 <?php if ($ovpnGeneratedLinks): ?>
@@ -324,7 +326,7 @@ foreach ($ovpnProfiles as $profileRow) {
 </div>
 </div>
 <?php endif; ?>
-<details class="form-section"<?= $editProfile ? ' open' : '' ?>>
+<details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
 <form method="post" enctype="multipart/form-data">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
@@ -340,7 +342,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <?php foreach ($ovpnProfiles as $profileRow): ?><tr><td><?= e((string)$profileRow['name']) ?></td><td><?= !empty($profileRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td class="actions"><a class="button" href="<?= e(app_url('admin/guide.php?edit_ovpn_profile='.(int)$profileRow['id'].'#openvpn-management')) ?>" data-fa="جایگزینی فایل" data-en="Replace file">جایگزینی فایل</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($profileRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($profileRow['is_active']) ? '<span data-fa="غیرفعال‌سازی" data-en="Disable">غیرفعال‌سازی</span>' : '<span data-fa="فعال‌سازی" data-en="Enable">فعال‌سازی</span>' ?></button></form><form method="post" data-confirm-fa="این پروفایل و لینک‌های وابسته به آن حذف شوند؟" data-confirm-en="Delete this profile and its associated links?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </details>
-<details class="form-section">
+<details class="form-section"<?= $ovpnKeepLinksOpen ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
 <form method="get" class="field"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
 <form method="post" id="ovpn-link-form">
@@ -353,10 +355,9 @@ foreach ($ovpnProfiles as $profileRow) {
 </details>
 <div class="table-wrap" style="margin-top:18px"><h3 data-fa="لینک‌های ساخته‌شده" data-en="Generated links">لینک‌های ساخته‌شده</h3><table><thead><tr><th data-fa="پروفایل" data-en="Profile">پروفایل</th><th data-fa="نوع" data-en="Type">نوع</th><th data-fa="سفارش" data-en="Order">سفارش</th><th data-fa="ایمیل گیرنده" data-en="Recipient">ایمیل گیرنده</th><th data-fa="دانلود" data-en="Downloads">دانلود</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
 <?php if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
-<?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($linkRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($linkRow['is_active']) ? '<span data-fa="لغو لینک" data-en="Revoke link">لغو لینک</span>' : '<span data-fa="فعال‌سازی مجدد" data-en="Reactivate">فعال‌سازی مجدد</span>' ?></button></form></td></tr><?php endforeach; ?>
+<?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($linkRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($linkRow['is_active']) ? '<span data-fa="لغو لینک" data-en="Revoke link">لغو لینک</span>' : '<span data-fa="فعال‌سازی مجدد" data-en="Reactivate">فعال‌سازی مجدد</span>' ?></button></form><form method="post" data-confirm-fa="این لینک برای همیشه از دیتابیس حذف شود؟" data-confirm-en="Permanently delete this link from the database?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف لینک" data-en="Delete link">حذف لینک</button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </div>
-</details>
 </section>
 <script>
 (function(){const order=document.getElementById('ovpn-order-id'),email=document.getElementById('ovpn-recipient-email'),form=document.getElementById('ovpn-link-form');if(order&&email)order.addEventListener('change',()=>{const option=order.selectedOptions[0];email.value=option?.dataset.email||'';});if(form)form.addEventListener('submit',event=>{const button=event.submitter;if(button?.value==='personalized'){if(!order.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Select an order first.':'ابتدا سفارش مشتری را انتخاب کنید.');return;}if(!email.value){event.preventDefault();alert(document.documentElement.lang==='en'?'Enter a recipient email address.':'نشانی ایمیل گیرنده را وارد کنید.');}}});})();
