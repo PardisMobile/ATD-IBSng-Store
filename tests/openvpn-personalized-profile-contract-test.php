@@ -100,6 +100,12 @@ openvpn_profile_assert(
 );
 openvpn_profile_assert(
     is_string($downloadSource)
+        && str_contains($downloadSource, 'این لینک فقط شامل تنظیمات اتصال به سرور است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. برای استفاده از حساب خود باید اطلاعات ورود معتبر را وارد کنید.')
+        && str_contains($downloadSource, 'This link contains only the server connection settings and no customer login credentials. To use your account, enter valid login credentials.'),
+    'The public card must explain that it contains server settings only and requires valid account credentials.'
+);
+openvpn_profile_assert(
+    is_string($downloadSource)
         && str_contains($downloadSource, "$" . "personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));")
         && str_contains($downloadSource, "$" . "personalFileUrl = $" . "manager->generatedProfileUrl($token);")
         && str_contains($downloadSource, "$" . "importUrl = 'openvpn://import-profile/' . $" . "personalFileUrl;"),
