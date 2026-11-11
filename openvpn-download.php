@@ -22,8 +22,11 @@ try {
         }
         if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
         $isPersonalized = true;
-        $personalUrl = $manager->generatedProfileUrl($token);
-        $importUrl = 'openvpn://import-profile/' . $personalUrl;
+        // Show the same clean endpoint-style URL used by the public card.
+        // Keep the generated physical file URL private to the Import action.
+        $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));
+        $personalFileUrl = $manager->generatedProfileUrl($token);
+        $importUrl = 'openvpn://import-profile/' . $personalFileUrl;
         $profileId = (int)$result['id'];
         $profileName = (string)$result['name'];
     } elseif ($profileId > 0) {
