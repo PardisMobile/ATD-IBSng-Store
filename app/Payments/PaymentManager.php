@@ -112,6 +112,17 @@ final class PaymentManager
         return $strategy;
     }
 
+    public function configurationComplete(array $settings, ?string $provider = null): bool
+    {
+        return $this->gateway($provider)->configurationComplete($settings);
+    }
+
+    /** @return array<string,mixed> */
+    public function transactionMetadata(array $settings, ?string $provider = null): array
+    {
+        return $this->gateway($provider)->transactionMetadata($settings);
+    }
+
     /** @return list<string> */
     public function supportedCurrencies(?string $provider = null): array
     {

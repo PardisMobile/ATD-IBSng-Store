@@ -4,34 +4,6 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/PaymentGateway.php';
 
 /**
- * A transport failure that records whether cURL may have reached the HTTP request-transfer phase.
- * When false, no HTTP request was sent to the payment provider.
- */
-final class ZarinpalTransportException extends RuntimeException
-{
-    /** @param array<string,mixed> $transferInfo */
-    public function __construct(
-        string $message,
-        int $code,
-        private readonly bool $requestMayHaveReachedProvider,
-        private readonly array $transferInfo
-    ) {
-        parent::__construct($message, $code);
-    }
-
-    public function requestMayHaveReachedProvider(): bool
-    {
-        return $this->requestMayHaveReachedProvider;
-    }
-
-    /** @return array<string,mixed> */
-    public function transferInfo(): array
-    {
-        return $this->transferInfo;
-    }
-}
-
-/**
  * Zarinpal API v4 transport adapter.
  *
  * Amounts are passed in the smallest unit represented by the persisted order
@@ -63,6 +35,20 @@ final class ZarinpalGateway implements PaymentGateway
     public function retryStrategy(): string
     {
         return 'new';
+    }
+
+    public function configurationComplete(array $settings): bool
+    {
+        $sandbox = ($settings['sandbox_mode'] ?? '0') === '1';
+        $merchantKey = $sandbox ? 'sandbox_merchant_id' : 'merchant_id';
+        return trim((string)($settings[$merchantKey] ?? '')) !== '';
+    }
+
+    public function transactionMetadata(array $settings): array
+    {
+        return ['gateway_environment' => [
+            'sandbox' => (($settings['sandbox_mode'] ?? '0') === '1'),
+        ]];
     }
 
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
@@ -113,7 +99,12 @@ final class ZarinpalGateway implements PaymentGateway
                 'data' => $data,
                 'errors' => $response['errors'] ?? [],
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            throw new RuntimeException('Zarinpal did not issue a payment authority. Response: ' . (is_string($diagnostic) ? substr($diagnostic, 0, 2000) : 'unavailable'));
+            throw new PaymentGatewayInitiationException(
+                'Zarinpal did not issue a payment authority. Response: ' . (is_string($diagnostic) ? substr($diagnostic, 0, 2000) : 'unavailable'),
+                0,
+                true,
+                ['provider_response' => $diagnostic]
+            );
         }
 
         return [
@@ -232,13 +223,19 @@ final class ZarinpalGateway implements PaymentGateway
                 'primary_ip' => $transferInfo['primary_ip'] ?? null,
                 'request_may_have_reached_provider' => $requestMayHaveReachedProvider,
             ];
-            throw new ZarinpalTransportException(
+            throw new PaymentGatewayInitiationException(
                 'Zarinpal request failed (HTTP ' . $httpStatus . '): ' . $curlError
                 . ' | Transfer diagnostics: ' . json_encode($timing, JSON_UNESCAPED_SLASHES)
                 . ' | Response body: ' . $responseBody,
                 $curlErrno,
-                $requestMayHaveReachedProvider,
-                $timing
+                !$requestMayHaveReachedProvider,
+                [
+                    'http_status' => $httpStatus,
+                    'curl_errno' => $curlErrno,
+                    'curl_error' => $curlError,
+                    'transfer' => $timing,
+                    'response_body' => $responseBody,
+                ]
             );
         }
         $decoded = json_decode($body, true);

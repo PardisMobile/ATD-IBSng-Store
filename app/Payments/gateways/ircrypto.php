@@ -35,6 +35,17 @@ final class IRCryptoGateway implements PaymentGateway
         return 'resume';
     }
 
+    public function transactionMetadata(array $settings): array
+    {
+        return [];
+    }
+
+    public function configurationComplete(array $settings): bool
+    {
+        return trim((string)($settings['api_key'] ?? '')) !== ''
+            && trim((string)($settings['webhook_secret'] ?? '')) !== '';
+    }
+
     /** @return array<string,array{label:string,required?:bool,secret?:bool}> */
     public function configurationFields(): array
     {

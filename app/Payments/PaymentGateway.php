@@ -2,6 +2,36 @@
 declare(strict_types=1);
 
 /**
+ * Standardized failure raised by a gateway when it cannot complete initiation.
+ *
+ * safeToRetry must be true only when the adapter can prove that no payable
+ * provider session was created. Ambiguous outcomes must remain false.
+ */
+final class PaymentGatewayInitiationException extends RuntimeException
+{
+    /** @param array<string,mixed> $diagnostics */
+    public function __construct(
+        string $message,
+        int $code = 0,
+        private readonly bool $safeToRetry = false,
+        private readonly array $diagnostics = []
+    ) {
+        parent::__construct($message, $code);
+    }
+
+    public function isSafeToRetry(): bool
+    {
+        return $this->safeToRetry;
+    }
+
+    /** @return array<string,mixed> */
+    public function diagnostics(): array
+    {
+        return $this->diagnostics;
+    }
+}
+
+/**
  * Contract for independently replaceable payment-provider modules.
  *
  * Implementations must never mark an order paid based only on a browser return.
@@ -20,6 +50,12 @@ interface PaymentGateway
 
     /** Return 'new' when retrying requires a fresh provider session, or 'resume' to reuse the existing one. */
     public function retryStrategy(): string;
+
+    /** Return provider-specific metadata that must be snapshotted before initiation. */
+    public function transactionMetadata(array $settings): array;
+
+    /** Validate whether this adapter has all credentials/settings needed to initiate payment. */
+    public function configurationComplete(array $settings): bool;
 
     /**
      * Begin checkout for an already-persisted pending order.

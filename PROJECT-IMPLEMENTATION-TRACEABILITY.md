@@ -893,3 +893,18 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Checkout now tells the customer to retry from the order-tracking page instead of asking them to contact support for this recoverable start-payment failure.
 - No payment verification, callback, amount/currency, provisioning, renewal, or IBSng behavior was changed.
 - Validation gap: PHP lint, payment contract tests, and live cPanel/Zarinpal testing are still required. Confirm that a DNS-resolution timeout becomes `failed`, exposes the retry button, and that a normal successful first request still redirects to Zarinpal.
+
+
+## PAY-ARCH-002 — Provider-neutral payment initiation failures
+
+**Status: FIXED (source) / NOT VERIFIED (PHP lint, automated tests, cPanel runtime).**
+
+- Removed the Zarinpal-specific exception type and provider-name checks from the central `PaymentFlow::initiate()` failure classifier.
+- Added the shared `PaymentGatewayInitiationException` contract. An adapter may mark an initiation failure safe to retry only when it can establish that no payable provider session was created; ambiguous outcomes remain unresolved.
+- Moved provider-specific configuration completeness and transaction metadata generation behind `PaymentGateway` and `PaymentManager`. Zarinpal now validates its active Merchant ID and snapshots its Sandbox/Live environment in its own adapter; the central application flow no longer contains Zarinpal-specific configuration checks.
+- Zarinpal transport diagnostics (HTTP status, cURL error, timing, destination IP and response excerpt) are attached to the generic exception and persisted with the initiation diagnostic. Credentials and merchant secrets are not included.
+- A definitive provider API rejection without an Authority is classified by the Zarinpal adapter as safe to retry. Transport failures are safe only when cURL timing proves the HTTP transfer phase was not reached. Post-transfer/ambiguous failures remain `initiated`.
+- Generic input-validation failures are marked failed because validation occurs before the provider request. Unknown adapter exceptions remain ambiguous by default.
+- Payment transaction persistence, callback verification, provider retry strategy, provisioning and renewal policies were not redesigned.
+- Both active adapters, Zarinpal and IRCrypto, implement the expanded `PaymentGateway` contract. Zarinpal owns its Sandbox/Live snapshot and conditional Merchant ID validation; IRCrypto returns no extra transaction metadata and validates its API key/webhook secret inside its adapter.
+- Required validation before production: PHP lint for all touched PHP files, the existing test suite, adapter contract tests, safe-vs-ambiguous failure tests, and first-attempt/retry runtime comparison on cPanel. No live payment verification is claimed.

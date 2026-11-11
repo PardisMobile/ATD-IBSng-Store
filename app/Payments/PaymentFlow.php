@@ -88,12 +88,8 @@ final class PaymentFlow
                         break;
                     }
                 }
-                if ($provider === 'zarinpal') {
-                    $sandbox = ($providerConfig['sandbox_mode'] ?? '0') === '1';
-                    $requiredMerchantKey = $sandbox ? 'sandbox_merchant_id' : 'merchant_id';
-                    if (trim((string)($providerConfig[$requiredMerchantKey] ?? '')) === '') {
-                        $complete = false;
-                    }
+                if (!$manager->configurationComplete($providerConfig)) {
+                    $complete = false;
                 }
                 if (!$complete) {
                     continue;
@@ -156,12 +152,8 @@ final class PaymentFlow
         $manager = new PaymentManager($provider);
         $amount = ['amount_minor' => $choice['amount_minor'], 'currency' => $choice['currency']];
         $transactions = new PaymentTransactionService($pdo);
-        $transactionMetadata = [];
-        if ($provider === 'zarinpal') {
-            $transactionMetadata['gateway_environment'] = [
-                'sandbox' => (($all['payment_zarinpal_sandbox_mode'] ?? '0') === '1'),
-            ];
-        }
+        $providerSettingsForMetadata = self::providerSettings($all, $provider);
+        $transactionMetadata = $manager->transactionMetadata($providerSettingsForMetadata);
         // Resolve the absolute callback before persisting an initiation attempt.
         // This prevents path-only base_url configurations from leaving an
         // unpayable 'initiated' transaction when the adapter rejects the URL.
@@ -201,6 +193,9 @@ final class PaymentFlow
                 $transactions->recordInitiationDiagnostic($transactionId, [
                     'exception_class' => get_class($e),
                     'message' => substr($e->getMessage(), 0, 4000),
+                    'gateway_diagnostics' => $e instanceof PaymentGatewayInitiationException
+                        ? $e->diagnostics()
+                        : [],
                     'occurred_at' => gmdate('c'),
                 ]);
             } catch (Throwable $diagnosticError) {
@@ -208,29 +203,18 @@ final class PaymentFlow
                     . $transactionId . ': ' . $diagnosticError->getMessage());
             }
 
-            // A structured Zarinpal API rejection with no authority is definitive:
-            // no payable gateway session was issued, so this transaction can be
-            // safely failed and the same pending order may be retried.
-            // Failures proven to occur before HTTP transfer (including DNS-resolution
-            // timeouts) are safe to retry immediately. Once cURL has entered the
-            // request-transfer phase, keep the attempt ambiguous for reconciliation.
-            $preRequestTransportCodes = array_filter([
-                defined('CURLE_COULDNT_RESOLVE_HOST') ? CURLE_COULDNT_RESOLVE_HOST : null,
-                defined('CURLE_COULDNT_CONNECT') ? CURLE_COULDNT_CONNECT : null,
-                defined('CURLE_COULDNT_RESOLVE_PROXY') ? CURLE_COULDNT_RESOLVE_PROXY : null,
-                defined('CURLE_SSL_CONNECT_ERROR') ? CURLE_SSL_CONNECT_ERROR : null,
-            ], static fn($code): bool => is_int($code));
-            $preTransferTransportFailure = $e instanceof ZarinpalTransportException
-                && !$e->requestMayHaveReachedProvider();
-            $definitiveZarinpalFailure = $provider === 'zarinpal' && ($e instanceof InvalidArgumentException
-                || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')
-                || in_array($e->getCode(), $preRequestTransportCodes, true)
-                || $preTransferTransportFailure);
-            if ($definitiveZarinpalFailure) {
+            // Only the gateway adapter can classify an initiation failure as
+            // safe to retry. Unknown outcomes remain initiated for reconciliation.
+            // Input validation is also definitive because it occurs before the
+            // adapter can send a provider request.
+            $safeToRetry = $e instanceof PaymentGatewayInitiationException
+                ? $e->isSafeToRetry()
+                : $e instanceof InvalidArgumentException;
+            if ($safeToRetry) {
                 try {
                     $transactions->failInitiation($transactionId);
                 } catch (Throwable $stateError) {
-                    error_log('Unable to mark rejected Zarinpal initiation as failed: ' . $stateError->getMessage());
+                    error_log('Unable to mark definitive payment initiation failure as failed: ' . $stateError->getMessage());
                 }
             }
             throw $e;
@@ -279,7 +263,7 @@ final class PaymentFlow
     {
         $provider = strtolower(trim($provider));
         // The callback's reference field is provider-specific. Resolve it via
-        // the registered adapter instead of assuming Zarinpal's Authority key.
+        // the registered adapter instead of assuming a provider-specific field.
         $reference = (new PaymentManager($provider))->gateway()->callbackReference($callback);
         if ($provider === '' || $reference === '') {
             throw new InvalidArgumentException('Payment callback is missing its provider reference.');
