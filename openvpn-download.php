@@ -66,7 +66,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 .openvpn-link-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px}
 .openvpn-link-card{padding:clamp(15px,2.5vw,20px);display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;overflow:hidden;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2);transition:transform var(--ui-transition,180ms ease),border-color var(--ui-transition,180ms ease),box-shadow var(--ui-transition,180ms ease)}\n.openvpn-link-card::before{content:\"\";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--accent);opacity:.72}\n.openvpn-link-card:hover{transform:translateY(-2px);border-color:var(--border-strong,var(--accent));box-shadow:var(--ui-shadow,0 18px 48px rgba(0,0,0,.18))}
 .openvpn-link-card h2{display:flex;align-items:center;gap:9px;margin:0;font-size:1.08rem;line-height:1.5}
-.openvpn-link-card p{margin:0;color:var(--muted);line-height:1.85;font-size:.92rem;min-height:5.1em}
+.openvpn-link-card p{margin:0;color:var(--muted);line-height:1.85;font-size:.92rem;min-height:7.4em}
 .openvpn-link-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}\n.openvpn-link-card h2 .ui-icon{width:22px;height:22px;flex:0 0 22px;color:var(--accent)}
 .openvpn-url{direction:ltr;text-align:left;unicode-bidi:plaintext;display:block;width:100%;min-width:0;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:var(--ui-radius-md,14px);background:var(--control-bg,var(--surface));color:var(--text);font:inherit;font-size:.82rem;overflow-wrap:anywhere}
 .openvpn-copy{width:100%;justify-content:center}
