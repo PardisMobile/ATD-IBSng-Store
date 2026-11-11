@@ -216,12 +216,12 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-method>.guide-admin-method-head>.field{margin:0;min-width:0}
 .guide-admin-method>.guide-admin-method-head .check-toggle{align-self:end;min-height:45px;white-space:nowrap}
 .guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{align-self:end;min-height:45px}
-.ovpn-search-form{display:grid;grid-template-columns:minmax(220px,420px) auto;align-items:end;column-gap:10px;row-gap:8px;max-width:620px}
+.ovpn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:10px;row-gap:8px;width:100%;max-width:100%;box-sizing:border-box}
 .ovpn-search-form>label{grid-column:1/-1}
 .ovpn-search-form>input{grid-column:1;min-width:0;margin:0 !important}
-.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;margin:0 0 0 !important;white-space:nowrap}
+.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;height:45px;margin:0 !important;white-space:nowrap;box-sizing:border-box}
 @media(max-width:760px){.guide-admin-method>.guide-admin-method-head{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.guide-admin-method>.guide-admin-method-head .check-toggle{grid-column:1}.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{grid-column:2;justify-self:end}}
-@media(max-width:420px){.ovpn-search-form{grid-template-columns:minmax(0,1fr)}.ovpn-search-form>label,.ovpn-search-form>input,.ovpn-search-form>button{grid-column:1}.ovpn-search-form>button{margin:0;justify-self:start}}
+@media(max-width:420px){.ovpn-search-form{grid-template-columns:minmax(0,1fr)}.ovpn-search-form>label,.ovpn-search-form>input,.ovpn-search-form>button{grid-column:1}.ovpn-search-form>button{margin:0 !important;justify-self:start}}
 .guide-admin-method .system-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .guide-admin-method textarea{min-height:120px;resize:vertical}
 .guide-admin-method .field-full{grid-column:1/-1}
@@ -252,8 +252,9 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-disclosure-content{min-width:0;margin-top:16px}
 .guide-admin-disclosure-content>.form-section{margin-top:16px}
 @media(prefers-reduced-motion:reduce){.guide-system-summary::after,.guide-admin-disclosure-summary::after{transition:none}}
-.ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px}
-.ovpn-management-column{min-width:0}
+.ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:16px}
+.ovpn-management-column{min-width:0;display:flex;flex-direction:column}
+.ovpn-management-column>.form-section{width:100%;height:100%;box-sizing:border-box}
 .ovpn-management-column>.form-section{margin-block:0 16px}
 .ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
 .ovpn-management-column table{min-width:620px}
@@ -366,9 +367,9 @@ foreach ($ovpnProfiles as $profileRow) {
 <p class="hint" data-fa="یکی از دو روش نشانی HTTPS یا بارگذاری فایل را انتخاب کنید. در روش نشانی، نسخه دریافت‌شده ذخیره می‌شود و تغییرات بعدی فایل راه دور به‌صورت خودکار اعمال نخواهد شد. برای جایگزینی، پروفایل را از فهرست انتخاب کنید." data-en="Choose either an HTTPS URL or a file upload. URL imports are stored as a snapshot; later remote changes are not applied automatically. Select a profile below to replace it.">یکی از دو روش نشانی HTTPS یا بارگذاری فایل را انتخاب کنید. در روش نشانی، نسخه دریافت‌شده ذخیره می‌شود و تغییرات بعدی فایل راه دور به‌صورت خودکار اعمال نخواهد شد. برای جایگزینی، پروفایل را از فهرست انتخاب کنید.</p>
 <div class="actions"><button class="button primary" type="submit" data-fa="ذخیره پروفایل" data-en="Save profile">ذخیره پروفایل</button><?php if ($editProfile): ?><a class="button" href="<?= e(app_url('admin/guide.php#openvpn-management')) ?>" data-fa="لغو ویرایش" data-en="Cancel edit">لغو ویرایش</a><?php endif; ?></div>
 </form>
-<div class="table-wrap"><table><thead><tr><th data-fa="نام پروفایل" data-en="Profile">نام پروفایل</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
-<?php if (!$ovpnProfiles): ?><tr><td colspan="3" data-fa="هنوز پروفایلی ثبت نشده است." data-en="No profiles have been added yet.">هنوز پروفایلی ثبت نشده است.</td></tr><?php endif; ?>
-<?php foreach ($ovpnProfiles as $profileRow): ?><tr><td><?= e((string)$profileRow['name']) ?></td><td><?= !empty($profileRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td class="actions"><a class="button" href="<?= e(app_url('admin/guide.php?edit_ovpn_profile='.(int)$profileRow['id'].'#openvpn-management')) ?>" data-fa="جایگزینی فایل" data-en="Replace file">جایگزینی فایل</a><form method="post" data-confirm-fa="این پروفایل و لینک‌های وابسته به آن حذف شوند؟" data-confirm-en="Delete this profile and its associated links?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form></td></tr><?php endforeach; ?>
+<div class="table-wrap"><table><thead><tr><th data-fa="نام پروفایل" data-en="Profile">نام پروفایل</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
+<?php if (!$ovpnProfiles): ?><tr><td colspan="2" data-fa="هنوز پروفایلی ثبت نشده است." data-en="No profiles have been added yet.">هنوز پروفایلی ثبت نشده است.</td></tr><?php endif; ?>
+<?php foreach ($ovpnProfiles as $profileRow): ?><tr><td><?= e((string)$profileRow['name']) ?></td><td class="actions"><a class="button" href="<?= e(app_url('admin/guide.php?edit_ovpn_profile='.(int)$profileRow['id'].'#openvpn-management')) ?>" data-fa="جایگزینی فایل" data-en="Replace file">جایگزینی فایل</a><form method="post" data-confirm-fa="این پروفایل و لینک‌های وابسته به آن حذف شوند؟" data-confirm-en="Delete this profile and its associated links?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </details>
 </div>
