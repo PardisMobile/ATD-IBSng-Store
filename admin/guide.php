@@ -277,7 +277,7 @@ $esc = static fn($value): string => e((string)$value);
 .ovpn-copy-button .ui-icon{width:18px;height:18px;flex:0 0 18px}
 .ovpn-link-actions{display:flex;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:nowrap;white-space:nowrap}
 .ovpn-link-actions form{display:inline-flex;margin:0;flex:0 0 auto}
-.ovpn-link-actions .button{min-height:34px;padding:6px 10px;font-size:.82rem;line-height:1.2}
+.ovpn-link-actions .button:not([data-copy-value]){min-height:34px;padding:6px 10px;font-size:.82rem;line-height:1.2}
 .ovpn-link-copy{display:inline-flex;align-items:center;gap:5px}
 .ovpn-link-copy .ui-icon{width:15px;height:15px;flex:0 0 15px}
 .ovpn-link-copy[disabled]{opacity:.45;cursor:not-allowed}
