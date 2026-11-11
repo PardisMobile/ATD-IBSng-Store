@@ -255,7 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
         exit;
     } catch (Throwable $e) {
         error_log('Checkout payment initiation failed: ' . $e->getMessage());
-        $error = 'سفارش ثبت شد، اما شروع پرداخت در حال حاضر ممکن نیست. شناسه سفارش را نگه دارید و با پشتیبانی تماس بگیرید.';
+        $error = 'ارتباط با درگاه پرداخت با اشکال مواجه شد. لطفاً از صفحه پیگیری سفارش، مجدداً برای پرداخت تلاش کنید.';
     }
 }
 
