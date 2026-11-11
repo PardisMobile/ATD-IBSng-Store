@@ -207,7 +207,7 @@ final class OpenVpnManager
         $token=bin2hex(random_bytes(32));
         $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, is_active, expires_at) VALUES (?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
         $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token)]);
-        return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-profile.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
+        return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-download.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
     }
 
     public function resolveToken(string $token, bool $countAccess = true): array
