@@ -38,18 +38,23 @@ final class IBSngClient
 
         $portSuffix = $this->port === 80 ? '' : ':' . $this->port;
         $this->baseUrl = 'http://' . $hostForUrl . $portSuffix . '/IBSng';
-        $cookie = tempnam(sys_get_temp_dir(), 'atd_ibsng_');
-        if ($cookie === false) {
-            throw new RuntimeException('ساخت فضای موقت نشست IBSng انجام نشد.');
-        }
-        $this->cookieFile = $cookie;
+        $sessionKey = hash('sha256', strtolower($hostForUrl) . ':' . $this->port . '|' . $this->username . '|' . hash('sha256', $this->password));
+        $this->cookieFile = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'atd_ibsng_' . $sessionKey . '.cookie';
+        if (!is_file($this->cookieFile)) { if (@file_put_contents($this->cookieFile, '') === false) throw new RuntimeException('ساخت فضای موقت نشست IBSng انجام نشد.'); @chmod($this->cookieFile, 0600); }
+        if (is_file($this->cookieFile) && filesize($this->cookieFile) > 0 && (time() - (int)filemtime($this->cookieFile)) > 900) { @file_put_contents($this->cookieFile, ''); @chmod($this->cookieFile, 0600); }
     }
 
-    public function __destruct()
+    public function __destruct() { /* Retain isolated short-lived cookie jar for later PHP requests. */ }
+
+    private function hasStoredSession(): bool
     {
-        if (isset($this->cookieFile) && is_file($this->cookieFile)) {
-            @unlink($this->cookieFile);
-        }
+        if (!is_file($this->cookieFile) || !is_readable($this->cookieFile)) return false;
+        return preg_match('/(?:^|\\s)IBS_SESSID\\s+\\S+/m', (string)@file_get_contents($this->cookieFile)) === 1;
+    }
+
+    private function resetStoredSession(): void
+    {
+        @file_put_contents($this->cookieFile, ''); @chmod($this->cookieFile, 0600); $this->loggedIn = false;
     }
 
     public function testConnection(): void
@@ -62,9 +67,8 @@ final class IBSngClient
 
     private function login(): void
     {
-        if ($this->loggedIn) {
-            return;
-        }
+        if ($this->loggedIn) return;
+        if ($this->hasStoredSession()) { $this->loggedIn = true; return; }
         [$body, $status, $headers] = $this->requestRaw('/admin/', [
             'username' => $this->username,
             'password' => $this->password,
@@ -135,10 +139,10 @@ final class IBSngClient
             $options[CURLOPT_HTTPHEADER][] = 'Content-Type: application/x-www-form-urlencoded';
         }
         curl_setopt_array($curl, $options);
-        $completed = curl_exec($curl);
-        $errno = curl_errno($curl);
-        $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        curl_close($curl);
+        $lock = @fopen($this->cookieFile . '.lock', 'c');
+        if ($lock === false || !flock($lock, LOCK_EX)) { if (is_resource($lock)) fclose($lock); curl_close($curl); throw new RuntimeException('قفل نشست IBSng در دسترس نیست.'); }
+        $completed = curl_exec($curl); $errno = curl_errno($curl); $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE); curl_close($curl);
+        flock($lock, LOCK_UN); fclose($lock); @chmod($this->cookieFile, 0600);
 
         if ($completed === false) {
             /*
@@ -167,8 +171,11 @@ final class IBSngClient
     {
         $this->login();
         [$body, $status] = $this->requestRaw($path, $data);
-        if ($status >= 400) {
-            throw new RuntimeException('Web Panel درخواست را نپذیرفت (HTTP ' . $status . ').');
+        if ($status >= 400) throw new RuntimeException('Web Panel درخواست را نپذیرفت (HTTP ' . $status . ').');
+        $loginForm = stripos($body, 'name="username"') !== false && stripos($body, 'name="password"') !== false;
+        if ($data === [] && $loginForm) {
+            $this->resetStoredSession(); $this->login(); [$body, $status] = $this->requestRaw($path, [], true);
+            if ($status >= 400 || (stripos($body, 'name="username"') !== false && stripos($body, 'name="password"') !== false)) throw new RuntimeException('نشست مدیر IBSng پس از ورود مجدد معتبر نشد.');
         }
         return $body;
     }
