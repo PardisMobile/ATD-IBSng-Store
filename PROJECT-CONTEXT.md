@@ -1146,3 +1146,13 @@
 - OpenVPN 2.6 documentation describes inline `auth-user-pass` credentials, but compatibility with the user's exact OpenVPN Connect versions and the MikroTik server profile has not yet been runtime-tested. Do not claim end-to-end client verification until the customer tests Import from URL and connection on their devices.
 
 - Outstanding verification: PHP lint, schema sync on an existing cPanel database, profile URL import against a real HTTPS host, upload, token expiry/revocation, order eligibility, bilingual email delivery, and OpenVPN client import/authentication. No runtime or live mail test is claimed.
+
+
+## 2026-11-11 — اصلاح خروجی پروفایل اختصاصی OpenVPN (در حال اعتبارسنجی)
+
+- `app/OpenVpnManager::validateProfile()` اکنون محتوای اصلی فایل را برای اعتبارسنجی در یک نمای نرمال‌شده بررسی می‌کند، اما همان بایت‌های ورودی را برمی‌گرداند؛ پایان‌خط‌ها، فاصله‌های ابتدا/انتها، گواهی‌ها، کلیدها و سایر دستورها هنگام ذخیره/دریافت بی‌دلیل بازنویسی نمی‌شوند.
+- `profileWithCredentials()` فقط یک دستور مستقل `auth-user-pass` را با بلوک inline شامل username/password همان سفارش جایگزین می‌کند؛ اگر دستور صفر یا بیش از یک بار وجود داشته باشد، خروجی اختصاصی رد می‌شود. تمام محتوای خارج از همان خط باید byte-for-byte حفظ شود.
+- `openvpn-profile.php` نام پروفایل ثبت‌شده در پنل را در نام فایل دانلودی `Content-Disposition` قرار می‌دهد و MIME موردنیاز `application/x-openvpn-profile` را حفظ می‌کند. OpenVPN Connect نام نهایی را بر اساس hostname، username و filename می‌سازد؛ بنابراین نمایش دقیق فقط با نام فایل قابل تضمین نیست و باید روی iOS/desktop بررسی شود.
+- خطاهای endpoint اکنون با جزئیات سمت سرور در error log ثبت می‌شوند؛ پیام عمومی و عدم افشای جزئیات حساس به کاربر حفظ شده است.
+- تست قراردادی `tests/openvpn-personalized-profile-contract-test.php` اضافه و به workflow متصل شده است تا حفظ بایت‌های فایل، جایگزینی فقط auth directive، حفظ remote/port/key و متادیتای نام فایل را بررسی کند.
+- این اصلاحات روی `main` ثبت شده‌اند؛ تا اجرای موفق CI و تست واقعی Import/اتصال OpenVPN Connect، قابلیت end-to-end تأییدشده محسوب نمی‌شود. سازگاری inline credentials با نسخه دقیق OpenVPN Connect کاربر همچنان نیازمند تست واقعی است.
