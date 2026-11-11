@@ -692,3 +692,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Existing personalized links without a generated filename are backfilled when their download page is opened. Public profile URLs remain unchanged and contain no customer credentials.
 - Fresh-install schema and idempotent DatabaseSchemaSync include openvpn_links.generated_filename; an additive SQL migration is included.
 - Verification status: source implementation only. PHP lint, DatabaseSchemaSync on an existing cPanel database, generated-file permission checks, expiry/revocation, deep-link launch on iOS, and actual OpenVPN Connect import/authentication still require runtime testing after deployment. The custom openvpn://import-profile/ scheme must not be considered verified until tested with the user's OpenVPN Connect version.
+
+
+### 2026-11-11 — Public OpenVPN physical profile and customer guide
+
+**Status: FIXED (source) / NOT VERIFIED (PHP runtime, browser, and OpenVPN Connect import).**
+
+- `OpenVpnManager::createLink()` now materializes a physical `.ovpn` file for both link types using the existing generated filename, directory, validation, exclusive file creation, permissions, and cleanup flow.
+- Personalized content continues to pass through `profileWithCredentials()`; public content is written directly from the decrypted and validated base profile, without injecting customer credentials.
+- `publicProfileFileUrl()` resolves the latest active, unexpired public link for the selected active profile and returns its generated physical file URL. The public customer guide uses this file URL for the `openvpn://import-profile/` action. The existing public copy URL remains the raw public profile endpoint.
+- The public Copy and Import buttons now use the same `button primary` styling as the personalized actions.
+- Customer-facing copy now says “account” rather than “IBSng” in the personalized-link description. The public-card sentence about placing the URL in the site's general guide was removed in both Persian and English (`data-fa` / `data-en`).
+- `profileWithCredentials()` and `openvpn-profile.php` were not changed. No database schema or IBSng/payment behavior was changed.
+- Validation gap: source changes were committed to `main`, but PHP lint, automated tests, browser rendering, and actual OpenVPN Connect import have not been run in this environment. Verify both public and personalized import on the target hosting before marking VERIFIED.
