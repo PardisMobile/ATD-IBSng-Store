@@ -218,7 +218,7 @@ try {
             <h3><?= e((string)$product['name']) ?></h3>
             <p class="plan-description"><?= e((string)($product['description'] ?? '')) ?></p>
             <?php $displayPrice = store_format_price((int)$product['price_minor'], $priceDisplayUnit); ?>
-            <div class="plan-price"><?= storefront_info_icon("price") ?><?= e($displayPrice['amount']) ?> <small><?= e($displayPrice['label']) ?></small></div>
+            <div class="plan-price"><?= storefront_info_icon("price") ?><?= e($displayPrice['amount']) ?> <small data-fa="<?= e($displayPrice['label']) ?>" data-en="<?= e($priceDisplayUnit === 'IRT' ? 'Toman' : 'Rial') ?>"><?= e($displayPrice['label']) ?></small></div>
             <?php if ($cryptoDisplayEnabled && $product['price_usdt'] !== null && (float)$product['price_usdt'] > 0): ?><div class="plan-meta"><span class="store-info-label"><?= storefront_info_icon("price") ?><span data-ui-text="catalog_crypto_price">قیمت به تتر</span></span><strong><?= e(number_format((float)$product['price_usdt'], 8, '.', '')) ?> USDT</strong></div><?php endif; ?>
             <?php
             if ($isRenewCatalog) {
