@@ -681,3 +681,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `tests/openvpn-personalized-profile-contract-test.php`: now asserts inline disposition as well as the OpenVPN MIME type and existing error behavior.
 - Token validation, expiration/revocation, paid-order checks, encrypted credential retrieval, and profile transformation are unchanged.
 - The source change does not prove the hosting environment has deployed the new files. Verify that the exact personalized URL returns HTTP 200 and a raw `.ovpn` body in a browser, then import that same URL in OpenVPN Connect. If it still returns 404, inspect the active document-root `.htaccess`, PHP handler, and deployed file path; the issue is then outside this source-level endpoint change.
+
+
+## 2026-11-11 — Pre-generated personalized OpenVPN files and Connect import action
+
+- Personalized .ovpn content is materialized at admin link creation time in the single root ovpn/ directory; it is not generated on each customer download request.
+- Filenames use a short profile-name slug plus a cryptographically random suffix. The filename is stored on the corresponding openvpn_links row. The file contains the same per-order inline username/password profile produced by the existing profileWithCredentials() routine; the uploaded base profile, remote/port, certificates, private key, and unrelated directives remain unchanged.
+- The customer landing page keeps its existing email/token landing URL and displays the generated file URL as the personalized URL. It adds an Import to OpenVPN action using openvpn://import-profile/ followed by that HTTPS file URL. The copy-link fallback remains available.
+- Generated files are served through a dedicated PHP endpoint after checking link activation, expiry, active profile, paid order, and filename association. The endpoint keeps the configured profile name in Content-Disposition so the imported display label is not replaced by the random storage suffix. The physical ovpn/ directory is not directly browsable or served as static content. Deleting a link/profile removes its generated file; disabling a link or profile blocks retrieval.
+- Existing personalized links without a generated filename are backfilled when their download page is opened. Public profile URLs remain unchanged and contain no customer credentials.
+- Fresh-install schema and idempotent DatabaseSchemaSync include openvpn_links.generated_filename; an additive SQL migration is included.
+- Verification status: source implementation only. PHP lint, DatabaseSchemaSync on an existing cPanel database, generated-file permission checks, expiry/revocation, deep-link launch on iOS, and actual OpenVPN Connect import/authentication still require runtime testing after deployment. The custom openvpn://import-profile/ scheme must not be considered verified until tested with the user's OpenVPN Connect version.
