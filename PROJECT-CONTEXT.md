@@ -1201,3 +1201,12 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 - `admin/orders.php`: on narrow viewports, the ambiguous-payment review table now keeps a readable desktop-like column width inside its own horizontally scrollable container instead of compressing all seven columns into the phone viewport.
 - The change is scoped to `.ambiguous-payments-wrap` / `.ambiguous-payments-table`; other report tables and desktop layout are unchanged. Review actions remain within the final column.
 - CSS-only source change. iOS Safari/Android browser visual verification and PHP lint remain pending; no payment, order-state, release, or IBSng behavior changed.
+
+
+## Payment initiation retry behavior — 2026-11-12
+
+- A payment-start failure proven to occur before the gateway HTTP request can be sent must not leave the customer's order locked in an ambiguous `initiated` state. This includes DNS-resolution timeouts where cURL never reaches the HTTP transfer phase.
+- Such an attempt is marked `failed`, leaving the order itself `pending_payment`; the existing order-tracking page must expose a customer retry action for the same order. Administrator release is not part of the normal customer retry path.
+- Failures after cURL may have entered the HTTP request-transfer phase remain ambiguous until reconciled. Do not automatically create another attempt in that case because the gateway may have received the request even if its response was lost.
+- The Zarinpal adapter records non-sensitive cURL phase timings and whether the request may have reached the provider. This distinction governs safe retry classification; it does not change payment verification or provisioning.
+- No provisioning, renewal, callback verification, or payment amount/currency semantics may be changed as part of this recovery behavior.
