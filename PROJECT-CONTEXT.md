@@ -1156,3 +1156,11 @@
 - خطاهای endpoint اکنون با جزئیات سمت سرور در error log ثبت می‌شوند؛ پیام عمومی و عدم افشای جزئیات حساس به کاربر حفظ شده است.
 - تست قراردادی `tests/openvpn-personalized-profile-contract-test.php` اضافه و به workflow متصل شده است تا حفظ بایت‌های فایل، جایگزینی فقط auth directive، حفظ remote/port/key و متادیتای نام فایل را بررسی کند.
 - این اصلاحات روی `main` ثبت شده‌اند؛ تا اجرای موفق CI و تست واقعی Import/اتصال OpenVPN Connect، قابلیت end-to-end تأییدشده محسوب نمی‌شود. سازگاری inline credentials با نسخه دقیق OpenVPN Connect کاربر همچنان نیازمند تست واقعی است.
+
+
+## 2026-11-11 — OpenVPN raw profile response for browser and URL import
+
+- The personalized `/openvpn-profile.php?t=...` URL is the actual profile endpoint, distinct from the emailed `/openvpn-download.php?t=...` landing page. A valid request must return the raw `.ovpn` text body.
+- The profile response uses `Content-Type: application/x-openvpn-profile` and `Content-Disposition: inline` so a browser can display the profile body instead of forcing a download; the same URL remains suitable for OpenVPN Connect URL import.
+- `.htaccess` bypasses the front-controller rewrite for the physical `openvpn-profile.php` endpoint, avoiding dispatcher routing for this raw-profile response. Token validation, expiry/revocation, order eligibility, credential injection, no-store caching, and generic error handling remain in PHP.
+- Source change only. Live host routing, browser rendering, and OpenVPN Connect URL import must still be tested after deployment.
