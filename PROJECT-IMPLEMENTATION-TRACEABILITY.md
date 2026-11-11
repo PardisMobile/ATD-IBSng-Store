@@ -791,3 +791,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 
 - Updated the OpenVPN management disclosure title in `admin/guide.php` to Persian «مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال» and English “Manage OpenVPN Profiles and Create Connection Links”.
 - This is a bilingual admin-label-only change. OpenVPN profile, link creation, import, credential, and delivery behavior are unchanged.
+
+
+### 2026-11-11 — Add the approved bilingual OpenVPN management description in the correct location
+
+**Status: UPDATED ON `main` / CI AND ADMIN-BROWSER VALIDATION PENDING.**
+
+- In `admin/guide.php`, moved the explanatory paragraph into the OpenVPN profile-management disclosure, immediately below its summary heading. Previously, a different generic note appeared above the management grid, so the approved description was not displayed under the heading as requested.
+- Persian: «در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید.»
+- English: “In this section, you can manage OpenVPN profiles, create public or personalized links, and prepare profile files for users to connect.”
+- Both translations use the existing `data-fa` / `data-en` language-switching architecture. No new translation mechanism or application behavior was introduced.
