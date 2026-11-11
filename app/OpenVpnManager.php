@@ -14,24 +14,30 @@ final class OpenVpnManager
 
     public static function validateProfile(string $content): string
     {
-        $content = str_replace(["\r\n", "\r"], "\n", trim($content)) . "\n";
-        if ($content === "\n" || strlen($content) > self::MAX_PROFILE_BYTES) {
+        if ($content === '' || strlen($content) > self::MAX_PROFILE_BYTES) {
             throw new InvalidArgumentException('فایل پروفایل خالی است یا حجم آن بیش از ۱ مگابایت است.');
         }
-        if (preg_match('/[^\x09\x0A\x0D\x20-\x7E\x{0600}-\x{06FF}]/u', $content)) {
+
+        // Validate a normalized view, but always return the original bytes.
+        // This keeps uploaded certificates, keys, directives and line endings intact.
+        $normalized = str_replace(["\r\n", "\r"], "\n", $content);
+        $normalized = trim($normalized);
+        if ($normalized === '') {
+            throw new InvalidArgumentException('فایل پروفایل خالی است یا حجم آن بیش از ۱ مگابایت است.');
+        }
+        if (preg_match('/[^\x09\x0A\x0D\x20-\x7E\x{0600}-\x{06FF}]/u', $normalized)) {
             throw new InvalidArgumentException('فایل پروفایل دارای نویسه‌های نامعتبر است.');
         }
-        if (!preg_match('/^\s*client\s*$/mi', $content)
-            || !preg_match('/^\s*(?:remote|<connection>)\b/im', $content)
-            || !preg_match('/^\s*dev\s+\S+/mi', $content)) {
+        if (!preg_match('/^\s*client\s*$/mi', $normalized)
+            || !preg_match('/^\s*(?:remote|<connection>)\b/im', $normalized)
+            || !preg_match('/^\s*dev\s+\S+/mi', $normalized)) {
             throw new InvalidArgumentException('ساختار فایل معتبر OpenVPN نیست؛ client، remote و dev باید وجود داشته باشند.');
         }
-        if (preg_match('/^\s*(?:script-security|up|down|plugin|config)\b/im', $content)) {
+        if (preg_match('/^\s*(?:script-security|up|down|plugin|config)\b/im', $normalized)) {
             throw new InvalidArgumentException('پروفایل شامل دستور اجرایی یا ارجاع config خارجی است و پذیرفته نمی‌شود.');
         }
         return $content;
     }
-
     public static function fetchProfileUrl(string $url): string
     {
         $url = trim($url);
@@ -259,15 +265,36 @@ final class OpenVpnManager
 
     public static function profileWithCredentials(string $content, string $username, string $password): string
     {
-        $content=self::validateProfile($content);
-        if ($username==='' || preg_match('/[^A-Za-z0-9_.@-]/', $username) || preg_match('/[<>\r\n\x00-\x1F\x7F]/', $password)) {
+        self::validateProfile($content);
+        if ($username === '' || preg_match('/[^A-Za-z0-9_.@-]/', $username)
+            || preg_match('/[<>\r\n\x00-\x1F\x7F]/', $password)) {
             throw new InvalidArgumentException('اطلاعات ورود برای ساخت پروفایل اختصاصی معتبر نیست.');
         }
-        if (!preg_match('/^\s*auth-user-pass\s*$/mi', $content)) {
-            throw new RuntimeException('پروفایل باید دقیقاً از دستور auth-user-pass بدون فایل جانبی استفاده کند.');
+
+        // Replace only one standalone auth-user-pass directive. Every other byte
+        // in the customer's uploaded .ovpn profile remains untouched.
+        $pattern = '/^([ \t]*)auth-user-pass[ \t]*(\r\n|\n|\r|$)/mi';
+        if (preg_match_all($pattern, $content) !== 1) {
+            throw new RuntimeException('پروفایل باید دقیقاً یک دستور مستقل auth-user-pass داشته باشد.');
         }
-        $content=preg_replace('/^\s*auth-user-pass\s*$/mi', "<auth-user-pass>\n".$username."\n".$password."\n</auth-user-pass>", $content, 1, $count);
-        if ($count!==1) throw new RuntimeException('افزودن اطلاعات ورود به پروفایل ناموفق بود.');
-        return self::validateProfile($content);
+
+        $content = preg_replace_callback(
+            $pattern,
+            static function (array $match) use ($username, $password): string {
+                $newline = $match[2] !== '' ? $match[2] : "\n";
+                return $match[1] . '<auth-user-pass>' . $newline
+                    . $username . $newline . $password . $newline
+                    . '</auth-user-pass>' . $match[2];
+            },
+            $content,
+            1,
+            $count
+        );
+        if (!is_string($content) || $count !== 1) {
+            throw new RuntimeException('افزودن اطلاعات ورود به پروفایل ناموفق بود.');
+        }
+
+        self::validateProfile($content);
+        return $content;
     }
  }
