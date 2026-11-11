@@ -887,7 +887,7 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 **Status: SOURCE FIX COMMITTED ON `main` / HOST RUNTIME VALIDATION PENDING.**
 
 - The recurring first-checkout failure was leaving a payment transaction in `initiated` when cURL reported a DNS-resolution timeout. The existing classifier handled selected DNS/connect/TLS cURL errors but not `CURLE_OPERATION_TIMEDOUT`, which is also the code used for a DNS-resolution timeout.
-- `ZarinpalGateway::postJson()` now captures cURL transfer-phase diagnostics (DNS lookup, TCP connect, TLS/app-connect, pre-transfer, first-byte timing, primary IP) and records whether cURL reached the HTTP pre-transfer phase.
+- `ZarinpalGateway::postJson()` now captures cURL transfer-phase diagnostics (DNS lookup, TCP connect, TLS/app-connect, pre-transfer, first-byte timing, primary IP) and records whether cURL may have reached the HTTP request-transfer phase.
 - A typed `ZarinpalTransportException` exposes that distinction to `PaymentFlow`. If the failure is proven to have happened before the HTTP request was sent, including DNS-resolution timeout, the attempt is marked `failed`. The existing order-status page then offers the customer a new payment attempt on the same pending order; no administrator release is needed.
 - If cURL had entered the HTTP transfer phase, the attempt remains ambiguous. This deliberately avoids assuming that a request with a lost response was rejected by the gateway.
 - Checkout now tells the customer to retry from the order-tracking page instead of asking them to contact support for this recoverable start-payment failure.
