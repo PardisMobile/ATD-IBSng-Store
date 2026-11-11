@@ -86,6 +86,20 @@ openvpn_profile_assert(
 openvpn_profile_assert(is_string($downloadSource) && str_contains($downloadSource, "openvpn://import-profile/") && str_contains($downloadSource, 'Import to OpenVPN') && str_contains($downloadSource, 'generatedProfileUrl'), 'The customer landing page must expose a direct OpenVPN Connect import action using the generated file URL.');
 openvpn_profile_assert(
     is_string($downloadSource)
+        && str_contains($downloadSource, 'راهنمای ایمپورت دستی پروفایل:')
+        && str_contains($downloadSource, 'لینک را در مرورگر گوشی (Safari یا Chrome) وارد کنید.')
+        && str_contains($downloadSource, 'فایل دانلودشده را باز کنید و گزینه اشتراک‌گذاری (Share) را بزنید.')
+        && str_contains($downloadSource, 'برنامه OpenVPN Connect را انتخاب کنید تا پروفایل به آن اضافه شود.')
+        && !str_contains($downloadSource, 'Import from URL'),
+    'The customer guide must use the tested browser-download-and-share fallback instead of the unsupported Import from URL flow.'
+);
+openvpn_profile_assert(
+    is_string($downloadSource)
+        && str_contains($downloadSource, 'لینک اختصاصی شما حاوی اطلاعات ورود اکانت همین سفارش است. این لینک فقط برای استفاده شخصی شماست و نباید در اختیار دیگران قرار بگیرد.'),
+    'The personalized card must display the customer-approved privacy wording.'
+);
+openvpn_profile_assert(
+    is_string($downloadSource)
         && str_contains($downloadSource, "$" . "personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));")
         && str_contains($downloadSource, "$" . "personalFileUrl = $" . "manager->generatedProfileUrl($token);")
         && str_contains($downloadSource, "$" . "importUrl = 'openvpn://import-profile/' . $" . "personalFileUrl;"),
