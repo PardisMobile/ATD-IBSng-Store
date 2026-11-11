@@ -5,8 +5,18 @@ $root = dirname(__DIR__);
 $status = file_get_contents($root . '/order-status.php');
 $schema = file_get_contents($root . '/database/schema.sql');
 $servers = file_get_contents($root . '/admin/ibsng-servers.php');
+$messages = require $root . '/app/messages.php';
 
 $checks = [
+    'pending order notices use customer-safe account wording in Persian and English' => is_array($messages)
+        && ($messages['fa']['order_pending_payment_notice'] ?? '') === 'این سفارش هنوز پرداخت نشده و هیچ اکانتی ایجاد نشده است. پرداخت و فعال‌سازی پس از برقراری ارتباط با درگاه معتبر تکمیل می‌شود.'
+        && ($messages['en']['order_pending_payment_notice'] ?? '') === 'This order has not been paid yet, and no account has been created. Payment and activation will be completed once a valid payment gateway is available.'
+        && !str_contains((string)($messages['fa']['order_pending_payment_notice'] ?? ''), 'IBSng')
+        && !str_contains((string)($messages['en']['order_pending_payment_notice'] ?? ''), 'IBSng'),
+    'customer-facing server mapping error does not expose internal platform name' => is_array($messages)
+        && ($messages['fa']['ibsng_server_not_found'] ?? '') === 'سرور فعال و متصل به این پلن پیدا نشد.'
+        && ($messages['en']['ibsng_server_not_found'] ?? '') === 'No active server is mapped to this plan.',
+
     'service name is optional in fresh schema' => is_string($schema) && str_contains($schema, 'service_name VARCHAR(150) NULL'),
     'admin form accepts service name on create and update' => is_string($servers) && substr_count($servers, 'name="service_name"') === 2,
     'server name and customer service label are distinct' => is_string($servers)

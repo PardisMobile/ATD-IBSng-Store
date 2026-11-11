@@ -908,3 +908,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Payment transaction persistence, callback verification, provider retry strategy, provisioning and renewal policies were not redesigned.
 - Both active adapters, Zarinpal and IRCrypto, implement the expanded `PaymentGateway` contract. Zarinpal owns its Sandbox/Live snapshot and conditional Merchant ID validation; IRCrypto returns no extra transaction metadata and validates its API key/webhook secret inside its adapter.
 - Required validation before production: PHP lint for all touched PHP files, the existing test suite, adapter contract tests, safe-vs-ambiguous failure tests, and first-attempt/retry runtime comparison on cPanel. No live payment verification is claimed.
+
+
+### 2026-11-12 — Remove internal platform name from pending-order customer notice
+
+**STATUS: BILINGUAL COPY AND CONTRACT ASSERTIONS UPDATED ON `main`; CI AND STOREFRONT RUNTIME VALIDATION PENDING.**
+
+- `app/messages.php`: Persian pending-order copy now says «این سفارش هنوز پرداخت نشده و هیچ اکانتی ایجاد نشده است. پرداخت و فعال‌سازی پس از برقراری ارتباط با درگاه معتبر تکمیل می‌شود.» English: “This order has not been paid yet, and no account has been created. Payment and activation will be completed once a valid payment gateway is available.”
+- The customer-facing server-mapping error no longer includes the internal platform name. Related submitted/pending notices consistently use «اکانت» / “account”.
+- Extended `tests/order-status-account-contract-test.php` to assert the exact Persian and English copy and ensure the pending notice does not expose the internal platform name.
+- No payment, order-state, account provisioning, server integration, or database behavior changed. PHP lint, automated CI, and browser verification remain pending.

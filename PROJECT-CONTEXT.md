@@ -1220,3 +1220,10 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 - Failures after cURL may have entered the HTTP request-transfer phase remain ambiguous until reconciled. Do not automatically create another attempt in that case because the gateway may have received the request even if its response was lost.
 - The Zarinpal adapter records non-sensitive cURL phase timings and whether the request may have reached the provider. This distinction governs safe retry classification; it does not change payment verification or provisioning.
 - No provisioning, renewal, callback verification, or payment amount/currency semantics may be changed as part of this recovery behavior.
+
+
+## 2026-11-12 — Customer-facing pending-order wording
+
+- The pending-payment notice now uses «هیچ اکانتی ایجاد نشده است» in Persian and “no account has been created” in English. It no longer exposes the internal platform name or describes an internal account-system implementation detail.
+- The customer-facing server-mapping error also omits the internal platform name in both locales. Related order-submitted/pending-payment notices consistently use “اکانت” / “account”.
+- Internal identifiers, integration code, database names, logs, and administrator tooling remain unchanged; this is a customer-copy change only.
