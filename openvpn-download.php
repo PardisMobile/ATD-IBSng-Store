@@ -99,7 +99,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <?php endif; ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('globe') ?><span data-fa="لینک عمومی پروفایل" data-en="Public profile link">لینک عمومی پروفایل</span></h2>
-<p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. " data-en="This URL has no personalized token and contains no customer's login credentials. ">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. می‌توانید آن را در متن راهنمای عمومی سایت قرار دهید.</p>
+<p data-fa="این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. " data-en="This URL has no personalized token and contains no customer's login credentials. ">این لینک بدون توکن اختصاصی است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($publicUrl) ?>" aria-label="Public OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($publicUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک عمومی" data-en="Copy public link">کپی لینک عمومی</span></button>
 <a class="button primary" href="<?= e($publicImportUrl) ?>" aria-label="Import to OpenVPN"><span data-fa="Import مستقیم در OpenVPN" data-en="Import to OpenVPN">Import to OpenVPN</span></a>
