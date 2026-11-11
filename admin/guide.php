@@ -368,7 +368,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="ovpn-management-grid">
 <div class="ovpn-management-column">
 <details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
-<summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
+<summary><strong data-fa="مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال" data-en="Manage OpenVPN Profiles and Create Connection Links">مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال</strong></summary>
 <form method="post" enctype="multipart/form-data" class="ovpn-profile-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
 <input type="hidden" name="profile_id" value="<?= $editProfile ? (int)$editProfile['id'] : 0 ?>">
