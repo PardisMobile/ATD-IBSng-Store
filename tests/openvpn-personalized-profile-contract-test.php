@@ -86,6 +86,13 @@ openvpn_profile_assert(
 openvpn_profile_assert(is_string($downloadSource) && str_contains($downloadSource, "openvpn://import-profile/") && str_contains($downloadSource, 'Import to OpenVPN') && str_contains($downloadSource, 'generatedProfileUrl'), 'The customer landing page must expose a direct OpenVPN Connect import action using the generated file URL.');
 openvpn_profile_assert(
     is_string($downloadSource)
+        && str_contains($downloadSource, "$" . "personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));")
+        && str_contains($downloadSource, "$" . "personalFileUrl = $" . "manager->generatedProfileUrl($token);")
+        && str_contains($downloadSource, "$" . "importUrl = 'openvpn://import-profile/' . $" . "personalFileUrl;"),
+    'The personalized card must display/copy the clean profile endpoint URL while the Import deep link continues using the generated physical file URL.'
+);
+openvpn_profile_assert(
+    is_string($downloadSource)
         && str_contains($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);')
         && strpos($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);') > strpos($downloadSource, "if (\$token !== '')")
         && strpos($downloadSource, '$publicImportUrl = \'openvpn://import-profile/\' . $publicFileUrl;') > strpos($downloadSource, '$publicFileUrl = $manager->publicProfileFileUrl($profileId);'),
