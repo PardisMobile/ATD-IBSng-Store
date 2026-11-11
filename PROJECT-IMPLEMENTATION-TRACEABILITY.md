@@ -810,3 +810,12 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Moved the approved bilingual OpenVPN management description out of the collapsible profile-management card and placed it above the two management cards, within the OpenVPN management section.
 - Kept the management card title and its expand/collapse behavior unchanged.
 - No OpenVPN profile/link behavior or other application logic changed.
+
+
+### 2026-11-11 — Rename the profile-management card only
+
+**Status: UPDATED ON `main` / CI AND BROWSER VALIDATION PENDING.**
+
+- Changed the profile form card title in `admin/guide.php` to Persian «مدیریت پروفایل‌های OpenVPN» and English “Manage OpenVPN Profiles”.
+- The separate links card remains titled «مدیریت لینک‌های OpenVPN» / “Manage OpenVPN links”.
+- The section description remains above both cards. No behavior changed.
