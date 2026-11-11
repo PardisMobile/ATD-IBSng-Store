@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
                     }
                 }
                 $icon = strtolower(trim((string)($rawMethod['icon'] ?? '')));
-                if (!in_array($icon, ['openvpn', 'v2ray', 'wireguard', 'generic'], true)) $icon = guide_method_icon_key(['name' => $name]);
+                if (!in_array($icon, ['openvpn', 'cisco', 'l2tp_pptp', 'generic'], true)) $icon = guide_method_icon_key(['name' => $name]);
                 $methods[] = [
                     'name' => $name,
                     'icon' => $icon,
@@ -306,7 +306,7 @@ $esc = static fn($value): string => e((string)$value);
 <article class="guide-admin-method" data-guide-method>
 <div class="guide-admin-method-head">
 <div class="field guide-method-name-field"><label><span class="guide-icon-slot" data-method-icon-preview><?= guide_icon_svg(guide_method_icon_key($method)) ?></span><span data-fa="نام روش اتصال" data-en="Connection method name">نام روش اتصال</span></label><input name="methods[<?= (int)$index ?>][name]" maxlength="100" value="<?= $esc($method['name'] ?? '') ?>" placeholder="OpenVPN / L2TP / Cisco"></div>
-<div class="field guide-method-icon-picker"><label data-fa="آیکون روش" data-en="Method icon" for="guide-method-icon-<?= (int)$index ?>">آیکون روش</label><select id="guide-method-icon-<?= (int)$index ?>" name="methods[<?= (int)$index ?>][icon]" data-method-icon-select><?php foreach (['openvpn' => 'OpenVPN', 'v2ray' => 'V2Ray', 'wireguard' => 'WireGuard', 'generic' => 'Generic'] as $iconKey => $iconLabel): ?><option value="<?= e($iconKey) ?>"<?= guide_method_icon_key($method) === $iconKey ? ' selected' : '' ?>><?= e($iconLabel) ?></option><?php endforeach; ?></select></div>
+<div class="field guide-method-icon-picker"><label data-fa="آیکون روش" data-en="Method icon" for="guide-method-icon-<?= (int)$index ?>">آیکون روش</label><select id="guide-method-icon-<?= (int)$index ?>" name="methods[<?= (int)$index ?>][icon]" data-method-icon-select><?php foreach (['openvpn' => 'OpenVPN', 'cisco' => 'Cisco', 'l2tp_pptp' => 'L2TP / PPTP', 'generic' => 'Generic'] as $iconKey => $iconLabel): ?><option value="<?= e($iconKey) ?>"<?= guide_method_icon_key($method) === $iconKey ? ' selected' : '' ?>><?= e($iconLabel) ?></option><?php endforeach; ?></select></div>
 <label class="check-toggle"><input type="checkbox" name="methods[<?= (int)$index ?>][active]" value="1"<?= !empty($method['active']) ? ' checked' : '' ?>> <span data-fa="فعال و قابل نمایش برای مشتری" data-en="Enabled and visible to customers">فعال و قابل نمایش برای مشتری</span></label>
 <button class="button danger" type="button" data-remove-guide-method data-fa="حذف روش" data-en="Remove method">حذف روش</button>
 </div>
@@ -433,7 +433,7 @@ document.addEventListener('click', async function(event) {
  const list=document.getElementById('guide-method-list'),add=document.getElementById('add-guide-method');
  if(!list||!add)return;
  let nextIndex=<?= count($guideMethods) ?>;
- const icons={openvpn:<?= json_encode(guide_icon_svg('openvpn')) ?>,v2ray:<?= json_encode(guide_icon_svg('v2ray')) ?>,wireguard:<?= json_encode(guide_icon_svg('wireguard')) ?>,generic:<?= json_encode(guide_icon_svg('generic')) ?>};
+ const icons={openvpn:<?= json_encode(guide_icon_svg('openvpn')) ?>,cisco:<?= json_encode(guide_icon_svg('cisco')) ?>,l2tp_pptp:<?= json_encode(guide_icon_svg('l2tp_pptp')) ?>,generic:<?= json_encode(guide_icon_svg('generic')) ?>};
  function refresh(card){const select=card.querySelector('[data-method-icon-select]'),preview=card.querySelector('[data-method-icon-preview]');if(select&&preview)preview.innerHTML=icons[select.value]||icons.generic}
  list.addEventListener('change',event=>{if(event.target.matches('[data-method-icon-select]'))refresh(event.target.closest('[data-guide-method]'))});
  list.querySelectorAll('[data-guide-method]').forEach(refresh);
