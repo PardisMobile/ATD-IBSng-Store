@@ -193,6 +193,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && str_starts_with((string)($_POST['ac
         }
     }
 }
+$ovpnMessageEn = match ($ovpnMessage) {
+    'لینک حذف شد.' => 'Link deleted.',
+    'لینک عمومی ساخته شد؛ نشانی آن را در محتوای راهنمای عمومی OpenVPN قرار دهید.' => 'Public link created. Add its URL to the public OpenVPN guide.',
+    'لینک اختصاصی ساخته و به نشانی واردشده ارسال شد.' => 'Personalized link created and emailed.',
+    'پروفایل حذف شد.' => 'Profile deleted.',
+    'وضعیت لینک تغییر کرد.' => 'Link status updated.',
+    'وضعیت پروفایل تغییر کرد.' => 'Profile status updated.',
+    default => 'OpenVPN profile saved successfully.',
+};
 $guideMethods = is_array($guide['methods'] ?? null) ? array_values($guide['methods']) : [];
 if (!$guideMethods) $guideMethods = $defaultGuide['methods'];
 $esc = static fn($value): string => e((string)$value);
@@ -306,7 +315,7 @@ foreach ($ovpnProfiles as $profileRow) {
 }
 ?>
 <section class="panel panel-card" id="openvpn-management">
-<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status" data-fa="<?= e($ovpnMessage) ?>" data-en="<?= e($ovpnMessage === 'لینک حذف شد.' ? 'Link deleted.' : ($ovpnMessage === 'لینک عمومی ساخته شد؛ نشانی آن را در محتوای راهنمای عمومی OpenVPN قرار دهید.' ? 'Public link created. Add its URL to the public OpenVPN guide.' : ($ovpnMessage === 'لینک اختصاصی ساخته و به نشانی واردشده ارسال شد.' ? 'Personalized link created and emailed.' : ($ovpnMessage === 'پروفایل حذف شد.' ? 'Profile deleted.' : ($ovpnMessage === 'وضعیت لینک تغییر کرد.' ? 'Link status updated.' : ($ovpnMessage === 'وضعیت پروفایل تغییر کرد.' ? 'Profile status updated.' : 'OpenVPN profile saved successfully.'))))) ?>"><?= e($ovpnMessage) ?></div><?php endif; ?>
+<?php if ($ovpnMessage !== ''): ?><div class="notice" role="status" data-fa="<?= e($ovpnMessage) ?>" data-en="<?= e($ovpnMessageEn) ?>"><?= e($ovpnMessage) ?></div><?php endif; ?>
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert" data-fa="<?= e($ovpnError) ?>" data-en="OpenVPN operation failed. Check the server error log for details."><?= e($ovpnError) ?></div><?php endif; ?>
 <?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert" data-fa="جداول OpenVPN در دیتابیس آماده نیستند. از بخش همگام‌سازی دیتابیس در مدیریت، تغییرات معوق را اعمال کنید." data-en="The OpenVPN database tables are not ready. Apply the pending changes from the Database Synchronization section in the admin panel."><?= e($ovpnLoadError) ?></div><?php endif; ?>
 <div class="guide-admin-disclosure-content">
