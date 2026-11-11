@@ -10,6 +10,8 @@ RewriteEngine On
 # Serve the raw OpenVPN profile endpoint directly instead of passing it
 # through the application front controller.
 RewriteRule ^openvpn-profile\.php$ - [L]
+RewriteRule ^openvpn-file\.php$ - [L]
+RewriteRule ^ovpn/([a-z0-9][a-z0-9-]{0,15}-[a-f0-9]{20}\.ovpn)$ openvpn-file.php?f=$1 [QSA,L]
 
 # Keep static assets directly served; route all other application URLs through
 # the explicit allowlist dispatcher. The router itself must not be rewritten.

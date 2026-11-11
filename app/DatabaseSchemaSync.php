@@ -101,6 +101,12 @@ final class DatabaseSchemaSync
             $pending[] = 'افزودن ذخیره‌سازی رمزنگاری‌شده توکن برای کپی مجدد لینک‌های OpenVPN';
         }
 
+        if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'generated_filename')) {
+            $pending[] = 'افزودن نام فایل پروفایل‌های اختصاصی تولیدشده OpenVPN';
+        } elseif ($this->tableExists('openvpn_links') && !$this->indexExists('openvpn_links', 'idx_openvpn_generated_filename')) {
+            $pending[] = 'افزودن شاخص نام فایل پروفایل‌های اختصاصی OpenVPN';
+        }
+
         if ($this->tableExists('app_settings')) {
             $legacyIntroEn = (int)$this->pdo->query("SELECT COUNT(*) FROM app_settings WHERE setting_key='general_account_guide' AND JSON_VALID(setting_value) AND JSON_CONTAINS_PATH(setting_value, 'one', '$.intro_en')")->fetchColumn();
             if ($legacyIntroEn > 0) $pending[] = 'حذف متن معرفی انگلیسی قدیمی از تنظیم راهنمای عمومی';
@@ -181,6 +187,13 @@ final class DatabaseSchemaSync
         }
         if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'token_ciphertext')) {
             $this->pdo->exec('ALTER TABLE openvpn_links ADD COLUMN token_ciphertext TEXT NULL AFTER token_hash');
+        }
+
+        if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'generated_filename')) {
+            $this->pdo->exec('ALTER TABLE openvpn_links ADD COLUMN generated_filename VARCHAR(100) NULL AFTER token_ciphertext');
+        }
+        if ($this->tableExists('openvpn_links') && !$this->indexExists('openvpn_links', 'idx_openvpn_generated_filename')) {
+            $this->pdo->exec('CREATE INDEX idx_openvpn_generated_filename ON openvpn_links (generated_filename)');
         }
         $settings = $this->pdo->prepare('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)');
         $settings->execute(['price_display_unit', 'IRT']);

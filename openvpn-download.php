@@ -9,7 +9,7 @@ require_once __DIR__ . '/app/OpenVpnManager.php';
 $config = app_config();
 $valid = false;
 $isPersonalized = false;
-$personalUrl = $publicUrl = $profileName = '';
+$personalUrl = $publicUrl = $profileName = $importUrl = '';
 try {
     $manager = new OpenVpnManager(Database::connection());
     $token = trim((string)($_GET['t'] ?? ''));
@@ -22,7 +22,8 @@ try {
         }
         if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized link required.');
         $isPersonalized = true;
-        $personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));
+        $personalUrl = $manager->generatedProfileUrl($token);
+        $importUrl = 'openvpn://import-profile/' . $personalUrl;
         $profileId = (int)$result['id'];
         $profileName = (string)$result['name'];
     } elseif ($profileId > 0) {
@@ -83,7 +84,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <section class="panel plan-card openvpn-guide-main">
 <div class="eyebrow" data-fa="پروفایل اتصال: <?= e($profileName) ?>" data-en="Connection profile: <?= e($profileName) ?>">پروفایل اتصال: <?= e($profileName) ?></div>
 <h1 data-fa="راهنمای اتصال OpenVPN" data-en="OpenVPN connection guide">راهنمای اتصال OpenVPN</h1>
-<p class="openvpn-guide-intro" data-fa="برای افزودن پروفایل به OpenVPN Connect، لینک موردنظر را کپی کنید و در بخش Import from URL وارد نمایید." data-en="To add this profile to OpenVPN Connect, copy the required URL and enter it under Import from URL.">برای افزودن پروفایل به OpenVPN Connect، آدرس موردنظر را کپی کنید و در بخش Import from URL وارد نمایید.</p>
+<p class="openvpn-guide-intro" data-fa="برای وارد کردن مستقیم پروفایل اختصاصی، دکمه Import to OpenVPN را بزنید. در صورت باز نشدن برنامه، لینک را کپی و از بخش Import from URL استفاده کنید." data-en="Tap Import to OpenVPN to import your personalized profile directly. If the app does not open, copy the URL and use Import from URL.">برای وارد کردن مستقیم پروفایل اختصاصی، دکمه Import to OpenVPN را بزنید. در صورت باز نشدن برنامه، لینک را کپی و از بخش Import from URL استفاده کنید.</p>
 <div class="openvpn-link-grid">
 <?php if ($isPersonalized): ?>
 <article class="openvpn-link-card">
@@ -91,6 +92,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the account username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
+<a class="button primary" href="<?= e($importUrl) ?>" aria-label="Import to OpenVPN"><span data-fa="Import مستقیم در OpenVPN" data-en="Import to OpenVPN">Import to OpenVPN</span></a>
 </article>
 <?php endif; ?>
 <article class="openvpn-link-card">
@@ -101,9 +103,14 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 </article>
 </div>
 <ol class="openvpn-guide-steps">
+<?php if ($isPersonalized): ?>
+<li data-fa="روی دکمه Import to OpenVPN بزنید و باز شدن برنامه را تأیید کنید." data-en="Tap Import to OpenVPN and confirm opening the app.">روی دکمه Import to OpenVPN بزنید و باز شدن برنامه را تأیید کنید.</li>
+<li data-fa="اگر برنامه باز نشد، لینک اختصاصی را کپی و از Add Profile ← Import from URL وارد کنید." data-en="If the app does not open, copy the personalized URL and use Add Profile → Import from URL.">اگر برنامه باز نشد، لینک اختصاصی را کپی و از Add Profile ← Import from URL وارد کنید.</li>
+<?php else: ?>
 <li data-fa="برنامه OpenVPN Connect را باز کنید." data-en="Open the OpenVPN Connect app.">برنامه OpenVPN Connect را باز کنید.</li>
 <li data-fa="از بخش Add Profile، گزینه Import from URL را انتخاب کنید." data-en="From Add Profile, choose Import from URL.">از بخش Add Profile، گزینه Import from URL را انتخاب کنید.</li>
-<?php if ($isPersonalized): ?><li data-fa="لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود." data-en="Enter your personalized URL to retrieve your account profile.">لینک اختصاصی را وارد کنید تا پروفایل حساب شما دریافت شود.</li><?php else: ?><li data-fa="لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود." data-en="Enter the public URL to retrieve the connection profile.">لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود.</li><?php endif; ?>
+<li data-fa="لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود." data-en="Enter the public URL to retrieve the connection profile.">لینک عمومی را وارد کنید تا پروفایل اتصال دریافت شود.</li>
+<?php endif; ?>
 </ol>
 <?php if ($isPersonalized): ?><div class="openvpn-guide-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7h.01"/></svg><span data-fa="لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است." data-en="Your personalized link contains your login credentials. Do not share it. The public link does not contain login credentials.">لینک اختصاصی شامل اطلاعات ورود شماست؛ آن را برای دیگران ارسال نکنید. لینک عمومی فاقد اطلاعات ورود است.</span></div><?php endif; ?>
 </section>

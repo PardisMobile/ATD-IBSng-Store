@@ -192,15 +192,137 @@ final class OpenVpnManager
     public function deleteLink(int $id): void
     {
         if ($id < 1) throw new InvalidArgumentException('شناسه لینک معتبر نیست.');
+        $find = $this->pdo->prepare('SELECT generated_filename FROM openvpn_links WHERE id=?');
+        $find->execute([$id]);
+        $filename = $find->fetchColumn();
         $stmt = $this->pdo->prepare('DELETE FROM openvpn_links WHERE id=?');
         $stmt->execute([$id]);
         if ($stmt->rowCount() < 1) throw new RuntimeException('لینک موردنظر پیدا نشد.');
+        self::removeGeneratedFile(is_string($filename) ? $filename : null);
+    }
+
+    private static function generatedDirectory(): string
+    {
+        return dirname(__DIR__) . '/ovpn';
+    }
+
+    private static function generatedFilename(string $profileName): string
+    {
+        $base = trim($profileName);
+        if (function_exists('iconv')) {
+            $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $base);
+            if (is_string($ascii) && trim($ascii) !== '') $base = $ascii;
+        }
+        $slug = strtolower(preg_replace('/[^A-Za-z0-9]+/', '-', $base) ?? '');
+        $slug = trim(substr($slug, 0, 16), '-');
+        if ($slug === '') $slug = 'profile';
+        return $slug . '-' . bin2hex(random_bytes(10)) . '.ovpn';
+    }
+
+    private static function validGeneratedFilename(string $filename): bool
+    {
+        return preg_match('/^[a-z0-9][a-z0-9-]{0,15}-[a-f0-9]{20}\\.ovpn$/D', $filename) === 1;
+    }
+
+    private static function writeGeneratedFile(string $filename, string $content): void
+    {
+        if (!self::validGeneratedFilename($filename)) throw new InvalidArgumentException('نام فایل پروفایل تولیدشده معتبر نیست.');
+        self::validateProfile($content);
+        $directory = self::generatedDirectory();
+        if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
+            throw new RuntimeException('ساخت پوشه ovpn برای ذخیره پروفایل ممکن نشد.');
+        }
+        @chmod($directory, 0700);
+        if (!is_writable($directory)) throw new RuntimeException('پوشه ovpn دسترسی نوشتن ندارد.');
+        $path = $directory . '/' . $filename;
+        $handle = @fopen($path, 'xb');
+        if ($handle === false) throw new RuntimeException('ساخت فایل اختصاصی OpenVPN ممکن نشد.');
+        $written = 0;
+        try {
+            $length = strlen($content);
+            while ($written < $length) {
+                $count = fwrite($handle, substr($content, $written));
+                if ($count === false || $count === 0) throw new RuntimeException('ذخیره کامل فایل اختصاصی OpenVPN انجام نشد.');
+                $written += $count;
+            }
+            if (!fflush($handle)) throw new RuntimeException('ثبت نهایی فایل اختصاصی OpenVPN ناموفق بود.');
+        } catch (Throwable $e) {
+            fclose($handle);
+            @unlink($path);
+            throw $e;
+        }
+        fclose($handle);
+        @chmod($path, 0600);
+    }
+
+    private static function removeGeneratedFile(?string $filename): void
+    {
+        if (!is_string($filename) || !self::validGeneratedFilename($filename)) return;
+        $path = self::generatedDirectory() . '/' . $filename;
+        if (is_file($path)) @unlink($path);
+    }
+
+    private static function generatedFileUrl(string $filename): string
+    {
+        return app_absolute_url('ovpn/' . rawurlencode($filename));
+    }
+
+    public function generatedProfileUrl(string $token): string
+    {
+        $link = $this->resolveToken($token, false);
+        if ($link['type'] !== 'personalized') throw new RuntimeException('لینک اختصاصی برای ساخت فایل لازم است.');
+        $oldFilename = (string)($link['generated_filename'] ?? '');
+        $oldPath = self::generatedDirectory() . '/' . $oldFilename;
+        if (self::validGeneratedFilename($oldFilename) && is_file($oldPath)) return self::generatedFileUrl($oldFilename);
+        $filename = self::generatedFilename((string)$link['name']);
+        $content = self::profileWithCredentials((string)$link['content'], (string)$link['username'], (string)$link['password']);
+        self::writeGeneratedFile($filename, $content);
+        $update = $this->pdo->prepare('UPDATE openvpn_links SET generated_filename=? WHERE id=? AND (generated_filename IS NULL OR generated_filename=?)');
+        $update->execute([$filename, (int)$link['link_id'], $oldFilename !== '' ? $oldFilename : null]);
+        if ($update->rowCount() !== 1) {
+            self::removeGeneratedFile($filename);
+            $latest = $this->resolveToken($token, false);
+            $latestFilename = (string)($latest['generated_filename'] ?? '');
+            if (self::validGeneratedFilename($latestFilename) && is_file(self::generatedDirectory() . '/' . $latestFilename)) return self::generatedFileUrl($latestFilename);
+            throw new RuntimeException('ثبت نام فایل اختصاصی OpenVPN ناموفق بود.');
+        }
+        self::removeGeneratedFile($oldFilename !== '' ? $oldFilename : null);
+        return self::generatedFileUrl($filename);
+    }
+
+    public function resolveGeneratedFile(string $filename): array
+    {
+        if (!self::validGeneratedFilename($filename)) throw new RuntimeException('فایل پروفایل معتبر نیست.');
+        $stmt = $this->pdo->prepare(
+            "SELECT l.id,l.link_type,l.order_id,p.name FROM openvpn_links l
+             JOIN openvpn_profiles p ON p.id=l.profile_id
+             WHERE l.generated_filename=? AND l.is_active=1 AND p.is_active=1
+               AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1"
+        );
+        $stmt->execute([$filename]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row || $row['link_type'] !== 'personalized') throw new RuntimeException('این فایل اختصاصی منقضی یا غیرفعال شده است.');
+        $order = $this->pdo->prepare("SELECT id FROM orders WHERE id=? AND payment_status='paid' LIMIT 1");
+        $order->execute([(int)$row['order_id']]);
+        if (!$order->fetchColumn()) throw new RuntimeException('سفارش مرتبط با این پروفایل معتبر نیست.');
+        $path = self::generatedDirectory() . '/' . $filename;
+        if (!is_file($path) || !is_readable($path)) throw new RuntimeException('فایل پروفایل اختصاصی در دسترس نیست.');
+        $content = file_get_contents($path);
+        if (!is_string($content)) throw new RuntimeException('خواندن فایل پروفایل اختصاصی ناموفق بود.');
+        $content = self::validateProfile($content);
+        $update = $this->pdo->prepare('UPDATE openvpn_links SET last_used_at=UTC_TIMESTAMP(),download_count=download_count+1 WHERE id=?');
+        $update->execute([(int)$row['id']]);
+        return ['name'=>(string)$row['name'], 'filename'=>$filename, 'content'=>$content];
     }
 
     public function deleteProfile(int $id): void
     {
+        $files = $this->pdo->prepare('SELECT generated_filename FROM openvpn_links WHERE profile_id=?');
+        $files->execute([$id]);
+        $filenames = $files->fetchAll(PDO::FETCH_COLUMN);
         $stmt=$this->pdo->prepare('DELETE FROM openvpn_profiles WHERE id=?');
         $stmt->execute([$id]);
+        foreach ($filenames as $filename) self::removeGeneratedFile(is_string($filename) ? $filename : null);
     }
 
     public function profileContent(int $id): string
@@ -216,24 +338,46 @@ final class OpenVpnManager
         if (!in_array($kind, ['public','personalized'], true)) throw new InvalidArgumentException('نوع لینک معتبر نیست.');
         if ($kind === 'personalized') {
             if (!$orderId || filter_var($email, FILTER_VALIDATE_EMAIL) === false) throw new InvalidArgumentException('برای لینک اختصاصی، سفارش و ایمیل معتبر لازم است.');
-            $check=$this->pdo->prepare("SELECT o.id,o.password_ciphertext FROM orders o WHERE o.id=? AND o.payment_status='paid' AND EXISTS (SELECT 1 FROM provisioning_attempts p WHERE p.order_id=o.id AND p.status='succeeded')");
+            $check=$this->pdo->prepare("SELECT o.id,o.username,o.password_ciphertext FROM orders o WHERE o.id=? AND o.payment_status='paid' AND EXISTS (SELECT 1 FROM provisioning_attempts p WHERE p.order_id=o.id AND p.status='succeeded')");
             $check->execute([$orderId]);
-            $eligible=$check->fetch(PDO::FETCH_ASSOC); if (!$eligible || !is_string($eligible['password_ciphertext']) || $eligible['password_ciphertext']==='') throw new RuntimeException('لینک اختصاصی فقط برای سفارش پرداخت‌شده، فعال‌سازی موفق و دارای رمز عبور ذخیره‌شده ساخته می‌شود.');
+            $eligible=$check->fetch(PDO::FETCH_ASSOC);
+            if (!$eligible || !is_string($eligible['password_ciphertext']) || $eligible['password_ciphertext']==='') throw new RuntimeException('لینک اختصاصی فقط برای سفارش پرداخت‌شده، فعال‌سازی موفق و دارای رمز عبور ذخیره‌شده ساخته می‌شود.');
         }
-        $profile=$this->pdo->prepare('SELECT id FROM openvpn_profiles WHERE id=? AND is_active=1');
+        $profile=$this->pdo->prepare('SELECT id,name,profile_ciphertext FROM openvpn_profiles WHERE id=? AND is_active=1');
         $profile->execute([$profileId]);
-        if (!$profile->fetchColumn()) throw new RuntimeException('پروفایل انتخاب‌شده فعال نیست.');
+        $profileRow=$profile->fetch(PDO::FETCH_ASSOC);
+        if (!$profileRow) throw new RuntimeException('پروفایل انتخاب‌شده فعال نیست.');
         if ($kind === 'public') $orderId = null;
         $token=bin2hex(random_bytes(32));
-        $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, token_hash, token_ciphertext, is_active, expires_at) VALUES (?,?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
-        $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,hash('sha256',$token),app_encrypt_secret($token)]);
-        return ['url'=>app_absolute_url('openvpn-download.php?t='.$token), 'profile_url'=>$kind==='personalized' ? app_absolute_url('openvpn-profile.php?t='.$token) : app_absolute_url('openvpn-profile.php?p='.$profileId), 'public_url'=>app_absolute_url('openvpn-download.php?p='.$profileId), 'token'=>$token, 'id'=>(int)$this->pdo->lastInsertId()];
+        $generatedFilename = null;
+        if ($kind === 'personalized') {
+            $baseContent = self::validateProfile(app_decrypt_secret((string)$profileRow['profile_ciphertext']));
+            $personalizedContent = self::profileWithCredentials($baseContent, (string)$eligible['username'], app_decrypt_secret((string)$eligible['password_ciphertext']));
+            $generatedFilename = self::generatedFilename((string)$profileRow['name']);
+            self::writeGeneratedFile($generatedFilename, $personalizedContent);
+        }
+        try {
+            $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, generated_filename, token_hash, token_ciphertext, is_active, expires_at) VALUES (?,?,?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
+            $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,$generatedFilename,hash('sha256',$token),app_encrypt_secret($token)]);
+        } catch (Throwable $e) {
+            self::removeGeneratedFile($generatedFilename);
+            throw $e;
+        }
+        $fileUrl = $generatedFilename !== null ? self::generatedFileUrl($generatedFilename) : '';
+        return [
+            'url'=>app_absolute_url('openvpn-download.php?t='.$token),
+            'profile_url'=>$kind==='personalized' ? $fileUrl : app_absolute_url('openvpn-profile.php?p='.$profileId),
+            'file_url'=>$fileUrl,
+            'public_url'=>app_absolute_url('openvpn-download.php?p='.$profileId),
+            'token'=>$token,
+            'id'=>(int)$this->pdo->lastInsertId()
+        ];
     }
 
     public function resolveToken(string $token, bool $countAccess = true): array
     {
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) throw new RuntimeException('پیوند معتبر نیست.');
-        $stmt=$this->pdo->prepare('SELECT l.id,l.link_type,l.order_id,l.profile_id,p.name,p.profile_ciphertext FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id WHERE l.token_hash=? AND l.is_active=1 AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1');
+        $stmt=$this->pdo->prepare('SELECT l.id,l.id AS link_id,l.generated_filename,l.link_type,l.order_id,l.profile_id,p.name,p.profile_ciphertext FROM openvpn_links l JOIN openvpn_profiles p ON p.id=l.profile_id WHERE l.token_hash=? AND l.is_active=1 AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP()) LIMIT 1');
         $stmt->execute([hash('sha256',$token)]); $row=$stmt->fetch(PDO::FETCH_ASSOC);
         if (!$row) throw new RuntimeException('این پیوند منقضی یا غیرفعال شده است.');
         $username = '';
@@ -250,7 +394,7 @@ final class OpenVpnManager
             $update=$this->pdo->prepare('UPDATE openvpn_links SET last_used_at=UTC_TIMESTAMP(), download_count=download_count+1 WHERE id=?');
             $update->execute([(int)$row['id']]);
         }
-        return ['id'=>(int)$row['profile_id'],'name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>(string)$row['link_type'],'username'=>$username,'password'=>$password];
+        return ['link_id'=>(int)$row['link_id'],'generated_filename'=>is_string($row['generated_filename'] ?? null) ? (string)$row['generated_filename'] : null,'id'=>(int)$row['profile_id'],'name'=>(string)$row['name'],'content'=>self::validateProfile(app_decrypt_secret((string)$row['profile_ciphertext'])),'type'=>(string)$row['link_type'],'username'=>$username,'password'=>$password];
     }
 
     public function resolvePublicProfile(int $profileId): array

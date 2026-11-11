@@ -69,3 +69,15 @@ openvpn_profile_assert(
 );
 
 echo "OpenVPN personalized profile contract checks passed.\n";
+
+$managerSource = file_get_contents(dirname(__DIR__) . '/app/OpenVpnManager.php');
+$downloadSource = file_get_contents(dirname(__DIR__) . '/openvpn-download.php');
+$fileEndpointSource = file_get_contents(dirname(__DIR__) . '/openvpn-file.php');
+$rootHtaccess = file_get_contents(dirname(__DIR__) . '/.htaccess');
+$schemaSource = file_get_contents(dirname(__DIR__) . '/database/schema.sql');
+$schemaSyncSource = file_get_contents(dirname(__DIR__) . '/app/DatabaseSchemaSync.php');
+openvpn_profile_assert(is_string($managerSource) && str_contains($managerSource, "dirname(__DIR__) . '/ovpn'") && str_contains($managerSource, 'generated_filename') && str_contains($managerSource, 'writeGeneratedFile') && str_contains($managerSource, 'resolveGeneratedFile') && str_contains($managerSource, 'removeGeneratedFile'), 'Personalized profiles must be materialized in ovpn and linked to revocable database records.');
+openvpn_profile_assert(is_string($downloadSource) && str_contains($downloadSource, "openvpn://import-profile/") && str_contains($downloadSource, 'Import to OpenVPN') && str_contains($downloadSource, 'generatedProfileUrl'), 'The customer landing page must expose a direct OpenVPN Connect import action using the generated file URL.');
+openvpn_profile_assert(is_string($fileEndpointSource) && str_contains($fileEndpointSource, 'resolveGeneratedFile') && str_contains($fileEndpointSource, 'application/x-openvpn-profile'), 'Generated profile URLs must be served by the validating OpenVPN endpoint.');
+openvpn_profile_assert(is_string($rootHtaccess) && str_contains($rootHtaccess, 'openvpn-file.php') && str_contains($rootHtaccess, 'ovpn/'), 'The generated profile URL must route through the protected file endpoint.');
+openvpn_profile_assert(is_string($schemaSource) && str_contains($schemaSource, 'generated_filename') && is_string($schemaSyncSource) && str_contains($schemaSyncSource, 'generated_filename'), 'Fresh installs and existing databases must both support generated OpenVPN filenames.');
