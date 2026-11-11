@@ -848,3 +848,12 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Confirmed `assets/js/ui-preferences.js` already applies these attributes when the customer changes the storefront language; no new translation mechanism or JavaScript behavior was added.
 - Kept `app/Pricing.php` amount conversion and formatting unchanged. The stored price, selected display unit, numeric amount, USDT price, checkout, payment, and historical order snapshots are untouched.
 - Existing `tests/pricing-display-test.php` continues to cover the numeric conversion and Persian labels returned by the domain formatter; browser verification of the English label is still required.
+
+### 2026-11-12 — Remove visible literal newline markers from storefront head
+
+**Status: SOURCE FIX COMMITTED ON `main`; BROWSER VALIDATION PENDING.**
+
+- Removed the two unintended literal `\\n` text sequences in `index.php` between the charset, SEO description, and SEO keywords markup. They were rendered as visible text above the storefront header.
+- Replaced only those two sequences with actual source line breaks; no metadata values, page content, styling, or storefront behavior changed.
+- Commit: `a16ce243f345b9ed305e50f6e8dc0d04e86a65e6`.
+- Browser verification on Safari/iOS and PHP lint remain pending.
