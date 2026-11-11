@@ -763,3 +763,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `tests/openvpn-personalized-profile-contract-test.php`: added source assertions for the Persian and English public-card wording.
 - This is a customer-facing copy-only change. Public/personalized URL generation, profile contents, credentials, import actions, database, payment, and IBSng behavior are unchanged.
 - PHP lint, automated test execution, and browser verification on the hosting environment remain pending; this commit must not be described as runtime-verified.
+
+
+### 2026-11-11 — Fix OpenVPN contract-test interpolation failure
+
+**Status: TEST SOURCE FIXED ON `main` / CI RE-RUN PENDING.**
+
+- The PHP syntax and router tests passed in workflow run 42967356387, but `tests/openvpn-personalized-profile-contract-test.php` failed because double-quoted expected-source strings interpolated the test process's undefined `$token` variable.
+- Rewrote the three expected source fragments as single-quoted PHP strings with escaped embedded quotes, so the test compares literal PHP source instead of interpolating variables.
+- No application code, profile generation, credentials, URL behavior, database, payment, or IBSng logic was changed in this fix.
+- Awaiting the new GitHub Actions run triggered by this test-only commit; do not mark CI green until that run completes successfully.
