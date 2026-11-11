@@ -29,11 +29,14 @@ try {
     } elseif ($profileId > 0) {
         $result = $manager->resolvePublicProfile($profileId);
         $profileName = (string)$result['name'];
-        $publicFileUrl = $manager->publicProfileFileUrl($profileId);
-        $publicImportUrl = 'openvpn://import-profile/' . $publicFileUrl;
     } else {
         throw new RuntimeException('A valid public profile or personalized token is required.');
     }
+
+    // Both landing-page variants show the public profile card. Resolve its
+    // physical file URL after the profile ID is known, including token pages.
+    $publicFileUrl = $manager->publicProfileFileUrl($profileId);
+    $publicImportUrl = 'openvpn://import-profile/' . $publicFileUrl;
     $publicUrl = app_absolute_url('openvpn-profile.php?p=' . $profileId);
     $valid = true;
 } catch (Throwable $e) {
