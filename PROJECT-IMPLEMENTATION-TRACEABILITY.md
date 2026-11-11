@@ -670,3 +670,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `openvpn-profile.php` previously converted every caught profile-generation failure into HTTP 404, masking token, database, decryption, and profile-format errors as if the route did not exist. It now returns HTTP 500 for caught server-side generation failures, logs the actual exception server-side, and keeps a generic non-sensitive response body. The explicit router allowlist already includes `/openvpn-profile.php`; do not remove that route or the token validation.
 - The personalized token remains necessary: the emailed URL is a bearer credential that grants access to the customer's generated profile containing their account credentials. Email-only distribution is not an access-control boundary.
 - Contract test now asserts the endpoint's 500 failure behavior. This helps distinguish an application failure from a web-server/router 404; if the client still reports 404, the request is not reaching this PHP endpoint and hosting rewrite/routing must be inspected.
+
+
+## 2026-11-11 — OpenVPN endpoint direct routing and inline response
+
+**Status: SOURCE AND CONTRACT UPDATED ON `main`; LIVE HOST/CLIENT VALIDATION PENDING.**
+
+- `openvpn-profile.php`: changed `Content-Disposition` from `attachment` to `inline`; the body remains the raw personalized `.ovpn` profile with `application/x-openvpn-profile`, configured filename metadata, and private no-store caching.
+- `.htaccess`: added an explicit rewrite stop for `openvpn-profile.php` before the catch-all front-controller rule. This serves the existing PHP endpoint directly rather than relying on `app/Router.php` dispatch for the raw profile URL.
+- `tests/openvpn-personalized-profile-contract-test.php`: now asserts inline disposition as well as the OpenVPN MIME type and existing error behavior.
+- Token validation, expiration/revocation, paid-order checks, encrypted credential retrieval, and profile transformation are unchanged.
+- The source change does not prove the hosting environment has deployed the new files. Verify that the exact personalized URL returns HTTP 200 and a raw `.ovpn` body in a browser, then import that same URL in OpenVPN Connect. If it still returns 404, inspect the active document-root `.htaccess`, PHP handler, and deployed file path; the issue is then outside this source-level endpoint change.
