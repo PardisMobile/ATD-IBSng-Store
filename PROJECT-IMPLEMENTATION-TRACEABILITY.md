@@ -880,3 +880,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Zarinpal cURL transport errors preserve the cURL error number. DNS resolution, TCP connect, proxy DNS, and TLS handshake failures are treated as pre-request failures and mark the initiation attempt failed, enabling the existing customer retry flow. Timeouts and response-ambiguous failures remain unresolved; they are not blindly retried.
 - Provisioning and renewal retry policy was not changed.
 - Automated and live validation still required: PHP lint, existing test suite, IBSng same-server session reuse/expiry test, multi-server account lookup, and Zarinpal DNS/connect failure plus successful retry on the same order.
+
+
+### 2026-11-12 — Customer retry after proven pre-transfer payment gateway failure
+
+**Status: SOURCE FIX COMMITTED ON `main` / HOST RUNTIME VALIDATION PENDING.**
+
+- The recurring first-checkout failure was leaving a payment transaction in `initiated` when cURL reported a DNS-resolution timeout. The existing classifier handled selected DNS/connect/TLS cURL errors but not `CURLE_OPERATION_TIMEDOUT`, which is also the code used for a DNS-resolution timeout.
+- `ZarinpalGateway::postJson()` now captures cURL transfer-phase diagnostics (DNS lookup, TCP connect, TLS/app-connect, pre-transfer, first-byte timing, primary IP) and records whether cURL reached the HTTP pre-transfer phase.
+- A typed `ZarinpalTransportException` exposes that distinction to `PaymentFlow`. If the failure is proven to have happened before the HTTP request was sent, including DNS-resolution timeout, the attempt is marked `failed`. The existing order-status page then offers the customer a new payment attempt on the same pending order; no administrator release is needed.
+- If cURL had entered the HTTP transfer phase, the attempt remains ambiguous. This deliberately avoids assuming that a request with a lost response was rejected by the gateway.
+- Checkout now tells the customer to retry from the order-tracking page instead of asking them to contact support for this recoverable start-payment failure.
+- No payment verification, callback, amount/currency, provisioning, renewal, or IBSng behavior was changed.
+- Validation gap: PHP lint, payment contract tests, and live cPanel/Zarinpal testing are still required. Confirm that a DNS-resolution timeout becomes `failed`, exposes the retry button, and that a normal successful first request still redirects to Zarinpal.
