@@ -783,3 +783,11 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Retained the mobile override that lets descriptions use natural height when cards stack vertically.
 - Copy, URLs, import actions, generated profile content, credentials, and backend behavior are unchanged.
 - Validate both Persian and English layouts at desktop and mobile widths; adjust only if actual browser rendering shows clipping or excessive whitespace.
+
+
+### 2026-11-11 — Clarify OpenVPN profile management heading
+
+**Status: COPY UPDATED ON `main` / CI AND BROWSER VALIDATION PENDING.**
+
+- Updated the OpenVPN management disclosure title in `admin/guide.php` to Persian «مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال» and English “Manage OpenVPN Profiles and Create Connection Links”.
+- This is a bilingual admin-label-only change. OpenVPN profile, link creation, import, credential, and delivery behavior are unchanged.
