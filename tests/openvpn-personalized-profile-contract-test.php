@@ -59,7 +59,7 @@ try {
 $endpoint = file_get_contents(dirname(__DIR__) . '/openvpn-profile.php');
 openvpn_profile_assert(
     is_string($endpoint)
-        && str_contains($endpoint, "Content-Type: application/x-openvpn-profile")
+        && str_contains($endpoint, "Content-Type: text/plain; charset=utf-8")
         && str_contains($endpoint, "Content-Disposition: inline")
         && str_contains($endpoint, "filename*=UTF-8")
         && str_contains($endpoint, '$profileName')
