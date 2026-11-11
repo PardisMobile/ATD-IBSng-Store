@@ -212,9 +212,16 @@ final class PaymentFlow
             // no payable gateway session was issued, so this transaction can be
             // safely failed and the same pending order may be retried.
             // Network/timeout/unknown outcomes remain active for reconciliation.
-            if ($provider === 'zarinpal'
-                && ($e instanceof InvalidArgumentException
-                    || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:'))) {
+            $preRequestTransportCodes = array_filter([
+                defined('CURLE_COULDNT_RESOLVE_HOST') ? CURLE_COULDNT_RESOLVE_HOST : null,
+                defined('CURLE_COULDNT_CONNECT') ? CURLE_COULDNT_CONNECT : null,
+                defined('CURLE_COULDNT_RESOLVE_PROXY') ? CURLE_COULDNT_RESOLVE_PROXY : null,
+                defined('CURLE_SSL_CONNECT_ERROR') ? CURLE_SSL_CONNECT_ERROR : null,
+            ], static fn($code): bool => is_int($code));
+            $definitiveZarinpalFailure = $provider === 'zarinpal' && ($e instanceof InvalidArgumentException
+                || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')
+                || in_array($e->getCode(), $preRequestTransportCodes, true));
+            if ($definitiveZarinpalFailure) {
                 try {
                     $transactions->failInitiation($transactionId);
                 } catch (Throwable $stateError) {
