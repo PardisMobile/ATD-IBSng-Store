@@ -46,7 +46,7 @@ $ovpnError = '';
 $ovpnResult = '';
 $ovpnGeneratedLinks = [];
 $ovpnKeepProfilesOpen = false;
-$ovpnKeepLinksOpen = false;
+$ovpnKeepLinksOpen = array_key_exists('ovpn_order_search', $_GET);
 $ovpnManager = new OpenVpnManager($pdo);
 $ovpnSearch = trim((string)($_GET['ovpn_order_search'] ?? ''));
 $ovpnOrders = [];
@@ -387,7 +387,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="ovpn-management-column">
 <details class="form-section"<?= $ovpnKeepLinksOpen ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
-<form method="get" class="field ovpn-search-form"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button primary" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
+<form method="get" action="<?= e(app_url('admin/guide.php')) ?>#openvpn-management" class="field ovpn-search-form"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button primary" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
 <form method="post" id="ovpn-link-form" class="ovpn-link-create-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_create_link">
 <div class="field"><label for="ovpn-order-id" data-fa="انتخاب سفارش / حساب مشتری" data-en="Select order / customer account">انتخاب سفارش / حساب مشتری</label><select id="ovpn-order-id" name="order_id"><option value="" data-fa="انتخاب کنید" data-en="Select">انتخاب کنید</option><?php foreach ($ovpnOrders as $orderRow): ?><option value="<?= (int)$orderRow['id'] ?>" data-email="<?= e((string)$orderRow['buyer_email']) ?>"><?= e((string)$orderRow['username'].' · '.$orderRow['tracking_code'].' · '.$orderRow['buyer_name']) ?></option><?php endforeach; ?></select></div>
