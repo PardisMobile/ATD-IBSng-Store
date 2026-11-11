@@ -97,6 +97,10 @@ final class DatabaseSchemaSync
             $pending[] = 'ایجاد جداول مدیریت پروفایل و لینک OpenVPN';
         }
 
+        if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'token_ciphertext')) {
+            $pending[] = 'افزودن ذخیره‌سازی رمزنگاری‌شده توکن برای کپی مجدد لینک‌های OpenVPN';
+        }
+
         if (!$this->tableExists('customer_order_recovery_codes')) {
             $pending[] = 'ایجاد جدول کدهای بازیابی سفارش مشتری';
         }
@@ -167,6 +171,9 @@ final class DatabaseSchemaSync
         $this->ensureCustomerEmailDeliveries();
         $this->ensureCustomerRecoveryCodes();
         $this->ensureOpenVpnTables();
+        if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'token_ciphertext')) {
+            $this->pdo->exec('ALTER TABLE openvpn_links ADD COLUMN token_ciphertext TEXT NULL AFTER token_hash');
+        }
         $settings = $this->pdo->prepare('INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES (?, ?)');
         $settings->execute(['price_display_unit', 'IRT']);
         $settings->execute(['crypto_gateway_enabled', '0']);
@@ -242,6 +249,7 @@ final class DatabaseSchemaSync
                 link_type ENUM('public','personalized') NOT NULL,
                 recipient_email VARCHAR(190) NULL,
                 token_hash CHAR(64) NOT NULL,
+                token_ciphertext TEXT NULL,
                 is_active TINYINT(1) NOT NULL DEFAULT 1,
                 expires_at DATETIME NULL,
                 last_used_at DATETIME NULL,
