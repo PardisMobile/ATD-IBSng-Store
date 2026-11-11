@@ -729,3 +729,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Personalized Import URL generation and its existing credentials/profile flow are unchanged. No change to `OpenVpnManager::profileWithCredentials()`, file delivery validation, database schema, payment, or IBSng behavior.
 - `tests/openvpn-personalized-profile-contract-test.php`: added a source contract asserting the public file URL and Deep Link are initialized after the token/public route resolves the profile ID.
 - Validation gap: source is committed to `main`; automated CI and actual tap testing on iPhone/macOS remain pending.
+
+
+### 2026-11-11 — Unify personalized URL display with public URL style
+
+**Status: IMPLEMENTED ON MAIN / HOST RUNTIME TEST PENDING.**
+
+- The personalized card now displays and copies a clean endpoint-style URL: `openvpn-profile.php?t=TOKEN`, matching the public card's endpoint-style presentation.
+- The generated physical `/ovpn/<filename>.ovpn` URL is held separately in `$personalFileUrl` and remains the target of the OpenVPN Connect Deep Link.
+- The legacy `openvpn-profile.php?t=...` endpoint remains the fallback URL for manual Import from URL; its existing credential injection flow is unchanged.
+- `profileWithCredentials()`, generated file contents, public card behavior, and all database/security rules are unchanged.
+- Contract test added to assert the displayed/copy URL and Import URL remain separate.
+- Host/iOS runtime test remains pending.
