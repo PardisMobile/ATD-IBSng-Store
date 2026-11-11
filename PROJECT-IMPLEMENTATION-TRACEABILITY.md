@@ -753,3 +753,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Updated `tests/openvpn-personalized-profile-contract-test.php` to assert the three manual-import steps, absence of the old Import from URL instructions, and the approved personalized-link warning.
 - No changes to `OpenVpnManager`, profile bytes, database schema, payment, or IBSng behavior.
 - Validation remains source-level only until PHP lint/contract test and browser download/share/import are exercised on the target host and devices.
+
+
+### 2026-11-11 — Restore approved public OpenVPN link explanation
+
+**Status: COPY AND CONTRACT ASSERTION UPDATED ON `main` / HOST RUNTIME VALIDATION PENDING.**
+
+- `openvpn-download.php`: restored the user-approved public-card explanation: «این لینک فقط شامل تنظیمات اتصال به سرور است و اطلاعات ورود هیچ مشتری‌ای را در خود ندارد. برای استفاده از حساب خود باید اطلاعات ورود معتبر را وارد کنید.» Added the corresponding English translation.
+- `tests/openvpn-personalized-profile-contract-test.php`: added source assertions for the Persian and English public-card wording.
+- This is a customer-facing copy-only change. Public/personalized URL generation, profile contents, credentials, import actions, database, payment, and IBSng behavior are unchanged.
+- PHP lint, automated test execution, and browser verification on the hosting environment remain pending; this commit must not be described as runtime-verified.
