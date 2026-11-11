@@ -663,3 +663,10 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `tests/openvpn-personalized-profile-contract-test.php`: covers byte preservation, targeted credential insertion, unchanged remote/port/private-key content, duplicate directive rejection, and response metadata. Added to `.github/workflows/php-lint.yml`.
 - GitHub Actions run `42941449923`: PHP lint and all workflow steps, including the new OpenVPN contract test, completed successfully. This is automated source-level validation only; it does not establish live HTTP endpoint or iOS OpenVPN Connect compatibility.
 - Remaining user validation: deploy latest `main` to the hosting environment, generate/open the personalized import URL in OpenVPN Connect on iOS, confirm the configured profile name, and test authentication/connectivity. If import still returns “Incorrect response from server”, capture the corresponding server error-log entry and response status/headers before changing the profile format further.
+
+
+## 2026-11-11 — OpenVPN profile endpoint error status
+
+- `openvpn-profile.php` previously converted every caught profile-generation failure into HTTP 404, masking token, database, decryption, and profile-format errors as if the route did not exist. It now returns HTTP 500 for caught server-side generation failures, logs the actual exception server-side, and keeps a generic non-sensitive response body. The explicit router allowlist already includes `/openvpn-profile.php`; do not remove that route or the token validation.
+- The personalized token remains necessary: the emailed URL is a bearer credential that grants access to the customer's generated profile containing their account credentials. Email-only distribution is not an access-control boundary.
+- Contract test now asserts the endpoint's 500 failure behavior. This helps distinguish an application failure from a web-server/router 404; if the client still reports 404, the request is not reaching this PHP endpoint and hosting rewrite/routing must be inspected.
