@@ -31,6 +31,8 @@ final class TestPaymentGateway implements PaymentGateway
     public function supportedCurrencies(): array { return ['IRR', 'IRT']; }
     public function callbackReference(array $callback): string { return trim((string)($callback['transaction_id'] ?? '')); }
     public function retryStrategy(): string { return 'resume'; }
+    public function transactionMetadata(array $settings): array { return []; }
+    public function configurationComplete(array $settings): bool { return true; }
     public function initiate(array $order, array $settings): array
     {
         return ['redirect_url' => 'https://gateway.example/pay', 'provider_reference' => 'test-ref'];
