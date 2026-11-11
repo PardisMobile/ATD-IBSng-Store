@@ -24,6 +24,9 @@ jobs:
       - name: Run router path and allowlist tests
         run: php tests/router-path-test.php
 
+      - name: Run personalized OpenVPN profile contract test
+        run: php tests/openvpn-personalized-profile-contract-test.php
+
       - name: Run global pricing conversion test
         run: php tests/pricing-display-test.php
 
