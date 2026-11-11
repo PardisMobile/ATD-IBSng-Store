@@ -857,3 +857,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Replaced only those two sequences with actual source line breaks; no metadata values, page content, styling, or storefront behavior changed.
 - Commit: `a16ce243f345b9ed305e50f6e8dc0d04e86a65e6`.
 - Browser verification on Safari/iOS and PHP lint remain pending.
+
+
+### 2026-11-12 — Fix mobile overflow for ambiguous payment review table
+
+**STATUS: CSS SOURCE FIX COMMITTED ON `main`; MOBILE BROWSER VALIDATION PENDING.**
+
+- `admin/orders.php`: at viewport widths up to 760px, the ambiguous-payment table retains a 1040px layout and scrolls horizontally within its own wrapper. This prevents seven columns, long timestamps, gateway names, and review buttons from being crushed into narrow vertical text.
+- The responsive rule is scoped only to `.ambiguous-payments-wrap` and `.ambiguous-payments-table`; other report tables, desktop layout, payment diagnostics, form submission, and order resolution behavior are unchanged.
+- Commit: `d6520b5e57a837dcc69f331063ca308c752f7901`.
+- No runtime/browser validation or PHP lint is claimed yet.
