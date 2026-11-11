@@ -61,7 +61,7 @@ openvpn_profile_assert(
     is_string($endpoint)
         && str_contains($endpoint, "Content-Type: application/x-openvpn-profile")
         && str_contains($endpoint, "filename*=UTF-8")
-        && str_contains($endpoint, "$profileName"),
+        && str_contains($endpoint, '$profileName'),
     'Profile endpoint must return the OpenVPN MIME type and use the configured profile name as download filename.'
 );
 
