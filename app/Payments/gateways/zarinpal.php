@@ -4,6 +4,34 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/PaymentGateway.php';
 
 /**
+ * A transport failure that records whether cURL completed the request pre-transfer
+ * phase. When false, no HTTP request reached the payment provider.
+ */
+final class ZarinpalTransportException extends RuntimeException
+{
+    /** @param array<string,mixed> $transferInfo */
+    public function __construct(
+        string $message,
+        int $code,
+        private readonly bool $requestSent,
+        private readonly array $transferInfo
+    ) {
+        parent::__construct($message, $code);
+    }
+
+    public function requestWasSent(): bool
+    {
+        return $this->requestSent;
+    }
+
+    /** @return array<string,mixed> */
+    public function transferInfo(): array
+    {
+        return $this->transferInfo;
+    }
+}
+
+/**
  * Zarinpal API v4 transport adapter.
  *
  * Amounts are passed in the smallest unit represented by the persisted order
@@ -185,14 +213,32 @@ final class ZarinpalGateway implements PaymentGateway
         $httpStatus = (int)curl_getinfo($handle, CURLINFO_HTTP_CODE);
         $curlError = curl_error($handle);
         $curlErrno = curl_errno($handle);
+        $transferInfo = curl_getinfo($handle);
+        // pretransfer_time is populated only after DNS, connection and TLS setup
+        // have completed and cURL is ready to send the HTTP request.
+        $requestSent = $httpStatus > 0
+            || (float)($transferInfo['pretransfer_time'] ?? 0) > 0
+            || (float)($transferInfo['starttransfer_time'] ?? 0) > 0;
         curl_close($handle);
 
         if (!is_string($body) || $body === '' || $httpStatus < 200 || $httpStatus >= 300) {
             $responseBody = is_string($body) ? substr($body, 0, 4000) : '[no response body]';
-            throw new RuntimeException(
+            $timing = [
+                'namelookup_time' => $transferInfo['namelookup_time'] ?? null,
+                'connect_time' => $transferInfo['connect_time'] ?? null,
+                'appconnect_time' => $transferInfo['appconnect_time'] ?? null,
+                'pretransfer_time' => $transferInfo['pretransfer_time'] ?? null,
+                'starttransfer_time' => $transferInfo['starttransfer_time'] ?? null,
+                'primary_ip' => $transferInfo['primary_ip'] ?? null,
+                'request_sent' => $requestSent,
+            ];
+            throw new ZarinpalTransportException(
                 'Zarinpal request failed (HTTP ' . $httpStatus . '): ' . $curlError
+                . ' | Transfer diagnostics: ' . json_encode($timing, JSON_UNESCAPED_SLASHES)
                 . ' | Response body: ' . $responseBody,
-                $curlErrno
+                $curlErrno,
+                $requestSent,
+                $timing
             );
         }
         $decoded = json_decode($body, true);
