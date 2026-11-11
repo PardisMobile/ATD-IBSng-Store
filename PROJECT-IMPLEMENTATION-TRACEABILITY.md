@@ -705,3 +705,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Customer-facing copy now says “account” rather than “IBSng” in the personalized-link description. The public-card sentence about placing the URL in the site's general guide was removed in both Persian and English (`data-fa` / `data-en`).
 - `profileWithCredentials()` and `openvpn-profile.php` were not changed. No database schema or IBSng/payment behavior was changed.
 - Validation gap: source changes were committed to `main`, but PHP lint, automated tests, browser rendering, and actual OpenVPN Connect import have not been run in this environment. Verify both public and personalized import on the target hosting before marking VERIFIED.
+
+
+### 2026-11-11 — Fix public physical OpenVPN profile delivery
+
+**Status: FIXED (source) / AUTOMATED CI AND HOST RUNTIME VALIDATION PENDING.**
+
+- Root cause: `publicProfileFileUrl()` correctly materialized a credential-free public `.ovpn` file, but `resolveGeneratedFile()` rejected every generated file whose link type was not `personalized`. The public Import deep link therefore reached the file endpoint and was rejected before the file could be served.
+- `app/OpenVpnManager.php::resolveGeneratedFile()` now accepts active, unexpired generated files associated with either `public` or `personalized` links and active profiles.
+- Paid-order validation remains conditional and mandatory for `personalized` links only. Public links remain order-independent and serve the already-generated base profile without injecting credentials.
+- File existence/readability validation, profile validation, download count/last-used tracking, link/profile activation and expiry checks remain in the common delivery path.
+- `tests/openvpn-personalized-profile-contract-test.php` now asserts that both link types are accepted and that paid-order validation remains in the personalized-only branch.
+- No change was made to `profileWithCredentials()`, `openvpn-profile.php`, profile construction, database schema, payment, or IBSng behavior.
+- Validation gap: source changes are committed to `main`; CI result and actual public Import on the user's iPhone/hosting still need confirmation. Do not claim runtime verification until tested.
