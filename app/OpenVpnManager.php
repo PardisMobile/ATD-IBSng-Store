@@ -350,12 +350,28 @@ final class OpenVpnManager
         );
         $stmt->execute([$filename]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row || $row['link_type'] !== 'personalized') throw new RuntimeException('این فایل اختصاصی منقضی یا غیرفعال شده است.');
-        $order = $this->pdo->prepare("SELECT id FROM orders WHERE id=? AND payment_status='paid' LIMIT 1");
-        $order->execute([(int)$row['order_id']]);
-        if (!$order->fetchColumn()) throw new RuntimeException('سفارش مرتبط با این پروفایل معتبر نیست.');
+        if (!$row || !in_array($row['link_type'], ['public', 'personalized'], true)) {
+            throw new RuntimeException('لینک پروفایل OpenVPN منقضی یا غیرفعال شده است.');
+        }
+
+        // Public profiles are intentionally independent of customer orders and
+        // must be served without injecting or requiring customer credentials.
+        // Personalized profiles retain the paid-order validation contract.
+        if ($row['link_type'] === 'personalized') {
+            if (empty($row['order_id'])) {
+                throw new RuntimeException('سفارش مرتبط با این پروفایل معتبر نیست.');
+            }
+            $order = $this->pdo->prepare("SELECT id FROM orders WHERE id=? AND payment_status='paid' LIMIT 1");
+            $order->execute([(int)$row['order_id']]);
+            if (!$order->fetchColumn()) {
+                throw new RuntimeException('سفارش مرتبط با این پروفایل معتبر نیست.');
+            }
+        }
+
         $path = self::generatedDirectory() . '/' . $filename;
-        if (!is_file($path) || !is_readable($path)) throw new RuntimeException('فایل پروفایل اختصاصی در دسترس نیست.');
+        if (!is_file($path) || !is_readable($path)) {
+            throw new RuntimeException('فایل پروفایل OpenVPN در دسترس نیست.');
+        }
         $content = file_get_contents($path);
         if (!is_string($content)) throw new RuntimeException('خواندن فایل پروفایل اختصاصی ناموفق بود.');
         $content = self::validateProfile($content);
