@@ -18,7 +18,7 @@ try {
     $utf8Filename = rawurlencode(trim((string)$profile['name']) . '.ovpn');
 
     header('Content-Type: application/x-openvpn-profile');
-    header('Content-Disposition: inline; filename="' . $downloadFilename . '.ovpn"; filename*=UTF-8\\'\\'' . $utf8Filename);
+    header('Content-Disposition: inline; filename="' . $downloadFilename . '.ovpn"; filename*=UTF-8' . chr(39) . chr(39) . $utf8Filename);
     header('X-Content-Type-Options: nosniff');
     header('Cache-Control: private, no-store, max-age=0');
     header('Pragma: no-cache');

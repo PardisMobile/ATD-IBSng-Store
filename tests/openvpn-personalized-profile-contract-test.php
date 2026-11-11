@@ -68,7 +68,6 @@ openvpn_profile_assert(
     'Profile endpoint must return the OpenVPN MIME type and use the configured profile name as download filename.'
 );
 
-echo "OpenVPN personalized profile contract checks passed.\n";
 
 $managerSource = file_get_contents(dirname(__DIR__) . '/app/OpenVpnManager.php');
 $downloadSource = file_get_contents(dirname(__DIR__) . '/openvpn-download.php');
@@ -81,3 +80,5 @@ openvpn_profile_assert(is_string($downloadSource) && str_contains($downloadSourc
 openvpn_profile_assert(is_string($fileEndpointSource) && str_contains($fileEndpointSource, 'resolveGeneratedFile') && str_contains($fileEndpointSource, 'application/x-openvpn-profile') && str_contains($fileEndpointSource, 'filename*=UTF-8'), 'Generated profile URLs must be served by the validating OpenVPN endpoint and preserve the configured profile display filename.');
 openvpn_profile_assert(is_string($rootHtaccess) && str_contains($rootHtaccess, 'openvpn-file.php') && str_contains($rootHtaccess, 'ovpn/'), 'The generated profile URL must route through the protected file endpoint.');
 openvpn_profile_assert(is_string($schemaSource) && str_contains($schemaSource, 'generated_filename') && is_string($schemaSyncSource) && str_contains($schemaSyncSource, 'generated_filename'), 'Fresh installs and existing databases must both support generated OpenVPN filenames.');
+
+echo "OpenVPN personalized profile contract checks passed.\\n";
