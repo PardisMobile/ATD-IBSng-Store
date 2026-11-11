@@ -4,8 +4,8 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/PaymentGateway.php';
 
 /**
- * A transport failure that records whether cURL completed the request pre-transfer
- * phase. When false, no HTTP request reached the payment provider.
+ * A transport failure that records whether cURL may have reached the HTTP request-transfer phase.
+ * When false, no HTTP request was sent to the payment provider.
  */
 final class ZarinpalTransportException extends RuntimeException
 {
@@ -13,15 +13,15 @@ final class ZarinpalTransportException extends RuntimeException
     public function __construct(
         string $message,
         int $code,
-        private readonly bool $requestSent,
+        private readonly bool $requestMayHaveReachedProvider,
         private readonly array $transferInfo
     ) {
         parent::__construct($message, $code);
     }
 
-    public function requestWasSent(): bool
+    public function requestMayHaveReachedProvider(): bool
     {
-        return $this->requestSent;
+        return $this->requestMayHaveReachedProvider;
     }
 
     /** @return array<string,mixed> */
@@ -216,7 +216,7 @@ final class ZarinpalGateway implements PaymentGateway
         $transferInfo = curl_getinfo($handle);
         // pretransfer_time is populated only after DNS, connection and TLS setup
         // have completed and cURL is ready to send the HTTP request.
-        $requestSent = $httpStatus > 0
+        $requestMayHaveReachedProvider = $httpStatus > 0
             || (float)($transferInfo['pretransfer_time'] ?? 0) > 0
             || (float)($transferInfo['starttransfer_time'] ?? 0) > 0;
         curl_close($handle);
@@ -230,14 +230,14 @@ final class ZarinpalGateway implements PaymentGateway
                 'pretransfer_time' => $transferInfo['pretransfer_time'] ?? null,
                 'starttransfer_time' => $transferInfo['starttransfer_time'] ?? null,
                 'primary_ip' => $transferInfo['primary_ip'] ?? null,
-                'request_sent' => $requestSent,
+                'request_may_have_reached_provider' => $requestMayHaveReachedProvider,
             ];
             throw new ZarinpalTransportException(
                 'Zarinpal request failed (HTTP ' . $httpStatus . '): ' . $curlError
                 . ' | Transfer diagnostics: ' . json_encode($timing, JSON_UNESCAPED_SLASHES)
                 . ' | Response body: ' . $responseBody,
                 $curlErrno,
-                $requestSent,
+                $requestMayHaveReachedProvider,
                 $timing
             );
         }
