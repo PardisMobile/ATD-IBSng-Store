@@ -310,6 +310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
             $servers = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if (!$servers) throw new RuntimeException('customer_account_servers_unavailable');
             $matchedIds = [];
+            $serverLookupErrors = 0;
             foreach ($servers as $server) {
                 $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 try {
@@ -319,10 +320,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
                     }
                 } catch (RuntimeException $e) {
                     if (str_contains($e->getMessage(), 'وجود ندارد')) continue;
-                    throw $e;
+                    $serverLookupErrors++; error_log('Customer account lookup failed on IBSng server ' . (int)$server['id'] . ': ' . $e->getMessage()); continue;
+                } catch (Throwable $e) {
+                    $serverLookupErrors++; error_log('Customer account lookup failed on IBSng server ' . (int)$server['id'] . ': ' . $e->getMessage()); continue;
                 }
             }
-            if ($matchedIds === []) throw new RuntimeException('customer_account_not_found');
+            if ($matchedIds === []) throw new RuntimeException($serverLookupErrors > 0 ? 'customer_account_lookup_failed' : 'customer_account_not_found');
             $_SESSION['customer_account_auth'] = ['username' => $username, 'server_ids' => $matchedIds, 'created_at' => time()];
             unset($_SESSION['account_lookup_captcha'], $_SESSION['account_lookup_captcha_exp']);
             header('Location: ' . app_url('customer-account.php'), true, 303);
