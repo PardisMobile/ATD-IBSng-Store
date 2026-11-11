@@ -271,22 +271,48 @@ final class OpenVpnManager
     {
         if ($profileId < 1) throw new RuntimeException('پروفایل عمومی معتبر نیست.');
         $stmt = $this->pdo->prepare(
-            "SELECT l.generated_filename FROM openvpn_links l
+            "SELECT l.id,l.generated_filename,p.name,p.profile_ciphertext
+             FROM openvpn_links l
              JOIN openvpn_profiles p ON p.id=l.profile_id
              WHERE l.profile_id=? AND l.link_type='public' AND l.is_active=1
                AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP())
-               AND l.generated_filename IS NOT NULL
              ORDER BY l.id DESC LIMIT 1"
         );
         $stmt->execute([$profileId]);
-        $filename = $stmt->fetchColumn();
-        if (!is_string($filename) || !self::validGeneratedFilename($filename)) {
-            throw new RuntimeException('فایل فیزیکی لینک عمومی در دسترس نیست.');
+        $link = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$link) throw new RuntimeException('لینک عمومی فعال پیدا نشد.');
+
+        $oldFilename = (string)($link['generated_filename'] ?? '');
+        $oldPath = self::generatedDirectory() . '/' . $oldFilename;
+        if (self::validGeneratedFilename($oldFilename) && is_file($oldPath) && is_readable($oldPath)) {
+            return self::generatedFileUrl($oldFilename);
         }
-        $path = self::generatedDirectory() . '/' . $filename;
-        if (!is_file($path) || !is_readable($path)) {
-            throw new RuntimeException('فایل فیزیکی لینک عمومی پیدا نشد.');
+
+        // Backfill public links created before physical public profiles were introduced.
+        // Keep the decrypted base profile byte-for-byte; never inject account credentials.
+        $content = self::validateProfile(app_decrypt_secret((string)$link['profile_ciphertext']));
+        $filename = self::generatedFilename((string)$link['name']);
+        self::writeGeneratedFile($filename, $content);
+        $update = $this->pdo->prepare(
+            'UPDATE openvpn_links SET generated_filename=? WHERE id=? AND (generated_filename IS NULL OR generated_filename=?)'
+        );
+        $update->execute([$filename, (int)$link['id'], $oldFilename !== '' ? $oldFilename : null]);
+        if ($update->rowCount() !== 1) {
+            self::removeGeneratedFile($filename);
+            $latest = $this->pdo->prepare(
+                "SELECT generated_filename FROM openvpn_links
+                 WHERE id=? AND link_type='public' AND is_active=1
+                   AND (expires_at IS NULL OR expires_at>UTC_TIMESTAMP()) LIMIT 1"
+            );
+            $latest->execute([(int)$link['id']]);
+            $latestFilename = $latest->fetchColumn();
+            $latestPath = is_string($latestFilename) ? self::generatedDirectory() . '/' . $latestFilename : '';
+            if (is_string($latestFilename) && self::validGeneratedFilename($latestFilename) && is_file($latestPath)) {
+                return self::generatedFileUrl($latestFilename);
+            }
+            throw new RuntimeException('ثبت نام فایل عمومی OpenVPN ناموفق بود.');
         }
+        self::removeGeneratedFile($oldFilename !== '' ? $oldFilename : null);
         return self::generatedFileUrl($filename);
     }
 
