@@ -312,8 +312,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'lookup') {
             $matchedIds = [];
             $serverLookupErrors = 0;
             foreach ($servers as $server) {
-                $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                 try {
+                    $client = new IBSngClient((string)$server['host'], (int)$server['port'], (string)$server['username'], app_decrypt_secret((string)$server['password_ciphertext']));
                     $credentials = $client->getCredentials($username);
                     if (hash_equals((string)($credentials['password'] ?? ''), $accountPassword)) {
                         $matchedIds[] = (int)$server['id'];
