@@ -12,20 +12,34 @@ try {
         $result = $manager->resolveToken($token);
         if ($result['type'] !== 'personalized') throw new RuntimeException('Personalized token required.');
         $content = OpenVpnManager::profileWithCredentials($result['content'], $result['username'], $result['password']);
-        $filename = 'openvpn-personal-profile';
+        $profileName = (string)$result['name'];
     } else {
         $result = $manager->resolvePublicProfile((int)($_GET['p'] ?? 0));
         $content = $result['content'];
-        $filename = 'openvpn-public-profile';
+        $profileName = (string)$result['name'];
     }
+    // OpenVPN Connect derives its imported display label partly from the
+    // downloaded filename. Keep the configured profile name in that filename.
+    $filenameBase = trim($profileName);
+    if (function_exists('iconv')) {
+        $asciiName = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filenameBase);
+        if (is_string($asciiName) && trim($asciiName) !== '') $filenameBase = $asciiName;
+    }
+    $filenameBase = preg_replace('/[^A-Za-z0-9._-]+/', '-', $filenameBase) ?? '';
+    $filenameBase = trim($filenameBase, '.-_');
+    if ($filenameBase === '') $filenameBase = 'openvpn-profile';
+    $filename = $filenameBase . '.ovpn';
+    $utf8Filename = rawurlencode(trim($profileName) . '.ovpn');
+
     header('Content-Type: application/x-openvpn-profile');
-    header('Content-Disposition: inline; filename="' . $filename . '.ovpn"');
+    header('Content-Disposition: attachment; filename="' . $filename . '"; filename*=UTF-8\'\'' . $utf8Filename);
     header('X-Content-Type-Options: nosniff');
     header('Cache-Control: private, no-store, max-age=0');
     header('Pragma: no-cache');
     header('Content-Length: ' . strlen($content));
     echo $content;
 } catch (Throwable $e) {
+    error_log('OpenVPN profile response failed: ' . $e->getMessage());
     http_response_code(404);
     header('Cache-Control: no-store');
     header('Content-Type: text/plain; charset=utf-8');
