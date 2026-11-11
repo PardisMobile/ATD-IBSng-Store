@@ -1161,6 +1161,6 @@
 ## 2026-11-11 — OpenVPN raw profile response for browser and URL import
 
 - The personalized `/openvpn-profile.php?t=...` URL is the actual profile endpoint, distinct from the emailed `/openvpn-download.php?t=...` landing page. A valid request must return the raw `.ovpn` text body.
-- The profile response uses `Content-Type: text/plain; charset=utf-8` and `Content-Disposition: inline` so browsers render the raw `.ovpn` directives as readable text instead of downloading the file. The response body remains the original profile bytes (or the personalized credential-injected profile); the same URL is intended to remain usable for OpenVPN Connect URL import, which still requires client runtime verification.
+- The direct profile endpoint uses `Content-Type: application/x-openvpn-profile`, as required for OpenVPN profile URL import. It retains `Content-Disposition: inline`; however, browsers may still download this MIME type. A separate browser-preview response is required if readable in-browser display is desired without changing the MIME contract used by OpenVPN Connect.
 - `.htaccess` bypasses the front-controller rewrite for the physical `openvpn-profile.php` endpoint, avoiding dispatcher routing for this raw-profile response. Token validation, expiry/revocation, order eligibility, credential injection, no-store caching, and generic error handling remain in PHP.
 - Source change only. Live host routing, browser rendering, and OpenVPN Connect URL import must still be tested after deployment.
