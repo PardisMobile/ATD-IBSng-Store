@@ -101,6 +101,11 @@ final class DatabaseSchemaSync
             $pending[] = 'افزودن ذخیره‌سازی رمزنگاری‌شده توکن برای کپی مجدد لینک‌های OpenVPN';
         }
 
+        if ($this->tableExists('app_settings')) {
+            $legacyIntroEn = (int)$this->pdo->query("SELECT COUNT(*) FROM app_settings WHERE setting_key='general_account_guide' AND JSON_VALID(setting_value) AND JSON_CONTAINS_PATH(setting_value, 'one', '$.intro_en')")->fetchColumn();
+            if ($legacyIntroEn > 0) $pending[] = 'حذف متن معرفی انگلیسی قدیمی از تنظیم راهنمای عمومی';
+        }
+
         if (!$this->tableExists('customer_order_recovery_codes')) {
             $pending[] = 'ایجاد جدول کدهای بازیابی سفارش مشتری';
         }
@@ -171,6 +176,9 @@ final class DatabaseSchemaSync
         $this->ensureCustomerEmailDeliveries();
         $this->ensureCustomerRecoveryCodes();
         $this->ensureOpenVpnTables();
+        if ($this->tableExists('app_settings')) {
+            $this->pdo->exec("UPDATE app_settings SET setting_value=JSON_REMOVE(setting_value, '$.intro_en') WHERE setting_key='general_account_guide' AND JSON_VALID(setting_value) AND JSON_CONTAINS_PATH(setting_value, 'one', '$.intro_en')");
+        }
         if ($this->tableExists('openvpn_links') && !$this->columnExists('openvpn_links', 'token_ciphertext')) {
             $this->pdo->exec('ALTER TABLE openvpn_links ADD COLUMN token_ciphertext TEXT NULL AFTER token_hash');
         }
