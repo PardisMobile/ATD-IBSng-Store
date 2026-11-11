@@ -7,13 +7,12 @@ DirectoryIndex index.php
 
 RewriteEngine On
 
-# Keep static assets directly served; route all application URLs through the
-# explicit allowlist dispatcher. The router itself must not be rewritten.
-# Serve the raw OpenVPN profile endpoint directly. It returns the .ovpn body,
-# not an HTML page, and must remain accessible to browser and OpenVPN URL import.
+# Serve the raw OpenVPN profile endpoint directly instead of passing it
+# through the application front controller.
 RewriteRule ^openvpn-profile\.php$ - [L]
-# Keep static assets directly served; route all application URLs through the
-# explicit allowlist dispatcher. The router itself must not be rewritten.
+
+# Keep static assets directly served; route all other application URLs through
+# the explicit allowlist dispatcher. The router itself must not be rewritten.
 RewriteRule ^assets/ - [L]
 RewriteRule ^router\.php$ - [L]
 RewriteRule ^ router.php [QSA,L]
