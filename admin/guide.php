@@ -349,7 +349,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <?php if ($ovpnError !== ''): ?><div class="notice err" role="alert" data-fa="<?= e($ovpnError) ?>" data-en="OpenVPN operation failed. Check the server error log for details."><?= e($ovpnError) ?></div><?php endif; ?>
 <?php if ($ovpnLoadError !== ''): ?><div class="notice err" role="alert" data-fa="جداول OpenVPN در دیتابیس آماده نیستند. از بخش همگام‌سازی دیتابیس در مدیریت، تغییرات معوق را اعمال کنید." data-en="The OpenVPN database tables are not ready. Apply the pending changes from the Database Synchronization section in the admin panel."><?= e($ovpnLoadError) ?></div><?php endif; ?>
 <div class="guide-admin-disclosure-content">
-<p class="guide-admin-note" data-fa="مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند." data-en="Manage profiles and create public or personalized links in this card. Stored profiles are encrypted.">مدیریت پروفایل‌ها و ساخت لینک‌های عمومی یا اختصاصی در همین کارت انجام می‌شود. پروفایل‌های ذخیره‌شده رمزنگاری می‌شوند.</p>
+
 <?php if ($ovpnGeneratedLinks): ?>
 <div class="form-section" aria-live="polite">
 <h3 data-fa="لینک‌های Import ساخته‌شده" data-en="Generated import URLs">لینک‌های Import ساخته‌شده</h3>
@@ -369,6 +369,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="ovpn-management-column">
 <details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال" data-en="Manage OpenVPN Profiles and Create Connection Links">مدیریت پروفایل‌های OpenVPN و ساخت لینک اتصال</strong></summary>
+<p class="guide-admin-note" data-fa="در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید." data-en="In this section, you can manage OpenVPN profiles, create public or personalized links, and prepare profile files for users to connect.">در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید.</p>
 <form method="post" enctype="multipart/form-data" class="ovpn-profile-form">
 <input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_save_profile">
 <input type="hidden" name="profile_id" value="<?= $editProfile ? (int)$editProfile['id'] : 0 ?>">
