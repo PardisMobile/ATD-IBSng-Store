@@ -88,7 +88,7 @@ $siteTitle = (string)($config['site_title'] ?? 'ATD IBSng Store');
 <?php if ($isPersonalized): ?>
 <article class="openvpn-link-card">
 <h2><?= storefront_icon_svg('account') ?><span data-fa="لینک اختصاصی" data-en="Personalized link">لینک اختصاصی</span></h2>
-<p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the IBSng username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
+<p data-fa="این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید." data-en="This link is unique to your account. Its profile is prepared with the account username and password for this order. Keep it private.">این لینک مخصوص حساب شماست و پروفایل آن با نام کاربری و رمز عبور IBSng همین سفارش آماده شده است. آن را محرمانه نگه دارید.</p>
 <input class="openvpn-url" type="text" readonly value="<?= e($personalUrl) ?>" aria-label="Personalized OpenVPN URL">
 <button class="button primary openvpn-copy" type="button" data-copy-value="<?= e($personalUrl) ?>"><?= storefront_icon_svg('copy') ?><span data-fa="کپی لینک اختصاصی" data-en="Copy personalized link">کپی لینک اختصاصی</span></button>
 </article>
