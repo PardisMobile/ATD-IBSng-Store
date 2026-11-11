@@ -106,9 +106,9 @@ openvpn_profile_assert(
 );
 openvpn_profile_assert(
     is_string($downloadSource)
-        && str_contains($downloadSource, "$" . "personalUrl = app_absolute_url('openvpn-profile.php?t=' . rawurlencode($token));")
-        && str_contains($downloadSource, "$" . "personalFileUrl = $" . "manager->generatedProfileUrl($token);")
-        && str_contains($downloadSource, "$" . "importUrl = 'openvpn://import-profile/' . $" . "personalFileUrl;"),
+        && str_contains($downloadSource, '$personalUrl = app_absolute_url(\'openvpn-profile.php?t=\' . rawurlencode($token));')
+        && str_contains($downloadSource, '$personalFileUrl = $manager->generatedProfileUrl($token);')
+        && str_contains($downloadSource, '$importUrl = \'openvpn://import-profile/\' . $personalFileUrl;'),
     'The personalized card must display/copy the clean profile endpoint URL while the Import deep link continues using the generated physical file URL.'
 );
 openvpn_profile_assert(
