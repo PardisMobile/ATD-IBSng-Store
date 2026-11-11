@@ -839,3 +839,12 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Updated admin selector options, dynamic icon preview mapping, validation allowlist, and name-based icon inference.
 - Legacy stored V2Ray/WireGuard icon keys are no longer selectable/accepted; when rendered they safely fall back to Generic unless the method name identifies another supported icon. Existing method records and their text are preserved.
 - No connection method execution, customer guide content, payment, account, or IBSng behavior changed.
+
+### 2026-11-12 — Storefront currency label follows selected language
+
+**Status: SOURCE FIX COMMITTED ON `main`; BROWSER/RUNTIME VALIDATION PENDING.**
+
+- Updated the storefront product-card currency label in `index.php` to use the existing `data-fa` / `data-en` language-switching contract: `تومان` / `Toman` for IRT and `ریال` / `Rial` for IRR.
+- Confirmed `assets/js/ui-preferences.js` already applies these attributes when the customer changes the storefront language; no new translation mechanism or JavaScript behavior was added.
+- Kept `app/Pricing.php` amount conversion and formatting unchanged. The stored price, selected display unit, numeric amount, USDT price, checkout, payment, and historical order snapshots are untouched.
+- Existing `tests/pricing-display-test.php` continues to cover the numeric conversion and Persian labels returned by the domain formatter; browser verification of the English label is still required.
