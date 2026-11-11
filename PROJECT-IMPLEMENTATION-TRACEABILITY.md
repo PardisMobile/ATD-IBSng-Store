@@ -652,3 +652,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - OpenVPN 2.6 documentation describes inline `auth-user-pass` credentials, but compatibility with the user's exact OpenVPN Connect versions and the MikroTik server profile has not yet been runtime-tested. Do not claim end-to-end client verification until the customer tests Import from URL and connection on their devices.
 
 - Outstanding verification: PHP lint, schema sync on an existing cPanel database, profile URL import against a real HTTPS host, upload, token expiry/revocation, order eligibility, bilingual email delivery, and OpenVPN client import/authentication. No runtime or live mail test is claimed.
+
+
+## 2026-11-11 — OpenVPN personalized profile output correction
+
+**Status: CODE AND CONTRACT TEST IMPLEMENTED — OPENVPN CONNECT RUNTIME TEST PENDING.**
+
+- `app/OpenVpnManager.php`: profile validation now validates a normalized copy while returning the original bytes. Credential injection replaces exactly one standalone `auth-user-pass` directive and retains all bytes outside that directive, including line endings and embedded certificate/key blocks. Missing or duplicate standalone directives are rejected.
+- `openvpn-profile.php`: response retains `application/x-openvpn-profile`, uses the configured profile name as the download filename metadata, and logs server-side exceptions without exposing secrets to the client.
+- `tests/openvpn-personalized-profile-contract-test.php`: covers byte preservation, targeted credential insertion, unchanged remote/port/private-key content, duplicate directive rejection, and response metadata. Added to `.github/workflows/php-lint.yml`.
+- GitHub Actions run `42941449923`: PHP lint and all workflow steps, including the new OpenVPN contract test, completed successfully. This is automated source-level validation only; it does not establish live HTTP endpoint or iOS OpenVPN Connect compatibility.
+- Remaining user validation: deploy latest `main` to the hosting environment, generate/open the personalized import URL in OpenVPN Connect on iOS, confirm the configured profile name, and test authentication/connectivity. If import still returns “Incorrect response from server”, capture the corresponding server error-log entry and response status/headers before changing the profile format further.
