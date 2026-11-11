@@ -169,6 +169,14 @@ final class OpenVpnManager
         $stmt->execute([$active ? 1 : 0, $id]);
     }
 
+    public function deleteLink(int $id): void
+    {
+        if ($id < 1) throw new InvalidArgumentException('شناسه لینک معتبر نیست.');
+        $stmt = $this->pdo->prepare('DELETE FROM openvpn_links WHERE id=?');
+        $stmt->execute([$id]);
+        if ($stmt->rowCount() < 1) throw new RuntimeException('لینک موردنظر پیدا نشد.');
+    }
+
     public function deleteProfile(int $id): void
     {
         $stmt=$this->pdo->prepare('DELETE FROM openvpn_profiles WHERE id=?');
