@@ -1194,3 +1194,10 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 ترجمه انگلیسی متن: “This link contains only the server connection settings and no customer login credentials. To use your account, enter valid login credentials.”
 
 این متن صرفاً توضیح نمایشی لینک عمومی است؛ لینک عمومی همچنان فاقد توکن اختصاصی و اطلاعات ورود مشتری است و منطق تولید/تحویل پروفایل نباید با تغییر متن تغییر کند.
+
+
+## 2026-11-12 — Mobile layout for ambiguous payment review
+
+- `admin/orders.php`: on narrow viewports, the ambiguous-payment review table now keeps a readable desktop-like column width inside its own horizontally scrollable container instead of compressing all seven columns into the phone viewport.
+- The change is scoped to `.ambiguous-payments-wrap` / `.ambiguous-payments-table`; other report tables and desktop layout are unchanged. Review actions remain within the final column.
+- CSS-only source change. iOS Safari/Android browser visual verification and PHP lint remain pending; no payment, order-state, release, or IBSng behavior changed.
