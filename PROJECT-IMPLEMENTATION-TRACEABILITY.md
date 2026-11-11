@@ -741,3 +741,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `profileWithCredentials()`, generated file contents, public card behavior, and all database/security rules are unchanged.
 - Contract test added to assert the displayed/copy URL and Import URL remain separate.
 - Host/iOS runtime test remains pending.
+
+
+### 2026-11-11 — Customer-facing OpenVPN manual import guide wording
+
+**Status: COPY AND CONTRACT TEST UPDATED ON `main` / PHP AND BROWSER RUNTIME VALIDATION PENDING.**
+
+- `openvpn-download.php`: replaced the unsupported `Import from URL` fallback instructions with the user-tested manual flow: open the copied profile link in Safari/Chrome, open the downloaded file and choose Share, then select OpenVPN Connect.
+- The manual-import section is shown for both public and personalized profile landing pages; the existing Import deep links, displayed/copy URLs, profile generation, and credential handling are unchanged.
+- Updated the personalized-card privacy sentence to the user-approved Persian wording and its English translation.
+- Updated `tests/openvpn-personalized-profile-contract-test.php` to assert the three manual-import steps, absence of the old Import from URL instructions, and the approved personalized-link warning.
+- No changes to `OpenVpnManager`, profile bytes, database schema, payment, or IBSng behavior.
+- Validation remains source-level only until PHP lint/contract test and browser download/share/import are exercised on the target host and devices.
