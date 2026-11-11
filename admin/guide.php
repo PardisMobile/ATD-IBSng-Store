@@ -257,7 +257,7 @@ $esc = static fn($value): string => e((string)$value);
 .ovpn-management-column>.form-section{margin-block:0 16px}
 .ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
 .ovpn-management-column table{min-width:620px}
-.ovpn-generated-links{width:100%;max-width:100%;min-width:0;clear:both}
+.ovpn-generated-links{grid-column:1/-1;width:100%;max-width:100%;min-width:0;clear:both}
 .ovpn-generated-links table{width:100%;min-width:760px}
 .ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
 @media(max-width:1050px){.ovpn-management-grid{grid-template-columns:minmax(0,1fr)}}
