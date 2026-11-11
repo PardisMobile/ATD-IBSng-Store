@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS customer_order_recovery_codes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- OpenVPN profiles are encrypted at rest; download tokens are stored only as hashes.
+-- OpenVPN profiles and recoverable link tokens are encrypted at rest; token hashes remain the lookup key.
 CREATE TABLE IF NOT EXISTS openvpn_profiles (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
@@ -293,6 +293,7 @@ CREATE TABLE IF NOT EXISTS openvpn_links (
     link_type ENUM('public','personalized') NOT NULL,
     recipient_email VARCHAR(190) NULL,
     token_hash CHAR(64) NOT NULL,
+    token_ciphertext TEXT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     expires_at DATETIME NULL,
     last_used_at DATETIME NULL,
