@@ -676,7 +676,7 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 
 **Status: SOURCE AND CONTRACT UPDATED ON `main`; LIVE HOST/CLIENT VALIDATION PENDING.**
 
-- `openvpn-profile.php`: changed `Content-Disposition` from `attachment` to `inline`; the body remains the raw personalized `.ovpn` profile with `application/x-openvpn-profile`, configured filename metadata, and private no-store caching.
+- `openvpn-profile.php`: changed `Content-Disposition` from `attachment` to `inline`; after browser testing showed the profile was still downloaded, changed the response MIME to `text/plain; charset=utf-8` so the browser renders the raw `.ovpn` directives. The profile body, configured filename metadata, and private no-store caching remain unchanged. OpenVPN Connect URL import compatibility still requires runtime verification.
 - `.htaccess`: added an explicit rewrite stop for `openvpn-profile.php` before the catch-all front-controller rule. This serves the existing PHP endpoint directly rather than relying on `app/Router.php` dispatch for the raw profile URL.
 - `tests/openvpn-personalized-profile-contract-test.php`: now asserts inline disposition as well as the OpenVPN MIME type and existing error behavior.
 - Token validation, expiration/revocation, paid-order checks, encrypted credential retrieval, and profile transformation are unchanged.
