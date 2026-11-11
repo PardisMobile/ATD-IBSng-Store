@@ -801,3 +801,12 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Persian: «در این بخش می‌توانید پروفایل‌های OpenVPN را مدیریت کنید، لینک عمومی یا اختصاصی بسازید و فایل‌های پروفایل را برای اتصال کاربران آماده کنید.»
 - English: “In this section, you can manage OpenVPN profiles, create public or personalized links, and prepare profile files for users to connect.”
 - Both translations use the existing `data-fa` / `data-en` language-switching architecture. No new translation mechanism or application behavior was introduced.
+
+
+### 2026-11-11 — Restore OpenVPN description above management cards
+
+**Status: POSITION CORRECTED ON `main` / CI AND ADMIN-BROWSER VALIDATION PENDING.**
+
+- Moved the approved bilingual OpenVPN management description out of the collapsible profile-management card and placed it above the two management cards, within the OpenVPN management section.
+- Kept the management card title and its expand/collapse behavior unchanged.
+- No OpenVPN profile/link behavior or other application logic changed.
