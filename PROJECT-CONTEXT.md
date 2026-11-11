@@ -1169,3 +1169,16 @@
 ## OpenVPN generated personalized profile delivery (2026-11-11)
 
 Creating a personalized OpenVPN link writes its order-specific .ovpn file into the single root ovpn/ directory. A short profile slug and random suffix identify the stored file; the filename is associated with the link record. The landing page uses the generated HTTPS file URL for the personalized URL and offers an Import to OpenVPN deep link (openvpn://import-profile/ + HTTPS URL). The endpoint validates link/profile/order state before returning the stored file and retains the configured profile display name in its response headers. Delete operations clean up generated files. Public profile URLs remain token-free and unchanged. Existing personalized links are generated lazily on first landing-page visit. This is source-level behavior only until PHP lint, schema sync, cPanel permissions, iOS deep-link launch, and OpenVPN Connect import/authentication are tested.
+
+
+### تصمیم محتوایی تأییدشده — راهنمای ایمپورت دستی OpenVPN (2026-11-11)
+
+- اگر Deep Link با دکمه Import مستقیم برنامه را باز نکرد، روش جایگزین مورد تأیید کاربر این است: لینک پروفایل در مرورگر گوشی (Safari یا Chrome) باز شود؛ فایل دانلودشده با گزینه Share باز و به OpenVPN Connect فرستاده شود.
+- استفاده از `Add Profile → Import from URL` به‌عنوان راهنمای جایگزین مجاز نیست؛ کاربر این روش را تست کرده و تأیید کرده که کار نمی‌کند.
+- متن تأییدشده فارسی:
+  - عنوان: «راهنمای ایمپورت دستی پروفایل:»
+  - «لینک را در مرورگر گوشی (Safari یا Chrome) وارد کنید.»
+  - «فایل دانلودشده را باز کنید و گزینه اشتراک‌گذاری (Share) را بزنید.»
+  - «برنامه OpenVPN Connect را انتخاب کنید تا پروفایل به آن اضافه شود.»
+- متن کارت لینک اختصاصی: «لینک اختصاصی شما حاوی اطلاعات ورود اکانت همین سفارش است. این لینک فقط برای استفاده شخصی شماست و نباید در اختیار دیگران قرار بگیرد.»
+- این تغییر صرفاً محتوای راهنماست؛ رفتار ساخت/تحویل پروفایل، Deep Link و اعتبارسنجی لینک تغییر نمی‌کند.
