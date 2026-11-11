@@ -221,7 +221,7 @@ final class PaymentFlow
                 defined('CURLE_SSL_CONNECT_ERROR') ? CURLE_SSL_CONNECT_ERROR : null,
             ], static fn($code): bool => is_int($code));
             $preTransferTransportFailure = $e instanceof ZarinpalTransportException
-                && !$e->requestWasSent();
+                && !$e->requestMayHaveReachedProvider();
             $definitiveZarinpalFailure = $provider === 'zarinpal' && ($e instanceof InvalidArgumentException
                 || str_contains($e->getMessage(), 'Zarinpal did not issue a payment authority. Response:')
                 || in_array($e->getCode(), $preRequestTransportCodes, true)
