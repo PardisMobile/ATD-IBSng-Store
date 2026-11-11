@@ -819,3 +819,12 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Changed the profile form card title in `admin/guide.php` to Persian «مدیریت پروفایل‌های OpenVPN» and English “Manage OpenVPN Profiles”.
 - The separate links card remains titled «مدیریت لینک‌های OpenVPN» / “Manage OpenVPN links”.
 - The section description remains above both cards. No behavior changed.
+
+
+### 2026-11-11 — Normalize OpenVPN link action button dimensions
+
+**Status: CSS FIX COMMITTED ON `main` / CI AND BROWSER VALIDATION PENDING.**
+
+- In `admin/guide.php`, applied the same fixed 34px height/min-height, padding, font sizing, and icon sizing to all buttons inside `.ovpn-link-actions`, including Copy, Enable/Disable, and Delete.
+- Previously, the sizing selector excluded buttons with `data-copy-value`, leaving Copy at the global button dimensions while the other actions had compact dimensions.
+- No action handlers, permissions, or link behavior changed.
