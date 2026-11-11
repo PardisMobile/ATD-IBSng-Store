@@ -718,3 +718,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - `tests/openvpn-personalized-profile-contract-test.php` now asserts that both link types are accepted and that paid-order validation remains in the personalized-only branch.
 - No change was made to `profileWithCredentials()`, `openvpn-profile.php`, profile construction, database schema, payment, or IBSng behavior.
 - Validation gap: source changes are committed to `main`; CI result and actual public Import on the user's iPhone/hosting still need confirmation. Do not claim runtime verification until tested.
+
+
+### 2026-11-11 — Fix public Import action on personalized OpenVPN landing page
+
+**Status: FIXED (source) / CI AND HOST RUNTIME VALIDATION PENDING.**
+
+- Root cause: the public profile card is also rendered on personalized landing pages, but `publicProfileFileUrl($profileId)` and `$publicImportUrl` were only initialized in the public-page (`?p=`) branch. On a token (`?t=`) page, the public Import anchor therefore had an empty target and tapping it did nothing.
+- `openvpn-download.php`: public generated-file URL and its `openvpn://import-profile/` Deep Link are now resolved once after either route has established the active profile ID. This initializes the public Import action on both public and personalized landing pages.
+- Personalized Import URL generation and its existing credentials/profile flow are unchanged. No change to `OpenVpnManager::profileWithCredentials()`, file delivery validation, database schema, payment, or IBSng behavior.
+- `tests/openvpn-personalized-profile-contract-test.php`: added a source contract asserting the public file URL and Deep Link are initialized after the token/public route resolves the profile ID.
+- Validation gap: source is committed to `main`; automated CI and actual tap testing on iPhone/macOS remain pending.
