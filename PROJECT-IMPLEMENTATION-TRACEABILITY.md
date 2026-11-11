@@ -773,3 +773,13 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Rewrote the three expected source fragments as single-quoted PHP strings with escaped embedded quotes, so the test compares literal PHP source instead of interpolating variables.
 - No application code, profile generation, credentials, URL behavior, database, payment, or IBSng logic was changed in this fix.
 - Awaiting the new GitHub Actions run triggered by this test-only commit; do not mark CI green until that run completes successfully.
+
+
+### 2026-11-11 — Align OpenVPN card descriptions across locales
+
+**Status: FIXED ON `main` / CI AND BROWSER VALIDATION PENDING.**
+
+- Increased the desktop description area minimum height in `openvpn-download.php` from 5.1em to 7.4em so the longer English copy does not push the URL field and actions out of alignment with the neighboring card.
+- Retained the mobile override that lets descriptions use natural height when cards stack vertically.
+- Copy, URLs, import actions, generated profile content, credentials, and backend behavior are unchanged.
+- Validate both Persian and English layouts at desktop and mobile widths; adjust only if actual browser rendering shows clipping or excessive whitespace.
