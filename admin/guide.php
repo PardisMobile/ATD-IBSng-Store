@@ -257,6 +257,8 @@ $esc = static fn($value): string => e((string)$value);
 .ovpn-management-column>.form-section{margin-block:0 16px}
 .ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
 .ovpn-management-column table{min-width:620px}
+.ovpn-generated-links{width:100%;max-width:100%;min-width:0;clear:both}
+.ovpn-generated-links table{width:100%;min-width:760px}
 .ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
 @media(max-width:1050px){.ovpn-management-grid{grid-template-columns:minmax(0,1fr)}}
 .ovpn-copy-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
@@ -382,7 +384,8 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="actions"><button class="button primary" type="submit" name="link_type" value="personalized" data-fa="ساخت لینک اختصاصی" data-en="Create personalized link">ساخت لینک اختصاصی</button><button class="button" type="submit" name="link_type" value="public" data-fa="ساخت لینک عمومی" data-en="Create public link">ساخت لینک عمومی</button></div>
 </form>
 </details>
-<div class="table-wrap" style="margin-top:18px"><h3 data-fa="لینک‌های ساخته‌شده" data-en="Generated links">لینک‌های ساخته‌شده</h3><table><thead><tr><th data-fa="پروفایل" data-en="Profile">پروفایل</th><th data-fa="نوع" data-en="Type">نوع</th><th data-fa="سفارش" data-en="Order">سفارش</th><th data-fa="ایمیل گیرنده" data-en="Recipient">ایمیل گیرنده</th><th data-fa="دانلود" data-en="Downloads">دانلود</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
+</div>
+<div class="table-wrap ovpn-generated-links" style="margin-top:18px"><h3 data-fa="لینک‌های ساخته‌شده" data-en="Generated links">لینک‌های ساخته‌شده</h3><table><thead><tr><th data-fa="پروفایل" data-en="Profile">پروفایل</th><th data-fa="نوع" data-en="Type">نوع</th><th data-fa="سفارش" data-en="Order">سفارش</th><th data-fa="ایمیل گیرنده" data-en="Recipient">ایمیل گیرنده</th><th data-fa="دانلود" data-en="Downloads">دانلود</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
 <?php if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
 <?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><div class="ovpn-link-actions">
 <button class="button ovpn-link-copy ovpn-copy-button" type="button" data-copy-value="<?= e((string)($linkRow['url'] ?? '')) ?>"<?= empty($linkRow['url']) ? ' disabled' : '' ?> data-fa-title="کپی لینک" data-en-title="Copy link"><?= storefront_icon_svg('copy') ?><span data-fa="کپی" data-en="Copy">کپی</span></button>
@@ -390,7 +393,6 @@ foreach ($ovpnProfiles as $profileRow) {
 <form method="post" data-confirm-fa="این لینک برای همیشه از دیتابیس حذف شود؟" data-confirm-en="Permanently delete this link from the database?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف لینک" data-en="Delete link">حذف لینک</button></form>
 </div></td></tr><?php endforeach; ?>
 </tbody></table></div>
-</div>
 </div>
 </section>
 <script>
