@@ -212,15 +212,15 @@ $esc = static fn($value): string => e((string)$value);
 <style>
 .guide-admin-method{padding:18px;margin:16px 0;border:1px solid var(--border);border-radius:var(--ui-radius-lg,18px);background:var(--surface-2)}
 .guide-admin-method-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.guide-admin-method>.guide-admin-method-head{display:grid;grid-template-columns:minmax(180px,1.5fr) minmax(150px,.8fr) auto auto;align-items:end;gap:12px}
+.guide-admin-method>.guide-admin-method-head{display:grid;grid-template-columns:minmax(180px,1fr) minmax(230px,1.3fr) auto auto;align-items:end;gap:12px}
 .guide-admin-method>.guide-admin-method-head>.field{margin:0;min-width:0}
 .guide-admin-method>.guide-admin-method-head .check-toggle{align-self:end;min-height:45px;white-space:nowrap}
 .guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{align-self:end;min-height:45px}
-.ovpn-search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:10px;row-gap:8px}
+.ovpn-search-form{display:grid;grid-template-columns:minmax(220px,420px) auto;align-items:end;column-gap:10px;row-gap:8px;max-width:620px}
 .ovpn-search-form>label{grid-column:1/-1}
-.ovpn-search-form>input{grid-column:1;min-width:0}
-.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;margin-bottom:12px;white-space:nowrap}
-@media(max-width:760px){.guide-admin-method>.guide-admin-method-head{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.guide-admin-method>.guide-admin-method-head .check-toggle{grid-column:1}.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{grid-column:2;justify-self:end}}
+.ovpn-search-form>input{grid-column:1;min-width:0;margin:0 !important}
+.ovpn-search-form>button{grid-column:2;align-self:end;min-height:45px;margin:0 0 0 !important;white-space:nowrap}
+@media(max-width:760px){.guide-admin-method>.guide-admin-method-head{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)}.guide-admin-method>.guide-admin-method-head .check-toggle{grid-column:1}.guide-admin-method>.guide-admin-method-head>[data-remove-guide-method]{grid-column:2;justify-self:end}}
 @media(max-width:420px){.ovpn-search-form{grid-template-columns:minmax(0,1fr)}.ovpn-search-form>label,.ovpn-search-form>input,.ovpn-search-form>button{grid-column:1}.ovpn-search-form>button{margin:0;justify-self:start}}
 .guide-admin-method .system-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .guide-admin-method textarea{min-height:120px;resize:vertical}
@@ -252,7 +252,13 @@ $esc = static fn($value): string => e((string)$value);
 .guide-admin-disclosure-content{min-width:0;margin-top:16px}
 .guide-admin-disclosure-content>.form-section{margin-top:16px}
 @media(prefers-reduced-motion:reduce){.guide-system-summary::after,.guide-admin-disclosure-summary::after{transition:none}}
+.ovpn-management-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px}
+.ovpn-management-column{min-width:0}
+.ovpn-management-column>.form-section{margin-block:0 16px}
+.ovpn-management-column .table-wrap{max-width:100%;overflow-x:auto}
+.ovpn-management-column table{min-width:620px}
 .ovpn-admin-url{flex:1;min-width:220px;direction:ltr;text-align:left}
+@media(max-width:1050px){.ovpn-management-grid{grid-template-columns:minmax(0,1fr)}}
 .ovpn-copy-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
 .ovpn-copy-button .ui-icon{width:18px;height:18px;flex:0 0 18px}
 .ovpn-link-actions{display:flex;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:nowrap;white-space:nowrap}
@@ -345,6 +351,8 @@ foreach ($ovpnProfiles as $profileRow) {
 </div>
 </div>
 <?php endif; ?>
+<div class="ovpn-management-grid">
+<div class="ovpn-management-column">
 <details class="form-section"<?= ($editProfile || $ovpnKeepProfilesOpen) ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت پروفایل‌های OpenVPN" data-en="Manage OpenVPN profiles">مدیریت پروفایل‌های OpenVPN</strong></summary>
 <form method="post" enctype="multipart/form-data">
@@ -361,6 +369,8 @@ foreach ($ovpnProfiles as $profileRow) {
 <?php foreach ($ovpnProfiles as $profileRow): ?><tr><td><?= e((string)$profileRow['name']) ?></td><td><?= !empty($profileRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td class="actions"><a class="button" href="<?= e(app_url('admin/guide.php?edit_ovpn_profile='.(int)$profileRow['id'].'#openvpn-management')) ?>" data-fa="جایگزینی فایل" data-en="Replace file">جایگزینی فایل</a><form method="post"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_toggle_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><input type="hidden" name="active" value="<?= !empty($profileRow['is_active']) ? '0' : '1' ?>"><button class="button" type="submit"><?= !empty($profileRow['is_active']) ? '<span data-fa="غیرفعال‌سازی" data-en="Disable">غیرفعال‌سازی</span>' : '<span data-fa="فعال‌سازی" data-en="Enable">فعال‌سازی</span>' ?></button></form><form method="post" data-confirm-fa="این پروفایل و لینک‌های وابسته به آن حذف شوند؟" data-confirm-en="Delete this profile and its associated links?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_profile"><input type="hidden" name="profile_id" value="<?= (int)$profileRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف" data-en="Delete">حذف</button></form></td></tr><?php endforeach; ?>
 </tbody></table></div>
 </details>
+</div>
+<div class="ovpn-management-column">
 <details class="form-section"<?= $ovpnKeepLinksOpen ? ' open' : '' ?>>
 <summary><strong data-fa="مدیریت لینک‌های OpenVPN" data-en="Manage OpenVPN links">مدیریت لینک‌های OpenVPN</strong></summary>
 <form method="get" class="field ovpn-search-form"><label for="ovpn-order-search" data-fa="جست‌وجوی سفارش / حساب مشتری" data-en="Search order / customer account">جست‌وجوی سفارش / حساب مشتری</label><input id="ovpn-order-search" name="ovpn_order_search" value="<?= e($ovpnSearch) ?>" placeholder="نام کاربری / ایمیل / کد رهگیری" data-fa-placeholder="نام کاربری / ایمیل / کد رهگیری" data-en-placeholder="Username / Email / Tracking code" dir="auto"><button class="button primary" type="submit" data-fa="جست‌وجو" data-en="Search">جست‌وجو</button></form>
@@ -372,6 +382,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <div class="actions"><button class="button primary" type="submit" name="link_type" value="personalized" data-fa="ساخت لینک اختصاصی" data-en="Create personalized link">ساخت لینک اختصاصی</button><button class="button" type="submit" name="link_type" value="public" data-fa="ساخت لینک عمومی" data-en="Create public link">ساخت لینک عمومی</button></div>
 </form>
 </details>
+</div>
 <div class="table-wrap" style="margin-top:18px"><h3 data-fa="لینک‌های ساخته‌شده" data-en="Generated links">لینک‌های ساخته‌شده</h3><table><thead><tr><th data-fa="پروفایل" data-en="Profile">پروفایل</th><th data-fa="نوع" data-en="Type">نوع</th><th data-fa="سفارش" data-en="Order">سفارش</th><th data-fa="ایمیل گیرنده" data-en="Recipient">ایمیل گیرنده</th><th data-fa="دانلود" data-en="Downloads">دانلود</th><th data-fa="وضعیت" data-en="Status">وضعیت</th><th data-fa="عملیات" data-en="Actions">عملیات</th></tr></thead><tbody>
 <?php if (!$ovpnLinks): ?><tr><td colspan="7" data-fa="هنوز لینکی ساخته نشده است." data-en="No links have been generated.">هنوز لینکی ساخته نشده است.</td></tr><?php endif; ?>
 <?php foreach ($ovpnLinks as $linkRow): ?><tr><td><?= e((string)$linkRow['profile_name']) ?></td><td><?= $linkRow['link_type']==='public' ? '<span data-fa="عمومی" data-en="Public">عمومی</span>' : '<span data-fa="اختصاصی" data-en="Personalized">اختصاصی</span>' ?></td><td><?= $linkRow['order_id'] ? '#'.(int)$linkRow['order_id'] : '—' ?></td><td><?= e((string)($linkRow['recipient_email'] ?? '—')) ?></td><td><?= (int)$linkRow['download_count'] ?></td><td><?= !empty($linkRow['is_active']) ? '<span data-fa="فعال" data-en="Active">فعال</span>' : '<span data-fa="غیرفعال" data-en="Inactive">غیرفعال</span>' ?></td><td><div class="ovpn-link-actions">
@@ -380,6 +391,7 @@ foreach ($ovpnProfiles as $profileRow) {
 <form method="post" data-confirm-fa="این لینک برای همیشه از دیتابیس حذف شود؟" data-confirm-en="Permanently delete this link from the database?"><input type="hidden" name="csrf" value="<?= e(admin_csrf_token()) ?>"><input type="hidden" name="action" value="openvpn_delete_link"><input type="hidden" name="link_id" value="<?= (int)$linkRow['id'] ?>"><button class="button danger" type="submit" data-fa="حذف لینک" data-en="Delete link">حذف لینک</button></form>
 </div></td></tr><?php endforeach; ?>
 </tbody></table></div>
+</div>
 </div>
 </section>
 <script>
