@@ -267,6 +267,29 @@ final class OpenVpnManager
         return app_absolute_url('ovpn/' . rawurlencode($filename));
     }
 
+    public function publicProfileFileUrl(int $profileId): string
+    {
+        if ($profileId < 1) throw new RuntimeException('پروفایل عمومی معتبر نیست.');
+        $stmt = $this->pdo->prepare(
+            "SELECT l.generated_filename FROM openvpn_links l
+             JOIN openvpn_profiles p ON p.id=l.profile_id
+             WHERE l.profile_id=? AND l.link_type='public' AND l.is_active=1
+               AND p.is_active=1 AND (l.expires_at IS NULL OR l.expires_at>UTC_TIMESTAMP())
+               AND l.generated_filename IS NOT NULL
+             ORDER BY l.id DESC LIMIT 1"
+        );
+        $stmt->execute([$profileId]);
+        $filename = $stmt->fetchColumn();
+        if (!is_string($filename) || !self::validGeneratedFilename($filename)) {
+            throw new RuntimeException('فایل فیزیکی لینک عمومی در دسترس نیست.');
+        }
+        $path = self::generatedDirectory() . '/' . $filename;
+        if (!is_file($path) || !is_readable($path)) {
+            throw new RuntimeException('فایل فیزیکی لینک عمومی پیدا نشد.');
+        }
+        return self::generatedFileUrl($filename);
+    }
+
     public function generatedProfileUrl(string $token): string
     {
         $link = $this->resolveToken($token, false);
@@ -349,13 +372,12 @@ final class OpenVpnManager
         if (!$profileRow) throw new RuntimeException('پروفایل انتخاب‌شده فعال نیست.');
         if ($kind === 'public') $orderId = null;
         $token=bin2hex(random_bytes(32));
-        $generatedFilename = null;
-        if ($kind === 'personalized') {
-            $baseContent = self::validateProfile(app_decrypt_secret((string)$profileRow['profile_ciphertext']));
-            $personalizedContent = self::profileWithCredentials($baseContent, (string)$eligible['username'], app_decrypt_secret((string)$eligible['password_ciphertext']));
-            $generatedFilename = self::generatedFilename((string)$profileRow['name']);
-            self::writeGeneratedFile($generatedFilename, $personalizedContent);
-        }
+        $baseContent = self::validateProfile(app_decrypt_secret((string)$profileRow['profile_ciphertext']));
+        $generatedFilename = self::generatedFilename((string)$profileRow['name']);
+        $generatedContent = $kind === 'personalized'
+            ? self::profileWithCredentials($baseContent, (string)$eligible['username'], app_decrypt_secret((string)$eligible['password_ciphertext']))
+            : $baseContent;
+        self::writeGeneratedFile($generatedFilename, $generatedContent);
         try {
             $stmt=$this->pdo->prepare('INSERT INTO openvpn_links (profile_id, order_id, link_type, recipient_email, generated_filename, token_hash, token_ciphertext, is_active, expires_at) VALUES (?,?,?,?,?,?,?,1,DATE_ADD(UTC_TIMESTAMP(), INTERVAL 30 DAY))');
             $stmt->execute([$profileId,$orderId,$kind,$kind==='personalized'?$email:null,$generatedFilename,hash('sha256',$token),app_encrypt_secret($token)]);
@@ -366,8 +388,9 @@ final class OpenVpnManager
         $fileUrl = $generatedFilename !== null ? self::generatedFileUrl($generatedFilename) : '';
         return [
             'url'=>app_absolute_url('openvpn-download.php?t='.$token),
-            'profile_url'=>$kind==='personalized' ? $fileUrl : app_absolute_url('openvpn-profile.php?p='.$profileId),
+            'profile_url'=>$fileUrl,
             'file_url'=>$fileUrl,
+            'public_file_url'=>$kind==='public' ? $fileUrl : '',
             'public_url'=>app_absolute_url('openvpn-download.php?p='.$profileId),
             'token'=>$token,
             'id'=>(int)$this->pdo->lastInsertId()
