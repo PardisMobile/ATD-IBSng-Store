@@ -39,9 +39,12 @@ try {
     header('Content-Length: ' . strlen($content));
     echo $content;
 } catch (Throwable $e) {
+    // A missing/expired token is an application error, not a missing route.
+    // Return 500 for profile-generation failures so clients and server logs
+    // distinguish them from a genuine web-server/router 404.
     error_log('OpenVPN profile response failed: ' . $e->getMessage());
-    http_response_code(404);
+    http_response_code(500);
     header('Cache-Control: no-store');
     header('Content-Type: text/plain; charset=utf-8');
-    echo 'OpenVPN profile unavailable.';
+    echo 'OpenVPN profile generation failed. Please contact support.';
 }
