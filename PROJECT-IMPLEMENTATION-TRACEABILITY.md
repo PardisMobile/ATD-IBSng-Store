@@ -867,3 +867,16 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The responsive rule is scoped only to `.ambiguous-payments-wrap` and `.ambiguous-payments-table`; other report tables, desktop layout, payment diagnostics, form submission, and order resolution behavior are unchanged.
 - Commit: `d6520b5e57a837dcc69f331063ca308c752f7901`.
 - No runtime/browser validation or PHP lint is claimed yet.
+
+
+### 2026-11-12 — IBSng session reuse and payment initiation recovery
+
+**Status: IMPLEMENTED ON MAIN / AWAITING HOST RUNTIME TEST.**
+
+- The supplied Python HTTP integration reference and the Store target the same IBSng installation/model; the Python sample was tested against the same server used by the Store. No separate IBSng version is assumed.
+- `IBSngClient` retains a permission-restricted cookie jar in the system temporary directory, isolated by server host/port, admin username, and a one-way credential fingerprint. The jar expires after 15 minutes and concurrent access is serialized with a lock file.
+- A read-only request that receives the actual IBSng login form invalidates the cached jar, performs one fresh login, and retries that GET once. Mutating POST requests are never automatically replayed.
+- Customer account lookup isolates per-server failures and continues checking remaining configured IBSng servers; if no candidate matches and at least one server failed, it reports lookup failure rather than falsely reporting that the account does not exist.
+- Zarinpal cURL transport errors preserve the cURL error number. DNS resolution, TCP connect, proxy DNS, and TLS handshake failures are treated as pre-request failures and mark the initiation attempt failed, enabling the existing customer retry flow. Timeouts and response-ambiguous failures remain unresolved; they are not blindly retried.
+- Provisioning and renewal retry policy was not changed.
+- Automated and live validation still required: PHP lint, existing test suite, IBSng same-server session reuse/expiry test, multi-server account lookup, and Zarinpal DNS/connect failure plus successful retry on the same order.
