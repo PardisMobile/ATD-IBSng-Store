@@ -60,6 +60,10 @@ if (empty($_SESSION['checkout_idempotency'])) {
     $_SESSION['checkout_idempotency'] = bin2hex(random_bytes(24));
 }
 
+if (empty($_SESSION['order_payment_retry_csrf'])) {
+    $_SESSION['order_payment_retry_csrf'] = bin2hex(random_bytes(32));
+}
+
 $operation = (string)($_GET['mode'] ?? $_POST['mode'] ?? 'create') === 'renew' ? 'renew' : 'create';
 $renewServerId = filter_var($_GET['server_id'] ?? $_POST['server_id'] ?? null, FILTER_VALIDATE_INT);
 $customerAuth = $_SESSION['customer_account_auth'] ?? null;
@@ -259,7 +263,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
         header('Location: ' . $payment['redirect_url'], true, 303);
         exit;
     } catch (Throwable $e) {
-        error_log('Checkout payment initiation failed: ' . $e->getMessage());
+        DiagnosticLogger::writeGateway('checkout_payment_initiation_failed', [
+            'operation' => 'checkout.payment_initiate',
+            'order_id' => $orderId,
+            'provider' => $selectedPaymentProvider,
+            'exception_class' => get_class($e),
+            'gateway_diagnostics' => method_exists($e, 'diagnostics') ? $e->diagnostics() : [],
+        ]);
+        error_log('Checkout payment initiation failed: ' . get_class($e));
         $error = 'ارتباط با درگاه پرداخت با اشکال مواجه شد. لطفاً از صفحه پیگیری سفارش، مجدداً برای پرداخت تلاش کنید.';
     }
 }
@@ -318,7 +329,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <h1 data-ui-text="checkout_success_title">درخواست سفارش ثبت شد</h1>
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="notice success" role="status" aria-live="polite"><strong class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="checkout_tracking_code">کد پیگیری:</span></strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
-<?php if ($successTrackingCode !== ''): ?><a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش و تلاش مجدد برای پرداخت" data-en="Track order and retry payment">پیگیری سفارش و تلاش مجدد برای پرداخت</a><?php endif; ?>
+<?php if ($successTrackingCode !== ''): ?>
+<a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش" data-en="Track order">پیگیری سفارش</a>
+<?php if ($error !== ''): ?>
+<form method="post" action="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" class="checkout-retry-form">
+<input type="hidden" name="csrf" value="<?= e((string)$_SESSION['order_payment_retry_csrf']) ?>">
+<input type="hidden" name="retry_payment" value="1">
+<button class="button primary" type="submit" data-fa="تلاش مجدد برای پرداخت" data-en="Retry payment">تلاش مجدد برای پرداخت</button>
+</form>
+<?php endif; ?>
+<?php endif; ?>
 <a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
 <?php elseif (!$product): ?>
