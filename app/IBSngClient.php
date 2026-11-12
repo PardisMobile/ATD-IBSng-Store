@@ -78,7 +78,7 @@ final class IBSngClient
     private function login(): void
     {
         if ($this->loggedIn) return;
-        if ($this->hasStoredSession()) { DiagnosticLogger::write('ibsng_session_cookie_reused', ['host' => $this->host, 'port' => $this->port]); $this->loggedIn = true; return; }
+        if ($this->hasStoredSession()) { DiagnosticLogger::write('ibsng_session_cookie_reused', ['operation' => 'ibsng.session.reuse', 'host' => $this->host, 'port' => $this->port]); $this->loggedIn = true; return; }
         [$body, $status, $headers] = $this->requestRaw('/admin/', [
             'username' => $this->username,
             'password' => $this->password,
@@ -169,7 +169,7 @@ final class IBSngClient
                 && $status >= 200 && $status < 400
                 && ($hasHttpResponseBody || $hasRedirectLocation);
             if (!$completeTimeoutResponse) {
-                DiagnosticLogger::write('ibsng_transport_failed', ['host' => $this->host, 'port' => $this->port, 'stage' => (string)(parse_url($path, PHP_URL_PATH) ?: 'unknown'), 'http_status' => $status, 'curl_errno' => $errno, 'curl_error' => $curlError]);
+                DiagnosticLogger::write('ibsng_transport_failed', ['operation' => 'ibsng.http.request', 'host' => $this->host, 'port' => $this->port, 'stage' => (string)(parse_url($path, PHP_URL_PATH) ?: 'unknown'), 'http_status' => $status, 'curl_errno' => $errno, 'curl_error' => $curlError]);
                 throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
                     ? 'اتصال به IBSng timeout شد.'
                     : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
@@ -185,16 +185,16 @@ final class IBSngClient
         [$body, $status] = $this->requestRaw($path, $data);
         $loginForm = $this->isLoginFormResponse($body);
         if ($data === [] && $loginForm) {
-            DiagnosticLogger::write('ibsng_stale_session_detected', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+            DiagnosticLogger::write('ibsng_stale_session_detected', ['operation' => 'ibsng.session.validate', 'host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
             $this->resetStoredSession();
-            DiagnosticLogger::write('ibsng_session_relogin_started', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage]);
+            DiagnosticLogger::write('ibsng_session_relogin_started', ['operation' => 'ibsng.session.relogin', 'host' => $this->host, 'port' => $this->port, 'stage' => $stage]);
             $this->login();
             [$body, $status] = $this->requestRaw($path, [], true);
             if ($status >= 400 || $this->isLoginFormResponse($body)) {
-                DiagnosticLogger::write('ibsng_session_recovery_failed', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+                DiagnosticLogger::write('ibsng_session_recovery_failed', ['operation' => 'ibsng.session.recovery', 'host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
                 throw new RuntimeException('نشست مدیر IBSng پس از ورود مجدد معتبر نشد.');
             }
-            DiagnosticLogger::write('ibsng_session_recovery_succeeded', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+            DiagnosticLogger::write('ibsng_session_recovery_succeeded', ['operation' => 'ibsng.http.request', 'host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
         }
         if ($status >= 400) {
             DiagnosticLogger::write('ibsng_http_request_rejected', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);

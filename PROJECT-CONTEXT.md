@@ -1237,3 +1237,10 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 - IBSng login-form detection accepts single- and double-quoted input attributes. A read-only request that receives the actual login form clears the stale cookie jar, logs in again, retries that GET once, and records the recovery outcome. Mutating requests are not automatically replayed.
 - Checkout records the automatic-username-generation exception internally while preserving the generic customer-facing message.
 - Source-level contract coverage is added. Deploy and reproduce the first-attempt failure, then inspect storage/logs/ibsng-debug.txt through cPanel File Manager. Host write permissions and runtime behavior remain to be verified.
+
+
+## 2026-11-12 — Log path and readable operation timestamps
+
+- Simplified the private diagnostic file location to `logs/ibsng-debug.txt` at the project root (not `storage/logs`).
+- Each line starts with the hosting server's local date/time and timezone offset, followed by a named event and an explicit operation such as `checkout.username_availability`, `ibsng.session.validate`, or `ibsng.http.request`. Additional safe context includes server ID, request stage, HTTP status and cURL diagnostics where relevant.
+- The root `logs/` directory is blocked from direct web access; read the text file through cPanel File Manager. No admin UI is added.

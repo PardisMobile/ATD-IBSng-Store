@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
                 if ($username !== '') $password = checkout_random_string($generatedPasswordCharset, $generatedPasswordLength);
             } catch (Throwable $generationError) {
-                DiagnosticLogger::write('checkout_username_generation_failed', ['server_id' => $generationTargetId, 'exception_class' => get_class($generationError), 'message' => $generationError->getMessage()]);
+                DiagnosticLogger::write('checkout_username_generation_failed', ['operation' => 'checkout.username_availability', 'server_id' => $generationTargetId, 'exception_class' => get_class($generationError), 'error_message' => $generationError->getMessage()]);
                 $credentialGenerationFailed = true;
             }
         }
@@ -231,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
-                DiagnosticLogger::write('checkout_order_creation_failed', ['exception_class' => get_class($e), 'message' => $e->getMessage()]);
+                DiagnosticLogger::write('checkout_order_creation_failed', ['operation' => 'checkout.order_creation', 'exception_class' => get_class($e), 'error_message' => $e->getMessage()]);
                 $diagnostic = $e->getMessage();
                 $error = match (true) {
                     $e instanceof UsernameAlreadyExistsException => app_message('username_taken'),

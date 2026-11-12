@@ -6,7 +6,7 @@ final class DiagnosticLogger
     public static function write(string $event, array $context = []): void
     {
         try {
-            $directory = dirname(__DIR__) . '/storage/logs';
+            $directory = dirname(__DIR__) . '/logs';
             if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) { error_log('ATD diagnostic logger: unable to create private log directory.'); return; }
             $safe = [];
             foreach ($context as $key => $value) {
@@ -14,8 +14,14 @@ final class DiagnosticLogger
                 if (preg_match('/password|cookie|secret|token|authorization|credential|username|email|phone|body|payload/i', $name)) continue;
                 if (is_scalar($value) || $value === null) $safe[(string)$key] = is_string($value) ? self::clean($value) : $value;
             }
-            $entry = ['time_utc' => gmdate('Y-m-d\\TH:i:s\\Z'), 'event' => self::clean($event), 'context' => $safe];
-            $line = json_encode($entry, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+            $timestamp = date('Y-m-d H:i:s P');
+            $operation = isset($safe['operation']) ? (string)$safe['operation'] : self::clean($event);
+            $line = '[' . $timestamp . '] [' . self::clean($event) . '] operation=' . $operation;
+            unset($safe['operation']);
+            if ($safe !== []) {
+                $details = json_encode($safe, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+                if (is_string($details)) $line .= ' details=' . $details;
+            }
             if (!is_string($line)) return;
             $file = $directory . '/ibsng-debug.txt';
             if (is_file($file) && (int)@filesize($file) >= self::MAX_BYTES) @rename($file, $file . '.1');

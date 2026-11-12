@@ -930,3 +930,10 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - IBSngClient recognizes login-form input attributes with either quote style and records cookie reuse, transport failures (HTTP status/cURL errno/error), stale-session detection, fresh-login attempt, and recovery outcome. It retries only the read-only request once; mutating requests are not replayed.
 - checkout.php records the automatic-username-generation exception and order-creation exception internally while preserving safe customer messages.
 - Added tests/ibsng-session-diagnostics-contract-test.php. Validation required: PHP lint, all existing contract tests, CI, deploy to cPanel, reproduce first-attempt failure, and inspect the text log. Host runtime is not yet verified.
+
+
+### Log location and operation labels (2026-11-12)
+
+- Canonical log path is now `logs/ibsng-debug.txt` at the project root. The earlier `storage/logs` path is superseded.
+- Every entry is timestamped using the hosting server's local timezone (including UTC offset) and identifies the event and operation. Checkout username availability, order creation, IBSng session reuse/validation/re-login/recovery, and HTTP transport requests have explicit operation labels.
+- Direct web access to `logs/` is denied; inspection is via cPanel File Manager. No admin-panel UI is introduced.
