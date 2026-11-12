@@ -1227,3 +1227,13 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 - The pending-payment notice now uses «هیچ اکانتی ایجاد نشده است» in Persian and “no account has been created” in English. It no longer exposes the internal platform name or describes an internal account-system implementation detail.
 - The customer-facing server-mapping error also omits the internal platform name in both locales. Related order-submitted/pending-payment notices consistently use “اکانت” / “account”.
 - Internal identifiers, integration code, database names, logs, and administrator tooling remain unchanged; this is a customer-copy change only.
+
+
+## 2026-11-12 — Private IBSng diagnostics and stale-session recovery
+
+- A best-effort diagnostic writer creates storage/logs/ibsng-debug.txt on the first relevant event. It is intended to be read through cPanel File Manager; no admin-panel page or customer-facing viewer is added.
+- The storage directory is denied by Apache configuration. The log appends with an exclusive lock, uses restrictive file permissions where supported, and rotates at approximately 1 MiB to one previous copy.
+- Credential-bearing context keys are excluded. The logger does not record IBSng credentials, cookies, customer usernames/passwords, email addresses, phone numbers, or raw request bodies. Logger failures never interrupt checkout.
+- IBSng login-form detection accepts single- and double-quoted input attributes. A read-only request that receives the actual login form clears the stale cookie jar, logs in again, retries that GET once, and records the recovery outcome. Mutating requests are not automatically replayed.
+- Checkout records the automatic-username-generation exception internally while preserving the generic customer-facing message.
+- Source-level contract coverage is added. Deploy and reproduce the first-attempt failure, then inspect storage/logs/ibsng-debug.txt through cPanel File Manager. Host write permissions and runtime behavior remain to be verified.

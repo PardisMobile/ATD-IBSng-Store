@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/DiagnosticLogger.php';
+
 /**
  * IBSng Web Panel client. It uses the same login/session and real panel forms
  * as the referenced integrations. No group-list API is assumed.
@@ -52,6 +54,14 @@ final class IBSngClient
         return preg_match('/(?:^|\\s)IBS_SESSID\\s+\\S+/m', (string)@file_get_contents($this->cookieFile)) === 1;
     }
 
+    private function isLoginFormResponse(string $body): bool
+    {
+        $normalized = str_replace(["'", '"'], '', $body);
+        $hasUsername = preg_match('/<input\\b[^>]*\\bname\\s*=\\s*username\\b/i', $normalized) === 1;
+        $hasPassword = preg_match('/<input\\b[^>]*\\bname\\s*=\\s*password\\b/i', $normalized) === 1;
+        return $hasUsername && $hasPassword;
+    }
+
     private function resetStoredSession(): void
     {
         @file_put_contents($this->cookieFile, ''); @chmod($this->cookieFile, 0600); $this->loggedIn = false;
@@ -68,7 +78,7 @@ final class IBSngClient
     private function login(): void
     {
         if ($this->loggedIn) return;
-        if ($this->hasStoredSession()) { $this->loggedIn = true; return; }
+        if ($this->hasStoredSession()) { DiagnosticLogger::write('ibsng_session_cookie_reused', ['host' => $this->host, 'port' => $this->port]); $this->loggedIn = true; return; }
         [$body, $status, $headers] = $this->requestRaw('/admin/', [
             'username' => $this->username,
             'password' => $this->password,
@@ -82,7 +92,7 @@ final class IBSngClient
             $this->loggedIn = true;
             return;
         }
-        if (stripos($body, 'name="username"') !== false && stripos($body, 'name="password"') !== false) {
+        if ($this->isLoginFormResponse($body)) {
             throw new RuntimeException('IBSng نام کاربری یا رمز عبور مدیر را نپذیرفت؛ اطلاعات ورود را بررسی کنید.');
         }
         throw new RuntimeException('پاسخ غیرمنتظره از Web Panel دریافت شد (HTTP ' . $status . ').');
@@ -141,7 +151,7 @@ final class IBSngClient
         curl_setopt_array($curl, $options);
         $lock = @fopen($this->cookieFile . '.lock', 'c');
         if ($lock === false || !flock($lock, LOCK_EX)) { if (is_resource($lock)) fclose($lock); curl_close($curl); throw new RuntimeException('قفل نشست IBSng در دسترس نیست.'); }
-        $completed = curl_exec($curl); $errno = curl_errno($curl); $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE); curl_close($curl);
+        $completed = curl_exec($curl); $errno = curl_errno($curl); $curlError = curl_error($curl); $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE); curl_close($curl);
         flock($lock, LOCK_UN); fclose($lock); @chmod($this->cookieFile, 0600);
 
         if ($completed === false) {
@@ -159,6 +169,7 @@ final class IBSngClient
                 && $status >= 200 && $status < 400
                 && ($hasHttpResponseBody || $hasRedirectLocation);
             if (!$completeTimeoutResponse) {
+                DiagnosticLogger::write('ibsng_transport_failed', ['host' => $this->host, 'port' => $this->port, 'stage' => (string)(parse_url($path, PHP_URL_PATH) ?: 'unknown'), 'http_status' => $status, 'curl_errno' => $errno, 'curl_error' => $curlError]);
                 throw new RuntimeException($errno === CURLE_OPERATION_TIMEDOUT
                     ? 'اتصال به IBSng timeout شد.'
                     : 'ارتباط با IBSng برقرار نشد. Host، پورت و دسترسی شبکه را بررسی کنید.');
@@ -170,12 +181,24 @@ final class IBSngClient
     private function request(string $path, array $data = []): string
     {
         $this->login();
+        $stage = (string)(parse_url($path, PHP_URL_PATH) ?: 'unknown');
         [$body, $status] = $this->requestRaw($path, $data);
-        if ($status >= 400) throw new RuntimeException('Web Panel درخواست را نپذیرفت (HTTP ' . $status . ').');
-        $loginForm = stripos($body, 'name="username"') !== false && stripos($body, 'name="password"') !== false;
+        $loginForm = $this->isLoginFormResponse($body);
         if ($data === [] && $loginForm) {
-            $this->resetStoredSession(); $this->login(); [$body, $status] = $this->requestRaw($path, [], true);
-            if ($status >= 400 || (stripos($body, 'name="username"') !== false && stripos($body, 'name="password"') !== false)) throw new RuntimeException('نشست مدیر IBSng پس از ورود مجدد معتبر نشد.');
+            DiagnosticLogger::write('ibsng_stale_session_detected', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+            $this->resetStoredSession();
+            DiagnosticLogger::write('ibsng_session_relogin_started', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage]);
+            $this->login();
+            [$body, $status] = $this->requestRaw($path, [], true);
+            if ($status >= 400 || $this->isLoginFormResponse($body)) {
+                DiagnosticLogger::write('ibsng_session_recovery_failed', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+                throw new RuntimeException('نشست مدیر IBSng پس از ورود مجدد معتبر نشد.');
+            }
+            DiagnosticLogger::write('ibsng_session_recovery_succeeded', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+        }
+        if ($status >= 400) {
+            DiagnosticLogger::write('ibsng_http_request_rejected', ['host' => $this->host, 'port' => $this->port, 'stage' => $stage, 'http_status' => $status]);
+            throw new RuntimeException('Web Panel درخواست را نپذیرفت (HTTP ' . $status . ').');
         }
         return $body;
     }
@@ -198,8 +221,7 @@ final class IBSngClient
         }
 
         $html = $this->request('/admin/user/user_info.php?normal_username=' . rawurlencode($username));
-        $loginForm = stripos($html, 'name="username"') !== false
-            && stripos($html, 'name="password"') !== false;
+        $loginForm = $this->isLoginFormResponse($html);
         if ($loginForm) {
             throw new RuntimeException('نشست مدیر IBSng معتبر نیست.');
         }

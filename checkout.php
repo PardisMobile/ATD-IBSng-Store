@@ -5,6 +5,7 @@ require_once __DIR__ . '/app/bootstrap.php';
 require_once __DIR__ . '/app/Database.php';
 require_once __DIR__ . '/app/Crypto.php';
 require_once __DIR__ . '/app/IBSngClient.php';
+require_once __DIR__ . '/app/DiagnosticLogger.php';
 require_once __DIR__ . '/app/messages.php';
 require_once __DIR__ . '/app/Pricing.php';
 require_once __DIR__ . '/app/OrderTrackingCode.php';
@@ -116,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
         $password = $operation === 'renew' ? '' : (string)($_POST['account_password'] ?? '');
 
         $credentialGenerationFailed = false;
+        $generationTargetId = null;
         if ($operation === 'create' && $credentialMethod === 'automatic') {
             $username = '';
             $password = '';
@@ -125,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
                         $available = true;
                         foreach ($productTargets as $target) {
+                            $generationTargetId = (int)($target['id'] ?? 0);
                             $ibsngCheck = new IBSngClient((string)$target['host'], (int)$target['port'], (string)$target['admin_username'], app_decrypt_secret((string)$target['server_password']));
                             if (!$ibsngCheck->isUsernameAvailable($candidate)) { $available = false; break; }
                         }
@@ -133,6 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
                 if ($username !== '') $password = checkout_random_string($generatedPasswordCharset, $generatedPasswordLength);
             } catch (Throwable $generationError) {
+                DiagnosticLogger::write('checkout_username_generation_failed', ['server_id' => $generationTargetId, 'exception_class' => get_class($generationError), 'message' => $generationError->getMessage()]);
                 $credentialGenerationFailed = true;
             }
         }
@@ -227,6 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                 }
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
+                DiagnosticLogger::write('checkout_order_creation_failed', ['exception_class' => get_class($e), 'message' => $e->getMessage()]);
                 $diagnostic = $e->getMessage();
                 $error = match (true) {
                     $e instanceof UsernameAlreadyExistsException => app_message('username_taken'),

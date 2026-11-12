@@ -918,3 +918,15 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - The customer-facing server-mapping error no longer includes the internal platform name. Related submitted/pending notices consistently use «اکانت» / “account”.
 - Extended `tests/order-status-account-contract-test.php` to assert the exact Persian and English copy and ensure the pending notice does not expose the internal platform name.
 - No payment, order-state, account provisioning, server integration, or database behavior changed. PHP lint, automated CI, and browser verification remain pending.
+
+
+### 2026-11-12 — Private IBSng diagnostic log and stale-session observability
+
+**STATUS: SOURCE IMPLEMENTED / HOST RUNTIME TEST PENDING.**
+
+- Added app/DiagnosticLogger.php; the first relevant diagnostic creates storage/logs/ibsng-debug.txt on the host. No admin-panel UI or customer-accessible viewer was added.
+- Added storage/.htaccess denial and a directory index guard. The intended viewing method is cPanel File Manager. Writes use append + exclusive lock, restrictive file permissions, and a 1 MiB single-generation rotation.
+- The logger filters sensitive context keys and does not record IBSng credentials, cookies, customer usernames, passwords, email addresses, phone numbers, or raw request bodies. Logging is best-effort and cannot fail the purchase flow.
+- IBSngClient recognizes login-form input attributes with either quote style and records cookie reuse, transport failures (HTTP status/cURL errno/error), stale-session detection, fresh-login attempt, and recovery outcome. It retries only the read-only request once; mutating requests are not replayed.
+- checkout.php records the automatic-username-generation exception and order-creation exception internally while preserving safe customer messages.
+- Added tests/ibsng-session-diagnostics-contract-test.php. Validation required: PHP lint, all existing contract tests, CI, deploy to cPanel, reproduce first-attempt failure, and inspect the text log. Host runtime is not yet verified.

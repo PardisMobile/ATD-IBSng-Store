@@ -51,6 +51,9 @@ jobs:
       - name: Run IBSng lookup contract test
         run: php tests/ibsng-lookup-contract-test.php
 
+      - name: Run IBSng session diagnostics contract test
+        run: php tests/ibsng-session-diagnostics-contract-test.php
+
       - name: Run IBSng provisioning subscription contract test
         run: php tests/ibsng-provisioning-subscription-contract-test.php
 
