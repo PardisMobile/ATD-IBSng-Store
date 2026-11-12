@@ -7,6 +7,7 @@ $guard = file_get_contents(dirname(__DIR__) . '/logs/.htaccess');
 $checks = [
 'client loads logger' => str_contains($client, "require_once __DIR__ . '/DiagnosticLogger.php'"),
 'login form detector exists' => str_contains($client, 'isLoginFormResponse'),
+'cookie reuse is rate-limited per server' => str_contains($logger, 'SESSION_REUSE_INTERVAL = 3600') && str_contains($logger, 'writeSessionReuse') && str_contains($client, 'writeSessionReuse'),
 'stale-session recovery outcomes are logged' => str_contains($client, 'ibsng_stale_session_detected') && str_contains($client, 'ibsng_session_recovery_succeeded') && str_contains($client, 'ibsng_session_recovery_failed'),
 'transport details are logged' => str_contains($client, 'curl_errno') && str_contains($client, 'curl_error'),
 'checkout logs swallowed generation exceptions' => str_contains($checkout, 'checkout_username_generation_failed') && str_contains($checkout, '$generationError->getMessage()'),

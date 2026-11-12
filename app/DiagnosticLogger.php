@@ -9,6 +9,7 @@ final class DiagnosticLogger
 {
     private const MAX_BYTES = 1048576;
     private const RETENTION_SECONDS = 604800;
+    private const SESSION_REUSE_INTERVAL = 3600;
 
     public static function write(string $event, array $context = []): void
     {
@@ -18,6 +19,41 @@ final class DiagnosticLogger
     public static function writeGateway(string $event, array $context = []): void
     {
         self::append('gateway-debug.txt', $event, $context);
+    }
+
+
+    /** Log routine session reuse at most once per hour for each IBSng server. */
+    public static function writeSessionReuse(string $serverKey, array $context = []): void
+    {
+        try {
+            $directory = dirname(__DIR__) . '/logs';
+            if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) return;
+            $stateFile = $directory . '/.session-reuse-throttle.json';
+            $lock = @fopen($stateFile . '.lock', 'c');
+            if ($lock === false) return;
+            try {
+                if (!flock($lock, LOCK_EX)) return;
+                $state = [];
+                if (is_file($stateFile)) {
+                    $decoded = json_decode((string)@file_get_contents($stateFile), true);
+                    if (is_array($decoded)) $state = $decoded;
+                }
+                $key = hash('sha256', $serverKey);
+                $now = time();
+                $last = isset($state[$key]) ? (int)$state[$key] : 0;
+                if ($last > 0 && ($now - $last) < self::SESSION_REUSE_INTERVAL) return;
+                $state[$key] = $now;
+                foreach ($state as $id => $timestamp) {
+                    if (!is_string($id) || !is_numeric($timestamp) || ($now - (int)$timestamp) >= self::RETENTION_SECONDS) unset($state[$id]);
+                }
+                @file_put_contents($stateFile, json_encode($state, JSON_UNESCAPED_SLASHES), LOCK_EX);
+                @chmod($stateFile, 0600);
+                self::append('ibsng-debug.txt', 'ibsng_session_cookie_reused', array_merge($context, ['operation' => 'ibsng.session.reuse']));
+            } finally {
+                flock($lock, LOCK_UN);
+                fclose($lock);
+            }
+        } catch (Throwable $ignored) {}
     }
 
     private static function append(string $filename, string $event, array $context): void
@@ -89,7 +125,7 @@ final class DiagnosticLogger
             $now = time();
             if ($last <= 0 || ($now - $last) >= self::RETENTION_SECONDS) {
                 if ($last > 0) {
-                    foreach (['ibsng-debug.txt', 'ibsng-debug.txt.1', 'ibsng-debug.txt.2', 'gateway-debug.txt', 'gateway-debug.txt.1', 'gateway-debug.txt.2'] as $name) {
+                    foreach (['ibsng-debug.txt', 'ibsng-debug.txt.1', 'ibsng-debug.txt.2', 'gateway-debug.txt', 'gateway-debug.txt.1', 'gateway-debug.txt.2', '.session-reuse-throttle.json'] as $name) {
                         $path = $directory . '/' . $name;
                         if (is_file($path)) @file_put_contents($path, '');
                     }

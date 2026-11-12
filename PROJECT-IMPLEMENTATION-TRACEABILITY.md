@@ -937,3 +937,14 @@ Reviewed the current `main` source in `checkout.php`, `admin/ibsng-users.php`, `
 - Canonical log path is now `logs/ibsng-debug.txt` at the project root. The earlier `storage/logs` path is superseded.
 - Every entry is timestamped using the hosting server's local timezone (including UTC offset) and identifies the event and operation. Checkout username availability, order creation, IBSng session reuse/validation/re-login/recovery, and HTTP transport requests have explicit operation labels.
 - Direct web access to `logs/` is denied; inspection is via cPanel File Manager. No admin-panel UI is introduced.
+
+
+### 2026-11-12 — Unified diagnostic policy and hourly IBSng session reuse
+
+**STATUS: SOURCE UPDATED / AUTOMATED CI AND CPANEL RUNTIME VALIDATION PENDING.**
+
+- Restored `ibsng_session_cookie_reused` as a useful diagnostic event, rate-limited to at most once per hour per IBSng server (host/port key). The throttle state stores only a SHA-256 key and timestamp, not credentials or cookies.
+- Both IBSng and gateway diagnostics share the same lifecycle: rotate at 1 MiB, retain the active file plus `.1` and `.2`, then clear all three generations after seven days on the next diagnostic write.
+- Weekly cleanup also clears the session-reuse throttle state. Logging and throttling remain best-effort and do not block checkout if file operations fail.
+- This policy is the default for future integration debug logs. No admin UI or public log viewer is introduced.
+- Validation gap: PHP lint, contract tests, CI, and cPanel runtime behavior remain to be verified.

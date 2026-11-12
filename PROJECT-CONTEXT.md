@@ -1244,3 +1244,10 @@ Creating a personalized OpenVPN link writes its order-specific .ovpn file into t
 - Simplified the private diagnostic file location to `logs/ibsng-debug.txt` at the project root (not `storage/logs`).
 - Each line starts with the hosting server's local date/time and timezone offset, followed by a named event and an explicit operation such as `checkout.username_availability`, `ibsng.session.validate`, or `ibsng.http.request`. Additional safe context includes server ID, request stage, HTTP status and cURL diagnostics where relevant.
 - The root `logs/` directory is blocked from direct web access; read the text file through cPanel File Manager. No admin UI is added.
+
+
+## Diagnostic policy — all integration logs (2026-11-12)
+
+- Both `ibsng-debug.txt` and `gateway-debug.txt` use the same policy: timestamped actionable events, 1 MiB rotation with two previous generations, and weekly clearing of all three generations. Cleanup runs on the next diagnostic write after seven days; it does not require cron.
+- Routine IBSng cookie/session reuse is recorded at most once per hour per configured server. A private hashed throttle state is used; raw credentials/cookies are never stored. The throttle state is cleared with the weekly log cleanup.
+- This policy applies consistently to future diagnostic logs added for integrations: no sensitive payloads, no admin UI, no public web access, and best-effort logging that cannot interrupt business operations.

@@ -78,7 +78,7 @@ final class IBSngClient
     private function login(): void
     {
         if ($this->loggedIn) return;
-        if ($this->hasStoredSession()) { DiagnosticLogger::write('ibsng_session_cookie_reused', ['operation' => 'ibsng.session.reuse', 'host' => $this->host, 'port' => $this->port]); $this->loggedIn = true; return; }
+        if ($this->hasStoredSession()) { DiagnosticLogger::writeSessionReuse($this->host . ':' . $this->port, ['host' => $this->host, 'port' => $this->port]); $this->loggedIn = true; return; }
         [$body, $status, $headers] = $this->requestRaw('/admin/', [
             'username' => $this->username,
             'password' => $this->password,
