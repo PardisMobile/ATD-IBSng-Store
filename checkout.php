@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $product) {
                     if (strlen($candidate) <= 150 && preg_match('/^[A-Za-z0-9_.-]+$/D', $candidate)) {
                         $available = true;
                         foreach ($productTargets as $target) {
-                            $generationTargetId = (int)($target['id'] ?? 0);
+                            $generationTargetId = (int)($target['server_id'] ?? 0);
                             $ibsngCheck = new IBSngClient((string)$target['host'], (int)$target['port'], (string)$target['admin_username'], app_decrypt_secret((string)$target['server_password']));
                             if (!$ibsngCheck->isUsernameAvailable($candidate)) { $available = false; break; }
                         }
@@ -310,6 +310,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 .checkout-card .muted{color:var(--muted);line-height:1.85}
 .checkout-card form>.button[type=submit]{width:100%;justify-content:center;margin-top:8px}
 .checkout-card .topbar{gap:12px}
+.checkout-card .checkout-success-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}
+.checkout-card .checkout-success-actions>a.button,.checkout-card .checkout-success-actions>form{display:inline-flex;align-items:center;width:auto;margin:0}
+.checkout-card .checkout-success-actions>form{gap:0}
+.checkout-card .checkout-success-actions .button{width:auto;min-height:42px;padding:9px 16px;justify-content:center}
+.checkout-card .checkout-success-actions form>.button[type=submit]{width:auto;margin:0}
 @media(max-width:560px){
  .checkout-shell{width:calc(100% - 20px)}
  .checkout-card{margin:24px 0;padding:clamp(16px,5vw,22px);border-radius:16px}
@@ -330,6 +335,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <?php if ($error !== ''): ?><div class="notice error" role="alert" aria-live="assertive"><?= e($error) ?></div><?php endif; ?>
 <div class="notice success" role="status" aria-live="polite"><strong class="store-info-label"><?= storefront_info_icon("tracking") ?><span data-ui-text="checkout_tracking_code">کد پیگیری:</span></strong><br><code><?= e($successTrackingCode !== '' ? $successTrackingCode : $successOrder) ?></code><p><?= e(app_message('order_pending_payment_notice')) ?></p></div>
 <?php if ($successTrackingCode !== ''): ?>
+<div class="checkout-success-actions">
 <a class="button primary" href="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" data-fa="پیگیری سفارش" data-en="Track order">پیگیری سفارش</a>
 <?php if ($error !== ''): ?>
 <form method="post" action="<?= e(app_url('order-status.php?order=' . rawurlencode($successTrackingCode))) ?>" class="checkout-retry-form">
@@ -338,6 +344,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $successOrder !== null && $error ==
 <button class="button primary" type="submit" data-fa="تلاش مجدد برای پرداخت" data-en="Retry payment">تلاش مجدد برای پرداخت</button>
 </form>
 <?php endif; ?>
+</div>
 <?php endif; ?>
 <a class="button" href="<?= e(app_url('userguide.php')) ?>" data-fa="راهنمای استفاده از اکانت" data-en="Account usage guide">راهنمای استفاده از اکانت</a>
 <a class="button" href="<?= e(app_url('/')) ?>" data-ui-text="checkout_back_store">بازگشت به فروشگاه</a>
